@@ -46,7 +46,7 @@ Squad power = sum over creatures of `(hp/4 + attack + defense + speed + affinity
 New accounts start with 1000 gems, 500 gold, and 3 common starter cats (seeded).
 
 ### Creature ownership locks
-A creature has `status`: `idle` | `expedition` | `listed` | `trading`. Only `idle` creatures may be sent on expedition, listed, or offered in a trade. Defense-team membership is independent of `status` (a cat can defend while on expedition). Every mutation that changes status must check the current status inside the same DB transaction (`FOR UPDATE`) to avoid double-spend.
+A creature has `status`: `idle` | `expedition` | `listed` | `trading`. Only `idle` creatures may be sent on expedition, listed, or offered in a trade. An incoming trade offer does **not** reserve the receiver's cat (only the proposer's), so a stranger can never lock your roster. Defense-team membership is independent of `status` (a cat can defend while on expedition). Every mutation that changes status must check the current status inside the same DB transaction (`FOR UPDATE`) to avoid double-spend.
 
 ### Money mutations
 All gold/gem changes go through `adjustWallet(tx, userId, { gold?, gems? })` in `src/server/game/wallet.ts` (Sprint 01). It must throw on insufficient funds and never let a balance go negative. Never trust client-supplied prices/amounts beyond validated input.

@@ -139,6 +139,9 @@ const RECEIVER_REF = {
   username: receiverUser.username,
   displayName: receiverUser.displayName,
 };
+/** Open outgoing offers a trainer may hold at once (anti-griefing). */
+const MAX_PENDING_OFFERS = 5;
+
 const TRAINER_REF = {
   id: users.id,
   username: users.username,
@@ -541,6 +544,15 @@ export const marketRouter = createTRPCRouter({
           });
         }
 
+        // Lock buyer and seller in a fixed order so two trainers buying
+        // each other's listings cannot deadlock.
+        await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(inArray(users.id, [ctx.user.id, listing.sellerId]))
+          .orderBy(asc(users.id))
+          .for("update");
+
         const proceeds = sellerProceeds(listing.price);
         const balance = await adjustWallet(tx, ctx.user.id, {
           gold: -listing.price,
@@ -636,8 +648,8 @@ export const marketRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       return ctx.db.transaction(async (tx) => {
-        const [receiver] = await tx
-          .select(TRAINER_REF)
+        const [receiverRow] = await tx
+          .select({ ...TRAINER_REF, isBot: users.isBot })
           .from(users)
           .where(
             input.receiverId
@@ -649,10 +661,37 @@ export const marketRouter = createTRPCRouter({
           )
           .limit(1);
 
-        if (!receiver) {
+        if (!receiverRow) {
           throw new TRPCError({
             code: "NOT_FOUND",
             message: "That trainer does not exist",
+          });
+        }
+        if (receiverRow.isBot) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Bot trainers never answer trade offers",
+          });
+        }
+        const receiver = {
+          id: receiverRow.id,
+          username: receiverRow.username,
+          displayName: receiverRow.displayName,
+        };
+
+        const [pending] = await tx
+          .select({ value: count() })
+          .from(tradeOffers)
+          .where(
+            and(
+              eq(tradeOffers.proposerId, ctx.user.id),
+              eq(tradeOffers.status, "pending"),
+            ),
+          );
+        if ((pending?.value ?? 0) >= MAX_PENDING_OFFERS) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `You can have at most ${MAX_PENDING_OFFERS} open offers`,
           });
         }
 
@@ -696,15 +735,12 @@ export const marketRouter = createTRPCRouter({
           }),
         );
 
+        // Only the proposer's cat is reserved. The receiver never consented,
+        // so their cat stays free; `respondTrade` re-checks it is still idle.
         await tx
           .update(creatures)
           .set({ status: "trading" })
-          .where(
-            and(
-              inArray(creatures.id, [mine.id, theirs.id]),
-              eq(creatures.status, "idle"),
-            ),
-          );
+          .where(and(eq(creatures.id, mine.id), eq(creatures.status, "idle")));
 
         const [offer] = await tx
           .insert(tradeOffers)
@@ -766,6 +802,14 @@ export const marketRouter = createTRPCRouter({
             code: "CONFLICT",
             message:
               "One of these cats has changed hands — the offer was cancelled",
+          });
+        }
+
+        if (receiverCat.status !== "idle") {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message:
+              "Your cat is busy (on expedition, listed or in another trade). Free it first, then accept.",
           });
         }
 
@@ -908,7 +952,11 @@ async function lockPendingOffer(
   return row;
 }
 
-/** Sends both reserved cats back to `idle` (only if still `trading`). */
+/**
+ * Sends the proposer's reserved cat back to `idle` (only if still `trading`).
+ * The receiver's cat is never reserved by an incoming offer, so it is left
+ * alone — it may legitimately be `trading` for an offer of their own.
+ */
 async function releaseTradeCreatures(
   tx: Transaction,
   offer: TradeOffer,
@@ -918,10 +966,7 @@ async function releaseTradeCreatures(
     .set({ status: "idle" })
     .where(
       and(
-        inArray(creatures.id, [
-          offer.proposerCreatureId,
-          offer.receiverCreatureId,
-        ]),
+        eq(creatures.id, offer.proposerCreatureId),
         eq(creatures.status, "trading"),
       ),
     );

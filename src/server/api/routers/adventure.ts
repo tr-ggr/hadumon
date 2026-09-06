@@ -14,6 +14,7 @@ import {
   zoneProgress,
   type Expedition,
 } from "~/server/db/schema/adventure";
+import { users } from "~/server/db/schema/auth";
 import { creatures, type Creature } from "~/server/db/schema/creatures";
 import type { Element } from "~/server/game/elements";
 import { getSpecies } from "~/server/game/species";
@@ -187,6 +188,14 @@ export const adventureRouter = createTRPCRouter({
 
       return ctx.db.transaction(async (tx) => {
         const userId = ctx.user.id;
+
+        // Serialize concurrent starts: `FOR UPDATE` on zero expedition rows
+        // locks nothing, so take the trainer's row lock first.
+        await tx
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.id, userId))
+          .for("update");
 
         const active = await tx
           .select({ id: expeditions.id })

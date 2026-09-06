@@ -1,7 +1,7 @@
 import "server-only";
 
 import { randomBytes } from "node:crypto";
-import { and, eq, gt } from "drizzle-orm";
+import { and, eq, gt, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "~/server/db";
@@ -30,6 +30,8 @@ export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
 
   await db.insert(sessions).values({ id: token, userId, expiresAt });
+  // Opportunistic cleanup so the table does not grow without bound.
+  await db.delete(sessions).where(lt(sessions.expiresAt, new Date()));
   await setSessionCookie(token, expiresAt);
 
   return token;

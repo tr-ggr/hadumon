@@ -463,6 +463,26 @@ export const battleRouter = createTRPCRouter({
           });
         }
 
+        // Same rule `opponents()` applies, enforced server-side so a direct
+        // client call cannot farm the weakest target every attack.
+        const [recentFight] = await tx
+          .select({ id: battles.id })
+          .from(battles)
+          .where(
+            and(
+              eq(battles.attackerId, attacker.id),
+              eq(battles.defenderId, defender.id),
+              gt(battles.createdAt, new Date(Date.now() - REMATCH_COOLDOWN_MS)),
+            ),
+          )
+          .limit(1);
+        if (recentFight) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: `You already fought ${defender.displayName} recently. Try again in an hour.`,
+          });
+        }
+
         const [defenseRow] = await tx
           .select({ creatureIds: defenseTeams.creatureIds })
           .from(defenseTeams)
@@ -757,6 +777,8 @@ export const battleRouter = createTRPCRouter({
       sprite: mySprite?.speciesId ?? null,
     };
 
-    return { rows, me, inTop, total: rows.length };
+    const [trainerCount] = await ctx.db.select({ value: count() }).from(users);
+
+    return { rows, me, inTop, total: trainerCount?.value ?? rows.length };
   }),
 });

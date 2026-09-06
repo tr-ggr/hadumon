@@ -30,6 +30,19 @@ const credentials = z.object({
   password: passwordSchema,
 });
 
+/** A real scrypt hash of a random string; only used to equalize login timing. */
+const DUMMY_PASSWORD_HASH =
+  "scrypt$ddddfe95ff4868276766c2b042f98d19$16c98b66372b6818f7792746890dd2b8d14347c525bc07c7a26e8727831fe014dcfd9ae3115f9c07534a39737494cf3993ba87c82aa4e58206bef394c5f94c2a";
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "23505"
+  );
+}
+
 export const authRouter = createTRPCRouter({
   signup: publicProcedure
     .input(credentials)
@@ -55,7 +68,17 @@ export const authRouter = createTRPCRouter({
         const [created] = await tx
           .insert(users)
           .values({ username, displayName: input.username, passwordHash })
-          .returning({ id: users.id });
+          .returning({ id: users.id })
+          .catch((error: unknown) => {
+            // Two signups raced past the pre-check; the unique index wins.
+            if (isUniqueViolation(error)) {
+              throw new TRPCError({
+                code: "CONFLICT",
+                message: "That username is taken",
+              });
+            }
+            throw error;
+          });
 
         if (!created) {
           throw new TRPCError({
@@ -92,9 +115,12 @@ export const authRouter = createTRPCRouter({
       .where(eq(users.username, username))
       .limit(1);
 
-    const ok = user
-      ? await verifyPassword(input.password, user.passwordHash)
-      : false;
+    // Always run scrypt so a missing username costs the same time as a
+    // wrong password (no username-enumeration timing oracle).
+    const ok = await verifyPassword(
+      input.password,
+      user?.passwordHash ?? DUMMY_PASSWORD_HASH,
+    );
     if (!user || !ok) {
       throw new TRPCError({
         code: "UNAUTHORIZED",

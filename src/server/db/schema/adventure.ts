@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import {
   index,
   integer,
@@ -7,6 +7,7 @@ import {
   primaryKey,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -53,6 +54,10 @@ export const expeditions = createTable(
   (t) => [
     index("expeditions_user_id_idx").on(t.userId),
     index("expeditions_user_status_idx").on(t.userId, t.status),
+    // Hard guarantee: a trainer can never have two active expeditions.
+    uniqueIndex("expeditions_one_active_per_user")
+      .on(t.userId)
+      .where(sql`${t.status} = 'active'`),
   ],
 );
 
