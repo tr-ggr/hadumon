@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  /* Retro palette ------------------------------------------------------- */
+  --color-navy: #0f0b1e;
+  --color-navy-deep: #090616;
+  --color-panel: #1e1633;
+  --color-panel-hi: #2a2047;
+  --color-edge: #4a3b7a;
+  --color-gold: #f5c542;
+  --color-mint: #5ef2b2;
+  --color-pink: #ff6fb5;
+  --color-sky: #4fa8ff;
+  --color-ink: #efe9ff;
+  --color-ink-dim: #a294c9;
+
+  /* Element colours ----------------------------------------------------- */
+  --color-flame: #f2762e;
+  --color-mist: #7fc7e8;
+  --color-volt: #f5d33a;
+  --color-thorn: #5cc46a;
+  --color-shade: #8b6ecb;
+
+  /* Fonts --------------------------------------------------------------- */
+  --font-pixel: var(--font-press-start), "Courier New", monospace;
+  --font-body: var(--font-vt323), "Courier New", monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-navy);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    font-size: 20px;
+    line-height: 1.35;
+    -webkit-font-smoothing: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-pixel);
+    line-height: 1.6;
+    letter-spacing: 0.02em;
+  }
+
+  ::selection {
+    background: var(--color-pink);
+    color: var(--color-navy);
+  }
+
+  /* Chunky retro scrollbars */
+  * {
+    scrollbar-color: var(--color-edge) var(--color-navy-deep);
+    scrollbar-width: thin;
+  }
+}
+
+/* Hard-edged panel: 2px border, offset black shadow, zero radius. */
+@utility panel {
+  background-color: var(--color-panel);
+  border: 2px solid var(--color-edge);
+  border-radius: 0;
+  box-shadow: 4px 4px 0 #000;
+}
+
+@utility panel-flat {
+  background-color: var(--color-panel);
+  border: 2px solid var(--color-edge);
+  border-radius: 0;
+}
+
+/* Pressable retro button feel. */
+@utility pixel-press {
+  transition:
+    transform 60ms steps(2),
+    box-shadow 60ms steps(2);
+
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #000;
+  }
+}
+
+@utility text-pixel {
+  font-family: var(--font-pixel);
+}
+
+/* Optional CRT scanline overlay (Sprint 06 may wire a toggle to it). */
+@utility scanlines {
+  position: relative;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      rgb(0 0 0 / 0.16) 0px,
+      rgb(0 0 0 / 0.16) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  }
+}
