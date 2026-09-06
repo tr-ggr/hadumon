@@ -95,6 +95,15 @@
    Stepped motion for the public landing page. Every animation drops its
    spatial movement under `prefers-reduced-motion` and keeps its meaning. */
 
+/* One focus ring for the whole page, so the summon buttons, the shot scroller
+   and the account links all light up the same gold instead of falling back to
+   the browser's default outline. Scoped to the landing page so the logged-in
+   app keeps whatever it already does. */
+.landing-root :focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 2px;
+}
+
 /* Two frames only: `steps(2, end)` samples this at 0% and 50%. */
 @keyframes land-bob {
   0% {

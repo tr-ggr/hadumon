@@ -40,6 +40,27 @@ assets, everything is inline SVG.
   element-tinted badges, and an optional CRT scanline overlay (the `CRT` button
   in the top bar; off by default, remembered per browser).
 
+## Landing page
+
+`/` serves two different pages. Logged out, it is a public landing page
+(`src/components/landing/LandingPage.tsx`) — a summon altar, the 25-cat
+catalogue in five element bands, a day of idling with a live fight log, the
+type chart and ladder, the printed rates, real screenshots and the close.
+Logged in, `/` is the dashboard exactly as before, and signing up lands on
+`/summon` with the starting 1000 gems.
+
+The hero summon is a **client-side preview**, not a mock-up: `useDemoSummon`
+runs the real `rollMulti` from `src/server/game/gacha.ts` on the real banner —
+same weights, same pity counter, same ten-pull guarantee. The wallet is a
+preview 2700 gems, nothing is persisted, and no account is touched. Every
+other number on the page is read out of `src/server/game/*` too (roster counts,
+zone drops, rating tiers, banner rates), so the page cannot drift from the
+game.
+
+`NEXT_PUBLIC_SITE_URL` (optional, see `.env.example`) sets the origin that the
+Open Graph and Twitter card URLs resolve against, including the generated
+`src/app/opengraph-image.tsx`. Unset, it falls back to the production origin.
+
 ## Screenshots
 
 Captured headlessly at 375px (mobile) and 1280px (desktop) from the seeded `demo` account.

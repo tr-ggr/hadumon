@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Button, ElementBadge, RarityBadge } from "~/components/ui";
-import { RARITY_LABELS, type Rarity, type Species } from "~/server/game/species";
+import {
+  RARITY_LABELS,
+  type Rarity,
+  type Species,
+} from "~/server/game/species";
 import type { RouterOutputs } from "~/trpc/react";
 
 export type PullSummary = RouterOutputs["gacha"]["pull"];

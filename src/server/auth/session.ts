@@ -76,9 +76,8 @@ export async function getSessionToken(): Promise<string | undefined> {
  * Wrapped in React `cache()` so the layout and the page share one lookup per
  * request instead of hitting the sessions table twice.
  */
-export const getCurrentUser = cache(
-  async (): Promise<SessionUser | null> =>
-    validateSession(await getSessionToken()),
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> =>
+  validateSession(await getSessionToken()),
 );
 
 async function setSessionCookie(token: string, expiresAt: Date): Promise<void> {

@@ -1,8 +1,4 @@
-import {
-  featuredSpeciesFor,
-  getBanner,
-  getBanners,
-} from "~/server/game/gacha";
+import { featuredSpeciesFor, getBanner, getBanners } from "~/server/game/gacha";
 import { ElementBands } from "./ElementBands";
 import { ElementWheel } from "./ElementWheel";
 import { FairPlayPanel } from "./FairPlayPanel";
@@ -30,7 +26,8 @@ export function LandingPage({ now }: LandingPageProps) {
   const featured = featuredSpeciesFor(now);
 
   return (
-    <div className="bg-navy flex min-h-dvh flex-col">
+    /* `landing-root` scopes the page's gold focus ring — see globals.css. */
+    <div className="landing-root bg-navy flex min-h-dvh flex-col">
       <LandingHeader />
       <main className="flex-1">
         <SummonAltar banner={banner} featured={featured} />
