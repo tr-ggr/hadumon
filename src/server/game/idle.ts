@@ -110,14 +110,24 @@ export interface ResolveInput {
 }
 
 /** Elapsed seconds since the last claim, clamped to the 8h offline cap. */
-export function creditedSeconds(lastClaimedAt: Date, now: Date, cap = MAX_OFFLINE_SECONDS): number {
+export function creditedSeconds(
+  lastClaimedAt: Date,
+  now: Date,
+  cap = MAX_OFFLINE_SECONDS,
+): number {
   const elapsed = Math.floor((now.getTime() - lastClaimedAt.getTime()) / 1000);
   return Math.min(Math.max(0, elapsed), cap);
 }
 
 /** How many encounters are ready to be claimed right now. */
-export function pendingEncounters(lastClaimedAt: Date, now: Date, zone: Zone): number {
-  return Math.floor(creditedSeconds(lastClaimedAt, now) / zone.encounterIntervalSec);
+export function pendingEncounters(
+  lastClaimedAt: Date,
+  now: Date,
+  zone: Zone,
+): number {
+  return Math.floor(
+    creditedSeconds(lastClaimedAt, now) / zone.encounterIntervalSec,
+  );
 }
 
 /**
@@ -134,14 +144,22 @@ export function nextClaimedAt(
 ): Date {
   const capMs = MAX_OFFLINE_SECONDS * 1000;
   const elapsedMs = now.getTime() - lastClaimedAt.getTime();
-  const base = elapsedMs > capMs ? now.getTime() - capMs : lastClaimedAt.getTime();
+  const base =
+    elapsedMs > capMs ? now.getTime() - capMs : lastClaimedAt.getTime();
   return new Date(base + secondsConsumed * 1000);
 }
 
 /** Seconds until one more encounter becomes claimable (0 once the cap is hit). */
-export function secondsToNextEncounter(lastClaimedAt: Date, now: Date, zone: Zone): number {
+export function secondsToNextEncounter(
+  lastClaimedAt: Date,
+  now: Date,
+  zone: Zone,
+): number {
   const interval = zone.encounterIntervalSec;
-  const elapsed = Math.max(0, Math.floor((now.getTime() - lastClaimedAt.getTime()) / 1000));
+  const elapsed = Math.max(
+    0,
+    Math.floor((now.getTime() - lastClaimedAt.getTime()) / 1000),
+  );
   if (elapsed >= MAX_OFFLINE_SECONDS) return 0;
   return interval - (elapsed % interval);
 }
@@ -248,7 +266,11 @@ export function resolveExpedition({
       encounterIndex: index,
       won,
       rounds: result.rounds,
-      squad: squad.map((c) => ({ id: c.id, name: c.name, speciesId: c.speciesId })),
+      squad: squad.map((c) => ({
+        id: c.id,
+        name: c.name,
+        speciesId: c.speciesId,
+      })),
       enemies: enemies.map(toEnemySummary),
       events: result.log,
     };
@@ -292,7 +314,10 @@ function awardXp(
   for (const creature of squad) {
     const gain = gains.get(creature.id);
     if (!gain) continue;
-    const progress = applyXp({ level: gain.levelAfter, xp: gain.xpAfter }, share);
+    const progress = applyXp(
+      { level: gain.levelAfter, xp: gain.xpAfter },
+      share,
+    );
     gain.xpGained += share;
     gain.leveledUp ||= progress.level > gain.levelAfter;
     gain.levelAfter = progress.level;

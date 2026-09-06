@@ -33,7 +33,10 @@ export function isElement(value: string): value is Element {
 }
 
 /** Damage multiplier applied when `attacker` hits `defender`. */
-export function elementMultiplier(attacker: Element, defender: Element): number {
+export function elementMultiplier(
+  attacker: Element,
+  defender: Element,
+): number {
   if (attacker === "shade" && defender === "shade") return 1;
   if (attacker === "shade" || defender === "shade") return 1.1;
   if (BEATS[attacker] === defender) return 1.25;

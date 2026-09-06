@@ -16,7 +16,10 @@ export interface ClaimResultsModalProps {
 }
 
 /** Full-screen-on-mobile results sheet shown after a claim or recall. */
-export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) {
+export function ClaimResultsModal({
+  summary,
+  onClose,
+}: ClaimResultsModalProps) {
   useEffect(() => {
     function onKey(event: KeyboardEvent) {
       if (event.key === "Escape") onClose();
@@ -40,15 +43,19 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
         className="panel max-h-[90dvh] w-full max-w-lg overflow-y-auto"
         onClick={(event) => event.stopPropagation()}
       >
-        <header className="sticky top-0 flex items-center justify-between gap-2 border-b-2 border-edge bg-panel-hi px-3 py-2">
-          <h2 className="text-pixel text-[10px] text-gold">
-            {summary.retreated ? "Retreat!" : summary.ended ? "Recalled" : "Claimed"}
+        <header className="border-edge bg-panel-hi sticky top-0 flex items-center justify-between gap-2 border-b-2 px-3 py-2">
+          <h2 className="text-pixel text-gold text-[10px]">
+            {summary.retreated
+              ? "Retreat!"
+              : summary.ended
+                ? "Recalled"
+                : "Claimed"}
           </h2>
           <button
             type="button"
             onClick={onClose}
             aria-label="Close results"
-            className="text-pixel border-2 border-edge px-2 py-1 text-[8px] text-ink-dim hover:text-ink"
+            className="text-pixel border-edge text-ink-dim hover:text-ink border-2 px-2 py-1 text-[8px]"
           >
             ✕
           </button>
@@ -56,14 +63,15 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
 
         <div className="space-y-3 p-3">
           {summary.retreated ? (
-            <p className="border-2 border-pink bg-panel-hi p-2 text-base text-pink">
-              Your squad lost three encounters in a row in {summary.zoneName} and retreated.
-              Everyone is back home and idle — upgrade or re-team before heading out again.
+            <p className="border-pink bg-panel-hi text-pink border-2 p-2 text-base">
+              Your squad lost three encounters in a row in {summary.zoneName}{" "}
+              and retreated. Everyone is back home and idle — upgrade or re-team
+              before heading out again.
             </p>
           ) : null}
 
           {nothing ? (
-            <p className="text-lg text-ink-dim">
+            <p className="text-ink-dim text-lg">
               Nothing had come due yet — encounters resolve once a minute.
             </p>
           ) : null}
@@ -72,7 +80,11 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
             <Stat label="Encounters" value={summary.encounterCount} />
             <Stat label="Wins" value={summary.winCount} tone="mint" />
             <Stat label="Losses" value={summary.lossCount} tone="pink" />
-            <Stat label={`${summary.zoneName} wins`} value={summary.zoneWins} tone="sky" />
+            <Stat
+              label={`${summary.zoneName} wins`}
+              value={summary.zoneWins}
+              tone="sky"
+            />
           </div>
 
           <div className="panel-flat grid grid-cols-3 gap-2 p-2">
@@ -87,7 +99,7 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
 
           {summary.xpPerCreature.length > 0 ? (
             <section>
-              <h3 className="text-pixel mb-1 text-[9px] text-ink-dim uppercase">
+              <h3 className="text-pixel text-ink-dim mb-1 text-[9px] uppercase">
                 Squad XP
               </h3>
               <ul className="space-y-1">
@@ -99,18 +111,18 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
                     }`}
                   >
                     <PixelSprite speciesId={gain.speciesId} size={32} />
-                    <span className="text-pixel min-w-0 flex-1 truncate text-[8px] text-ink">
+                    <span className="text-pixel text-ink min-w-0 flex-1 truncate text-[8px]">
                       {gain.name}
                     </span>
-                    <span className="text-base tabular-nums text-mint">
+                    <span className="text-mint text-base tabular-nums">
                       +{gain.xpGained} XP
                     </span>
                     {gain.leveledUp ? (
-                      <span className="text-pixel border border-gold px-1 py-0.5 text-[7px] text-gold">
+                      <span className="text-pixel border-gold text-gold border px-1 py-0.5 text-[7px]">
                         Lv {gain.levelBefore}→{gain.levelAfter}
                       </span>
                     ) : (
-                      <span className="text-base tabular-nums text-ink-dim">
+                      <span className="text-ink-dim text-base tabular-nums">
                         Lv {gain.levelAfter}
                       </span>
                     )}
@@ -120,11 +132,13 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
             </section>
           ) : null}
 
-          {summary.latestFight ? <FightLog fight={summary.latestFight} /> : null}
+          {summary.latestFight ? (
+            <FightLog fight={summary.latestFight} />
+          ) : null}
 
           {summary.encounters.length > 0 ? (
             <details className="panel-flat">
-              <summary className="text-pixel cursor-pointer bg-panel-hi px-2 py-2 text-[9px] text-gold">
+              <summary className="text-pixel bg-panel-hi text-gold cursor-pointer px-2 py-2 text-[9px]">
                 Encounter log (last {summary.encounters.length})
               </summary>
               <ol className="max-h-56 space-y-0.5 overflow-y-auto p-2">
@@ -136,10 +150,10 @@ export function ClaimResultsModal({ summary, onClose }: ClaimResultsModalProps) 
                     <span className={encounter.won ? "text-mint" : "text-pink"}>
                       #{encounter.index + 1} {encounter.won ? "WIN" : "LOSS"}
                     </span>
-                    <span className="truncate text-ink-dim">
+                    <span className="text-ink-dim truncate">
                       {encounter.enemies.map((e) => e.name).join(", ")}
                     </span>
-                    <span className="shrink-0 tabular-nums text-gold">
+                    <span className="text-gold shrink-0 tabular-nums">
                       +{encounter.gold}G
                     </span>
                   </li>

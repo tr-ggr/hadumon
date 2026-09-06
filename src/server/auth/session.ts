@@ -52,7 +52,9 @@ export async function validateSession(
 }
 
 /** Deletes the session row and clears the cookie. */
-export async function deleteSession(token: string | undefined | null): Promise<void> {
+export async function deleteSession(
+  token: string | undefined | null,
+): Promise<void> {
   if (token) {
     await db.delete(sessions).where(eq(sessions.id, token));
   }

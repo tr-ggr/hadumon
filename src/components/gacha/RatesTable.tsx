@@ -18,7 +18,7 @@ export function RatesTable({ rates, className = "" }: RatesTableProps) {
           >
             {RARITY_LABELS[rarity]}
           </dt>
-          <dd className="text-base leading-none text-ink tabular-nums">
+          <dd className="text-ink text-base leading-none tabular-nums">
             {formatRate(rates[rarity])}%
           </dd>
         </div>

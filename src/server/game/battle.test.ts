@@ -15,7 +15,14 @@ function fighter(
     name: id,
     speciesId: "flameclaw",
     element,
-    stats: { hp: 150, attack: 40, defense: 25, speed: 30, affinity: 20, ...stats },
+    stats: {
+      hp: 150,
+      attack: 40,
+      defense: 25,
+      speed: 30,
+      affinity: 20,
+      ...stats,
+    },
   };
 }
 
@@ -48,8 +55,14 @@ describe("simulateBattle", () => {
   });
 
   it("lets the far stronger team win", () => {
-    const strong = [fromSpecies("s1", "aurelynx", 40), fromSpecies("s2", "nyxaroth", 40)];
-    const weak = [fromSpecies("w1", "emberkit", 1), fromSpecies("w2", "sparkmew", 1)];
+    const strong = [
+      fromSpecies("s1", "aurelynx", 40),
+      fromSpecies("s2", "nyxaroth", 40),
+    ];
+    const weak = [
+      fromSpecies("w1", "emberkit", 1),
+      fromSpecies("w2", "sparkmew", 1),
+    ];
     for (const seed of ["a", "b", "c", "d", "e"]) {
       expect(simulateBattle(strong, weak, seed).winner).toBe("A");
       expect(simulateBattle(weak, strong, seed).winner).toBe("B");
@@ -58,8 +71,12 @@ describe("simulateBattle", () => {
 
   it("never exceeds the round cap and decides on remaining HP", () => {
     // Two immovable walls: enormous HP and defense, tiny attack.
-    const wallA = [fighter("a1", "thorn", { hp: 90000, attack: 5, defense: 400, speed: 10 })];
-    const wallB = [fighter("b1", "thorn", { hp: 60000, attack: 5, defense: 400, speed: 9 })];
+    const wallA = [
+      fighter("a1", "thorn", { hp: 90000, attack: 5, defense: 400, speed: 10 }),
+    ];
+    const wallB = [
+      fighter("b1", "thorn", { hp: 60000, attack: 5, defense: 400, speed: 9 }),
+    ];
     const result = simulateBattle(wallA, wallB, "stalemate");
     expect(result.rounds).toBe(MAX_ROUNDS);
     expect(result.remainingHpA).toBeGreaterThan(0);
@@ -69,8 +86,12 @@ describe("simulateBattle", () => {
   });
 
   it("gives an exact HP tie at the cap to team B", () => {
-    const a = [fighter("a1", "thorn", { hp: 50000, attack: 1, defense: 400, speed: 10 })];
-    const b = [fighter("b1", "thorn", { hp: 50000, attack: 1, defense: 400, speed: 10 })];
+    const a = [
+      fighter("a1", "thorn", { hp: 50000, attack: 1, defense: 400, speed: 10 }),
+    ];
+    const b = [
+      fighter("b1", "thorn", { hp: 50000, attack: 1, defense: 400, speed: 10 }),
+    ];
     const result = simulateBattle(a, b, "tie");
     expect(result.rounds).toBe(MAX_ROUNDS);
     if (result.remainingHpA / 50000 === result.remainingHpB / 50000) {
@@ -114,7 +135,11 @@ describe("simulateBattle", () => {
   });
 
   it("handles uneven team sizes", () => {
-    const a = [fighter("a1", "volt"), fighter("a2", "volt"), fighter("a3", "volt")];
+    const a = [
+      fighter("a1", "volt"),
+      fighter("a2", "volt"),
+      fighter("a3", "volt"),
+    ];
     const b = [fighter("b1", "shade")];
     const result = simulateBattle(a, b, "outnumbered");
     expect(result.winner).toBe("A");

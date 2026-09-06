@@ -10,15 +10,18 @@ const STATUS_TONE: Record<string, string> = {
 
 /** The last 20 finished expeditions, newest first. */
 export function ExpeditionHistory() {
-  const history = api.adventure.history.useQuery({ limit: 20 }, { retry: false });
+  const history = api.adventure.history.useQuery(
+    { limit: 20 },
+    { retry: false },
+  );
   const rows = history.data ?? [];
 
   return (
     <Panel title="Expedition log">
       {history.isLoading ? (
-        <p className="text-lg text-ink-dim">Reading the journal…</p>
+        <p className="text-ink-dim text-lg">Reading the journal…</p>
       ) : rows.length === 0 ? (
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           No finished expeditions yet. Recall a run to file it here.
         </p>
       ) : (
@@ -28,7 +31,7 @@ export function ExpeditionHistory() {
               key={row.id}
               className="panel-flat flex flex-wrap items-baseline gap-x-2 gap-y-1 p-2"
             >
-              <span className="text-pixel min-w-0 flex-1 truncate text-[8px] text-ink">
+              <span className="text-pixel text-ink min-w-0 flex-1 truncate text-[8px]">
                 {row.zoneName}
               </span>
               <span
@@ -36,13 +39,15 @@ export function ExpeditionHistory() {
               >
                 {row.status}
               </span>
-              <span className="text-base tabular-nums text-ink-dim">
+              <span className="text-ink-dim text-base tabular-nums">
                 <span className="text-mint">{row.winCount}W</span>
-                <span className="mx-1 text-edge">/</span>
+                <span className="text-edge mx-1">/</span>
                 <span className="text-pink">{row.lossCount}L</span>
               </span>
-              <span className="text-base tabular-nums text-gold">{row.totalGold} G</span>
-              <span className="text-base tabular-nums text-ink-dim">
+              <span className="text-gold text-base tabular-nums">
+                {row.totalGold} G
+              </span>
+              <span className="text-ink-dim text-base tabular-nums">
                 {formatDuration(row.durationSec)}
               </span>
             </li>

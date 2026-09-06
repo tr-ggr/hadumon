@@ -74,7 +74,7 @@ export function CollectionGrid() {
       <Panel
         title="Collection"
         action={
-          <span className="text-pixel text-[8px] text-ink-dim">
+          <span className="text-pixel text-ink-dim text-[8px]">
             {rows.length}/{creatures.data?.length ?? 0}
           </span>
         }
@@ -118,11 +118,11 @@ export function CollectionGrid() {
 
       {creatures.isLoading ? (
         <Panel>
-          <p className="text-lg text-ink-dim">Rounding up the cats…</p>
+          <p className="text-ink-dim text-lg">Rounding up the cats…</p>
         </Panel>
       ) : rows.length === 0 ? (
         <Panel>
-          <p className="text-lg text-ink-dim">
+          <p className="text-ink-dim text-lg">
             Nothing matches those filters.{" "}
             <Link href="/summon" className="text-mint underline">
               Summon more cats
@@ -158,11 +158,13 @@ function Select({
 }) {
   return (
     <label className="block space-y-1">
-      <span className="text-pixel text-[8px] text-ink-dim uppercase">{label}</span>
+      <span className="text-pixel text-ink-dim text-[8px] uppercase">
+        {label}
+      </span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border-2 border-edge bg-navy-deep px-1 py-1 text-base text-ink outline-none focus:border-gold"
+        className="border-edge bg-navy-deep text-ink focus:border-gold w-full border-2 px-1 py-1 text-base outline-none"
       >
         {options.map(([key, text]) => (
           <option key={key} value={key}>

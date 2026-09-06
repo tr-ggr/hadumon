@@ -1,5 +1,13 @@
 import { relations } from "drizzle-orm";
-import { index, integer, pgEnum, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  index,
+  integer,
+  pgEnum,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { createTable } from "./_table";
 import { users } from "./auth";
@@ -51,8 +59,13 @@ export const creatures = createTable(
     xp: integer("xp").notNull().default(0),
     upgradeTier: integer("upgrade_tier").notNull().default(0),
     status: creatureStatusEnum("status").notNull().default("idle"),
-    obtainedAt: timestamp("obtained_at", { withTimezone: true }).notNull().defaultNow(),
-    obtainedVia: text("obtained_via").$type<ObtainedVia>().notNull().default("starter"),
+    obtainedAt: timestamp("obtained_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    obtainedVia: text("obtained_via")
+      .$type<ObtainedVia>()
+      .notNull()
+      .default("starter"),
   },
   (t) => [
     index("creatures_owner_id_idx").on(t.ownerId),

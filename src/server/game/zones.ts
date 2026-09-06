@@ -117,14 +117,20 @@ export function getZone(zoneId: string): Zone {
 }
 
 /** True when `winsByZone` satisfies the zone's unlock requirement. */
-export function isZoneUnlocked(zone: Zone, winsByZone: Readonly<Record<string, number>>): boolean {
+export function isZoneUnlocked(
+  zone: Zone,
+  winsByZone: Readonly<Record<string, number>>,
+): boolean {
   const req = zone.unlockRequirement;
   if (!req) return true;
   return (winsByZone[req.zoneId] ?? 0) >= req.wins;
 }
 
 /** Stable per-encounter seed: the same expedition + index always replays identically. */
-export function encounterSeed(expeditionId: string, encounterIndex: number): string {
+export function encounterSeed(
+  expeditionId: string,
+  encounterIndex: number,
+): string {
   return `${expeditionId}:${encounterIndex}`;
 }
 
@@ -145,13 +151,17 @@ export function generateEnemies(
   expeditionId: string,
   encounterIndex: number,
 ): EnemyCombatant[] {
-  const rng = createRng(`enemies:${encounterSeed(expeditionId, encounterIndex)}`);
+  const rng = createRng(
+    `enemies:${encounterSeed(expeditionId, encounterIndex)}`,
+  );
   const count = rng.int(2, 4);
   const [minLevel, maxLevel] = zone.enemyLevelRange;
 
   const enemies: EnemyCombatant[] = [];
   for (let i = 0; i < count; i++) {
-    const element = rng.chance(OFF_ELEMENT_CHANCE) ? rng.pick(ELEMENTS) : zone.element;
+    const element = rng.chance(OFF_ELEMENT_CHANCE)
+      ? rng.pick(ELEMENTS)
+      : zone.element;
     const species = rng.pick(candidateSpecies(element, zone.tier));
     const level = rng.int(minLevel, maxLevel);
     const stats = effectiveStats(species, level, 0);

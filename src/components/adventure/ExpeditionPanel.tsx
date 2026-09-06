@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { ElementBadge, Button, CreatureCard, Panel, Stat } from "~/components/ui";
+import {
+  ElementBadge,
+  Button,
+  CreatureCard,
+  Panel,
+  Stat,
+} from "~/components/ui";
 import {
   creditedSeconds,
   pendingEncounters,
@@ -27,7 +33,11 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
 
   const nowDate = useLiveClock(current.serverNow);
   const pending = pendingEncounters(expedition.lastClaimedAt, nowDate, zone);
-  const nextIn = secondsToNextEncounter(expedition.lastClaimedAt, nowDate, zone);
+  const nextIn = secondsToNextEncounter(
+    expedition.lastClaimedAt,
+    nowDate,
+    zone,
+  );
   const banked = creditedSeconds(expedition.lastClaimedAt, nowDate);
   const cappedPct = Math.min(100, (banked / current.maxOfflineSeconds) * 100);
   const atCap = banked >= current.maxOfflineSeconds;
@@ -65,43 +75,53 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
         bodyClassName="space-y-3"
       >
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          <Stat label="Ready" value={pending} tone={pending > 0 ? "mint" : "default"} />
+          <Stat
+            label="Ready"
+            value={pending}
+            tone={pending > 0 ? "mint" : "default"}
+          />
           <Stat label="Next in" value={formatClock(nextIn)} />
           <Stat label="Wins" value={expedition.winCount} tone="gold" />
           <Stat label="Losses" value={expedition.lossCount} tone="pink" />
         </div>
 
-        <p className="text-lg text-ink" aria-live="polite">
+        <p className="text-ink text-lg" aria-live="polite">
           {atCap ? (
             <span className="text-pink">
               Idle rewards are capped — claim now or you stop earning.
             </span>
           ) : pending > 0 ? (
             <>
-              <span className="text-mint tabular-nums">{pending}</span> encounter
+              <span className="text-mint tabular-nums">{pending}</span>{" "}
+              encounter
               {pending === 1 ? "" : "s"} ready · next in{" "}
-              <span className="text-gold tabular-nums">{formatClock(nextIn)}</span>
+              <span className="text-gold tabular-nums">
+                {formatClock(nextIn)}
+              </span>
             </>
           ) : (
             <>
               Next encounter in{" "}
-              <span className="text-gold tabular-nums">{formatClock(nextIn)}</span>
+              <span className="text-gold tabular-nums">
+                {formatClock(nextIn)}
+              </span>
             </>
           )}
         </p>
 
         <div>
           <div className="flex items-baseline justify-between">
-            <span className="text-pixel text-[7px] text-ink-dim uppercase">
+            <span className="text-pixel text-ink-dim text-[7px] uppercase">
               Offline bank
             </span>
-            <span className="text-base tabular-nums text-ink-dim">
-              {formatDuration(banked)} / {formatDuration(current.maxOfflineSeconds)}
+            <span className="text-ink-dim text-base tabular-nums">
+              {formatDuration(banked)} /{" "}
+              {formatDuration(current.maxOfflineSeconds)}
             </span>
           </div>
-          <div className="mt-1 h-3 w-full border-2 border-edge bg-navy-deep">
+          <div className="border-edge bg-navy-deep mt-1 h-3 w-full border-2">
             <div
-              className={atCap ? "h-full bg-pink" : "h-full bg-mint"}
+              className={atCap ? "bg-pink h-full" : "bg-mint h-full"}
               style={{ width: `${cappedPct}%` }}
             />
           </div>
@@ -114,7 +134,7 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
           <Stat label="XP earned" value={expedition.totalXp} tone="mint" />
         </div>
 
-        {error ? <p className="text-base text-pink">{error.message}</p> : null}
+        {error ? <p className="text-pink text-base">{error.message}</p> : null}
 
         <div className="flex flex-wrap gap-2">
           <Button
@@ -122,7 +142,11 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
             disabled={busy || pending === 0}
             onClick={() => claim.mutate()}
           >
-            {claim.isPending ? "Claiming…" : pending > 0 ? `Claim ${pending}` : "Nothing yet"}
+            {claim.isPending
+              ? "Claiming…"
+              : pending > 0
+                ? `Claim ${pending}`
+                : "Nothing yet"}
           </Button>
           <Button
             variant="danger"
@@ -144,7 +168,7 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
                 spriteSize={56}
                 footer={
                   <div className="mt-1 w-full space-y-1">
-                    <p className="text-pixel text-[7px] text-ink-dim uppercase">
+                    <p className="text-pixel text-ink-dim text-[7px] uppercase">
                       Tier {creature.upgradeTier}
                     </p>
                     <UpgradeButton creature={creature} />
@@ -159,8 +183,9 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
       {current.lastBattleLog ? (
         <FightLog fight={current.lastBattleLog} />
       ) : (
-        <p className="text-base text-ink-dim">
-          No fight has been resolved yet — claim once the first encounter is ready.
+        <p className="text-ink-dim text-base">
+          No fight has been resolved yet — claim once the first encounter is
+          ready.
         </p>
       )}
     </div>

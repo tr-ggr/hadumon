@@ -18,7 +18,7 @@ export function HomeDashboard() {
   if (me.isLoading) {
     return (
       <Panel title="Loading">
-        <p className="text-lg text-ink-dim">Waking the cats…</p>
+        <p className="text-ink-dim text-lg">Waking the cats…</p>
       </Panel>
     );
   }
@@ -26,7 +26,7 @@ export function HomeDashboard() {
   if (!me.data) {
     return (
       <Panel title="Not signed in">
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           <Link href="/login" className="text-mint underline">
             Sign in
           </Link>{" "}
@@ -66,13 +66,16 @@ export function HomeDashboard() {
       <Panel
         title="Top squad"
         action={
-          <Link href="/collection" className="text-pixel text-[8px] text-mint underline">
+          <Link
+            href="/collection"
+            className="text-pixel text-mint text-[8px] underline"
+          >
             Collection
           </Link>
         }
       >
         {strongest.length === 0 ? (
-          <p className="text-lg text-ink-dim">
+          <p className="text-ink-dim text-lg">
             No cats yet.{" "}
             <Link href="/summon" className="text-mint underline">
               Summon your first cat!
@@ -83,8 +86,10 @@ export function HomeDashboard() {
             {strongest.map((creature) => (
               <li key={creature.id} className="flex flex-col items-center">
                 <PixelSprite speciesId={creature.speciesId} size={64} />
-                <span className="text-pixel text-[8px] text-ink">{creature.name}</span>
-                <span className="text-base text-ink-dim">
+                <span className="text-pixel text-ink text-[8px]">
+                  {creature.name}
+                </span>
+                <span className="text-ink-dim text-base">
                   Lv {creature.level} · {creature.power} PWR
                 </span>
               </li>
@@ -94,7 +99,7 @@ export function HomeDashboard() {
       </Panel>
 
       <Panel title="What's next">
-        <ul className="space-y-1 text-lg text-ink-dim">
+        <ul className="text-ink-dim space-y-1 text-lg">
           <li>
             <Link href="/summon" className="text-mint underline">
               Summon

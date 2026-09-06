@@ -34,7 +34,9 @@ export function BannerCard({ banner, gems, busy, onSummon }: BannerCardProps) {
       className="panel-flat flex flex-col gap-3 p-3"
       style={{
         borderColor: isFeatured ? "var(--color-gold)" : undefined,
-        boxShadow: isFeatured ? `0 0 10px ${glow}, 4px 4px 0 #000` : "4px 4px 0 #000",
+        boxShadow: isFeatured
+          ? `0 0 10px ${glow}, 4px 4px 0 #000`
+          : "4px 4px 0 #000",
       }}
     >
       <header className="flex items-start gap-3">
@@ -44,18 +46,20 @@ export function BannerCard({ banner, gems, busy, onSummon }: BannerCardProps) {
           </div>
         ) : null}
         <div className="min-w-0 flex-1">
-          <h3 className="text-pixel text-[10px] text-gold">{banner.name}</h3>
+          <h3 className="text-pixel text-gold text-[10px]">{banner.name}</h3>
           {banner.featured ? (
             <p className="mt-1 flex flex-wrap items-center gap-1">
-              <span className="text-pixel text-[8px] text-pink uppercase">Rate-up</span>
-              <span className="text-lg leading-none text-ink">
+              <span className="text-pixel text-pink text-[8px] uppercase">
+                Rate-up
+              </span>
+              <span className="text-ink text-lg leading-none">
                 {banner.featured.name}
               </span>
               <ElementBadge element={banner.featured.element} />
               <RarityBadge rarity={banner.featured.rarity} />
             </p>
           ) : null}
-          <p className="mt-1 text-base leading-tight text-ink-dim">
+          <p className="text-ink-dim mt-1 text-base leading-tight">
             {banner.description}
           </p>
         </div>
@@ -88,15 +92,15 @@ export function BannerCard({ banner, gems, busy, onSummon }: BannerCardProps) {
           type="button"
           onClick={() => setShowRates((open) => !open)}
           aria-expanded={showRates}
-          className="text-pixel text-[8px] text-mint uppercase underline"
+          className="text-pixel text-mint text-[8px] uppercase underline"
         >
           {showRates ? "Hide rates" : "Rates"}
         </button>
         {showRates ? (
-          <div className="mt-2 border-2 border-edge bg-navy-deep p-2">
+          <div className="border-edge bg-navy-deep mt-2 border-2 p-2">
             <RatesTable rates={banner.rates} />
             {banner.featured ? (
-              <p className="mt-2 text-base leading-tight text-ink-dim">
+              <p className="text-ink-dim mt-2 text-base leading-tight">
                 {banner.featured.name} takes 50% of every{" "}
                 {banner.featured.rarity} roll on this banner.
               </p>
@@ -140,8 +144,10 @@ function SummonButton({
         <span>{label}</span>
         <span className="text-[9px] opacity-80">◆ {cost}</span>
       </Button>
-      <p className="text-base leading-none text-ink-dim">
-        {affordable ? (hint ?? ` `) : `Need ${short.toLocaleString()} more gems`}
+      <p className="text-ink-dim text-base leading-none">
+        {affordable
+          ? (hint ?? ` `)
+          : `Need ${short.toLocaleString()} more gems`}
       </p>
     </div>
   );

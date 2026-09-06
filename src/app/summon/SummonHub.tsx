@@ -23,7 +23,10 @@ export function SummonHub() {
 
   const [summary, setSummary] = useState<PullSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [lastPull, setLastPull] = useState<{ bannerId: BannerId; count: 1 | 10 }>({
+  const [lastPull, setLastPull] = useState<{
+    bannerId: BannerId;
+    count: 1 | 10;
+  }>({
     bannerId: "standard",
     count: 1,
   });
@@ -61,7 +64,7 @@ export function SummonHub() {
   if (me.isLoading || banners.isLoading) {
     return (
       <Panel title="Summon">
-        <p className="text-lg text-ink-dim">Lighting the summoning candles…</p>
+        <p className="text-ink-dim text-lg">Lighting the summoning candles…</p>
       </Panel>
     );
   }
@@ -69,7 +72,7 @@ export function SummonHub() {
   if (!me.data) {
     return (
       <Panel title="Not signed in">
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           <Link href="/login" className="text-mint underline">
             Sign in
           </Link>{" "}
@@ -89,7 +92,10 @@ export function SummonHub() {
       <Panel
         title="Summoning Hub"
         action={
-          <Link href="/collection" className="text-pixel text-[8px] text-mint underline">
+          <Link
+            href="/collection"
+            className="text-pixel text-mint text-[8px] underline"
+          >
             Collection
           </Link>
         }
@@ -121,9 +127,15 @@ export function SummonHub() {
         ))}
       </div>
 
-      <RecentPulls entries={history.data ?? []} loading={history.isLoading} limit={20} />
+      <RecentPulls
+        entries={history.data ?? []}
+        loading={history.isLoading}
+        limit={20}
+      />
 
-      {error ? <Toast message={error} tone="error" onDismiss={dismissError} /> : null}
+      {error ? (
+        <Toast message={error} tone="error" onDismiss={dismissError} />
+      ) : null}
     </div>
   );
 }

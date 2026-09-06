@@ -5,7 +5,12 @@
  * so a given seed always reproduces the same pulls.
  */
 import type { Rng } from "./rng";
-import { RARITIES, speciesByRarity, type Rarity, type Species } from "./species";
+import {
+  RARITIES,
+  speciesByRarity,
+  type Rarity,
+  type Species,
+} from "./species";
 
 /* -------------------------------------------------------------------------- */
 /* Constants                                                                   */
@@ -125,7 +130,8 @@ export function getBanner(id: BannerId, now: Date = new Date()): Banner {
     ...base,
     id: "standard",
     name: "Wandering Strays",
-    description: "Every cat in the catalogue, at the standard rates. Always available.",
+    description:
+      "Every cat in the catalogue, at the standard rates. Always available.",
     weights: STANDARD_WEIGHTS,
     featuredSpeciesId: null,
   };
@@ -181,13 +187,10 @@ export function nextPityCount(rarity: Rarity, pityCount: number): number {
 /** Rate card shown in the UI: chance of each rarity as a percentage. */
 export function bannerRates(banner: Banner): RarityWeights {
   const total = RARITIES.reduce((sum, r) => sum + banner.weights[r], 0);
-  return RARITIES.reduce<RarityWeights>(
-    (acc, rarity) => {
-      acc[rarity] = (banner.weights[rarity] / total) * 100;
-      return acc;
-    },
-    {} as RarityWeights,
-  );
+  return RARITIES.reduce<RarityWeights>((acc, rarity) => {
+    acc[rarity] = (banner.weights[rarity] / total) * 100;
+    return acc;
+  }, {} as RarityWeights);
 }
 
 /**
@@ -196,9 +199,15 @@ export function bannerRates(banner: Banner): RarityWeights {
  * Once `pityCount` has reached the banner's threshold the result is forced to
  * epic (or legendary, {@link PITY_LEGENDARY_CHANCE} of the time).
  */
-export function rollPull(banner: Banner, rng: Rng, pityCount: number): PullResult {
+export function rollPull(
+  banner: Banner,
+  rng: Rng,
+  pityCount: number,
+): PullResult {
   if (pityCount >= banner.pityThreshold) {
-    const rarity: Rarity = rng.chance(PITY_LEGENDARY_CHANCE) ? "legendary" : "epic";
+    const rarity: Rarity = rng.chance(PITY_LEGENDARY_CHANCE)
+      ? "legendary"
+      : "epic";
     return {
       speciesId: pickSpecies(banner, rarity, rng),
       rarity,

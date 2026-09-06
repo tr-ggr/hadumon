@@ -48,14 +48,15 @@ export function createRng(seed: string | number): Rng {
       if (hi < lo) return lo;
       return lo + Math.floor(next() * (hi - lo + 1));
     },
-    pick: <T,>(items: readonly T[]): T => {
-      if (items.length === 0) throw new Error("rng.pick called with an empty array");
+    pick: <T>(items: readonly T[]): T => {
+      if (items.length === 0)
+        throw new Error("rng.pick called with an empty array");
       const item = items[Math.floor(next() * items.length)];
       // `noUncheckedIndexedAccess` — the index is always in range above.
       return item as T;
     },
     chance: (p) => next() < Math.min(1, Math.max(0, p)),
-    shuffle: <T,>(items: readonly T[]): T[] => {
+    shuffle: <T>(items: readonly T[]): T[] => {
       const copy = [...items];
       for (let i = copy.length - 1; i > 0; i--) {
         const j = Math.floor(next() * (i + 1));

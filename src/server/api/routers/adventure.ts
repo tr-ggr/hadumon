@@ -3,7 +3,10 @@ import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { toCreatureView, type CreatureView } from "~/server/api/routers/creatures";
+import {
+  toCreatureView,
+  type CreatureView,
+} from "~/server/api/routers/creatures";
 import type { DbOrTx, Transaction } from "~/server/db";
 import {
   expeditionMembers,
@@ -24,7 +27,11 @@ import {
   type LatestFight,
   type SquadCreature,
 } from "~/server/game/idle";
-import { nextUpgradeCost, upgradeCost, MAX_UPGRADE_TIER } from "~/server/game/progression";
+import {
+  nextUpgradeCost,
+  upgradeCost,
+  MAX_UPGRADE_TIER,
+} from "~/server/game/progression";
 import { squadPower } from "~/server/game/stats";
 import { adjustMaterials, adjustWallet } from "~/server/game/wallet";
 import {
@@ -80,7 +87,12 @@ export const adventureRouter = createTRPCRouter({
     const [active] = await ctx.db
       .select({ id: expeditions.id, zoneId: expeditions.zoneId })
       .from(expeditions)
-      .where(and(eq(expeditions.userId, ctx.user.id), eq(expeditions.status, "active")))
+      .where(
+        and(
+          eq(expeditions.userId, ctx.user.id),
+          eq(expeditions.status, "active"),
+        ),
+      )
       .limit(1);
 
     return {
@@ -95,7 +107,9 @@ export const adventureRouter = createTRPCRouter({
     const rows = await ctx.db
       .select()
       .from(creatures)
-      .where(and(eq(creatures.ownerId, ctx.user.id), eq(creatures.status, "idle")))
+      .where(
+        and(eq(creatures.ownerId, ctx.user.id), eq(creatures.status, "idle")),
+      )
       .orderBy(desc(creatures.level));
 
     return rows.map(toCreatureView);
@@ -106,7 +120,12 @@ export const adventureRouter = createTRPCRouter({
     const [expedition] = await ctx.db
       .select()
       .from(expeditions)
-      .where(and(eq(expeditions.userId, ctx.user.id), eq(expeditions.status, "active")))
+      .where(
+        and(
+          eq(expeditions.userId, ctx.user.id),
+          eq(expeditions.status, "active"),
+        ),
+      )
       .limit(1);
 
     if (!expedition) return null;
@@ -131,7 +150,11 @@ export const adventureRouter = createTRPCRouter({
       squad,
       squadPower: squadPower(squad.map((c) => c.stats)),
       pendingEncounters: pendingEncounters(expedition.lastClaimedAt, now, zone),
-      secondsToNextEncounter: secondsToNextEncounter(expedition.lastClaimedAt, now, zone),
+      secondsToNextEncounter: secondsToNextEncounter(
+        expedition.lastClaimedAt,
+        now,
+        zone,
+      ),
       maxOfflineSeconds: MAX_OFFLINE_SECONDS,
       lastBattleLog: expedition.lastBattleLog ?? null,
       serverNow: now,
@@ -151,11 +174,15 @@ export const adventureRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       const zone = findZone(input.zoneId);
-      if (!zone) throw new TRPCError({ code: "NOT_FOUND", message: "Unknown zone" });
+      if (!zone)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Unknown zone" });
 
       const creatureIds = [...new Set(input.creatureIds)];
       if (creatureIds.length !== input.creatureIds.length) {
-        throw new TRPCError({ code: "BAD_REQUEST", message: "Duplicate cat in the squad" });
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Duplicate cat in the squad",
+        });
       }
 
       return ctx.db.transaction(async (tx) => {
@@ -164,19 +191,28 @@ export const adventureRouter = createTRPCRouter({
         const active = await tx
           .select({ id: expeditions.id })
           .from(expeditions)
-          .where(and(eq(expeditions.userId, userId), eq(expeditions.status, "active")))
+          .where(
+            and(
+              eq(expeditions.userId, userId),
+              eq(expeditions.status, "active"),
+            ),
+          )
           .for("update");
 
         if (active.length > 0) {
           throw new TRPCError({
             code: "CONFLICT",
-            message: "An expedition is already running. Claim or recall it first.",
+            message:
+              "An expedition is already running. Claim or recall it first.",
           });
         }
 
         const winsByZone = await readZoneWins(tx, userId);
         if (!isZoneUnlocked(zone, winsByZone)) {
-          throw new TRPCError({ code: "FORBIDDEN", message: `${zone.name} is still locked` });
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: `${zone.name} is still locked`,
+          });
         }
 
         const rows = await lockCreatures(tx, userId, creatureIds);
@@ -191,7 +227,12 @@ export const adventureRouter = createTRPCRouter({
         const now = new Date();
         const [created] = await tx
           .insert(expeditions)
-          .values({ userId, zoneId: zone.id, startedAt: now, lastClaimedAt: now })
+          .values({
+            userId,
+            zoneId: zone.id,
+            startedAt: now,
+            lastClaimedAt: now,
+          })
           .returning();
 
         if (!created) {
@@ -234,7 +275,11 @@ export const adventureRouter = createTRPCRouter({
 
   /** Finished expeditions, newest first. */
   history: protectedProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(50).default(20) }).default({}))
+    .input(
+      z
+        .object({ limit: z.number().int().min(1).max(50).default(20) })
+        .default({}),
+    )
     .query(async ({ ctx, input }) => {
       const rows = await ctx.db
         .select({
@@ -250,7 +295,10 @@ export const adventureRouter = createTRPCRouter({
         })
         .from(expeditions)
         .where(
-          and(eq(expeditions.userId, ctx.user.id), ne(expeditions.status, "active")),
+          and(
+            eq(expeditions.userId, ctx.user.id),
+            ne(expeditions.status, "active"),
+          ),
         )
         .orderBy(desc(expeditions.startedAt))
         .limit(input.limit);
@@ -261,7 +309,9 @@ export const adventureRouter = createTRPCRouter({
         durationSec: Math.max(
           0,
           Math.floor(
-            ((row.endedAt ?? row.startedAt).getTime() - row.startedAt.getTime()) / 1000,
+            ((row.endedAt ?? row.startedAt).getTime() -
+              row.startedAt.getTime()) /
+              1000,
           ),
         ),
       }));
@@ -276,12 +326,18 @@ export const adventureRouter = createTRPCRouter({
           .select()
           .from(creatures)
           .where(
-            and(eq(creatures.id, input.creatureId), eq(creatures.ownerId, ctx.user.id)),
+            and(
+              eq(creatures.id, input.creatureId),
+              eq(creatures.ownerId, ctx.user.id),
+            ),
           )
           .for("update");
 
         if (!row) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Creature not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Creature not found",
+          });
         }
         if (row.upgradeTier >= MAX_UPGRADE_TIER) {
           throw new TRPCError({
@@ -292,7 +348,12 @@ export const adventureRouter = createTRPCRouter({
 
         const cost = upgradeCost(row);
         await adjustWallet(tx, ctx.user.id, { gold: -cost.gold });
-        await adjustMaterials(tx, ctx.user.id, cost.materials.element, -cost.materials.amount);
+        await adjustMaterials(
+          tx,
+          ctx.user.id,
+          cost.materials.element,
+          -cost.materials.amount,
+        );
 
         const [updated] = await tx
           .update(creatures)
@@ -337,11 +398,16 @@ async function settleExpedition(
   const [expedition] = await tx
     .select()
     .from(expeditions)
-    .where(and(eq(expeditions.userId, userId), eq(expeditions.status, "active")))
+    .where(
+      and(eq(expeditions.userId, userId), eq(expeditions.status, "active")),
+    )
     .for("update");
 
   if (!expedition) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "No expedition is running" });
+    throw new TRPCError({
+      code: "NOT_FOUND",
+      message: "No expedition is running",
+    });
   }
 
   const zone = getZone(expedition.zoneId);
@@ -401,7 +467,11 @@ async function settleExpedition(
       lossCount: expedition.lossCount + result.lossCount,
       totalGold: expedition.totalGold + result.rewards.gold,
       totalXp: expedition.totalXp + result.rewards.xp,
-      lastClaimedAt: nextClaimedAt(expedition.lastClaimedAt, now, result.secondsConsumed),
+      lastClaimedAt: nextClaimedAt(
+        expedition.lastClaimedAt,
+        now,
+        result.secondsConsumed,
+      ),
       lastBattleLog: result.latestFight ?? expedition.lastBattleLog,
       status: ended ? (result.retreated ? "retreated" : "completed") : "active",
       endedAt: ended ? now : null,
@@ -413,7 +483,9 @@ async function settleExpedition(
     await tx
       .update(creatures)
       .set({ status: "idle" })
-      .where(and(eq(creatures.ownerId, userId), inArray(creatures.id, memberIds)));
+      .where(
+        and(eq(creatures.ownerId, userId), inArray(creatures.id, memberIds)),
+      );
   }
 
   return {
@@ -442,7 +514,10 @@ function toZoneView(zone: Zone, winsByZone: Record<string, number>): ZoneView {
     ...zone,
     unlocked,
     wins,
-    winsNeeded: req && !unlocked ? Math.max(0, req.wins - (winsByZone[req.zoneId] ?? 0)) : 0,
+    winsNeeded:
+      req && !unlocked
+        ? Math.max(0, req.wins - (winsByZone[req.zoneId] ?? 0))
+        : 0,
     unlockZoneName: req ? getZone(req.zoneId).name : null,
   };
 }
@@ -480,7 +555,12 @@ async function lockCreatures(
   const rows = await tx
     .select()
     .from(creatures)
-    .where(and(eq(creatures.ownerId, userId), inArray(creatures.id, [...creatureIds])))
+    .where(
+      and(
+        eq(creatures.ownerId, userId),
+        inArray(creatures.id, [...creatureIds]),
+      ),
+    )
     .orderBy(asc(creatures.id))
     .for("update");
 
@@ -494,7 +574,10 @@ async function lockCreatures(
   return rows;
 }
 
-async function readSquad(db: DbOrTx, expeditionId: string): Promise<CreatureView[]> {
+async function readSquad(
+  db: DbOrTx,
+  expeditionId: string,
+): Promise<CreatureView[]> {
   const rows = await db
     .select({ creature: creatures })
     .from(expeditionMembers)

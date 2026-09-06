@@ -5,7 +5,12 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { creatures, type Creature } from "~/server/db/schema/creatures";
 import { getSpecies, type Species } from "~/server/game/species";
-import { creaturePower, effectiveStats, xpForLevel, type Stats } from "~/server/game/stats";
+import {
+  creaturePower,
+  effectiveStats,
+  xpForLevel,
+  type Stats,
+} from "~/server/game/stats";
 
 /** A creature joined with its species and derived combat numbers. */
 export interface CreatureView {
@@ -64,10 +69,16 @@ export const creaturesRouter = createTRPCRouter({
       const [row] = await ctx.db
         .select()
         .from(creatures)
-        .where(and(eq(creatures.id, input.id), eq(creatures.ownerId, ctx.user.id)))
+        .where(
+          and(eq(creatures.id, input.id), eq(creatures.ownerId, ctx.user.id)),
+        )
         .limit(1);
 
-      if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Creature not found" });
+      if (!row)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Creature not found",
+        });
       return toCreatureView(row);
     }),
 
@@ -79,15 +90,22 @@ export const creaturesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const nickname = input.nickname && input.nickname.length > 0 ? input.nickname : null;
+      const nickname =
+        input.nickname && input.nickname.length > 0 ? input.nickname : null;
 
       const [row] = await ctx.db
         .update(creatures)
         .set({ nickname })
-        .where(and(eq(creatures.id, input.id), eq(creatures.ownerId, ctx.user.id)))
+        .where(
+          and(eq(creatures.id, input.id), eq(creatures.ownerId, ctx.user.id)),
+        )
         .returning();
 
-      if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Creature not found" });
+      if (!row)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Creature not found",
+        });
       return toCreatureView(row);
     }),
 });

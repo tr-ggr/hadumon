@@ -14,7 +14,8 @@ export function RarityBadge({ rarity, className = "" }: RarityBadgeProps) {
       style={{
         color: palette.outline,
         borderColor: palette.outline,
-        boxShadow: rarity === "legendary" ? `0 0 6px ${palette.glow}` : undefined,
+        boxShadow:
+          rarity === "legendary" ? `0 0 6px ${palette.glow}` : undefined,
       }}
     >
       {RARITY_LABELS[rarity]}

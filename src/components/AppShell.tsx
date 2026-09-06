@@ -27,12 +27,16 @@ const BARE_ROUTES = ["/login", "/signup"];
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
-  if (BARE_ROUTES.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
+  if (
+    BARE_ROUTES.some(
+      (route) => pathname === route || pathname.startsWith(`${route}/`),
+    )
+  ) {
     return <>{children}</>;
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-navy">
+    <div className="bg-navy flex min-h-dvh flex-col">
       <TopBar />
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-4 px-3 py-4 sm:px-4">
         <SideNav pathname={pathname} />
@@ -56,9 +60,12 @@ function TopBar() {
   });
 
   return (
-    <header className="sticky top-0 z-20 border-b-2 border-edge bg-panel">
+    <header className="border-edge bg-panel sticky top-0 z-20 border-b-2">
       <div className="mx-auto flex w-full max-w-6xl items-center gap-2 px-3 py-2 sm:px-4">
-        <Link href="/" className="text-pixel shrink-0 text-xs text-gold sm:text-sm">
+        <Link
+          href="/"
+          className="text-pixel text-gold shrink-0 text-xs sm:text-sm"
+        >
           Hadu<span className="text-pink">Mon</span>
         </Link>
 
@@ -70,10 +77,13 @@ function TopBar() {
               type="button"
               onClick={() => logout.mutate()}
               disabled={logout.isPending}
-              className="text-pixel border-2 border-edge px-2 py-1 text-[8px] text-ink-dim hover:text-ink disabled:opacity-50"
+              className="text-pixel border-edge text-ink-dim hover:text-ink border-2 px-2 py-1 text-[8px] disabled:opacity-50"
               title={`Signed in as ${me.data.user.displayName}`}
             >
-              <span className="hidden sm:inline">{me.data.user.displayName} · </span>Logout
+              <span className="hidden sm:inline">
+                {me.data.user.displayName} ·{" "}
+              </span>
+              Logout
             </button>
           ) : null}
         </div>
@@ -128,7 +138,7 @@ function SideNav({ pathname }: { pathname: string }) {
 
 function BottomNav({ pathname }: { pathname: string }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t-2 border-edge bg-panel md:hidden">
+    <nav className="border-edge bg-panel fixed inset-x-0 bottom-0 z-20 grid grid-cols-6 border-t-2 md:hidden">
       {NAV_ITEMS.map((item) => (
         <Link
           key={item.href}
@@ -141,7 +151,9 @@ function BottomNav({ pathname }: { pathname: string }) {
           <span aria-hidden className="text-base leading-none">
             {item.icon}
           </span>
-          <span className="text-pixel text-[6px] leading-none">{item.label}</span>
+          <span className="text-pixel text-[6px] leading-none">
+            {item.label}
+          </span>
         </Link>
       ))}
     </nav>

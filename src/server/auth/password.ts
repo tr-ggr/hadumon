@@ -1,4 +1,8 @@
-import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from "node:crypto";
+import {
+  randomBytes,
+  scrypt as scryptCallback,
+  timingSafeEqual,
+} from "node:crypto";
 import { promisify } from "node:util";
 
 const scrypt = promisify(scryptCallback) as unknown as (
@@ -19,7 +23,10 @@ export async function hashPassword(password: string): Promise<string> {
 }
 
 /** Constant-time verification. Returns false for malformed stored hashes. */
-export async function verifyPassword(password: string, stored: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  stored: string,
+): Promise<boolean> {
   const parts = stored.split("$");
   if (parts.length !== 3) return false;
 

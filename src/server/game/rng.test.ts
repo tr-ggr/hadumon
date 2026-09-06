@@ -12,8 +12,20 @@ describe("createRng", () => {
   });
 
   it("differs between seeds", () => {
-    const first = Array.from({ length: 8 }, ((rng) => () => rng.next())(createRng("seed-a")));
-    const second = Array.from({ length: 8 }, ((rng) => () => rng.next())(createRng("seed-b")));
+    const first = Array.from(
+      { length: 8 },
+      (
+        (rng) => () =>
+          rng.next()
+      )(createRng("seed-a")),
+    );
+    const second = Array.from(
+      { length: 8 },
+      (
+        (rng) => () =>
+          rng.next()
+      )(createRng("seed-b")),
+    );
     expect(first).not.toEqual(second);
   });
 

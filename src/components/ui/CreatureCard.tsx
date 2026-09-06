@@ -48,24 +48,27 @@ export function CreatureCard({
         borderColor: selected ? "var(--color-gold)" : palette.outline,
         boxShadow: selected
           ? `0 0 0 2px var(--color-gold), 4px 4px 0 #000`
-          : creature.species.rarity === "legendary" || creature.species.rarity === "epic"
+          : creature.species.rarity === "legendary" ||
+              creature.species.rarity === "epic"
             ? `0 0 8px ${palette.glow}, 4px 4px 0 #000`
             : "4px 4px 0 #000",
       }}
     >
       <PixelSprite speciesId={creature.speciesId} size={spriteSize} />
-      <h3 className="text-pixel w-full truncate text-[9px] text-ink">{creature.name}</h3>
+      <h3 className="text-pixel text-ink w-full truncate text-[9px]">
+        {creature.name}
+      </h3>
       <div className="flex flex-wrap items-center justify-center gap-1">
         <ElementBadge element={creature.species.element} />
         <RarityBadge rarity={creature.species.rarity} />
       </div>
-      <p className="text-base leading-none text-ink-dim">
+      <p className="text-ink-dim text-base leading-none">
         Lv <span className="text-ink tabular-nums">{creature.level}</span>
-        <span className="mx-1 text-edge">|</span>
+        <span className="text-edge mx-1">|</span>
         <span className="text-gold tabular-nums">{creature.power}</span> PWR
       </p>
       {creature.status && creature.status !== "idle" ? (
-        <p className="text-pixel text-[7px] text-pink uppercase">
+        <p className="text-pixel text-pink text-[7px] uppercase">
           {STATUS_LABELS[creature.status] ?? creature.status}
         </p>
       ) : null}

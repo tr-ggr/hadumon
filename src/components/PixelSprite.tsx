@@ -22,7 +22,12 @@ interface Run {
  * Crisp inline-SVG renderer for a creature's archetype sprite, tinted by its
  * element and rarity. Pure and hook-free, so it works in server components.
  */
-export function PixelSprite({ speciesId, size = 64, className, label }: PixelSpriteProps) {
+export function PixelSprite({
+  speciesId,
+  size = 64,
+  className,
+  label,
+}: PixelSpriteProps) {
   const species = getSpecies(speciesId);
   const rows = ARCHETYPE_SPRITES[species.archetype];
   const colors = spriteColors(species.element, species.rarity);
@@ -55,7 +60,10 @@ export function PixelSprite({ speciesId, size = 64, className, label }: PixelSpr
 }
 
 /** Merges horizontal runs of the same colour so the DOM stays small. */
-function buildRuns(rows: readonly string[], colors: Record<string, string | null>): Run[] {
+function buildRuns(
+  rows: readonly string[],
+  colors: Record<string, string | null>,
+): Run[] {
   const runs: Run[] = [];
 
   rows.forEach((row, y) => {

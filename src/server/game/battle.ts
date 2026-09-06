@@ -66,14 +66,19 @@ export function simulateBattle(
   const totalB = sumMaxHp(fighters, "B");
 
   let round = 0;
-  while (round < MAX_ROUNDS && anyAlive(fighters, "A") && anyAlive(fighters, "B")) {
+  while (
+    round < MAX_ROUNDS &&
+    anyAlive(fighters, "A") &&
+    anyAlive(fighters, "B")
+  ) {
     round += 1;
 
     const order = fighters
       .filter((f) => f.hp > 0)
       .sort(
         (a, b) =>
-          b.combatant.stats.speed - a.combatant.stats.speed || b.tiebreak - a.tiebreak,
+          b.combatant.stats.speed - a.combatant.stats.speed ||
+          b.tiebreak - a.tiebreak,
       );
 
     for (const actor of order) {
@@ -88,11 +93,15 @@ export function simulateBattle(
       );
       const crit = rng.chance(critChance);
       const critMult = crit ? CRIT_MULTIPLIER : 1;
-      const elementMult = elementMultiplier(actor.combatant.element, target.combatant.element);
+      const elementMult = elementMultiplier(
+        actor.combatant.element,
+        target.combatant.element,
+      );
       const variance = rng.float(0.9, 1.1);
 
       const raw =
-        (actor.combatant.stats.attack * 1.2 - target.combatant.stats.defense * 0.6) *
+        (actor.combatant.stats.attack * 1.2 -
+          target.combatant.stats.defense * 0.6) *
         elementMult *
         critMult *
         variance;
@@ -141,9 +150,15 @@ function anyAlive(fighters: readonly Fighter[], side: BattleSide): boolean {
 }
 
 function sumHp(fighters: readonly Fighter[], side: BattleSide): number {
-  return fighters.reduce((total, f) => (f.side === side ? total + f.hp : total), 0);
+  return fighters.reduce(
+    (total, f) => (f.side === side ? total + f.hp : total),
+    0,
+  );
 }
 
 function sumMaxHp(fighters: readonly Fighter[], side: BattleSide): number {
-  return fighters.reduce((total, f) => (f.side === side ? total + f.maxHp : total), 0);
+  return fighters.reduce(
+    (total, f) => (f.side === side ? total + f.maxHp : total),
+    0,
+  );
 }

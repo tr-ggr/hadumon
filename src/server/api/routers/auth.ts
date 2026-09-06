@@ -8,7 +8,11 @@ import { creatures } from "~/server/db/schema/creatures";
 import { users } from "~/server/db/schema/auth";
 import { STARTER_SPECIES_IDS } from "~/server/game/species";
 import { getWallet } from "~/server/game/wallet";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 
 export const usernameSchema = z
   .string()
@@ -21,61 +25,81 @@ export const passwordSchema = z
   .min(8, "Password must be at least 8 characters")
   .max(128);
 
-const credentials = z.object({ username: usernameSchema, password: passwordSchema });
+const credentials = z.object({
+  username: usernameSchema,
+  password: passwordSchema,
+});
 
 export const authRouter = createTRPCRouter({
-  signup: publicProcedure.input(credentials).mutation(async ({ ctx, input }) => {
-    const username = input.username.toLowerCase();
+  signup: publicProcedure
+    .input(credentials)
+    .mutation(async ({ ctx, input }) => {
+      const username = input.username.toLowerCase();
 
-    const existing = await ctx.db
-      .select({ id: users.id })
-      .from(users)
-      .where(eq(users.username, username))
-      .limit(1);
+      const existing = await ctx.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.username, username))
+        .limit(1);
 
-    if (existing.length > 0) {
-      throw new TRPCError({ code: "CONFLICT", message: "That username is taken" });
-    }
-
-    const passwordHash = await hashPassword(input.password);
-
-    const userId = await ctx.db.transaction(async (tx) => {
-      const [created] = await tx
-        .insert(users)
-        .values({ username, displayName: input.username, passwordHash })
-        .returning({ id: users.id });
-
-      if (!created) {
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Signup failed" });
+      if (existing.length > 0) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "That username is taken",
+        });
       }
 
-      await tx.insert(creatures).values(
-        STARTER_SPECIES_IDS.map((speciesId) => ({
-          ownerId: created.id,
-          speciesId,
-          obtainedVia: "starter" as const,
-        })),
-      );
+      const passwordHash = await hashPassword(input.password);
 
-      return created.id;
-    });
+      const userId = await ctx.db.transaction(async (tx) => {
+        const [created] = await tx
+          .insert(users)
+          .values({ username, displayName: input.username, passwordHash })
+          .returning({ id: users.id });
 
-    await createSession(userId);
-    return { id: userId, username };
-  }),
+        if (!created) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Signup failed",
+          });
+        }
+
+        await tx.insert(creatures).values(
+          STARTER_SPECIES_IDS.map((speciesId) => ({
+            ownerId: created.id,
+            speciesId,
+            obtainedVia: "starter" as const,
+          })),
+        );
+
+        return created.id;
+      });
+
+      await createSession(userId);
+      return { id: userId, username };
+    }),
 
   login: publicProcedure.input(credentials).mutation(async ({ ctx, input }) => {
     const username = input.username.toLowerCase();
 
     const [user] = await ctx.db
-      .select({ id: users.id, username: users.username, passwordHash: users.passwordHash })
+      .select({
+        id: users.id,
+        username: users.username,
+        passwordHash: users.passwordHash,
+      })
       .from(users)
       .where(eq(users.username, username))
       .limit(1);
 
-    const ok = user ? await verifyPassword(input.password, user.passwordHash) : false;
+    const ok = user
+      ? await verifyPassword(input.password, user.passwordHash)
+      : false;
     if (!user || !ok) {
-      throw new TRPCError({ code: "UNAUTHORIZED", message: "Wrong username or password" });
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Wrong username or password",
+      });
     }
 
     await createSession(user.id);

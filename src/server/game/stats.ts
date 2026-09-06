@@ -8,11 +8,17 @@ export const MAX_LEVEL = 50;
  * Effective stat at level `level` with `upgradeTier` upgrades:
  * `floor(base * rarityMult * (1 + 0.06 * (level - 1)) * (1 + 0.05 * upgradeTier))`
  */
-export function effectiveStats(species: Species, level: number, upgradeTier = 0): Stats {
+export function effectiveStats(
+  species: Species,
+  level: number,
+  upgradeTier = 0,
+): Stats {
   const lvl = clamp(Math.floor(level), 1, MAX_LEVEL);
   const tier = Math.max(0, Math.floor(upgradeTier));
   const mult =
-    RARITY_MULTIPLIER[species.rarity] * (1 + 0.06 * (lvl - 1)) * (1 + 0.05 * tier);
+    RARITY_MULTIPLIER[species.rarity] *
+    (1 + 0.06 * (lvl - 1)) *
+    (1 + 0.05 * tier);
 
   return {
     hp: Math.floor(species.baseStats.hp * mult),
@@ -53,7 +59,8 @@ export function applyXp(
   gained: number,
 ): XpProgress {
   let level = clamp(Math.floor(creature.level), 1, MAX_LEVEL);
-  let xp = Math.max(0, Math.floor(creature.xp)) + Math.max(0, Math.floor(gained));
+  let xp =
+    Math.max(0, Math.floor(creature.xp)) + Math.max(0, Math.floor(gained));
   let leveledUp = false;
 
   while (level < MAX_LEVEL) {

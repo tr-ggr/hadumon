@@ -54,7 +54,7 @@ export function UpgradeButton({
 
   if (!cost) {
     return (
-      <p className={`text-pixel text-[8px] text-gold uppercase ${className}`}>
+      <p className={`text-pixel text-gold text-[8px] uppercase ${className}`}>
         Tier {MAX_UPGRADE_TIER} · maxed
       </p>
     );
@@ -63,7 +63,9 @@ export function UpgradeButton({
   const wallet = me.data?.wallet;
   const shards = wallet?.materials[cost.materials.element] ?? 0;
   const affordable =
-    wallet !== undefined && wallet.gold >= cost.gold && shards >= cost.materials.amount;
+    wallet !== undefined &&
+    wallet.gold >= cost.gold &&
+    shards >= cost.materials.amount;
 
   return (
     <div className={`w-full space-y-1 ${className}`}>
@@ -83,19 +85,29 @@ export function UpgradeButton({
       </Button>
 
       {hideCost ? null : (
-        <p className="text-center text-base leading-tight text-ink-dim">
-          <span className={wallet && wallet.gold >= cost.gold ? "text-gold" : "text-pink"}>
+        <p className="text-ink-dim text-center text-base leading-tight">
+          <span
+            className={
+              wallet && wallet.gold >= cost.gold ? "text-gold" : "text-pink"
+            }
+          >
             {cost.gold} G
           </span>
-          <span className="mx-1 text-edge">·</span>
-          <span className={shards >= cost.materials.amount ? "text-mint" : "text-pink"}>
+          <span className="text-edge mx-1">·</span>
+          <span
+            className={
+              shards >= cost.materials.amount ? "text-mint" : "text-pink"
+            }
+          >
             {cost.materials.amount} {MATERIAL_LABELS[cost.materials.element]}
           </span>
         </p>
       )}
 
       {upgrade.error ? (
-        <p className="text-center text-base text-pink">{upgrade.error.message}</p>
+        <p className="text-pink text-center text-base">
+          {upgrade.error.message}
+        </p>
       ) : null}
     </div>
   );

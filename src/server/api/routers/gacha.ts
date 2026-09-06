@@ -5,7 +5,10 @@ import { and, desc, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { toCreatureView, type CreatureView } from "~/server/api/routers/creatures";
+import {
+  toCreatureView,
+  type CreatureView,
+} from "~/server/api/routers/creatures";
 import type { Transaction } from "~/server/db";
 import { creatures } from "~/server/db/schema/creatures";
 import { pityCounters, pulls } from "~/server/db/schema/gacha";
@@ -92,7 +95,9 @@ export const gachaRouter = createTRPCRouter({
       multiCost: banner.multiCost,
       multiCount: banner.multiCount,
       rates: bannerRates(banner),
-      featured: banner.featuredSpeciesId ? getSpecies(banner.featuredSpeciesId) : null,
+      featured: banner.featuredSpeciesId
+        ? getSpecies(banner.featuredSpeciesId)
+        : null,
       pityCount: pityByBanner.get(banner.id) ?? 0,
       pityThreshold: banner.pityThreshold,
     }));
@@ -167,7 +172,11 @@ export const gachaRouter = createTRPCRouter({
 
         await tx
           .insert(pityCounters)
-          .values({ userId: ctx.user.id, bannerId: banner.id, count: rolled.pityCount })
+          .values({
+            userId: ctx.user.id,
+            bannerId: banner.id,
+            count: rolled.pityCount,
+          })
           .onConflictDoUpdate({
             target: [pityCounters.userId, pityCounters.bannerId],
             set: { count: rolled.pityCount, updatedAt: sql`now()` },
@@ -189,7 +198,11 @@ export const gachaRouter = createTRPCRouter({
 
   /** Most recent summons, newest first. */
   history: protectedProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+    .input(
+      z
+        .object({ limit: z.number().int().min(1).max(100).default(50) })
+        .optional(),
+    )
     .query(async ({ ctx, input }): Promise<HistoryEntry[]> => {
       const rows = await ctx.db
         .select()
@@ -234,7 +247,9 @@ async function lockPityCount(
   const [row] = await tx
     .select({ count: pityCounters.count })
     .from(pityCounters)
-    .where(and(eq(pityCounters.userId, userId), eq(pityCounters.bannerId, banner)))
+    .where(
+      and(eq(pityCounters.userId, userId), eq(pityCounters.bannerId, banner)),
+    )
     .for("update")
     .limit(1);
 

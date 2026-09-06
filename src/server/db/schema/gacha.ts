@@ -36,7 +36,9 @@ export const pulls = createTable(
     creatureId: uuid("creature_id").references(() => creatures.id, {
       onDelete: "set null",
     }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [
     index("pulls_user_seq_idx").on(t.userId, t.seq),
@@ -56,14 +58,19 @@ export const pityCounters = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     bannerId: text("banner_id").notNull(),
     count: integer("count").notNull().default(0),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [primaryKey({ columns: [t.userId, t.bannerId] })],
 );
 
 export const pullsRelations = relations(pulls, ({ one }) => ({
   user: one(users, { fields: [pulls.userId], references: [users.id] }),
-  creature: one(creatures, { fields: [pulls.creatureId], references: [creatures.id] }),
+  creature: one(creatures, {
+    fields: [pulls.creatureId],
+    references: [creatures.id],
+  }),
 }));
 
 export const pityCountersRelations = relations(pityCounters, ({ one }) => ({

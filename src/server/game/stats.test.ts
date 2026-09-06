@@ -20,7 +20,8 @@ describe("effectiveStats", () => {
     const species = getSpecies("umbralynx"); // rare → 1.35
     const level = 12;
     const tier = 3;
-    const mult = RARITY_MULTIPLIER.rare * (1 + 0.06 * (level - 1)) * (1 + 0.05 * tier);
+    const mult =
+      RARITY_MULTIPLIER.rare * (1 + 0.06 * (level - 1)) * (1 + 0.05 * tier);
     expect(effectiveStats(species, level, tier).attack).toBe(
       Math.floor(species.baseStats.attack * mult),
     );
@@ -37,7 +38,9 @@ describe("effectiveStats", () => {
 
   it("clamps the level to the cap", () => {
     const species = getSpecies("mistpaw");
-    expect(effectiveStats(species, 999, 0)).toEqual(effectiveStats(species, MAX_LEVEL, 0));
+    expect(effectiveStats(species, 999, 0)).toEqual(
+      effectiveStats(species, MAX_LEVEL, 0),
+    );
   });
 });
 
@@ -55,8 +58,12 @@ describe("power", () => {
   });
 
   it("ranks rarer species above commons at the same level", () => {
-    const common = creaturePower(effectiveStats(getSpecies("flameclaw"), 20, 0));
-    const legendary = creaturePower(effectiveStats(getSpecies("aurelynx"), 20, 0));
+    const common = creaturePower(
+      effectiveStats(getSpecies("flameclaw"), 20, 0),
+    );
+    const legendary = creaturePower(
+      effectiveStats(getSpecies("aurelynx"), 20, 0),
+    );
     expect(legendary).toBeGreaterThan(common);
   });
 });

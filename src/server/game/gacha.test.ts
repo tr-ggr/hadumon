@@ -71,7 +71,9 @@ describe("banners", () => {
     expect(isoWeek(week)).toBe(2);
     expect(isoWeek(nextWeek)).toBe(3);
     expect(featuredSpeciesFor(sameWeek).id).toBe(featuredSpeciesFor(week).id);
-    expect(featuredSpeciesFor(nextWeek).id).not.toBe(featuredSpeciesFor(week).id);
+    expect(featuredSpeciesFor(nextWeek).id).not.toBe(
+      featuredSpeciesFor(week).id,
+    );
   });
 
   it("reports rates as percentages", () => {
@@ -244,7 +246,10 @@ describe("rollMulti", () => {
       const rng = createRng(`pity-count-${batch}`);
       const start = batch % 45;
       const { results, pityCount } = rollMulti(banner, rng, start);
-      const expected = results.reduce((acc, r) => nextPityCount(r.rarity, acc), start);
+      const expected = results.reduce(
+        (acc, r) => nextPityCount(r.rarity, acc),
+        start,
+      );
       expect(pityCount).toBe(expected);
     }
   });

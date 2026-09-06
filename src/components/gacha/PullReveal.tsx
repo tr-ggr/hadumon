@@ -39,7 +39,7 @@ export function PullReveal({
   return (
     <section className="panel space-y-3 p-3">
       <header className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-pixel text-[10px] text-gold sm:text-xs">
+        <h2 className="text-pixel text-gold text-[10px] sm:text-xs">
           {summary.results.length > 1
             ? `${summary.results.length} cats answered the call`
             : "A cat answered the call"}
@@ -47,7 +47,7 @@ export function PullReveal({
         <button
           type="button"
           onClick={done ? onDismiss : () => undefined}
-          className="text-pixel text-[8px] text-ink-dim uppercase underline disabled:opacity-40"
+          className="text-pixel text-ink-dim text-[8px] uppercase underline disabled:opacity-40"
           disabled={!done}
         >
           {done ? "Close" : "Revealing…"}
@@ -66,16 +66,20 @@ export function PullReveal({
         ))}
       </ul>
 
-      <p className="text-base text-ink-dim">
-        Spent <span className="text-mint tabular-nums">◆ {summary.cost}</span> · best pull{" "}
-        <span className="text-ink">{best}</span> · pity{" "}
+      <p className="text-ink-dim text-base">
+        Spent <span className="text-mint tabular-nums">◆ {summary.cost}</span> ·
+        best pull <span className="text-ink">{best}</span> · pity{" "}
         <span className="text-ink tabular-nums">
           {summary.pityCount}/{summary.pityThreshold}
         </span>
       </p>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="primary" onClick={onSummonAgain} disabled={busy || !done}>
+        <Button
+          variant="primary"
+          onClick={onSummonAgain}
+          disabled={busy || !done}
+        >
           Summon again
         </Button>
         <Link href="/collection">
@@ -109,16 +113,16 @@ function RevealCard({ result }: { result: PullResultView }) {
       />
 
       {result.isNew ? (
-        <span className="text-pixel absolute top-1 left-1 z-10 border border-navy bg-pink px-1 text-[7px] text-navy uppercase">
+        <span className="text-pixel border-navy bg-pink text-navy absolute top-1 left-1 z-10 border px-1 text-[7px] uppercase">
           New!
         </span>
       ) : null}
       {result.wasPity ? (
-        <span className="text-pixel absolute top-1 right-1 z-10 border border-navy bg-gold px-1 text-[7px] text-navy uppercase">
+        <span className="text-pixel border-navy bg-gold text-navy absolute top-1 right-1 z-10 border px-1 text-[7px] uppercase">
           Pity
         </span>
       ) : result.guaranteed ? (
-        <span className="text-pixel absolute top-1 right-1 z-10 border border-navy bg-mint px-1 text-[7px] text-navy uppercase">
+        <span className="text-pixel border-navy bg-mint text-navy absolute top-1 right-1 z-10 border px-1 text-[7px] uppercase">
           Gtd
         </span>
       ) : null}
@@ -128,17 +132,21 @@ function RevealCard({ result }: { result: PullResultView }) {
         size={72}
         className={isLegendary ? "gacha-legendary" : undefined}
       />
-      <h3 className="text-pixel w-full truncate text-[9px] text-ink">
+      <h3 className="text-pixel text-ink w-full truncate text-[9px]">
         {result.species.name}
       </h3>
       <div className="flex flex-wrap items-center justify-center gap-1">
         <ElementBadge element={result.species.element} />
         <RarityBadge rarity={result.rarity} />
       </div>
-      <p className="text-base leading-none text-ink-dim">
-        Lv <span className="text-ink tabular-nums">{result.creature.level}</span>
-        <span className="mx-1 text-edge">|</span>
-        <span className="text-gold tabular-nums">{result.creature.power}</span> PWR
+      <p className="text-ink-dim text-base leading-none">
+        Lv{" "}
+        <span className="text-ink tabular-nums">{result.creature.level}</span>
+        <span className="text-edge mx-1">|</span>
+        <span className="text-gold tabular-nums">
+          {result.creature.power}
+        </span>{" "}
+        PWR
       </p>
     </article>
   );
@@ -150,7 +158,7 @@ function PendingCard({ index }: { index: number }) {
       className="panel-flat flex aspect-[3/4] items-center justify-center p-2"
       aria-hidden
     >
-      <span className="text-pixel text-[10px] text-edge">?</span>
+      <span className="text-pixel text-edge text-[10px]">?</span>
       <span className="sr-only">Summon {index + 1} revealing</span>
     </div>
   );

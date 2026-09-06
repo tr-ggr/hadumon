@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { ELEMENTS, elementMultiplier, isElement, materialName } from "./elements";
+import {
+  ELEMENTS,
+  elementMultiplier,
+  isElement,
+  materialName,
+} from "./elements";
 
 describe("elementMultiplier", () => {
   it("gives +25% around the wheel", () => {

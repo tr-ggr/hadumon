@@ -14,7 +14,7 @@ export function PityBar({ count, threshold, className = "" }: PityBarProps) {
   return (
     <div className={`space-y-1 ${className}`}>
       <div className="flex items-baseline justify-between gap-2">
-        <span className="text-pixel text-[8px] tracking-wide text-ink-dim uppercase">
+        <span className="text-pixel text-ink-dim text-[8px] tracking-wide uppercase">
           Pity
         </span>
         <span
@@ -24,7 +24,7 @@ export function PityBar({ count, threshold, className = "" }: PityBarProps) {
         </span>
       </div>
       <div
-        className="h-2 w-full border-2 border-edge bg-navy-deep"
+        className="border-edge bg-navy-deep h-2 w-full border-2"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={safeThreshold}
@@ -36,7 +36,7 @@ export function PityBar({ count, threshold, className = "" }: PityBarProps) {
           style={{ width: `${pct}%` }}
         />
       </div>
-      <p className="text-base leading-tight text-ink-dim">
+      <p className="text-ink-dim text-base leading-tight">
         {ready
           ? "Next summon is a guaranteed Epic or better!"
           : `${safeThreshold - clamped} more summons until a guaranteed Epic+.`}

@@ -18,7 +18,11 @@ import { env } from "~/env";
 import { hashPassword } from "~/server/auth/password";
 import { ELEMENTS } from "~/server/game/elements";
 import { createRng } from "~/server/game/rng";
-import { SPECIES_LIST, STARTER_SPECIES_IDS, type Rarity } from "~/server/game/species";
+import {
+  SPECIES_LIST,
+  STARTER_SPECIES_IDS,
+  type Rarity,
+} from "~/server/game/species";
 import * as schema from "./schema";
 import { creatures, materials, users, type NewCreature } from "./schema";
 
@@ -88,7 +92,11 @@ async function ensureAccount(db: Db, account: SeedAccount): Promise<string> {
   return created.id;
 }
 
-async function ensureRoster(db: Db, account: SeedAccount, userId: string): Promise<number> {
+async function ensureRoster(
+  db: Db,
+  account: SeedAccount,
+  userId: string,
+): Promise<number> {
   const owned = await db
     .select({ id: creatures.id })
     .from(creatures)
@@ -118,7 +126,11 @@ async function ensureRoster(db: Db, account: SeedAccount, userId: string): Promi
   return rows.length;
 }
 
-async function ensureMaterials(db: Db, userId: string, amount: number): Promise<void> {
+async function ensureMaterials(
+  db: Db,
+  userId: string,
+  amount: number,
+): Promise<void> {
   await db
     .insert(materials)
     .values(ELEMENTS.map((element) => ({ userId, element, amount })))

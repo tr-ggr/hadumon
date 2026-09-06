@@ -45,7 +45,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
       ...shape,
       data: {
         ...shape.data,
-        zodError: error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError:
+          error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
     };
   },
@@ -77,7 +78,10 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 /** Requires a valid session; `ctx.user` is non-null inside. */
 export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: "You must be signed in" });
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be signed in",
+    });
   }
   return next({ ctx: { ...ctx, user: ctx.user } });
 });

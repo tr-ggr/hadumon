@@ -24,7 +24,9 @@ export interface UpgradeCost {
 export function upgradeCost(creature: UpgradableCreature): UpgradeCost {
   const tier = normalizeTier(creature.upgradeTier);
   if (tier >= MAX_UPGRADE_TIER) {
-    throw new Error(`Creature is already at the maximum upgrade tier (${MAX_UPGRADE_TIER})`);
+    throw new Error(
+      `Creature is already at the maximum upgrade tier (${MAX_UPGRADE_TIER})`,
+    );
   }
 
   const step = tier + 1;
@@ -42,7 +44,9 @@ export function canUpgrade(creature: UpgradableCreature): boolean {
 }
 
 /** `upgradeCost` unless the creature is maxed, in which case `null`. */
-export function nextUpgradeCost(creature: UpgradableCreature): UpgradeCost | null {
+export function nextUpgradeCost(
+  creature: UpgradableCreature,
+): UpgradeCost | null {
   return canUpgrade(creature) ? upgradeCost(creature) : null;
 }
 

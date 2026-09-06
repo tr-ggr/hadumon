@@ -1,5 +1,12 @@
 import { relations } from "drizzle-orm";
-import { boolean, index, integer, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  integer,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 import { createTable } from "./_table";
 
@@ -18,7 +25,9 @@ export const users = createTable(
     gems: integer("gems").notNull().default(1000),
     rating: integer("rating").notNull().default(1000),
     isBot: boolean("is_bot").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [index("users_rating_idx").on(t.rating)],
 );
@@ -32,7 +41,9 @@ export const sessions = createTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
   },
   (t) => [index("sessions_user_id_idx").on(t.userId)],
 );

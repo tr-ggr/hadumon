@@ -69,36 +69,39 @@ export function SquadPicker({
         <button
           type="button"
           onClick={onCancel}
-          className="text-pixel text-[8px] text-ink-dim underline hover:text-ink"
+          className="text-pixel text-ink-dim hover:text-ink text-[8px] underline"
         >
           Change zone
         </button>
       }
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-base text-ink-dim">
+        <p className="text-ink-dim text-base">
           Squad power{" "}
-          <span className={`tabular-nums ${underpowered ? "text-pink" : "text-mint"}`}>
+          <span
+            className={`tabular-nums ${underpowered ? "text-pink" : "text-mint"}`}
+          >
             {power}
           </span>{" "}
-          / rec. <span className="tabular-nums text-ink">{zone.recommendedPower}</span>
+          / rec.{" "}
+          <span className="text-ink tabular-nums">{zone.recommendedPower}</span>
         </p>
-        <p className="text-pixel text-[8px] text-ink-dim uppercase">
+        <p className="text-pixel text-ink-dim text-[8px] uppercase">
           {picked.length}/{MAX_SQUAD} picked
         </p>
       </div>
 
       {underpowered && picked.length > 0 ? (
-        <p className="mb-3 border-2 border-pink bg-panel-hi p-2 text-base text-pink">
-          This squad is below {zone.name}&apos;s recommended power — expect losses. Three
-          losses in a row force a retreat.
+        <p className="border-pink bg-panel-hi text-pink mb-3 border-2 p-2 text-base">
+          This squad is below {zone.name}&apos;s recommended power — expect
+          losses. Three losses in a row force a retreat.
         </p>
       ) : null}
 
       {loading ? (
-        <p className="text-lg text-ink-dim">Rounding up idle cats…</p>
+        <p className="text-ink-dim text-lg">Rounding up idle cats…</p>
       ) : creatures.length === 0 ? (
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           No idle cats.{" "}
           <Link href="/summon" className="text-mint underline">
             Summon some
@@ -118,7 +121,11 @@ export function SquadPicker({
                   disabled={!selected && picked.length >= MAX_SQUAD}
                   className="block w-full text-left disabled:opacity-40"
                 >
-                  <CreatureCard creature={creature} spriteSize={56} selected={selected} />
+                  <CreatureCard
+                    creature={creature}
+                    spriteSize={56}
+                    selected={selected}
+                  />
                 </button>
               </li>
             );
@@ -127,7 +134,7 @@ export function SquadPicker({
       )}
 
       {start.error ? (
-        <p className="mt-3 text-base text-pink">{start.error.message}</p>
+        <p className="text-pink mt-3 text-base">{start.error.message}</p>
       ) : null}
 
       <div className="mt-3 flex flex-wrap gap-2">

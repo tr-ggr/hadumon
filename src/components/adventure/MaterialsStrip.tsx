@@ -33,12 +33,15 @@ export function MaterialsStrip({
             <span
               aria-hidden
               className="block h-3 w-3 border"
-              style={{ backgroundColor: palette["1"], borderColor: palette["2"] }}
+              style={{
+                backgroundColor: palette["1"],
+                borderColor: palette["2"],
+              }}
             />
-            <span className="text-pixel text-[6px] text-ink-dim uppercase">
+            <span className="text-pixel text-ink-dim text-[6px] uppercase">
               {ELEMENT_LABELS[element]}
             </span>
-            <span className="text-base leading-none tabular-nums text-ink">
+            <span className="text-ink text-base leading-none tabular-nums">
               {materials?.[element] ?? 0}
             </span>
           </li>

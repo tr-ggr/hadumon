@@ -37,7 +37,9 @@ export const expeditions = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     zoneId: text("zone_id").notNull(),
     status: expeditionStatusEnum("status").notNull().default("active"),
-    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+    startedAt: timestamp("started_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     lastClaimedAt: timestamp("last_claimed_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -100,16 +102,19 @@ export const expeditionsRelations = relations(expeditions, ({ one, many }) => ({
   members: many(expeditionMembers),
 }));
 
-export const expeditionMembersRelations = relations(expeditionMembers, ({ one }) => ({
-  expedition: one(expeditions, {
-    fields: [expeditionMembers.expeditionId],
-    references: [expeditions.id],
+export const expeditionMembersRelations = relations(
+  expeditionMembers,
+  ({ one }) => ({
+    expedition: one(expeditions, {
+      fields: [expeditionMembers.expeditionId],
+      references: [expeditions.id],
+    }),
+    creature: one(creatures, {
+      fields: [expeditionMembers.creatureId],
+      references: [creatures.id],
+    }),
   }),
-  creature: one(creatures, {
-    fields: [expeditionMembers.creatureId],
-    references: [creatures.id],
-  }),
-}));
+);
 
 export const zoneProgressRelations = relations(zoneProgress, ({ one }) => ({
   user: one(users, { fields: [zoneProgress.userId], references: [users.id] }),

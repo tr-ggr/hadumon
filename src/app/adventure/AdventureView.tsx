@@ -27,13 +27,16 @@ export function AdventureView() {
     refetchInterval: 60_000,
   });
   const zones = api.adventure.zones.useQuery(undefined, { retry: false });
-  const idleCats = api.adventure.availableSquad.useQuery(undefined, { retry: false });
+  const idleCats = api.adventure.availableSquad.useQuery(undefined, {
+    retry: false,
+  });
 
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [summary, setSummary] = useState<ClaimSummaryView | null>(null);
 
   const active = current.data ?? null;
-  const selectedZone = zones.data?.zones.find((zone) => zone.id === selectedZoneId) ?? null;
+  const selectedZone =
+    zones.data?.zones.find((zone) => zone.id === selectedZoneId) ?? null;
   const idlePower = (idleCats.data ?? [])
     .slice(0, 4)
     .reduce((total, creature) => total + creature.power, 0);
@@ -41,7 +44,7 @@ export function AdventureView() {
   if (!me.isLoading && !me.data) {
     return (
       <Panel title="Adventure">
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           <Link href="/login" className="text-mint underline">
             Sign in
           </Link>{" "}
@@ -56,7 +59,7 @@ export function AdventureView() {
       <Panel
         title="Materials"
         action={
-          <span className="text-pixel text-[8px] text-ink-dim">
+          <span className="text-pixel text-ink-dim text-[8px]">
             {me.data?.wallet.gold.toLocaleString() ?? "—"} G
           </span>
         }
@@ -69,7 +72,7 @@ export function AdventureView() {
 
       {current.isLoading ? (
         <Panel title="Adventure">
-          <p className="text-lg text-ink-dim">Checking the trail…</p>
+          <p className="text-ink-dim text-lg">Checking the trail…</p>
         </Panel>
       ) : active ? (
         <ExpeditionPanel current={active} onSettled={setSummary} />
@@ -85,25 +88,29 @@ export function AdventureView() {
         <Panel
           title="Choose a zone"
           action={
-            <span className="text-pixel text-[8px] text-ink-dim">
+            <span className="text-pixel text-ink-dim text-[8px]">
               {idleCats.data?.length ?? 0} idle cats
             </span>
           }
         >
           {zones.isLoading ? (
-            <p className="text-lg text-ink-dim">Unrolling the map…</p>
+            <p className="text-ink-dim text-lg">Unrolling the map…</p>
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {(zones.data?.zones ?? []).map((zone) => (
                 <li key={zone.id}>
-                  <ZoneCard zone={zone} power={idlePower} onSelect={setSelectedZoneId} />
+                  <ZoneCard
+                    zone={zone}
+                    power={idlePower}
+                    onSelect={setSelectedZoneId}
+                  />
                 </li>
               ))}
             </ul>
           )}
-          <p className="mt-3 text-base text-ink-dim">
-            Expeditions resolve one encounter a minute and bank up to 8 hours while you are
-            away. Three losses in a row force a retreat.
+          <p className="text-ink-dim mt-3 text-base">
+            Expeditions resolve one encounter a minute and bank up to 8 hours
+            while you are away. Three losses in a row force a retreat.
           </p>
         </Panel>
       )}

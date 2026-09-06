@@ -43,14 +43,16 @@ describe("upgradeCost", () => {
   });
 
   it("refuses to price an upgrade past the tier cap", () => {
-    expect(() => upgradeCost({ ...flame, upgradeTier: MAX_UPGRADE_TIER })).toThrow(
-      /maximum upgrade tier/,
-    );
+    expect(() =>
+      upgradeCost({ ...flame, upgradeTier: MAX_UPGRADE_TIER }),
+    ).toThrow(/maximum upgrade tier/);
     expect(() => upgradeCost({ ...flame, upgradeTier: 99 })).toThrow();
   });
 
   it("treats negative or fractional tiers as their clamped floor", () => {
-    expect(upgradeCost({ ...flame, upgradeTier: -3 })).toEqual(upgradeCost(flame));
+    expect(upgradeCost({ ...flame, upgradeTier: -3 })).toEqual(
+      upgradeCost(flame),
+    );
     expect(upgradeCost({ ...flame, upgradeTier: 2.9 })).toEqual(
       upgradeCost({ ...flame, upgradeTier: 2 }),
     );
@@ -67,6 +69,8 @@ describe("canUpgrade / nextUpgradeCost", () => {
 
   it("stops at the cap", () => {
     expect(canUpgrade({ ...flame, upgradeTier: MAX_UPGRADE_TIER })).toBe(false);
-    expect(nextUpgradeCost({ ...flame, upgradeTier: MAX_UPGRADE_TIER })).toBeNull();
+    expect(
+      nextUpgradeCost({ ...flame, upgradeTier: MAX_UPGRADE_TIER }),
+    ).toBeNull();
   });
 });

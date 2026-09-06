@@ -145,7 +145,8 @@ async function readBalance(tx: DbOrTx, userId: string): Promise<WalletBalance> {
     .where(eq(users.id, userId))
     .limit(1);
 
-  if (!row) throw new TRPCError({ code: "NOT_FOUND", message: "Trainer not found" });
+  if (!row)
+    throw new TRPCError({ code: "NOT_FOUND", message: "Trainer not found" });
   return row;
 }
 

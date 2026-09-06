@@ -7,7 +7,9 @@ const legend = new Set<string>(SPRITE_LEGEND);
 
 describe("archetype sprite maps", () => {
   it("has a map for every archetype and nothing else", () => {
-    expect(Object.keys(ARCHETYPE_SPRITES).sort()).toEqual([...ARCHETYPES].sort());
+    expect(Object.keys(ARCHETYPE_SPRITES).sort()).toEqual(
+      [...ARCHETYPES].sort(),
+    );
   });
 
   for (const archetype of ARCHETYPES) {
@@ -26,13 +28,18 @@ describe("archetype sprite maps", () => {
       it("only uses legend characters", () => {
         rows.forEach((row, y) => {
           for (const char of row) {
-            expect(legend.has(char), `${archetype}[${y}] has "${char}"`).toBe(true);
+            expect(legend.has(char), `${archetype}[${y}] has "${char}"`).toBe(
+              true,
+            );
           }
         });
       });
 
       it("draws a substantial figure that sits on the baseline", () => {
-        const opaque = rows.join("").split("").filter((c) => c !== ".").length;
+        const opaque = rows
+          .join("")
+          .split("")
+          .filter((c) => c !== ".").length;
         expect(opaque).toBeGreaterThan(200);
         // The last row stays clear so every sprite shares the same baseline.
         expect(rows[SPRITE_SIZE - 1]).toBe(".".repeat(SPRITE_SIZE));

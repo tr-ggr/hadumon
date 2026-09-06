@@ -13,12 +13,17 @@ export interface FightLogProps {
 }
 
 /** Collapsible "watch last fight" turn-by-turn replay of the final encounter. */
-export function FightLog({ fight, defaultOpen = false, className = "" }: FightLogProps) {
+export function FightLog({
+  fight,
+  defaultOpen = false,
+  className = "",
+}: FightLogProps) {
   const [open, setOpen] = useState(defaultOpen);
 
   const names = useMemo(() => {
     const map = new Map<string, { name: string; ally: boolean }>();
-    for (const cat of fight.squad) map.set(cat.id, { name: cat.name, ally: true });
+    for (const cat of fight.squad)
+      map.set(cat.id, { name: cat.name, ally: true });
     for (const foe of fight.enemies) {
       map.set(foe.id, { name: `${foe.name} Lv${foe.level}`, ally: false });
     }
@@ -31,7 +36,7 @@ export function FightLog({ fight, defaultOpen = false, className = "" }: FightLo
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="text-pixel flex w-full items-center justify-between gap-2 bg-panel-hi px-2 py-2 text-[9px] text-gold"
+        className="text-pixel bg-panel-hi text-gold flex w-full items-center justify-between gap-2 px-2 py-2 text-[9px]"
       >
         <span>{open ? "▾" : "▸"} Watch last fight</span>
         <span className={fight.won ? "text-mint" : "text-pink"}>
@@ -43,17 +48,17 @@ export function FightLog({ fight, defaultOpen = false, className = "" }: FightLo
         <div className="space-y-2 p-2">
           <div className="flex flex-wrap items-center gap-2">
             <Side label="Your squad" members={fight.squad} tone="text-mint" />
-            <span className="text-pixel text-[8px] text-ink-dim">VS</span>
+            <span className="text-pixel text-ink-dim text-[8px]">VS</span>
             <Side label="Wild cats" members={fight.enemies} tone="text-pink" />
           </div>
 
-          <ol className="max-h-64 space-y-0.5 overflow-y-auto border-2 border-edge bg-navy-deep p-2">
+          <ol className="border-edge bg-navy-deep max-h-64 space-y-0.5 overflow-y-auto border-2 p-2">
             {fight.events.map((event, i) => {
               const actor = names.get(event.actorId);
               const target = names.get(event.targetId);
               return (
-                <li key={i} className="text-base leading-tight text-ink-dim">
-                  <span className="text-pixel mr-1 text-[7px] text-edge">
+                <li key={i} className="text-ink-dim text-base leading-tight">
+                  <span className="text-pixel text-edge mr-1 text-[7px]">
                     R{event.round}
                   </span>
                   <span className={actor?.ally ? "text-mint" : "text-pink"}>
@@ -63,14 +68,17 @@ export function FightLog({ fight, defaultOpen = false, className = "" }: FightLo
                   <span className={target?.ally ? "text-mint" : "text-pink"}>
                     {target?.name ?? event.targetId}
                   </span>{" "}
-                  for <span className="text-gold tabular-nums">{event.damage}</span>
-                  {event.crit ? <span className="text-gold"> CRIT!</span> : null}
+                  for{" "}
+                  <span className="text-gold tabular-nums">{event.damage}</span>
+                  {event.crit ? (
+                    <span className="text-gold"> CRIT!</span>
+                  ) : null}
                   {event.ko ? <span className="text-pink"> — KO</span> : null}
                 </li>
               );
             })}
             {fight.events.length === 0 ? (
-              <li className="text-base text-ink-dim">No blows landed.</li>
+              <li className="text-ink-dim text-base">No blows landed.</li>
             ) : null}
           </ol>
         </div>

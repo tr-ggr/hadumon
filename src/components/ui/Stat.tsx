@@ -15,13 +15,20 @@ const TONES = {
   sky: "text-sky",
 } as const;
 
-export function Stat({ label, value, tone = "default", className = "" }: StatProps) {
+export function Stat({
+  label,
+  value,
+  tone = "default",
+  className = "",
+}: StatProps) {
   return (
     <div className={`flex items-baseline justify-between gap-2 ${className}`}>
-      <span className="text-pixel text-[8px] tracking-wide text-ink-dim uppercase">
+      <span className="text-pixel text-ink-dim text-[8px] tracking-wide uppercase">
         {label}
       </span>
-      <span className={`text-xl leading-none tabular-nums ${TONES[tone]}`}>{value}</span>
+      <span className={`text-xl leading-none tabular-nums ${TONES[tone]}`}>
+        {value}
+      </span>
     </div>
   );
 }

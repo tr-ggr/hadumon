@@ -5,13 +5,22 @@ import { useEffect, useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
-import { Button, ElementBadge, Panel, RarityBadge, Stat } from "~/components/ui";
+import {
+  Button,
+  ElementBadge,
+  Panel,
+  RarityBadge,
+  Stat,
+} from "~/components/ui";
 import { ARCHETYPE_LABELS } from "~/server/game/species";
 import { api } from "~/trpc/react";
 
 const STATUS_COPY: Record<string, { label: string; hint: string }> = {
   idle: { label: "Idle", hint: "Ready for expeditions, listings and trades." },
-  expedition: { label: "On expedition", hint: "Currently away on an adventure." },
+  expedition: {
+    label: "On expedition",
+    hint: "Currently away on an adventure.",
+  },
   listed: { label: "Listed", hint: "For sale on the marketplace." },
   trading: { label: "In trade", hint: "Reserved by a pending trade offer." },
 };
@@ -36,7 +45,7 @@ export function CreatureDetail({ id }: { id: string }) {
   if (creature.isLoading) {
     return (
       <Panel title="Loading">
-        <p className="text-lg text-ink-dim">Fetching cat…</p>
+        <p className="text-ink-dim text-lg">Fetching cat…</p>
       </Panel>
     );
   }
@@ -44,7 +53,7 @@ export function CreatureDetail({ id }: { id: string }) {
   if (creature.error ?? !creature.data) {
     return (
       <Panel title="Not found">
-        <p className="text-lg text-ink-dim">
+        <p className="text-ink-dim text-lg">
           That cat is not in your collection.{" "}
           <Link href="/collection" className="text-mint underline">
             Back to Collection
@@ -62,14 +71,17 @@ export function CreatureDetail({ id }: { id: string }) {
 
   return (
     <div className="space-y-4">
-      <Link href="/collection" className="text-pixel text-[9px] text-mint underline">
+      <Link
+        href="/collection"
+        className="text-pixel text-mint text-[9px] underline"
+      >
         ← Collection
       </Link>
 
       <Panel title={c.name}>
         <div className="flex flex-col gap-4 sm:flex-row">
           <div
-            className="mx-auto flex shrink-0 items-center justify-center border-2 bg-navy-deep p-2"
+            className="bg-navy-deep mx-auto flex shrink-0 items-center justify-center border-2 p-2"
             style={{
               borderColor: palette.outline,
               boxShadow: `0 0 10px ${palette.glow}`,
@@ -82,29 +94,34 @@ export function CreatureDetail({ id }: { id: string }) {
             <div className="flex flex-wrap items-center gap-2">
               <ElementBadge element={c.species.element} />
               <RarityBadge rarity={c.species.rarity} />
-              <span className="text-pixel border border-edge px-1 py-0.5 text-[8px] text-ink-dim uppercase">
+              <span className="text-pixel border-edge text-ink-dim border px-1 py-0.5 text-[8px] uppercase">
                 {ARCHETYPE_LABELS[c.species.archetype]}
               </span>
             </div>
 
-            <p className="text-lg text-ink-dim italic">{c.species.flavor}</p>
+            <p className="text-ink-dim text-lg italic">{c.species.flavor}</p>
 
             <div>
               <div className="flex items-baseline justify-between">
-                <span className="text-pixel text-[8px] text-ink-dim uppercase">
+                <span className="text-pixel text-ink-dim text-[8px] uppercase">
                   Level {c.level}
                 </span>
-                <span className="text-base tabular-nums text-ink-dim">
+                <span className="text-ink-dim text-base tabular-nums">
                   {c.xp} / {c.xpToNext} XP
                 </span>
               </div>
-              <div className="mt-1 h-3 w-full border-2 border-edge bg-navy-deep">
-                <div className="h-full bg-mint" style={{ width: `${xpPct}%` }} />
+              <div className="border-edge bg-navy-deep mt-1 h-3 w-full border-2">
+                <div
+                  className="bg-mint h-full"
+                  style={{ width: `${xpPct}%` }}
+                />
               </div>
             </div>
 
-            <p className="text-base text-ink-dim">
-              <span className="text-pixel text-[8px] text-gold uppercase">{status.label}</span>{" "}
+            <p className="text-ink-dim text-base">
+              <span className="text-pixel text-gold text-[8px] uppercase">
+                {status.label}
+              </span>{" "}
               — {status.hint}
             </p>
           </div>
@@ -120,7 +137,7 @@ export function CreatureDetail({ id }: { id: string }) {
           <Stat label="Speed" value={c.stats.speed} />
           <Stat label="Affinity" value={c.stats.affinity} tone="sky" />
         </div>
-        <p className="mt-3 text-base text-ink-dim">
+        <p className="text-ink-dim mt-3 text-base">
           Upgrade tier {c.upgradeTier} · obtained via {c.obtainedVia}
         </p>
       </Panel>
@@ -135,7 +152,7 @@ export function CreatureDetail({ id }: { id: string }) {
           }}
         >
           <label className="min-w-0 flex-1 space-y-1">
-            <span className="text-pixel text-[8px] text-ink-dim uppercase">
+            <span className="text-pixel text-ink-dim text-[8px] uppercase">
               Call it something else
             </span>
             <input
@@ -146,16 +163,16 @@ export function CreatureDetail({ id }: { id: string }) {
               }}
               maxLength={20}
               placeholder={c.species.name}
-              className="w-full border-2 border-edge bg-navy-deep px-2 py-1.5 text-lg text-ink outline-none focus:border-gold"
+              className="border-edge bg-navy-deep text-ink focus:border-gold w-full border-2 px-2 py-1.5 text-lg outline-none"
             />
           </label>
           <Button type="submit" disabled={rename.isPending}>
             {rename.isPending ? "…" : "Save"}
           </Button>
         </form>
-        {saved ? <p className="mt-2 text-base text-mint">Saved.</p> : null}
+        {saved ? <p className="text-mint mt-2 text-base">Saved.</p> : null}
         {rename.error ? (
-          <p className="mt-2 text-base text-pink">{rename.error.message}</p>
+          <p className="text-pink mt-2 text-base">{rename.error.message}</p>
         ) : null}
       </Panel>
     </div>

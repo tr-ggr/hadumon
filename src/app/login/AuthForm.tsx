@@ -73,15 +73,17 @@ export function AuthForm({ mode }: AuthFormProps) {
         <PixelSprite speciesId="voltwhisk" size={56} />
       </div>
 
-      <h1 className="text-pixel text-lg text-gold">
+      <h1 className="text-pixel text-gold text-lg">
         Hadu<span className="text-pink">Mon</span>
       </h1>
 
       <form onSubmit={submit} className="panel w-full max-w-sm space-y-3 p-4">
-        <h2 className="text-pixel text-[10px] text-mint">{copy.heading}</h2>
+        <h2 className="text-pixel text-mint text-[10px]">{copy.heading}</h2>
 
         <label className="block space-y-1">
-          <span className="text-pixel text-[8px] text-ink-dim uppercase">Username</span>
+          <span className="text-pixel text-ink-dim text-[8px] uppercase">
+            Username
+          </span>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
@@ -91,25 +93,32 @@ export function AuthForm({ mode }: AuthFormProps) {
             required
             minLength={3}
             maxLength={20}
-            className="w-full border-2 border-edge bg-navy-deep px-2 py-1.5 text-lg text-ink outline-none focus:border-gold"
+            className="border-edge bg-navy-deep text-ink focus:border-gold w-full border-2 px-2 py-1.5 text-lg outline-none"
           />
         </label>
 
         <label className="block space-y-1">
-          <span className="text-pixel text-[8px] text-ink-dim uppercase">Password</span>
+          <span className="text-pixel text-ink-dim text-[8px] uppercase">
+            Password
+          </span>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
+            autoComplete={
+              mode === "login" ? "current-password" : "new-password"
+            }
             required
             minLength={8}
-            className="w-full border-2 border-edge bg-navy-deep px-2 py-1.5 text-lg text-ink outline-none focus:border-gold"
+            className="border-edge bg-navy-deep text-ink focus:border-gold w-full border-2 px-2 py-1.5 text-lg outline-none"
           />
         </label>
 
         {error ? (
-          <p role="alert" className="border-2 border-pink bg-navy-deep px-2 py-1 text-base text-pink">
+          <p
+            role="alert"
+            className="border-pink bg-navy-deep text-pink border-2 px-2 py-1 text-base"
+          >
             {error}
           </p>
         ) : null}
@@ -118,7 +127,7 @@ export function AuthForm({ mode }: AuthFormProps) {
           {pending ? "…" : copy.submit}
         </Button>
 
-        <p className="text-base text-ink-dim">
+        <p className="text-ink-dim text-base">
           {copy.switchText}{" "}
           <Link href={copy.switchHref} className="text-mint underline">
             {copy.switchLabel}
@@ -126,7 +135,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </p>
       </form>
 
-      <p className="max-w-sm text-center text-base text-ink-dim">{copy.hint}</p>
+      <p className="text-ink-dim max-w-sm text-center text-base">{copy.hint}</p>
     </main>
   );
 }

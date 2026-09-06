@@ -24,11 +24,15 @@ describe("ZONES", () => {
   it("uses a 60 second encounter interval and rising rewards everywhere", () => {
     for (const zone of ZONES) {
       expect(zone.encounterIntervalSec).toBe(ENCOUNTER_INTERVAL_SEC);
-      expect(zone.enemyLevelRange[0]).toBeLessThanOrEqual(zone.enemyLevelRange[1]);
+      expect(zone.enemyLevelRange[0]).toBeLessThanOrEqual(
+        zone.enemyLevelRange[1],
+      );
     }
     for (let i = 1; i < ZONES.length; i++) {
       expect(ZONES[i]!.rewardMult).toBeGreaterThan(ZONES[i - 1]!.rewardMult);
-      expect(ZONES[i]!.recommendedPower).toBeGreaterThan(ZONES[i - 1]!.recommendedPower);
+      expect(ZONES[i]!.recommendedPower).toBeGreaterThan(
+        ZONES[i - 1]!.recommendedPower,
+      );
     }
   });
 
@@ -59,7 +63,9 @@ describe("isZoneUnlocked", () => {
 
   it("locks the next zone until the win threshold is met", () => {
     expect(isZoneUnlocked(second, {})).toBe(false);
-    expect(isZoneUnlocked(second, { [first.id]: WINS_TO_UNLOCK - 1 })).toBe(false);
+    expect(isZoneUnlocked(second, { [first.id]: WINS_TO_UNLOCK - 1 })).toBe(
+      false,
+    );
     expect(isZoneUnlocked(second, { [first.id]: WINS_TO_UNLOCK })).toBe(true);
     expect(isZoneUnlocked(second, { [first.id]: 999 })).toBe(true);
   });

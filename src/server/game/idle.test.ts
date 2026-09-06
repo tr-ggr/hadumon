@@ -44,7 +44,13 @@ const T0 = new Date(Date.UTC(2026, 0, 1, 0, 0, 0));
 const at = (seconds: number) => new Date(T0.getTime() + seconds * 1000);
 
 function expedition(overrides: Partial<ExpeditionState> = {}): ExpeditionState {
-  return { id: "exp-test", lastClaimedAt: T0, winCount: 0, lossCount: 0, ...overrides };
+  return {
+    id: "exp-test",
+    lastClaimedAt: T0,
+    winCount: 0,
+    lossCount: 0,
+    ...overrides,
+  };
 }
 
 describe("creditedSeconds / pendingEncounters", () => {
@@ -55,8 +61,12 @@ describe("creditedSeconds / pendingEncounters", () => {
   });
 
   it("caps at the 8 hour offline limit", () => {
-    expect(creditedSeconds(T0, at(MAX_OFFLINE_SECONDS + 10_000))).toBe(MAX_OFFLINE_SECONDS);
-    expect(pendingEncounters(T0, at(24 * 3600), MEADOWS)).toBe(MAX_OFFLINE_SECONDS / 60);
+    expect(creditedSeconds(T0, at(MAX_OFFLINE_SECONDS + 10_000))).toBe(
+      MAX_OFFLINE_SECONDS,
+    );
+    expect(pendingEncounters(T0, at(24 * 3600), MEADOWS)).toBe(
+      MAX_OFFLINE_SECONDS / 60,
+    );
     expect(pendingEncounters(T0, at(24 * 3600), MEADOWS)).toBe(480);
   });
 
@@ -69,7 +79,9 @@ describe("creditedSeconds / pendingEncounters", () => {
   it("counts down to the next encounter, and stops once capped", () => {
     expect(secondsToNextEncounter(T0, at(0), MEADOWS)).toBe(60);
     expect(secondsToNextEncounter(T0, at(23), MEADOWS)).toBe(37);
-    expect(secondsToNextEncounter(T0, at(MAX_OFFLINE_SECONDS + 5), MEADOWS)).toBe(0);
+    expect(
+      secondsToNextEncounter(T0, at(MAX_OFFLINE_SECONDS + 5), MEADOWS),
+    ).toBe(0);
   });
 });
 
@@ -101,7 +113,12 @@ describe("resolveExpedition — encounter counts", () => {
 
     expect(result.encounters).toHaveLength(0);
     expect(result.secondsConsumed).toBe(0);
-    expect(result.rewards).toMatchObject({ gold: 0, gems: 0, xp: 0, materials: 0 });
+    expect(result.rewards).toMatchObject({
+      gold: 0,
+      gems: 0,
+      xp: 0,
+      materials: 0,
+    });
     expect(result.latestFight).toBeNull();
   });
 
@@ -207,7 +224,9 @@ describe("resolveExpedition — retreat", () => {
 
 describe("resolveExpedition — rewards", () => {
   it("pays 10 * tier * rewardMult gold per win, a quarter of that per loss", () => {
-    const winGold = Math.floor(BASE_GOLD_PER_WIN * MEADOWS.tier * MEADOWS.rewardMult);
+    const winGold = Math.floor(
+      BASE_GOLD_PER_WIN * MEADOWS.tier * MEADOWS.rewardMult,
+    );
     const result = resolveExpedition({
       expedition: expedition(),
       squad: strongSquad,
@@ -219,13 +238,15 @@ describe("resolveExpedition — rewards", () => {
       result.winCount * winGold +
       result.lossCount * Math.floor(winGold * LOSS_GOLD_FRACTION);
     expect(result.rewards.gold).toBe(expected);
-    expect(
-      result.encounters.reduce((total, e) => total + e.gold, 0),
-    ).toBe(result.rewards.gold);
+    expect(result.encounters.reduce((total, e) => total + e.gold, 0)).toBe(
+      result.rewards.gold,
+    );
   });
 
   it("scales gold with zone tier and reward multiplier", () => {
-    const meadowsGold = Math.floor(BASE_GOLD_PER_WIN * MEADOWS.tier * MEADOWS.rewardMult);
+    const meadowsGold = Math.floor(
+      BASE_GOLD_PER_WIN * MEADOWS.tier * MEADOWS.rewardMult,
+    );
     const catacombsGold = Math.floor(
       BASE_GOLD_PER_WIN * CATACOMBS.tier * CATACOMBS.rewardMult,
     );
@@ -249,7 +270,9 @@ describe("resolveExpedition — rewards", () => {
     });
     expect(win.encounters[0]!.won).toBe(true);
     expect(win.encounters[0]!.xp).toBe(BASE_XP_PER_WIN * MEADOWS.tier);
-    const share = Math.floor((BASE_XP_PER_WIN * MEADOWS.tier) / strongSquad.length);
+    const share = Math.floor(
+      (BASE_XP_PER_WIN * MEADOWS.tier) / strongSquad.length,
+    );
     for (const gain of win.xpPerCreature) expect(gain.xpGained).toBe(share);
 
     const loss = resolveExpedition({
@@ -259,7 +282,9 @@ describe("resolveExpedition — rewards", () => {
       now: at(60),
     });
     expect(loss.encounters[0]!.won).toBe(false);
-    expect(loss.encounters[0]!.xp).toBe(Math.floor((BASE_XP_PER_WIN * CATACOMBS.tier) / 2));
+    expect(loss.encounters[0]!.xp).toBe(
+      Math.floor((BASE_XP_PER_WIN * CATACOMBS.tier) / 2),
+    );
   });
 
   it("drops gems and zone-element shards on wins only", () => {
@@ -275,7 +300,9 @@ describe("resolveExpedition — rewards", () => {
     expect(result.rewards.materials).toBeGreaterThan(0);
     // ~10% gems / ~35% shards over 200 wins — generous bounds, still meaningful.
     expect(result.rewards.gems).toBeLessThan(result.encounters.length * 0.3);
-    expect(result.rewards.materials).toBeLessThan(result.encounters.length * 0.6);
+    expect(result.rewards.materials).toBeLessThan(
+      result.encounters.length * 0.6,
+    );
     expect(result.rewards.materials).toBeGreaterThan(result.rewards.gems);
 
     const losses = resolveExpedition({
