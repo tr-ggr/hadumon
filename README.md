@@ -68,7 +68,7 @@ Requires Node 20+, pnpm and a local Postgres you can connect to as `postgres`.
 
 ```bash
 createdb -h localhost -U postgres hadumon   # once
-cp .env.example .env                        # DATABASE_URL + SESSION_SECRET
+cp .env.example .env                        # DATABASE_URL
 pnpm install
 pnpm db:push                                # create the tables
 pnpm db:seed                                # bots, demo account, ladder, listings
