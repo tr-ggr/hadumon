@@ -5,11 +5,13 @@
   "type": "module",
   "scripts": {
     "build": "NODE_ENV=production next build",
+    "vercel-build": "drizzle-kit migrate && next build",
     "check": "next lint && tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx --env-file=.env src/server/db/seed.ts",
+    "db:seed:prod": "tsx --env-file=.env.production.local src/server/db/seed.ts",
     "db:seed:battle": "tsx --env-file=.env src/server/db/seed-battle.ts",
     "db:seed:market": "tsx --env-file=.env src/server/db/seed-market.ts",
     "db:studio": "drizzle-kit studio",

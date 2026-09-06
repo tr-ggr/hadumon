@@ -225,7 +225,11 @@ export async function seed(db: Db): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const conn = postgres(env.DATABASE_URL, { max: 1 });
+  // Prefer Neon's direct connection when the integration provides one, so
+  // this single long-lived connection does not sit on the pooler.
+  const conn = postgres(process.env.DATABASE_URL_UNPOOLED ?? env.DATABASE_URL, {
+    max: 1,
+  });
   const db = drizzle(conn, { schema });
 
   console.log("Seeding HaduMon…");

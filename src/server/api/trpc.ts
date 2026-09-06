@@ -41,8 +41,17 @@ export type TRPCContext = Awaited<ReturnType<typeof createTRPCContext>>;
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
+    // Unexpected errors (database failures, bugs) carry internals such as
+    // raw SQL in their message. Log the real error and send a generic one.
+    if (error.code === "INTERNAL_SERVER_ERROR") {
+      console.error("[TRPC] internal error", error.cause ?? error);
+    }
     return {
       ...shape,
+      message:
+        error.code === "INTERNAL_SERVER_ERROR"
+          ? "Something went wrong. Please try again."
+          : shape.message,
       data: {
         ...shape.data,
         zodError:

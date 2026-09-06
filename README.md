@@ -44,8 +44,8 @@ assets, everything is inline SVG.
 
 Captured headlessly at 375px (mobile) and 1280px (desktop) from the seeded `demo` account.
 
-| Login | Dashboard | Summon | Adventure | Battle | Market |
-| --- | --- | --- | --- | --- | --- |
+| Login                                         | Dashboard                                        | Summon                                          | Adventure                                             | Battle                                          | Market                                          |
+| --------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
 | ![Login](public/screenshots/mobile-login.png) | ![Dashboard](public/screenshots/mobile-home.png) | ![Summon](public/screenshots/mobile-summon.png) | ![Adventure](public/screenshots/mobile-adventure.png) | ![Battle](public/screenshots/mobile-battle.png) | ![Market](public/screenshots/mobile-market.png) |
 
 ![Desktop dashboard](public/screenshots/desktop-home.png)
@@ -78,9 +78,9 @@ pnpm dev
 Then open <http://localhost:3000>. Sign up for a fresh account (1000 gems,
 500 gold, 3 starter cats) or sign in with a seeded trainer:
 
-| Account | Password |
-| --- | --- |
-| `demo` | `demo1234` |
+| Account                         | Password     |
+| ------------------------------- | ------------ |
+| `demo`                          | `demo1234`   |
 | `whiskerbot_1` … `whiskerbot_5` | `botpass123` |
 
 `pnpm db:seed` is idempotent — it tops accounts back up instead of duplicating
@@ -93,24 +93,48 @@ dropdb -h localhost -U postgres hadumon && createdb -h localhost -U postgres had
 pnpm db:push && pnpm db:seed
 ```
 
+## Deploying
+
+Production (Vercel + Neon) does not use `db:push`. The `vercel-build` script
+runs `drizzle-kit migrate` before `next build`, so every deploy applies the
+SQL migrations committed under `drizzle/` (over `DATABASE_URL_UNPOOLED` when
+the Neon integration provides it). After changing the schema:
+
+```bash
+pnpm db:generate        # writes drizzle/NNNN_*.sql + meta/
+git add drizzle && git commit
+```
+
+The demo and bot accounts are not created on deploy; seed them once by hand:
+
+```bash
+vercel env pull .env.production.local --environment production
+pnpm db:seed:prod
+```
+
+`.env.production.local` is git-ignored. The seed is idempotent, so re-running
+it after a schema change is safe.
+
 ## Scripts
 
-| Script | What it does |
-| --- | --- |
-| `pnpm dev` | Next dev server (turbo) |
-| `pnpm build` / `pnpm start` | Production build / serve |
-| `pnpm check` | `next lint` + `tsc --noEmit` — the gate before any commit |
-| `pnpm typecheck` | Type check only |
-| `pnpm lint` / `pnpm lint:fix` | ESLint |
-| `pnpm test` | Vitest, single run |
-| `pnpm test:watch` | Vitest in watch mode |
-| `pnpm db:push` | Push the Drizzle schema to Postgres |
-| `pnpm db:generate` / `pnpm db:migrate` | SQL migrations, if you prefer them |
-| `pnpm db:seed` | Full idempotent dev seed (accounts → defense teams → listings) |
-| `pnpm db:seed:battle` | Re-seed bot defense teams only |
-| `pnpm db:seed:market` | Top the marketplace back up to 10 listings |
-| `pnpm db:studio` | Drizzle Studio |
-| `pnpm format:write` / `pnpm format:check` | Prettier |
+| Script                                    | What it does                                                    |
+| ----------------------------------------- | --------------------------------------------------------------- |
+| `pnpm dev`                                | Next dev server (turbo)                                         |
+| `pnpm build` / `pnpm start`               | Production build / serve                                        |
+| `pnpm check`                              | `next lint` + `tsc --noEmit` — the gate before any commit       |
+| `pnpm typecheck`                          | Type check only                                                 |
+| `pnpm lint` / `pnpm lint:fix`             | ESLint                                                          |
+| `pnpm test`                               | Vitest, single run                                              |
+| `pnpm test:watch`                         | Vitest in watch mode                                            |
+| `pnpm db:push`                            | Push the Drizzle schema straight to your local Postgres         |
+| `pnpm db:generate`                        | Write a SQL migration in `drizzle/` from the schema (commit it) |
+| `pnpm db:migrate`                         | Apply committed migrations (runs automatically on Vercel)       |
+| `pnpm db:seed`                            | Full idempotent dev seed (accounts → defense teams → listings)  |
+| `pnpm db:seed:prod`                       | Same seed against `.env.production.local` (see Deploying)       |
+| `pnpm db:seed:battle`                     | Re-seed bot defense teams only                                  |
+| `pnpm db:seed:market`                     | Top the marketplace back up to 10 listings                      |
+| `pnpm db:studio`                          | Drizzle Studio                                                  |
+| `pnpm format:write` / `pnpm format:check` | Prettier                                                        |
 
 ## Layout
 
@@ -162,14 +186,14 @@ idle cat can never be spent twice.
 
 The MVP was built in six sprints — see [`sprints/`](./sprints):
 
-| # | Sprint |
-| --- | --- |
-| 01 | [Foundation](./sprints/01-foundation.md) — auth, schema, species, sprites, battle engine, shell, collection |
-| 02 | [Gacha Summoning Hub](./sprints/02-gacha.md) |
-| 03 | [Idle Adventure Mode](./sprints/03-idle-adventure.md) |
-| 04 | [Async PvP & Ranked Ladder](./sprints/04-pvp-ladder.md) |
-| 05 | [Trading Post & Marketplace](./sprints/05-marketplace.md) |
-| 06 | [Integration & Polish](./sprints/06-integration-polish.md) |
+| #   | Sprint                                                                                                      |
+| --- | ----------------------------------------------------------------------------------------------------------- |
+| 01  | [Foundation](./sprints/01-foundation.md) — auth, schema, species, sprites, battle engine, shell, collection |
+| 02  | [Gacha Summoning Hub](./sprints/02-gacha.md)                                                                |
+| 03  | [Idle Adventure Mode](./sprints/03-idle-adventure.md)                                                       |
+| 04  | [Async PvP & Ranked Ladder](./sprints/04-pvp-ladder.md)                                                     |
+| 05  | [Trading Post & Marketplace](./sprints/05-marketplace.md)                                                   |
+| 06  | [Integration & Polish](./sprints/06-integration-polish.md)                                                  |
 
 [`sprints/00-overview.md`](./sprints/00-overview.md) holds the shared domain
 rules (element wheel, rarity multipliers, stat formulas, currencies, ownership
