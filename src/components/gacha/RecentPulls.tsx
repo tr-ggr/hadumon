@@ -60,6 +60,7 @@ export function RecentPulls({
               <time
                 className="text-ink-dim shrink-0 text-base leading-none tabular-nums"
                 dateTime={entry.createdAt.toISOString()}
+                suppressHydrationWarning
               >
                 {timeAgo(entry.createdAt)}
               </time>

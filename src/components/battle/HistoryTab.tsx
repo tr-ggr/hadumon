@@ -90,7 +90,10 @@ function HistoryRow({
           {battle.reward.gems > 0 ? (
             <span className="text-mint"> · +{battle.reward.gems}◆</span>
           ) : null}
-          <span className="text-ink-dim"> · {timeAgo(battle.createdAt)}</span>
+          <span className="text-ink-dim" suppressHydrationWarning>
+            {" "}
+            · {timeAgo(battle.createdAt)}
+          </span>
         </p>
       </div>
 
