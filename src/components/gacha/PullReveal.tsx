@@ -6,11 +6,33 @@ import { useEffect, useState } from "react";
 import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Button, ElementBadge, RarityBadge } from "~/components/ui";
-import { RARITY_LABELS } from "~/server/game/species";
+import { RARITY_LABELS, type Rarity, type Species } from "~/server/game/species";
 import type { RouterOutputs } from "~/trpc/react";
 
 export type PullSummary = RouterOutputs["gacha"]["pull"];
 export type PullResultView = PullSummary["results"][number];
+
+/**
+ * Everything a {@link RevealCard} needs to draw one pull. Deliberately smaller
+ * than the tRPC `PullResultView` so the landing page's client-side demo summon
+ * can render the same card without a server round-trip.
+ */
+export interface RevealCardResult {
+  speciesId: string;
+  species: Species;
+  rarity: Rarity;
+  /** The pity counter forced this pull to epic+. */
+  wasPity: boolean;
+  /** The ten-summon rare+ guarantee produced this pull. */
+  guaranteed: boolean;
+  /** First time this trainer has owned this species. */
+  isNew: boolean;
+  creature: { level: number; power: number };
+}
+
+export interface RevealCardProps {
+  result: RevealCardResult;
+}
 
 /** Delay between two cards appearing. */
 export const REVEAL_STAGGER_MS = 150;
@@ -90,7 +112,8 @@ export function PullReveal({
   );
 }
 
-function RevealCard({ result }: { result: PullResultView }) {
+/** One revealed cat: rarity-framed, flashing, with its level and power. */
+export function RevealCard({ result }: RevealCardProps) {
   const palette = RARITY_PALETTES[result.rarity];
   const isLegendary = result.rarity === "legendary";
   const isSpecial = isLegendary || result.rarity === "epic";

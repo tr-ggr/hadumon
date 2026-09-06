@@ -39,19 +39,21 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const onSuccess = async () => {
+  // A new trainer lands on the Summoning Hub with their 1000 gems; a returning
+  // one lands on the dashboard.
+  const onSuccess = async (destination: string) => {
     setError(null);
     await utils.invalidate();
-    router.push("/");
+    router.push(destination);
     router.refresh();
   };
 
   const login = api.auth.login.useMutation({
-    onSuccess,
+    onSuccess: () => onSuccess("/"),
     onError: (e) => setError(e.message),
   });
   const signup = api.auth.signup.useMutation({
-    onSuccess,
+    onSuccess: () => onSuccess("/summon"),
     onError: (e) => setError(e.message),
   });
 

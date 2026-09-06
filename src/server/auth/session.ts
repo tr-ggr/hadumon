@@ -3,6 +3,7 @@ import "server-only";
 import { randomBytes } from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
+import { cache } from "react";
 
 import { db } from "~/server/db";
 import { sessions, users, type User } from "~/server/db/schema/auth";
@@ -69,10 +70,16 @@ export async function getSessionToken(): Promise<string | undefined> {
   return store.get(SESSION_COOKIE)?.value;
 }
 
-/** Resolves the signed-in trainer for the current request, if any. */
-export async function getCurrentUser(): Promise<SessionUser | null> {
-  return validateSession(await getSessionToken());
-}
+/**
+ * Resolves the signed-in trainer for the current request, if any.
+ *
+ * Wrapped in React `cache()` so the layout and the page share one lookup per
+ * request instead of hitting the sessions table twice.
+ */
+export const getCurrentUser = cache(
+  async (): Promise<SessionUser | null> =>
+    validateSession(await getSessionToken()),
+);
 
 async function setSessionCookie(token: string, expiresAt: Date): Promise<void> {
   const store = await cookies();

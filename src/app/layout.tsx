@@ -5,6 +5,7 @@ import { Press_Start_2P, VT323 } from "next/font/google";
 
 import { AppShell } from "~/components/AppShell";
 import { ToastProvider } from "~/components/ui";
+import { getCurrentUser } from "~/server/auth/session";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -34,15 +35,18 @@ const body = VT323({
   display: "swap",
 });
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // Signed-out visitors get the landing page, which brings its own chrome.
+  const user = await getCurrentUser();
+
   return (
     <html lang="en" className={`${pixel.variable} ${body.variable}`}>
       <body>
         <TRPCReactProvider>
           <ToastProvider>
-            <AppShell>{children}</AppShell>
+            <AppShell authenticated={user !== null}>{children}</AppShell>
           </ToastProvider>
         </TRPCReactProvider>
       </body>

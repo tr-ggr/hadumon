@@ -91,6 +91,97 @@
   font-family: var(--font-pixel);
 }
 
+/* Landing ------------------------------------------------------------------
+   Stepped motion for the public landing page. Every animation drops its
+   spatial movement under `prefers-reduced-motion` and keeps its meaning. */
+
+/* Two frames only: `steps(2, end)` samples this at 0% and 50%. */
+@keyframes land-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes land-jolt {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(2px, 2px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes land-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes land-tick {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: 100%;
+  }
+}
+
+.land-bob {
+  animation: land-bob 1s steps(2, end) infinite;
+}
+
+.land-jolt {
+  animation: land-jolt 120ms steps(2, end);
+}
+
+.land-reveal {
+  animation: land-reveal 320ms steps(6, end) both;
+}
+
+/* Pre-reveal state. Applied from the hook, never in static markup, so the
+   content stays visible if JavaScript never runs. */
+.land-hidden {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Movement goes; the state change stays. */
+  .land-bob,
+  .land-jolt {
+    animation: none;
+    transform: none;
+  }
+
+  @keyframes land-reveal {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  /* `land-tick` only animates width — nothing spatial to remove. */
+
+  .land-hidden {
+    opacity: 1;
+  }
+}
+
 /* Optional CRT scanline overlay (Sprint 06 may wire a toggle to it). */
 @utility scanlines {
   position: relative;

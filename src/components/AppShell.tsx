@@ -27,11 +27,18 @@ const BARE_ROUTES = ["/login", "/signup"];
 /** localStorage key for the CRT scanline overlay (off by default). */
 const SCANLINE_KEY = "hadumon:scanlines";
 
-export function AppShell({ children }: { children: ReactNode }) {
+export interface AppShellProps {
+  children: ReactNode;
+  /** A session cookie resolved to a trainer on this request. */
+  authenticated: boolean;
+}
+
+export function AppShell({ children, authenticated }: AppShellProps) {
   const pathname = usePathname();
   const [scanlines, setScanlines] = useScanlines();
 
   if (
+    !authenticated ||
     BARE_ROUTES.some(
       (route) => pathname === route || pathname.startsWith(`${route}/`),
     )
