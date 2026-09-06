@@ -3,30 +3,65 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { UpgradeButton } from "~/components/adventure";
 import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import {
   Button,
   ElementBadge,
   Panel,
+  PanelSkeleton,
   RarityBadge,
   Stat,
+  useToast,
 } from "~/components/ui";
+import type { CreatureView } from "~/server/api/routers/creatures";
 import { ARCHETYPE_LABELS } from "~/server/game/species";
 import { api } from "~/trpc/react";
 
-const STATUS_COPY: Record<string, { label: string; hint: string }> = {
-  idle: { label: "Idle", hint: "Ready for expeditions, listings and trades." },
+interface StatusCopy {
+  label: string;
+  hint: string;
+  /** Where the cat currently is, if it is not simply sitting at home. */
+  href: string | null;
+  linkLabel: string;
+  tone: string;
+}
+
+const STATUS_COPY: Record<CreatureView["status"], StatusCopy> = {
+  idle: {
+    label: "Idle",
+    hint: "Ready for expeditions, listings and trades.",
+    href: null,
+    linkLabel: "",
+    tone: "text-mint border-mint",
+  },
   expedition: {
     label: "On expedition",
     hint: "Currently away on an adventure.",
+    href: "/adventure",
+    linkLabel: "View expedition",
+    tone: "text-gold border-gold",
   },
-  listed: { label: "Listed", hint: "For sale on the marketplace." },
-  trading: { label: "In trade", hint: "Reserved by a pending trade offer." },
+  listed: {
+    label: "Listed",
+    hint: "For sale on the marketplace.",
+    href: "/market",
+    linkLabel: "View listing",
+    tone: "text-sky border-sky",
+  },
+  trading: {
+    label: "In trade",
+    hint: "Reserved by a pending trade offer.",
+    href: "/market",
+    linkLabel: "View trade",
+    tone: "text-pink border-pink",
+  },
 };
 
 export function CreatureDetail({ id }: { id: string }) {
   const utils = api.useUtils();
+  const notify = useToast();
   const creature = api.creatures.get.useQuery({ id }, { retry: false });
   const [nickname, setNickname] = useState("");
   const [saved, setSaved] = useState(false);
@@ -36,6 +71,7 @@ export function CreatureDetail({ id }: { id: string }) {
       setSaved(true);
       await utils.creatures.invalidate();
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   useEffect(() => {
@@ -43,11 +79,7 @@ export function CreatureDetail({ id }: { id: string }) {
   }, [creature.data]);
 
   if (creature.isLoading) {
-    return (
-      <Panel title="Loading">
-        <p className="text-ink-dim text-lg">Fetching cat…</p>
-      </Panel>
-    );
+    return <PanelSkeleton title="Loading cat" lines={4} />;
   }
 
   if (creature.error ?? !creature.data) {
@@ -67,7 +99,7 @@ export function CreatureDetail({ id }: { id: string }) {
   const c = creature.data;
   const palette = RARITY_PALETTES[c.species.rarity];
   const xpPct = c.xpToNext > 0 ? Math.min(100, (c.xp / c.xpToNext) * 100) : 100;
-  const status = STATUS_COPY[c.status] ?? { label: c.status, hint: "" };
+  const status = STATUS_COPY[c.status];
 
   return (
     <div className="space-y-4">
@@ -118,12 +150,22 @@ export function CreatureDetail({ id }: { id: string }) {
               </div>
             </div>
 
-            <p className="text-ink-dim text-base">
-              <span className="text-pixel text-gold text-[8px] uppercase">
+            <div className="flex flex-wrap items-center gap-2">
+              <span
+                className={`text-pixel border-2 px-1.5 py-1 text-[8px] uppercase ${status.tone}`}
+              >
                 {status.label}
-              </span>{" "}
-              — {status.hint}
-            </p>
+              </span>
+              <span className="text-ink-dim text-base">{status.hint}</span>
+              {status.href ? (
+                <Link
+                  href={status.href}
+                  className="text-mint text-base underline"
+                >
+                  {status.linkLabel}
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
       </Panel>
@@ -140,6 +182,9 @@ export function CreatureDetail({ id }: { id: string }) {
         <p className="text-ink-dim mt-3 text-base">
           Upgrade tier {c.upgradeTier} · obtained via {c.obtainedVia}
         </p>
+        <div className="mt-2 max-w-xs">
+          <UpgradeButton creature={c} size="md" />
+        </div>
       </Panel>
 
       <Panel title="Nickname">

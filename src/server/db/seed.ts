@@ -15,6 +15,7 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 
 import { env } from "~/env";
+import { isEntryPoint } from "./entry-point";
 import { hashPassword } from "~/server/auth/password";
 import { ELEMENTS } from "~/server/game/elements";
 import { createRng } from "~/server/game/rng";
@@ -25,6 +26,8 @@ import {
 } from "~/server/game/species";
 import * as schema from "./schema";
 import { creatures, materials, users, type NewCreature } from "./schema";
+import { seedDefenseTeams } from "./seed-battle";
+import { seedListings } from "./seed-market";
 
 export const BOT_USERNAMES = [
   "whiskerbot_1",
@@ -207,6 +210,18 @@ export async function seed(db: Db): Promise<void> {
       console.log(`  demo received starters: ${missing.join(", ")}`);
     }
   }
+
+  // Order matters: bots and their rosters must exist before the ladder gets
+  // defense teams, and before any of those cats can be put up for sale.
+  console.log("Seeding bot defense teams…");
+  const teams = await seedDefenseTeams(db);
+  console.log(`  ${teams.length} defense team(s) ready.`);
+
+  console.log("Seeding the trading post…");
+  const market = await seedListings(db);
+  console.log(
+    `  ${market.created} new listing(s), ${market.active} active total.`,
+  );
 }
 
 async function main(): Promise<void> {
@@ -222,8 +237,7 @@ async function main(): Promise<void> {
   }
 }
 
-const invokedDirectly = process.argv[1]?.includes("seed");
-if (invokedDirectly) {
+if (isEntryPoint(import.meta.url)) {
   main().catch((error: unknown) => {
     console.error(error);
     process.exit(1);

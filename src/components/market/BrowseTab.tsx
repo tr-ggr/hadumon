@@ -2,14 +2,13 @@
 
 import { useMemo, useState } from "react";
 
-import { Button, Panel } from "~/components/ui";
+import { Button, CardGridSkeleton, Panel, useToast } from "~/components/ui";
 import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
 import { ELEMENT_LABELS, ELEMENTS, type Element } from "~/server/game/elements";
 import { RARITIES, RARITY_LABELS, type Rarity } from "~/server/game/species";
 import { api } from "~/trpc/react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ListingCard, type Listing } from "./ListingCard";
-import { useToast } from "./Toast";
 
 const SORTS = [
   ["newest", "Newest"],
@@ -151,9 +150,7 @@ export function BrowseTab() {
       </Panel>
 
       {board.isLoading ? (
-        <Panel>
-          <p className="text-ink-dim text-lg">Reading the notice board…</p>
-        </Panel>
+        <CardGridSkeleton count={6} />
       ) : listings.length === 0 ? (
         <Panel>
           <p className="text-ink-dim text-lg">

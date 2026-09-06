@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { Button, CreatureCard, Panel } from "~/components/ui";
+import { Button, CreatureCard, Panel, useToast } from "~/components/ui";
 import {
   MAX_PRICE,
   MIN_PRICE,
@@ -12,7 +12,6 @@ import {
 import { api } from "~/trpc/react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ListingCard } from "./ListingCard";
-import { useToast } from "./Toast";
 
 export function MyListingsTab() {
   const utils = api.useUtils();

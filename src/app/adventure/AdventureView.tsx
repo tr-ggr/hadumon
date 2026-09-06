@@ -11,7 +11,7 @@ import {
   ZoneCard,
   type ClaimSummaryView,
 } from "~/components/adventure";
-import { Panel } from "~/components/ui";
+import { Panel, PanelSkeleton, Skeleton } from "~/components/ui";
 import { api } from "~/trpc/react";
 import { ExpeditionHistory } from "./ExpeditionHistory";
 
@@ -71,9 +71,7 @@ export function AdventureView() {
       </Panel>
 
       {current.isLoading ? (
-        <Panel title="Adventure">
-          <p className="text-ink-dim text-lg">Checking the trail…</p>
-        </Panel>
+        <PanelSkeleton title="Adventure" lines={4} />
       ) : active ? (
         <ExpeditionPanel current={active} onSettled={setSummary} />
       ) : selectedZone ? (
@@ -94,7 +92,10 @@ export function AdventureView() {
           }
         >
           {zones.isLoading ? (
-            <p className="text-ink-dim text-lg">Unrolling the map…</p>
+            <div className="grid gap-2">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
+            </div>
           ) : (
             <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {(zones.data?.zones ?? []).map((zone) => (

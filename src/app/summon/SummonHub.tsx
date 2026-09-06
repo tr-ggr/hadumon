@@ -8,21 +8,20 @@ import {
   GachaAnimations,
   PullReveal,
   RecentPulls,
-  Toast,
   type PullSummary,
 } from "~/components/gacha";
-import { Panel, Stat } from "~/components/ui";
+import { Panel, PanelSkeleton, Stat, useToast } from "~/components/ui";
 import type { BannerId } from "~/server/game/gacha";
 import { api } from "~/trpc/react";
 
 export function SummonHub() {
   const utils = api.useUtils();
+  const notify = useToast();
   const me = api.auth.me.useQuery(undefined, { retry: false });
   const banners = api.gacha.banners.useQuery(undefined, { retry: false });
   const history = api.gacha.history.useQuery({ limit: 20 }, { retry: false });
 
   const [summary, setSummary] = useState<PullSummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [lastPull, setLastPull] = useState<{
     bannerId: BannerId;
     count: 1 | 10;
@@ -33,7 +32,6 @@ export function SummonHub() {
 
   const pull = api.gacha.pull.useMutation({
     onSuccess: async (result) => {
-      setError(null);
       setSummary(result);
       // Refresh the wallet chips in the top bar, plus the roster and ledger.
       await Promise.all([
@@ -45,7 +43,7 @@ export function SummonHub() {
     },
     onError: (err) => {
       setSummary(null);
-      setError(err.message);
+      notify(err.message, "error");
     },
   });
 
@@ -59,14 +57,8 @@ export function SummonHub() {
     [pull],
   );
 
-  const dismissError = useCallback(() => setError(null), []);
-
   if (me.isLoading || banners.isLoading) {
-    return (
-      <Panel title="Summon">
-        <p className="text-ink-dim text-lg">Lighting the summoning candles…</p>
-      </Panel>
-    );
+    return <PanelSkeleton title="Summon" lines={4} />;
   }
 
   if (!me.data) {
@@ -132,10 +124,6 @@ export function SummonHub() {
         loading={history.isLoading}
         limit={20}
       />
-
-      {error ? (
-        <Toast message={error} tone="error" onDismiss={dismissError} />
-      ) : null}
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button, Panel } from "~/components/ui";
+import { Button, Panel, useToast } from "~/components/ui";
 import type { QuotaView, TeamMemberView } from "~/server/api/routers/battle";
 import { MAX_TEAM_SIZE } from "~/server/game/rating";
 import { api } from "~/trpc/react";
@@ -26,6 +26,7 @@ export function DefensePanel({
   loading = false,
 }: DefensePanelProps) {
   const utils = api.useUtils();
+  const notify = useToast();
   const [editing, setEditing] = useState(false);
   const [picked, setPicked] = useState<string[]>(() => team.map((c) => c.id));
 
@@ -41,7 +42,9 @@ export function DefensePanel({
         utils.battle.ladder.invalidate(),
         utils.auth.me.invalidate(),
       ]);
+      notify("Defense team saved.");
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   return (
@@ -97,9 +100,6 @@ export function DefensePanel({
               onChange={setPicked}
               max={MAX_TEAM_SIZE}
             />
-            {save.error ? (
-              <p className="text-pink text-lg">{save.error.message}</p>
-            ) : null}
             <div className="flex gap-2">
               <Button
                 onClick={() => save.mutate({ creatureIds: picked })}

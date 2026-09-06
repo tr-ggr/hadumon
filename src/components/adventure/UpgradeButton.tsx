@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "~/components/ui";
+import { Button, useToast } from "~/components/ui";
 import { MATERIAL_LABELS } from "~/server/game/elements";
 import { nextUpgradeCost, MAX_UPGRADE_TIER } from "~/server/game/progression";
 import { api } from "~/trpc/react";
@@ -37,6 +37,7 @@ export function UpgradeButton({
   hideCost = false,
 }: UpgradeButtonProps) {
   const utils = api.useUtils();
+  const notify = useToast();
   const me = api.auth.me.useQuery(undefined, { retry: false });
 
   const upgrade = api.adventure.upgrade.useMutation({
@@ -47,7 +48,11 @@ export function UpgradeButton({
         utils.creatures.invalidate(),
         utils.adventure.current.invalidate(),
       ]);
+      notify(
+        `${creature.name} upgraded to tier ${result.creature.upgradeTier}!`,
+      );
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   const cost = nextUpgradeCost(creature);
@@ -103,12 +108,6 @@ export function UpgradeButton({
           </span>
         </p>
       )}
-
-      {upgrade.error ? (
-        <p className="text-pink text-center text-base">
-          {upgrade.error.message}
-        </p>
-      ) : null}
     </div>
   );
 }

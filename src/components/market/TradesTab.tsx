@@ -3,12 +3,11 @@
 import { useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button, Panel } from "~/components/ui";
+import { Button, Panel, useToast } from "~/components/ui";
 import { api } from "~/trpc/react";
 import type { RouterOutputs } from "~/trpc/react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { NewTradeFlow } from "./NewTradeFlow";
-import { useToast } from "./Toast";
 
 type Offer = RouterOutputs["market"]["incomingTrades"][number];
 

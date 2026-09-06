@@ -8,6 +8,7 @@ import {
   CreatureCard,
   Panel,
   Stat,
+  useToast,
 } from "~/components/ui";
 import {
   creditedSeconds,
@@ -29,6 +30,7 @@ export interface ExpeditionPanelProps {
 /** The active expedition: live timer, squad, claim/recall, latest fight replay. */
 export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
   const utils = api.useUtils();
+  const notify = useToast();
   const { zone, expedition, squad } = current;
 
   const nowDate = useLiveClock(current.serverNow);
@@ -55,17 +57,19 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
       onSettled(summary);
       await refresh();
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   const recall = api.adventure.recall.useMutation({
     onSuccess: async (summary) => {
       onSettled(summary);
       await refresh();
+      notify("Squad recalled.");
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   const busy = claim.isPending || recall.isPending;
-  const error = claim.error ?? recall.error;
 
   return (
     <div className="space-y-4">
@@ -133,8 +137,6 @@ export function ExpeditionPanel({ current, onSettled }: ExpeditionPanelProps) {
           <Stat label="Gold earned" value={expedition.totalGold} tone="gold" />
           <Stat label="XP earned" value={expedition.totalXp} tone="mint" />
         </div>
-
-        {error ? <p className="text-pink text-base">{error.message}</p> : null}
 
         <div className="flex flex-wrap gap-2">
           <Button

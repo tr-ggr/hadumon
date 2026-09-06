@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 
-import { Button, CreatureCard, Panel } from "~/components/ui";
+import { Button, CreatureCard, Panel, useToast } from "~/components/ui";
 import { api } from "~/trpc/react";
-import { useToast } from "./Toast";
 
 /** Enter a username → pick their cat → pick yours → send the offer. */
 export function NewTradeFlow({ onSent }: { onSent?: () => void }) {

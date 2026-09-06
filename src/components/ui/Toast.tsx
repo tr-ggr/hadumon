@@ -11,23 +11,31 @@ import {
 
 export type ToastTone = "ok" | "error";
 
+export type Notify = (text: string, tone?: ToastTone) => void;
+
 interface ToastItem {
   id: number;
   text: string;
   tone: ToastTone;
 }
 
-type Notify = (text: string, tone?: ToastTone) => void;
+/** How long a toast stays on screen. */
+const TOAST_MS = 4000;
 
-const ToastContext = createContext<Notify>(() => undefined);
+const ToastContext = createContext<Notify | null>(null);
 
-/** Small ephemeral notice stack pinned above the mobile nav bar. */
+/**
+ * App-wide ephemeral notice stack, pinned above the mobile bottom nav.
+ *
+ * Mounted once in the root layout, so every page — summon, adventure, battle,
+ * market — reports mutation errors and successes the same way.
+ */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const notify = useCallback<Notify>((text, tone = "ok") => {
     setToasts((current) => [
-      ...current,
+      ...current.slice(-2),
       { id: Date.now() + Math.random(), text, tone },
     ]);
   }, []);
@@ -35,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={notify}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-16 z-30 flex flex-col items-center gap-2 px-3 md:bottom-4">
+      <div className="pointer-events-none fixed inset-x-0 bottom-16 z-50 flex flex-col items-center gap-2 px-3 md:bottom-4">
         {toasts.map((toast) => (
           <Toast
             key={toast.id}
@@ -50,25 +58,39 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
+/** Returns `notify(text, tone)`. Safe to call outside a provider (no-op). */
 export function useToast(): Notify {
-  return useContext(ToastContext);
+  const notify = useContext(ToastContext);
+  return notify ?? noop;
+}
+
+function noop(): void {
+  // No provider mounted (e.g. an isolated test render) — drop the notice.
 }
 
 function Toast({ toast, onDone }: { toast: ToastItem; onDone: () => void }) {
   useEffect(() => {
-    const timer = setTimeout(onDone, 4000);
+    const timer = setTimeout(onDone, TOAST_MS);
     return () => clearTimeout(timer);
   }, [onDone]);
 
   return (
     <output
-      className={`panel-flat pointer-events-auto max-w-sm px-3 py-2 text-base ${
+      aria-live="polite"
+      className={`panel-flat pointer-events-auto flex max-w-sm items-center gap-3 px-3 py-2 text-base shadow-[4px_4px_0_#000] ${
         toast.tone === "error"
           ? "border-pink text-pink"
           : "border-mint text-mint"
       }`}
     >
-      {toast.text}
+      <span className="leading-tight">{toast.text}</span>
+      <button
+        type="button"
+        onClick={onDone}
+        className="text-pixel shrink-0 text-[8px] uppercase underline"
+      >
+        Ok
+      </button>
     </output>
   );
 }

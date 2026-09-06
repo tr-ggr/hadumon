@@ -40,7 +40,7 @@ export function ConfirmDialog({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="panel w-full max-w-sm animate-none"
+        className="panel max-h-[90dvh] w-full max-w-sm animate-none overflow-y-auto"
       >
         <header className="border-edge bg-panel-hi border-b-2 px-3 py-2">
           <h2 className="text-pixel text-gold text-[10px]">{title}</h2>

@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import {
-  BrowseTab,
-  MyListingsTab,
-  ToastProvider,
-  TradesTab,
-} from "~/components/market";
-import { Panel } from "~/components/ui";
+import { BrowseTab, MyListingsTab, TradesTab } from "~/components/market";
+import { Panel, PanelSkeleton } from "~/components/ui";
 import { api } from "~/trpc/react";
 
 const TABS = [
@@ -28,11 +23,7 @@ export function MarketView() {
   });
 
   if (me.isLoading) {
-    return (
-      <Panel title="Market">
-        <p className="text-ink-dim text-lg">Opening the trading post…</p>
-      </Panel>
-    );
+    return <PanelSkeleton title="Market" lines={4} />;
   }
 
   if (!me.data) {
@@ -51,38 +42,36 @@ export function MarketView() {
   const pending = incoming.data?.length ?? 0;
 
   return (
-    <ToastProvider>
-      <div className="space-y-4">
-        <div
-          role="tablist"
-          aria-label="Market sections"
-          className="grid grid-cols-3 gap-1 sm:inline-flex"
-        >
-          {TABS.map(([value, label]) => (
-            <button
-              key={value}
-              role="tab"
-              type="button"
-              aria-selected={tab === value}
-              onClick={() => setTab(value)}
-              className={`text-pixel border-2 px-2 py-2 text-[9px] ${
-                tab === value
-                  ? "border-gold bg-panel-hi text-gold"
-                  : "border-edge bg-panel text-ink-dim hover:text-ink"
-              }`}
-            >
-              {label}
-              {value === "trades" && pending > 0 ? (
-                <span className="text-pink ml-1">({pending})</span>
-              ) : null}
-            </button>
-          ))}
-        </div>
-
-        {tab === "browse" ? <BrowseTab /> : null}
-        {tab === "listings" ? <MyListingsTab /> : null}
-        {tab === "trades" ? <TradesTab /> : null}
+    <div className="space-y-4">
+      <div
+        role="tablist"
+        aria-label="Market sections"
+        className="grid grid-cols-3 gap-1 sm:inline-flex"
+      >
+        {TABS.map(([value, label]) => (
+          <button
+            key={value}
+            role="tab"
+            type="button"
+            aria-selected={tab === value}
+            onClick={() => setTab(value)}
+            className={`text-pixel border-2 px-2 py-2 text-[9px] ${
+              tab === value
+                ? "border-gold bg-panel-hi text-gold"
+                : "border-edge bg-panel text-ink-dim hover:text-ink"
+            }`}
+          >
+            {label}
+            {value === "trades" && pending > 0 ? (
+              <span className="text-pink ml-1">({pending})</span>
+            ) : null}
+          </button>
+        ))}
       </div>
-    </ToastProvider>
+
+      {tab === "browse" ? <BrowseTab /> : null}
+      {tab === "listings" ? <MyListingsTab /> : null}
+      {tab === "trades" ? <TradesTab /> : null}
+    </div>
   );
 }

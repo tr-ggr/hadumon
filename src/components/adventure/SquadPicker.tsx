@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Button, CreatureCard, Panel } from "~/components/ui";
+import { Button, CreatureCard, Panel, useToast } from "~/components/ui";
 import { api, type RouterOutputs } from "~/trpc/react";
 import type { ZoneCardZone } from "./ZoneCard";
 
@@ -28,6 +28,7 @@ export function SquadPicker({
   onStarted,
 }: SquadPickerProps) {
   const utils = api.useUtils();
+  const notify = useToast();
   const [picked, setPicked] = useState<string[]>([]);
 
   const start = api.adventure.start.useMutation({
@@ -39,7 +40,9 @@ export function SquadPicker({
         utils.auth.me.invalidate(),
       ]);
       onStarted();
+      notify(`Expedition to ${zone.name} started!`);
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   const power = useMemo(
@@ -132,10 +135,6 @@ export function SquadPicker({
           })}
         </ul>
       )}
-
-      {start.error ? (
-        <p className="text-pink mt-3 text-base">{start.error.message}</p>
-      ) : null}
 
       <div className="mt-3 flex flex-wrap gap-2">
         <Button

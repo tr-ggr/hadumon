@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
-import { Panel, CreatureCard } from "~/components/ui";
+import { CardGridSkeleton, Panel, CreatureCard } from "~/components/ui";
 import { ELEMENT_LABELS, ELEMENTS, type Element } from "~/server/game/elements";
 import { RARITIES, RARITY_LABELS, type Rarity } from "~/server/game/species";
 import { api } from "~/trpc/react";
@@ -117,9 +117,7 @@ export function CollectionGrid() {
       </Panel>
 
       {creatures.isLoading ? (
-        <Panel>
-          <p className="text-ink-dim text-lg">Rounding up the cats…</p>
-        </Panel>
+        <CardGridSkeleton count={8} />
       ) : rows.length === 0 ? (
         <Panel>
           <p className="text-ink-dim text-lg">

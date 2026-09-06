@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button } from "~/components/ui";
+import { Button, useToast } from "~/components/ui";
 import type {
   BattleDetailView,
   OpponentView,
@@ -30,6 +30,7 @@ export function AttackModal({
   onResult,
 }: AttackModalProps) {
   const utils = api.useUtils();
+  const notify = useToast();
   const [picked, setPicked] = useState<string[]>(() =>
     defaultIds.length > 0
       ? [...defaultIds].slice(0, MAX_TEAM_SIZE)
@@ -47,6 +48,7 @@ export function AttackModal({
         utils.auth.me.invalidate(),
       ]);
     },
+    onError: (error) => notify(error.message, "error"),
   });
 
   const power = roster
@@ -102,10 +104,6 @@ export function AttackModal({
               max={MAX_TEAM_SIZE}
             />
           </section>
-
-          {attack.error ? (
-            <p className="text-pink text-lg">{attack.error.message}</p>
-          ) : null}
 
           <div className="flex gap-2">
             <Button

@@ -18,4 +18,3 @@ export {
   type RecentPullsProps,
   type HistoryEntryView,
 } from "./RecentPulls";
-export { Toast, type ToastProps } from "./Toast";

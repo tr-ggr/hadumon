@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { api } from "~/trpc/react";
 
@@ -24,8 +24,12 @@ export const NAV_ITEMS: NavItem[] = [
 /** Routes that render without the shell (unauthenticated). */
 const BARE_ROUTES = ["/login", "/signup"];
 
+/** localStorage key for the CRT scanline overlay (off by default). */
+const SCANLINE_KEY = "hadumon:scanlines";
+
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const [scanlines, setScanlines] = useScanlines();
 
   if (
     BARE_ROUTES.some(
@@ -36,8 +40,10 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="bg-navy flex min-h-dvh flex-col">
-      <TopBar />
+    <div
+      className={`bg-navy flex min-h-dvh flex-col ${scanlines ? "scanlines" : ""}`}
+    >
+      <TopBar scanlines={scanlines} onToggleScanlines={setScanlines} />
       <div className="mx-auto flex w-full max-w-6xl flex-1 gap-4 px-3 py-4 sm:px-4">
         <SideNav pathname={pathname} />
         <main className="min-w-0 flex-1 pb-20 md:pb-4">{children}</main>
@@ -47,7 +53,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   );
 }
 
-function TopBar() {
+function TopBar({
+  scanlines,
+  onToggleScanlines,
+}: {
+  scanlines: boolean;
+  onToggleScanlines: (value: boolean) => void;
+}) {
   const router = useRouter();
   const utils = api.useUtils();
   const me = api.auth.me.useQuery(undefined, { retry: false });
@@ -72,6 +84,17 @@ function TopBar() {
         <div className="ml-auto flex items-center gap-1.5 sm:gap-2">
           <WalletChip label="G" value={me.data?.wallet.gold} tone="text-gold" />
           <WalletChip label="◆" value={me.data?.wallet.gems} tone="text-mint" />
+          <button
+            type="button"
+            onClick={() => onToggleScanlines(!scanlines)}
+            aria-pressed={scanlines}
+            title="Toggle CRT scanlines"
+            className={`text-pixel border-edge border-2 px-2 py-1 text-[8px] ${
+              scanlines ? "text-gold" : "text-ink-dim hover:text-ink"
+            }`}
+          >
+            CRT
+          </button>
           {me.data ? (
             <button
               type="button"
@@ -158,6 +181,33 @@ function BottomNav({ pathname }: { pathname: string }) {
       ))}
     </nav>
   );
+}
+
+/**
+ * Remembers the CRT overlay preference per browser. Reads localStorage after
+ * mount only, so the server and first client render always agree (overlay off).
+ */
+function useScanlines(): [boolean, (value: boolean) => void] {
+  const [scanlines, setScanlines] = useState(false);
+
+  useEffect(() => {
+    try {
+      setScanlines(window.localStorage.getItem(SCANLINE_KEY) === "on");
+    } catch {
+      // Private mode or blocked storage — keep the default.
+    }
+  }, []);
+
+  const update = useCallback((value: boolean) => {
+    setScanlines(value);
+    try {
+      window.localStorage.setItem(SCANLINE_KEY, value ? "on" : "off");
+    } catch {
+      // Preference simply will not persist.
+    }
+  }, []);
+
+  return [scanlines, update];
 }
 
 function isActive(pathname: string, href: string): boolean {

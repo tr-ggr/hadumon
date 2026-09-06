@@ -13,6 +13,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { env } from "~/env";
+import { isEntryPoint } from "./entry-point";
 import type { DbOrTx } from "~/server/db";
 import { users } from "./schema/auth";
 import { defenseTeams } from "./schema/battle";
@@ -104,7 +105,7 @@ async function main(): Promise<void> {
   }
 }
 
-if (process.argv[1]?.includes("seed-battle")) {
+if (isEntryPoint(import.meta.url)) {
   main().catch((error: unknown) => {
     console.error(error);
     process.exit(1);

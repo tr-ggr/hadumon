@@ -14,6 +14,7 @@ import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
 import { env } from "~/env";
+import { isEntryPoint } from "./entry-point";
 import { createRng } from "~/server/game/rng";
 import { clampPrice, RARITY_PRICE_RANGE } from "~/server/game/market";
 import { getSpecies } from "~/server/game/species";
@@ -135,7 +136,7 @@ async function main(): Promise<void> {
   }
 }
 
-if (process.argv[1]?.includes("seed-market")) {
+if (isEntryPoint(import.meta.url)) {
   main().catch((error: unknown) => {
     console.error(error);
     process.exit(1);

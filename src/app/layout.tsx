@@ -4,6 +4,7 @@ import { type Metadata } from "next";
 import { Press_Start_2P, VT323 } from "next/font/google";
 
 import { AppShell } from "~/components/AppShell";
+import { ToastProvider } from "~/components/ui";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -40,7 +41,9 @@ export default function RootLayout({
     <html lang="en" className={`${pixel.variable} ${body.variable}`}>
       <body>
         <TRPCReactProvider>
-          <AppShell>{children}</AppShell>
+          <ToastProvider>
+            <AppShell>{children}</AppShell>
+          </ToastProvider>
         </TRPCReactProvider>
       </body>
     </html>
