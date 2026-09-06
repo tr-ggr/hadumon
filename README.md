@@ -42,11 +42,13 @@ assets, everything is inline SVG.
 
 ## Screenshots
 
-<!-- Drop PNGs in `public/screenshots/` and link them here. -->
+Captured headlessly at 375px (mobile) and 1280px (desktop) from the seeded `demo` account.
 
-| Dashboard | Summon | Adventure | Battle | Market |
-| --- | --- | --- | --- | --- |
-| _todo_ | _todo_ | _todo_ | _todo_ | _todo_ |
+| Login | Dashboard | Summon | Adventure | Battle | Market |
+| --- | --- | --- | --- | --- | --- |
+| ![Login](public/screenshots/mobile-login.png) | ![Dashboard](public/screenshots/mobile-home.png) | ![Summon](public/screenshots/mobile-summon.png) | ![Adventure](public/screenshots/mobile-adventure.png) | ![Battle](public/screenshots/mobile-battle.png) | ![Market](public/screenshots/mobile-market.png) |
+
+![Desktop dashboard](public/screenshots/desktop-home.png)
 
 ## Stack
 

@@ -53,9 +53,9 @@ export function DefensePanel({
       action={
         <span className="text-pixel text-ink-dim text-[8px]">
           <span className={quota.remaining === 0 ? "text-pink" : "text-mint"}>
-            {quota.used}/{quota.limit}
+            {quota.remaining}/{quota.limit}
           </span>{" "}
-          attacks today
+          attacks left today
         </span>
       }
     >
