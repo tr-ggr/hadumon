@@ -19,7 +19,7 @@ interface RosterCount {
 const COUNTS: readonly RosterCount[] = [
   { label: "Cats", value: SPECIES_LIST.length },
   { label: "Elements", value: ELEMENTS.length },
-  { label: "Rarity tiers", value: RARITIES.length },
+  { label: "Rarities", value: RARITIES.length },
   { label: "Zones", value: ZONES.length },
 ];
 
