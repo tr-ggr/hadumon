@@ -70,9 +70,9 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
       <GachaAnimations />
 
       <div className="space-y-4 lg:col-start-1 lg:row-start-1 lg:self-end">
-        {/* One line at every width: the 2fr column at lg holds 21 pixel-font
-            characters at 20px, not at 24px. */}
-        <h1 className="text-pixel text-ink text-lg leading-relaxed sm:text-2xl lg:text-xl">
+        {/* One line at every width: the 2fr column at lg is ~435px, which holds
+            the 21-character headline at 18px and not at 20px. */}
+        <h1 className="text-pixel text-ink text-lg leading-relaxed sm:text-2xl lg:text-lg">
           Cats answer the call.
         </h1>
         <p className="text-ink-dim max-w-prose text-xl leading-snug">
