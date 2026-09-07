@@ -140,8 +140,13 @@ export function simulateBattle(
   return { winner, rounds: round, log, remainingHpA, remainingHpB };
 }
 
+/** A combatant's starting HP as the engine counts it: whole, and at least 1. */
+export function maxHpOf(combatant: Combatant): number {
+  return Math.max(1, Math.floor(combatant.stats.hp));
+}
+
 function toFighter(combatant: Combatant, side: BattleSide): Fighter {
-  const maxHp = Math.max(1, Math.floor(combatant.stats.hp));
+  const maxHp = maxHpOf(combatant);
   return { combatant, side, hp: maxHp, maxHp, tiebreak: 0 };
 }
 

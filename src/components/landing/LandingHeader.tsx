@@ -1,33 +1,27 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import {
+  buttonClassName,
+  type ButtonSize,
+  type ButtonVariant,
+} from "~/components/ui/Button";
+
 import { SECTION_SHELL } from "./LandingSection";
 
-type ActionVariant = "primary" | "secondary";
-type ActionSize = "sm" | "md";
-
-/** Mirrors `Button`'s variants — see {@link ActionLink} for why it is copied. */
-const ACTION_VARIANTS: Record<ActionVariant, string> = {
-  primary: "bg-gold text-navy border-navy hover:bg-[#ffd968]",
-  secondary: "bg-panel-hi text-ink border-edge hover:bg-edge",
-};
-
-const ACTION_SIZES: Record<ActionSize, string> = {
-  sm: "px-2 py-1 text-[10px]",
-  md: "px-3 py-2 text-xs",
-};
+type ActionVariant = Extract<ButtonVariant, "primary" | "secondary">;
 
 export interface ActionLinkProps {
   href: string;
   variant?: ActionVariant;
-  size?: ActionSize;
+  size?: ButtonSize;
   className?: string;
   children: ReactNode;
 }
 
 /**
- * A navigation link wearing the pixel button's costume: same border, hard
- * offset shadow and press, but a real anchor.
+ * A navigation link wearing the pixel button's costume — `buttonClassName`,
+ * the same classes `Button` renders — but a real anchor.
  *
  * The rest of the app nests `Button` inside `Link`, which puts a button a
  * keyboard user can focus but not activate inside the anchor that actually
@@ -45,7 +39,11 @@ export function ActionLink({
   return (
     <Link
       href={href}
-      className={`text-pixel pixel-press focus-visible:outline-gold inline-flex min-h-11 items-center justify-center gap-2 border-2 text-center shadow-[3px_3px_0_#000] focus-visible:outline-2 focus-visible:outline-offset-2 ${ACTION_VARIANTS[variant]} ${ACTION_SIZES[size]} ${className}`}
+      className={buttonClassName(
+        variant,
+        size,
+        `focus-visible:outline-gold min-h-11 text-center focus-visible:outline-2 focus-visible:outline-offset-2 ${className}`,
+      )}
     >
       {children}
     </Link>

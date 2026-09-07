@@ -16,6 +16,11 @@ export const RETREAT_LOSS_STREAK = 3;
 
 /** Base gold for a won encounter, before tier and zone multipliers. */
 export const BASE_GOLD_PER_WIN = 10;
+
+/** Gold a single won encounter in `zone` pays. */
+export function goldPerWin(zone: Zone): number {
+  return Math.floor(BASE_GOLD_PER_WIN * zone.tier * zone.rewardMult);
+}
 /** Base XP pool for a won encounter, before the tier multiplier. */
 export const BASE_XP_PER_WIN = 25;
 /** Fraction of the win rewards paid out for a lost encounter. */
@@ -220,7 +225,7 @@ export function resolveExpedition({
   );
 
   const team = squad.map(toCombatant);
-  const winGold = Math.floor(BASE_GOLD_PER_WIN * zone.tier * zone.rewardMult);
+  const winGold = goldPerWin(zone);
   const winXp = BASE_XP_PER_WIN * zone.tier;
 
   let winCount = 0;

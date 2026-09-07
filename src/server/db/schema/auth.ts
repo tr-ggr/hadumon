@@ -8,6 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import { STARTING_GEMS, STARTING_GOLD } from "../../game/economy";
 import { createTable } from "./_table";
 
 /**
@@ -21,8 +22,8 @@ export const users = createTable(
     username: text("username").notNull().unique(),
     displayName: text("display_name").notNull(),
     passwordHash: text("password_hash").notNull(),
-    gold: integer("gold").notNull().default(500),
-    gems: integer("gems").notNull().default(1000),
+    gold: integer("gold").notNull().default(STARTING_GOLD),
+    gems: integer("gems").notNull().default(STARTING_GEMS),
     rating: integer("rating").notNull().default(1000),
     isBot: boolean("is_bot").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true })

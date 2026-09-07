@@ -1,7 +1,9 @@
 import type { ButtonHTMLAttributes } from "react";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger";
-type Size = "sm" | "md";
+export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
+export type ButtonSize = "sm" | "md";
+type Variant = ButtonVariant;
+type Size = ButtonSize;
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant;
@@ -20,6 +22,18 @@ const SIZES: Record<Size, string> = {
   md: "px-3 py-2 text-xs",
 };
 
+/**
+ * The pixel button's full class list, for elements that must look like a
+ * `Button` without being one (the landing page's account links are anchors).
+ */
+export function buttonClassName(
+  variant: ButtonVariant = "primary",
+  size: ButtonSize = "md",
+  className = "",
+): string {
+  return `text-pixel pixel-press inline-flex items-center justify-center gap-2 border-2 shadow-[3px_3px_0_#000] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
+}
+
 export function Button({
   variant = "primary",
   size = "md",
@@ -30,7 +44,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`text-pixel pixel-press inline-flex items-center justify-center gap-2 border-2 shadow-[3px_3px_0_#000] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={buttonClassName(variant, size, className)}
       {...props}
     />
   );

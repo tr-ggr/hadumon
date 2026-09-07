@@ -1,18 +1,9 @@
 import { PixelSprite } from "~/components/PixelSprite";
 import { ElementBadge } from "~/components/ui";
+import { STARTING_GEMS } from "~/server/game/economy";
 import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
 import { ActionLink } from "./LandingHeader";
 import { SECTION_SHELL, SectionHeading } from "./LandingSection";
-
-/**
- * The starting gem balance a new account is created with.
- *
- * Mirrors `gems: integer("gems").notNull().default(1000)` —
- * `src/server/db/schema/auth.ts:25`. The column default is the source of
- * truth; it is not importable here because the schema pulls Drizzle into the
- * bundle, so the number is copied with its provenance instead.
- */
-export const STARTING_GEMS = 1000;
 
 /**
  * The close: the offer, the two account actions, and the one thing the page

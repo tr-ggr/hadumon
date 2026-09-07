@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useState } from "react";
 
 import {
   GachaAnimations,
@@ -12,6 +12,7 @@ import {
 import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Button, ElementBadge, RarityBadge } from "~/components/ui";
+import { STARTING_GEMS } from "~/server/game/economy";
 import type { Banner } from "~/server/game/gacha";
 import {
   RARITIES,
@@ -19,11 +20,11 @@ import {
   type Rarity,
   type Species,
 } from "~/server/game/species";
-import { STARTING_GEMS } from "./FinalCall";
 import { ActionLink } from "./LandingHeader";
 import { SECTION_SHELL } from "./LandingSection";
 import { RosterStats } from "./RosterStats";
 import { useDemoSummon } from "./useDemoSummon";
+import { useLoopWhileSeen } from "./useLoopWhileSeen";
 
 /** Height of `LandingHeader`: 44px touch targets, 8px padding either side, 2px edge. */
 const HEADER_PX = 62;
@@ -275,55 +276,15 @@ function useLegendaryJolt(
   results: readonly RevealCardResult[],
   revealed: number,
 ): boolean {
-  const [jolts, setJolts] = useState(0);
   const [jolting, setJolting] = useState(false);
 
   useEffect(() => {
     if (revealed === 0) return;
     if (results[revealed - 1]?.rarity !== "legendary") return;
-    setJolts((count) => count + 1);
-  }, [results, revealed]);
-
-  useEffect(() => {
-    if (jolts === 0) return;
     setJolting(true);
     const timer = setTimeout(() => setJolting(false), JOLT_MS);
     return () => clearTimeout(timer);
-  }, [jolts]);
+  }, [results, revealed]);
 
   return jolting;
-}
-
-/**
- * Whether a looping animation should be running: the element is on screen and
- * the tab is in front. Starts true so the server render and the first client
- * render agree, and so the bob survives a browser without IntersectionObserver.
- */
-function useLoopWhileSeen<T extends HTMLElement>(): {
-  ref: RefObject<T | null>;
-  active: boolean;
-} {
-  const ref = useRef<T | null>(null);
-  const [onScreen, setOnScreen] = useState(true);
-  const [tabVisible, setTabVisible] = useState(true);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element || !("IntersectionObserver" in window)) return;
-
-    const observer = new IntersectionObserver((entries) =>
-      setOnScreen(entries.some((entry) => entry.isIntersecting)),
-    );
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const sync = () => setTabVisible(!document.hidden);
-    sync();
-    document.addEventListener("visibilitychange", sync);
-    return () => document.removeEventListener("visibilitychange", sync);
-  }, []);
-
-  return { ref, active: onScreen && tabVisible };
 }

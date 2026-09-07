@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
 import { Button, Panel } from "~/components/ui";
 import {
+  maxHpOf,
   simulateBattle,
   type BattleResult,
   type Combatant,
 } from "~/server/game/battle";
 import { MATERIAL_LABELS } from "~/server/game/elements";
 import {
-  BASE_GOLD_PER_WIN,
   GEM_DROP_CHANCE,
+  goldPerWin,
   MATERIAL_DROP_CHANCE,
 } from "~/server/game/idle";
 import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
@@ -25,6 +26,7 @@ import {
   type Zone,
 } from "~/server/game/zones";
 import { LandingSection, SectionHeading } from "./LandingSection";
+import { useLoopWhileSeen } from "./useLoopWhileSeen";
 
 /** One log line per second, the pace the real expedition resolves at. */
 const LINE_MS = 1000;
@@ -74,10 +76,8 @@ const OFFLINE_HOURS = MAX_OFFLINE_SECONDS / 3600;
 const START_HOUR = 9;
 const CLAIM_TIME = `${String(START_HOUR + OFFLINE_HOURS).padStart(2, "0")}:00`;
 
-/** `floor(BASE_GOLD_PER_WIN * tier * rewardMult)`, straight out of `idle.ts`. */
-const GOLD_PER_WIN = Math.floor(
-  BASE_GOLD_PER_WIN * ZONE.tier * ZONE.rewardMult,
-);
+/** The same function the idle engine pays out with. */
+const GOLD_PER_WIN = goldPerWin(ZONE);
 
 interface Encounter {
   index: number;
@@ -121,9 +121,8 @@ export function IdleTimeline() {
   const [autoplay, setAutoplay] = useState(false);
   const [replaying, setReplaying] = useState(false);
   const [reduced, setReduced] = useState(false);
-  const [onScreen, setOnScreen] = useState(false);
-  const [pageVisible, setPageVisible] = useState(true);
-  const tickerRef = useRef<HTMLDivElement | null>(null);
+  // The loop stops the moment the ticker leaves the viewport or the tab hides.
+  const seen = useLoopWhileSeen<HTMLDivElement>();
 
   // Autoplay is a motion choice, so it is decided after mount, not in markup.
   useEffect(() => {
@@ -135,31 +134,9 @@ export function IdleTimeline() {
     setState((current) => ({ ...current, step: 0 }));
   }, []);
 
-  // The loop stops the moment the ticker leaves the viewport.
-  useEffect(() => {
-    const element = tickerRef.current;
-    if (!element || !("IntersectionObserver" in window)) {
-      setOnScreen(true);
-      return;
-    }
-    const observer = new IntersectionObserver((entries) => {
-      setOnScreen(entries.some((entry) => entry.isIntersecting));
-    });
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
-  // …and when the tab goes to the background.
-  useEffect(() => {
-    const sync = () => setPageVisible(!document.hidden);
-    sync();
-    document.addEventListener("visibilitychange", sync);
-    return () => document.removeEventListener("visibilitychange", sync);
-  }, []);
-
   const events = state.encounter.result.log;
   const finished = state.step >= events.length;
-  const running = (autoplay || replaying) && onScreen && pageVisible;
+  const running = (autoplay || replaying) && seen.active;
 
   useEffect(() => {
     if (!running) return;
@@ -189,8 +166,8 @@ export function IdleTimeline() {
 
   const hp = useMemo(() => {
     const map = new Map<string, number>();
-    for (const fighter of SQUAD) map.set(fighter.id, maxHp(fighter));
-    for (const foe of state.encounter.enemies) map.set(foe.id, maxHp(foe));
+    for (const fighter of SQUAD) map.set(fighter.id, maxHpOf(fighter));
+    for (const foe of state.encounter.enemies) map.set(foe.id, maxHpOf(foe));
     for (let i = 0; i < state.step && i < events.length; i++) {
       const event = events[i];
       if (event) map.set(event.targetId, event.targetHpAfter);
@@ -214,7 +191,7 @@ export function IdleTimeline() {
   const won = state.encounter.result.winner === "A";
 
   const ticker = (
-    <div ref={tickerRef} className="w-full">
+    <div ref={seen.ref} className="w-full">
       <Panel
         title="Fight log"
         action={
@@ -388,7 +365,7 @@ function TickerSide({
       </h3>
       <ul className="mt-1 space-y-1">
         {fighters.map((fighter) => {
-          const max = maxHp(fighter);
+          const max = maxHpOf(fighter);
           const current = hp.get(fighter.id) ?? max;
           const pct = Math.round((current / max) * 100);
           const down = current <= 0;
@@ -426,10 +403,6 @@ function TickerSide({
       </ul>
     </section>
   );
-}
-
-function maxHp(fighter: Combatant): number {
-  return Math.max(1, Math.floor(fighter.stats.hp));
 }
 
 /** 0.35 → 35. Drop rates are stored as fractions. */

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { PixelSprite } from "~/components/PixelSprite";
 import { Button } from "~/components/ui";
 import type { BattleDetailView } from "~/server/api/routers/battle";
-import type { Combatant } from "~/server/game/battle";
+import { maxHpOf, type Combatant } from "~/server/game/battle";
 
 /** Longest a full replay may take before it starts fast-forwarding itself. */
 const MAX_REPLAY_MS = 12_000;
@@ -195,7 +195,7 @@ function Side({
       <h3 className="text-pixel text-ink-dim text-[8px] uppercase">{label}</h3>
       <ul className="space-y-1">
         {team.map((fighter) => {
-          const max = Math.max(1, fighter.stats.hp);
+          const max = maxHpOf(fighter);
           const current = hp.get(fighter.id) ?? max;
           const pct = Math.round((current / max) * 100);
           const dead = current <= 0;
@@ -245,7 +245,7 @@ function Side({
 function hpAfter(battle: BattleDetailView, step: number): Map<string, number> {
   const hp = new Map<string, number>();
   for (const fighter of [...battle.attackerTeam, ...battle.defenderTeam]) {
-    hp.set(fighter.id, Math.max(1, fighter.stats.hp));
+    hp.set(fighter.id, maxHpOf(fighter));
   }
 
   const events = battle.log.log;

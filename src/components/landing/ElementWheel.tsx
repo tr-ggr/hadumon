@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
 import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
@@ -24,6 +24,7 @@ import {
   SECTION_SHELL,
   SectionHeading,
 } from "./LandingSection";
+import { useLoopWhileSeen } from "./useLoopWhileSeen";
 
 /** The four elements on the ring, in the order the advantage flows. */
 const RING: readonly Element[] = ["flame", "thorn", "volt", "mist"];
@@ -67,9 +68,8 @@ const SHADE_POINT: Point = { x: 312, y: 58 };
  * `elementMultiplier` doing the talking.
  */
 export function ElementWheel() {
-  const sectionRef = useRef<HTMLElement | null>(null);
+  const seen = useLoopWhileSeen<HTMLElement>();
   const [step, setStep] = useState(0);
-  const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -80,26 +80,7 @@ export function ElementWheel() {
   }, []);
 
   // The highlight only runs while the wheel is on screen and the tab is up.
-  useEffect(() => {
-    const element = sectionRef.current;
-    if (!element || !("IntersectionObserver" in window)) return;
-
-    let onScreen = false;
-    const sync = () => setPlaying(onScreen && !document.hidden);
-
-    const observer = new IntersectionObserver((entries) => {
-      onScreen = entries.some((entry) => entry.isIntersecting);
-      sync();
-    });
-    observer.observe(element);
-    document.addEventListener("visibilitychange", sync);
-
-    return () => {
-      observer.disconnect();
-      document.removeEventListener("visibilitychange", sync);
-    };
-  }, []);
-
+  const playing = seen.active;
   useEffect(() => {
     if (!playing || reducedMotion) return;
     setStarted(true);
@@ -118,7 +99,7 @@ export function ElementWheel() {
 
   return (
     <section
-      ref={sectionRef}
+      ref={seen.ref}
       aria-labelledby="type-chart-heading"
       className={`${SECTION_SHELL} ${SECTION_RHYTHM} ${SECTION_GAP}`}
     >

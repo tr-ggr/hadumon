@@ -4,6 +4,7 @@ import {
   ARCHETYPE_SPRITES,
   SPRITE_SIZE,
 } from "~/components/sprites/archetypes";
+import { buildRuns } from "~/components/PixelSprite";
 import { spriteColors } from "~/components/sprites/palettes";
 import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
 
@@ -37,48 +38,6 @@ const TAGLINE = "Summon cats. Send them to work. Come back to the loot.";
 const TAGLINE_SIZE = 28;
 /** Wide enough for 35 characters, which breaks the tagline at its full stop. */
 const TAGLINE_WIDTH = TAGLINE_SIZE * 35;
-
-interface Run {
-  x: number;
-  y: number;
-  width: number;
-  fill: string;
-}
-
-/**
- * Merges horizontal runs of one colour into a single `<rect>`, the way
- * `PixelSprite` does, so three 32×32 cats stay a few hundred rects rather than
- * three thousand.
- */
-function buildRuns(
-  rows: readonly string[],
-  colors: Record<string, string | null>,
-): Run[] {
-  const runs: Run[] = [];
-
-  rows.forEach((row, y) => {
-    let start = 0;
-    let current: string | null = null;
-
-    const flush = (endExclusive: number) => {
-      if (current !== null && endExclusive > start) {
-        runs.push({ x: start, y, width: endExclusive - start, fill: current });
-      }
-    };
-
-    for (let x = 0; x < row.length; x++) {
-      const fill = colors[row[x] ?? "."] ?? null;
-      if (fill !== current) {
-        flush(x);
-        current = fill;
-        start = x;
-      }
-    }
-    flush(row.length);
-  });
-
-  return runs;
-}
 
 /** One starter, as inline SVG. Satori renders `<svg>` and its `<rect>`s. */
 function Sprite({ speciesId, size: px }: { speciesId: string; size: number }) {

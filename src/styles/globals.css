@@ -140,15 +140,6 @@
   }
 }
 
-@keyframes land-tick {
-  0% {
-    width: 0%;
-  }
-  100% {
-    width: 100%;
-  }
-}
-
 .land-bob {
   animation: land-bob 1s steps(2, end) infinite;
 }
@@ -183,8 +174,6 @@
       opacity: 1;
     }
   }
-
-  /* `land-tick` only animates width — nothing spatial to remove. */
 
   .land-hidden {
     opacity: 1;

@@ -24,22 +24,14 @@ import { ZONES } from "~/server/game/zones";
 import { SECTION_SHELL, SectionHeading } from "./LandingSection";
 import { useReveal } from "./useReveal";
 
-/**
- * Reading order for the bands: warm to cold, ending on the darkest. Sorting
- * `ELEMENTS` by this rather than listing the bands by hand means a new element
- * still gets a band.
- */
-const BAND_ORDER = [
+/** Reading order for the bands: warm to cold, ending on the darkest. */
+const BANDS = [
   "flame",
   "mist",
   "volt",
   "thorn",
   "shade",
 ] as const satisfies readonly Element[];
-
-const BANDS: readonly Element[] = [...ELEMENTS].sort(
-  (a, b) => BAND_ORDER.indexOf(a) - BAND_ORDER.indexOf(b),
-);
 
 /** Distinct reveal delays before the stagger repeats. Four is enough to read. */
 const STAGGER_STEPS = 4;

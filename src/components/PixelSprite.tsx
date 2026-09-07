@@ -11,7 +11,7 @@ export interface PixelSpriteProps {
   label?: string;
 }
 
-interface Run {
+export interface Run {
   x: number;
   y: number;
   width: number;
@@ -60,7 +60,7 @@ export function PixelSprite({
 }
 
 /** Merges horizontal runs of the same colour so the DOM stays small. */
-function buildRuns(
+export function buildRuns(
   rows: readonly string[],
   colors: Record<string, string | null>,
 ): Run[] {
