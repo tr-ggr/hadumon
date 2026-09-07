@@ -45,8 +45,6 @@ export function LandingSection({
 }
 
 export interface SectionHeadingProps {
-  /** Small gold label above the title, e.g. `THE CATALOGUE`. */
-  kicker: string;
   title: ReactNode;
   /** Put on the `h2`, so the section can be `aria-labelledby` it. */
   titleId?: string;
@@ -64,11 +62,12 @@ const TITLE_TONES: Record<"ink" | "gold", string> = {
 };
 
 /**
- * The landing page's one heading shape: gold pixel kicker, pixel title, VT323
- * intro. Server-safe — the scroll reveal lives in `useReveal`.
+ * The landing page's one heading shape: pixel title, VT323 intro. No eyebrow
+ * label above it — the world's gold pixel labels are data labels inside panels
+ * (GOLD, PITY, RATE-UP), and the heading has to carry itself. Server-safe —
+ * the scroll reveal lives in `useReveal`.
  */
 export function SectionHeading({
-  kicker,
   title,
   titleId,
   intro,
@@ -82,9 +81,6 @@ export function SectionHeading({
     <header
       className={`space-y-2 ${centred ? "text-center" : ""} ${className}`}
     >
-      <p className="text-pixel text-gold text-[8px] tracking-widest uppercase">
-        {kicker}
-      </p>
       <h2
         id={titleId}
         className={`text-pixel text-xs leading-relaxed text-balance sm:text-base ${TITLE_TONES[tone]}`}

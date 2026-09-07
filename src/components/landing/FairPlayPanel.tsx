@@ -38,7 +38,6 @@ export function FairPlayPanel({ banners }: FairPlayPanelProps) {
   return (
     <LandingSection labelledBy="rates-heading">
       <SectionHeading
-        kicker="Printed rates"
         titleId="rates-heading"
         title="The odds, on the tin."
         intro="Both banners, their costs, and the pity counter that catches you when the odds do not."

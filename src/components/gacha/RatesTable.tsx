@@ -27,6 +27,12 @@ export function RatesTable({ rates, className = "" }: RatesTableProps) {
   );
 }
 
+/**
+ * One decimal at most, and none when it would be `.0`. Rounds first: weights
+ * like 55/100 come out of the normaliser as 55.000000000000004, which is not
+ * an integer and would otherwise print as "55.0" beside a "60".
+ */
 function formatRate(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  const rounded = Math.round(value * 10) / 10;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
 }

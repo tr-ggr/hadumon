@@ -341,10 +341,9 @@ export function IdleTimeline() {
   return (
     <LandingSection labelledBy="idle-heading">
       <SectionHeading
-        kicker="A day in the life"
         titleId="idle-heading"
         title="Send them out. Come back to the loot."
-        intro={`${ZONE.description} The squad resolves one fight a ${INTERVAL_LABEL} whether you are watching or not.`}
+        intro={`Pick a zone, send the squad, close the tab. The server resolves one fight a ${INTERVAL_LABEL} whether you are watching or not, and the log below is that engine running.`}
       />
 
       <ol className="grid lg:grid-cols-[1fr_1.3fr_3fr_1.5fr]">
@@ -410,11 +409,13 @@ function TickerSide({
                   </span>
                 </div>
                 <div className="border-edge bg-navy-deep h-2 w-full border-2">
+                  {/* Scaled, not resized: a transform never triggers layout,
+                      and `steps(4)` keeps the bar dropping in pixel notches. */}
                   <div
-                    className={`h-full ${tone === "mint" ? "bg-mint" : "bg-pink"}`}
+                    className={`h-full w-full origin-left ${tone === "mint" ? "bg-mint" : "bg-pink"}`}
                     style={{
-                      width: `${pct}%`,
-                      transition: "width 160ms steps(4, end)",
+                      transform: `scaleX(${pct / 100})`,
+                      transition: "transform 160ms steps(4, end)",
                     }}
                   />
                 </div>

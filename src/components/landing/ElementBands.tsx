@@ -59,7 +59,6 @@ export function ElementBands() {
           half by hand; the first band supplies the bottom half. */}
       <div className={`${SECTION_SHELL} pt-16 pb-8 sm:pt-24 sm:pb-10`}>
         <SectionHeading
-          kicker="The catalogue"
           titleId="catalogue-heading"
           title={
             <>
@@ -136,7 +135,7 @@ function ElementBand({ element }: { element: Element }) {
 
         <ul
           ref={ref}
-          className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4"
+          className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
         >
           {cats.map((species, index) => (
             <li

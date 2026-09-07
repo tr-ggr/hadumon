@@ -59,7 +59,6 @@ export function ProductShots() {
   return (
     <LandingSection labelledBy="shots-heading">
       <SectionHeading
-        kicker="The game, as it is"
         titleId="shots-heading"
         title="Screens from the seeded demo account. Nothing staged."
         intro="No mock-ups: these are captures of the running app, at the sizes it is played at."

@@ -46,3 +46,6 @@ yarn-error.log*
 .idea
 .env*
 !.env.example
+
+# impeccable review captures (ephemeral)
+.impeccable/review/

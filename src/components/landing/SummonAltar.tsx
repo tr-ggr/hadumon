@@ -19,6 +19,7 @@ import {
   type Rarity,
   type Species,
 } from "~/server/game/species";
+import { STARTING_GEMS } from "./FinalCall";
 import { ActionLink } from "./LandingHeader";
 import { SECTION_SHELL } from "./LandingSection";
 import { RosterStats } from "./RosterStats";
@@ -60,15 +61,15 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
 
   return (
     <section
-      className={`${SECTION_SHELL} grid items-center gap-6 py-6 lg:grid-cols-2 lg:gap-8 lg:py-4`}
+      /* Below `lg` this is one column in reading order: what it is, the altar,
+         then the counts. At `lg` the copy and counts share the left column and
+         the altar spans both rows on the right. */
+      className={`${SECTION_SHELL} grid items-center gap-6 py-6 lg:grid-cols-[2fr_3fr] lg:grid-rows-[auto_auto] lg:gap-x-8 lg:gap-y-4 lg:py-2`}
       style={{ minHeight: `calc(100dvh - ${HEADER_PX}px)` }}
     >
       <GachaAnimations />
 
-      <div className="order-2 space-y-4 lg:order-1">
-        <p className="text-pixel text-gold text-[8px] tracking-widest uppercase">
-          Idle feline collector
-        </p>
+      <div className="space-y-4 lg:col-start-1 lg:row-start-1 lg:self-end">
         <h1 className="text-pixel text-ink text-lg leading-relaxed sm:text-2xl">
           Cats answer the call.
         </h1>
@@ -76,11 +77,12 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
           Summon feline Fakemon, send the squad out to fight while you&rsquo;re
           away, and come back to the loot. In your browser. Nothing to buy.
         </p>
-        <RosterStats />
       </div>
 
+      <RosterStats className="lg:col-start-1 lg:row-start-2 lg:self-start" />
+
       <div
-        className={`panel scanlines order-1 flex flex-col gap-3 p-3 sm:p-4 lg:order-2 lg:gap-2.5 lg:p-3 ${
+        className={`panel scanlines flex flex-col gap-3 p-3 sm:p-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-2.5 lg:self-center lg:p-3 ${
           jolting ? "land-jolt" : ""
         }`}
         style={{
@@ -102,13 +104,7 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
             ref={bob.ref}
             className={`shrink-0 ${bob.active ? "land-bob" : ""}`}
           >
-            {/* 128px everywhere except the widest breakpoint, where the whole
-                altar has to clear an 800px-tall first viewport. */}
-            <PixelSprite
-              speciesId={featured.id}
-              size={128}
-              className="h-32 w-32 lg:h-24 lg:w-24"
-            />
+            <PixelSprite speciesId={featured.id} size={128} />
           </span>
           <div className="min-w-0 space-y-1">
             <p className="text-pixel text-pink text-[8px] uppercase">Rate-up</p>
@@ -120,13 +116,20 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
           </div>
         </div>
 
-        <ul className="order-2 grid grid-cols-2 gap-2 sm:order-none sm:grid-cols-5">
+        {/* Before the first summon the stage is one compact row on a phone: an
+            empty 2×5 grid there is a thousand pixels of nothing between the
+            buttons and the rest of the page. */}
+        <ul
+          className={`order-2 grid sm:order-none sm:grid-cols-5 sm:gap-2 ${
+            results.length === 0 ? "grid-cols-5 gap-1" : "grid-cols-2 gap-2"
+          }`}
+        >
           {Array.from({ length: banner.multiCount }, (_, index) => {
             const result = index < revealed ? results[index] : undefined;
             return (
               <li key={index}>
                 {result ? (
-                  <RevealCard result={result} />
+                  <RevealCard result={result} dense />
                 ) : (
                   <EmptySlot index={index} />
                 )}
@@ -140,7 +143,7 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
         <div className="order-1 flex flex-col gap-3 sm:order-none">
           {broke ? (
             <ActionLink href="/signup" variant="primary" className="w-full">
-              Create an account for 1000 real gems
+              Create an account for {STARTING_GEMS} real gems
             </ActionLink>
           ) : (
             <div className="flex items-end gap-2">
@@ -187,9 +190,17 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
           <PityBar count={pity} threshold={pityThreshold} />
 
           <p className="text-ink-dim text-base leading-tight">
-            Preview pulls. Nothing here is saved — your real 1000 gems arrive
-            with your account.
+            Preview pulls. Nothing here is saved — your real {STARTING_GEMS}{" "}
+            gems arrive with your account.
           </p>
+
+          {/* The story's last beat, where the visitor is looking: once the
+              cats have landed, the way to keep pulling for real is right here. */}
+          {!broke && !revealing && results.length > 0 ? (
+            <ActionLink href="/signup" variant="primary" className="w-full">
+              Create account &mdash; {STARTING_GEMS} real gems are waiting
+            </ActionLink>
+          ) : null}
 
           <p aria-live="polite" className="sr-only">
             {revealing || results.length === 0 ? "" : summaryOf(results)}
@@ -204,7 +215,7 @@ export function SummonAltar({ banner, featured }: SummonAltarProps) {
 function EmptySlot({ index }: { index: number }) {
   return (
     <div
-      className="panel-flat flex aspect-[3/4] items-center justify-center p-2"
+      className="panel-flat flex aspect-square items-center justify-center p-2 sm:aspect-[4/5]"
       aria-hidden
     >
       <span className="text-pixel text-edge text-[10px]">?</span>

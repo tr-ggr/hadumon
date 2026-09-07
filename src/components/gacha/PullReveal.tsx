@@ -36,6 +36,12 @@ export interface RevealCardResult {
 
 export interface RevealCardProps {
   result: RevealCardResult;
+  /**
+   * Tighter card for five-across grids narrower than the Summon page's: a
+   * smaller sprite, less padding, and the name at 8px so the longest species
+   * name in the game still fits on one line.
+   */
+  dense?: boolean;
 }
 
 /** Delay between two cards appearing. */
@@ -117,14 +123,14 @@ export function PullReveal({
 }
 
 /** One revealed cat: rarity-framed, flashing, with its level and power. */
-export function RevealCard({ result }: RevealCardProps) {
+export function RevealCard({ result, dense = false }: RevealCardProps) {
   const palette = RARITY_PALETTES[result.rarity];
   const isLegendary = result.rarity === "legendary";
   const isSpecial = isLegendary || result.rarity === "epic";
 
   return (
     <article
-      className="panel-flat gacha-pop relative flex flex-col items-center gap-1 overflow-hidden p-2 text-center"
+      className={`panel-flat gacha-pop relative flex flex-col items-center gap-1 overflow-hidden text-center ${dense ? "p-1.5" : "p-2"}`}
       style={{
         borderColor: palette.outline,
         borderWidth: isLegendary ? 3 : 2,
@@ -156,10 +162,13 @@ export function RevealCard({ result }: RevealCardProps) {
 
       <PixelSprite
         speciesId={result.speciesId}
-        size={72}
+        size={dense ? 64 : 72}
         className={isLegendary ? "gacha-legendary" : undefined}
       />
-      <h3 className="text-pixel text-ink w-full truncate text-[9px]">
+      {/* Never truncated: the cat's name is the reveal. */}
+      <h3
+        className={`text-pixel text-ink w-full leading-relaxed ${dense ? "text-[8px]" : "text-[9px]"}`}
+      >
         {result.species.name}
       </h3>
       <div className="flex flex-wrap items-center justify-center gap-1">

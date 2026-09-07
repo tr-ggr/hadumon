@@ -8,6 +8,18 @@ import { createRng } from "~/server/game/rng";
 import { getSpecies } from "~/server/game/species";
 import { creaturePower, effectiveStats } from "~/server/game/stats";
 
+/**
+ * A seed nobody can predict. `crypto.randomUUID` only exists in secure
+ * contexts (https, or localhost), so a plain-http preview falls back to
+ * `Math.random`, which is plenty for a demo that persists nothing.
+ */
+function freshSeed(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+  return `${Date.now()}:${Math.random()}`;
+}
+
 /** Gems the preview wallet starts with: a ten-pull, then some. */
 export const DEMO_GEMS = 2700;
 
@@ -61,7 +73,7 @@ export function useDemoSummon(banner: Banner): DemoSummon {
 
       const rolled = rollMulti(
         banner,
-        createRng(crypto.randomUUID()),
+        createRng(freshSeed()),
         state.pity,
         count,
       );

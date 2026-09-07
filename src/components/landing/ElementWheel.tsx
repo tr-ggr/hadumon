@@ -123,7 +123,6 @@ export function ElementWheel() {
       className={`${SECTION_SHELL} ${SECTION_RHYTHM} ${SECTION_GAP}`}
     >
       <SectionHeading
-        kicker="Type chart"
         titleId="type-chart-heading"
         title="Flame burns thorn. Thorn tangles volt. Volt fries mist. Mist douses flame."
         intro="Shade never joined the wheel. It hits everything a little harder and takes it back the same way."

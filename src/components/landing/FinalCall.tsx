@@ -1,6 +1,8 @@
+import { PixelSprite } from "~/components/PixelSprite";
+import { ElementBadge } from "~/components/ui";
+import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
 import { ActionLink } from "./LandingHeader";
 import { SECTION_SHELL, SectionHeading } from "./LandingSection";
-import { RosterStats } from "./RosterStats";
 
 /**
  * The starting gem balance a new account is created with.
@@ -10,11 +12,11 @@ import { RosterStats } from "./RosterStats";
  * truth; it is not importable here because the schema pulls Drizzle into the
  * bundle, so the number is copied with its provenance instead.
  */
-const STARTING_GEMS = 1000;
+export const STARTING_GEMS = 1000;
 
 /**
- * The close: the offer, the two account actions, and the roster counts once
- * more for anyone who scrolled straight past the hero.
+ * The close: the offer, the two account actions, and the one thing the page
+ * has not shown yet — the three cats every account is handed on day one.
  *
  * Deliberately the bookend of the hero rather than one more section: the
  * ground drops to the deepest navy, and the panel wears the same gold border,
@@ -36,7 +38,6 @@ export function FinalCall() {
           }}
         >
           <SectionHeading
-            kicker="Start here"
             titleId="close-heading"
             title={`Your first ${STARTING_GEMS} gems are waiting.`}
             intro="Free account, no store. Pull ten, pick a zone, and let the squad get on with it."
@@ -53,7 +54,29 @@ export function FinalCall() {
             </ActionLink>
           </div>
 
-          <RosterStats className="mt-6" />
+          <ul
+            aria-label="Starter cats every new account receives"
+            className="mt-6 grid grid-cols-3 gap-2"
+          >
+            {STARTER_SPECIES_IDS.map((id) => {
+              const species = getSpecies(id);
+              return (
+                <li
+                  key={id}
+                  className="panel-flat flex flex-col items-center gap-1 p-2"
+                >
+                  <PixelSprite speciesId={id} size={56} />
+                  <span className="text-pixel text-ink text-[8px] leading-relaxed">
+                    {species.name}
+                  </span>
+                  <ElementBadge element={species.element} />
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-ink-dim mt-2 text-base leading-tight">
+            Yours from the first minute, before a single pull.
+          </p>
         </div>
       </div>
     </section>
