@@ -62,7 +62,7 @@ const TITLE_TONES: Record<"ink" | "gold", string> = {
 };
 
 /**
- * The landing page's one heading shape: pixel title, VT323 intro. No eyebrow
+ * The landing page's one heading shape: bold title and readable intro. No eyebrow
  * label above it — the world's gold pixel labels are data labels inside panels
  * (GOLD, PITY, RATE-UP), and the heading has to carry itself. Server-safe —
  * the scroll reveal lives in `useReveal`.
@@ -83,13 +83,13 @@ export function SectionHeading({
     >
       <h2
         id={titleId}
-        className={`text-pixel text-xs leading-relaxed text-balance sm:text-base ${TITLE_TONES[tone]}`}
+        className={`text-pixel text-3xl leading-tight text-balance sm:text-5xl ${TITLE_TONES[tone]}`}
       >
         {title}
       </h2>
       {intro ? (
         <p
-          className={`text-ink-dim max-w-prose text-xl leading-snug text-pretty ${centred ? "mx-auto" : ""}`}
+          className={`text-ink-dim max-w-2xl text-lg leading-relaxed text-pretty ${centred ? "mx-auto" : ""}`}
         >
           {intro}
         </p>

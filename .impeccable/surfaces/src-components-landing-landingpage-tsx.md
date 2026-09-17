@@ -1,35 +1,35 @@
 ---
-version: 1
+version: 2
 slug: "src-components-landing-landingpage-tsx"
 primary_target: "src/components/landing/LandingPage.tsx"
-related_targets: ["src/app/page.tsx"]
+related_targets: ["src/app/page.tsx", "src/app/login/AuthForm.tsx"]
+build_path: comp
+approved_comps:
+  - ".impeccable/mocks/approved/gachapon-landing-desktop.png"
+  - ".impeccable/mocks/approved/gachapon-landing-mobile.png"
 ---
 
-# Landing page — surface brief
+# Landing and auth — surface brief
 
-Scope: the logged-out root route `/`, rendered by `src/components/landing/LandingPage.tsx`. Visitor mode: Persuade. Build path: code-led.
-
-Audience: idle/gacha genre fans arriving from a shared link. Job: understand HaduMon's twist in seconds and start pulling. Action: create an account (lands on `/summon` with 1000 gems). Proof: live game components from seed data, real screenshots, real roster stats. Constraints: no fabricated testimonials, counts, or press; every number derives from `src/server/game/*`; no new dependencies, palette, or fonts; mobile-first at 375px.
-
-Memorable moment: a working ten-pull in the hero before any account exists.
+Scope: signed-out `/`, `/login`, and `/signup`. Visitor mode: Persuade on the landing page and Operate on auth. Audience: idle/gacha players arriving from a shared link. Success: understand the twist, complete a real preview pull, then create an account. Every number and rate comes from `src/server/game/*`; never invent social proof or commercial claims.
 
 ## Direction contract
 
-THESIS: The hero is the Summoning Hub itself, live and playable before an account exists. It refuses headline + screenshot + feature grid.
+THESIS: A friendly physical gachapon counter lets the visitor play before they are asked to commit. The public experience inherits the approved app world: warm cream canvas, sky-blue structure, cobalt action, lime reward, coral notice, rounded near-black type, soft 3D cats, and controlled ambient shadows.
 
-OWN-WORLD: The game's own chrome unchanged: indigo ground, violet 2px-edged panels with hard black offsets, gold Press Start 2P kickers, VT323 body, rarity glows, stepped motion. One new register: full-bleed element bands drenched in each element's fur palette.
+FIRST VIEWPORT: Compact sticky account header. A direct headline and short explanation sit beside Weekly Spotlight on desktop; mobile stacks them and keeps Summon ×10 inside 375×812. The console carries a featured creature, preview wallet, 2×5 result tray, pity, single pull, and ten-pull. The preview starts with 2700 gems and hands off to signup after play.
 
-STORY: Cats answer the call; I pulled one and it flipped in; there are 25 across five elements; they fight while I'm away; the rates are printed and nothing is for sale; my 1000 gems are waiting.
+STORY: Pull now; see the factual scale (25 cats, five elements, eight offline hours, nothing for sale); understand Summon / Send / Return; meet one cat from each element; read rates and guarantees; create an account beside the three starter cats.
 
-FIRST VIEWPORT: Minimal header (wordmark, Log in, Create account). Kicker, one-line H1, two-line sub, roster stat strip beside the Weekly Spotlight altar: featured cat at 128px on a two-frame bob, 2×5 empty slots, SUMMON ×1/×10 with preview wallet and pity bar. Primary action: SUMMON ×10.
-
-FORM: Summoning Altar, #1 of seven on my ordered list; seed key 2876dde8 (dealt 7, 3, 1; user-pinned Altar locked).
-
-FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+AUTH: One cream shell on sky. The home-linked wordmark and form lead; the mascot stays contained and secondary. Mobile is one column with the form first. Short landscape may scroll but never clips the wordmark or controls horizontally. Demo login is a fill action; signup carries its starter pack in the task card.
 
 ## Motion grammar
 
-Focal: pixel-press → slots flip in at 150ms stagger with steps(6) pop → rarity flash → legendary shine plus a two-frame 2px altar jolt. Supporting: IntersectionObserver reveals (once, stepped, ≤4 siblings staggered); fight-log ticker one line per second with stepped HP bars, paused offscreen; element-wheel arrow advancing one stop per 900ms in steps(1). Reduced motion: opacity-only reveals, no bob, no jolt, no ticker autoplay.
+Hero copy and console enter once over 360–420ms. The featured cat floats only while visible. A pull compresses the button, recoils the console, waits briefly, then reveals cards at 150ms intervals with a one-shot rarity flash and a finite legendary shimmer. Supporting groups rise 14px once with at most five siblings staggered. Auth enters once over 320ms and fields never move in response to typing or errors. Reduced motion removes movement and autoplay while leaving state changes and announcements immediate.
 
-## Unresolved
-None. Routine choices: Weekly Spotlight banner in the hero; 2700-gem preview wallet; copy in the flavor-text voice.
+## Guardrails
+
+- No pixel art, hard offset shadows, gradients, dark public surfaces, testimonials, prices, or store language.
+- Touch targets are at least 48px; focus is cobalt and visible; fields keep stable error space.
+- The landing page remains server-rendered with `now: Date`; client components receive plain typed props.
+- Desktop and mobile approved comps are compositional references; shipped creature art remains the typed project artwork.

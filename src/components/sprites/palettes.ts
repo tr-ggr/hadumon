@@ -12,11 +12,11 @@ export interface FurPalette {
 
 /** Fur and accent colours per element. */
 export const ELEMENT_PALETTES: Record<Element, FurPalette> = {
-  flame: { "1": "#f2762e", "2": "#ffcf5c", "3": "#8f2416" },
-  mist: { "1": "#7fc7e8", "2": "#dff3ff", "3": "#31678f" },
-  volt: { "1": "#f5d33a", "2": "#fff5b0", "3": "#6d4bd6" },
-  thorn: { "1": "#5cc46a", "2": "#c6f08a", "3": "#2f6b3c" },
-  shade: { "1": "#8b6ecb", "2": "#c9a9ff", "3": "#2b1d4a" },
+  flame: { "1": "#f07b4d", "2": "#ffd36b", "3": "#b7492d" },
+  mist: { "1": "#8acbe7", "2": "#e7f7fd", "3": "#3c83a8" },
+  volt: { "1": "#f5c84c", "2": "#fff2a8", "3": "#1557d8" },
+  thorn: { "1": "#77bd70", "2": "#c9ec9b", "3": "#39734a" },
+  shade: { "1": "#8275c6", "2": "#c9c1f2", "3": "#40336d" },
 };
 
 export interface RarityPalette {
@@ -29,11 +29,11 @@ export interface RarityPalette {
 }
 
 export const RARITY_PALETTES: Record<Rarity, RarityPalette> = {
-  common: { outline: "#7b8ba6", glow: "#9fb0c9", eye: "#5ef2b2" },
-  uncommon: { outline: "#5ef2b2", glow: "#8dffd2", eye: "#5ef2b2" },
-  rare: { outline: "#4fa8ff", glow: "#9ad2ff", eye: "#9ad2ff" },
-  epic: { outline: "#ff6fb5", glow: "#ffa8d6", eye: "#ffd0ea" },
-  legendary: { outline: "#f5c542", glow: "#fff0a8", eye: "#fff0a8" },
+  common: { outline: "#9aa9b7", glow: "#d0dae2", eye: "#5cbf89" },
+  uncommon: { outline: "#5cbf89", glow: "#b4efd1", eye: "#5cbf89" },
+  rare: { outline: "#1557d8", glow: "#9ac4ff", eye: "#9ac4ff" },
+  epic: { outline: "#ff7163", glow: "#ffc0b8", eye: "#ffd7d2" },
+  legendary: { outline: "#f5c84c", glow: "#fff0a8", eye: "#fff0a8" },
 };
 
 /** Hard outline shared by every sprite. */

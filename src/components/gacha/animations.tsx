@@ -27,7 +27,7 @@ export function GachaAnimations() {
         animation: gacha-flash 420ms ease-out both;
       }
       .gacha-legendary {
-        animation: gacha-shine 1.4s steps(8, end) infinite;
+        animation: gacha-shine 700ms ease-in-out 2;
       }
       @media (prefers-reduced-motion: reduce) {
         .gacha-pop, .gacha-flash, .gacha-legendary { animation: none; }

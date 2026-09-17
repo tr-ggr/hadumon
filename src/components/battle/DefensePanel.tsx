@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button, Panel, useToast } from "~/components/ui";
 import type { QuotaView, TeamMemberView } from "~/server/api/routers/battle";
 import { MAX_TEAM_SIZE } from "~/server/game/rating";
@@ -74,7 +74,7 @@ export function DefensePanel({
                 key={member.id}
                 className="flex w-16 flex-col items-center text-center"
               >
-                <PixelSprite speciesId={member.speciesId} size={48} />
+                <CreatureArt speciesId={member.speciesId} size={48} />
                 <span className="text-pixel text-ink w-full truncate text-[7px]">
                   {member.name}
                 </span>

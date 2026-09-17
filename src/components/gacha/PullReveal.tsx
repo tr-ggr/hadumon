@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Button, ElementBadge, RarityBadge } from "~/components/ui";
 import {
@@ -160,7 +160,7 @@ export function RevealCard({ result, dense = false }: RevealCardProps) {
         </span>
       ) : null}
 
-      <PixelSprite
+      <CreatureArt
         speciesId={result.speciesId}
         size={dense ? 64 : 72}
         className={isLegendary ? "gacha-legendary" : undefined}

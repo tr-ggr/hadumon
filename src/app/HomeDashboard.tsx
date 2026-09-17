@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -10,20 +11,12 @@ import {
   type ClaimSummaryView,
 } from "~/components/adventure";
 import { PityBar, RecentPulls } from "~/components/gacha";
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt, MASCOT_ART } from "~/components/CreatureArt";
 import { Button, Panel, PanelSkeleton, Stat, useToast } from "~/components/ui";
 import { pendingEncounters, secondsToNextEncounter } from "~/server/game/idle";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 type CurrentExpedition = NonNullable<RouterOutputs["adventure"]["current"]>;
-
-/** Shortcut row under the wallet: the four things a trainer does most. */
-const QUICK_LINKS = [
-  ["/summon", "Summon", "✦"],
-  ["/adventure", "Adventure", "▶"],
-  ["/battle", "Battle", "⚔"],
-  ["/market", "Market", "⚖"],
-] as const;
 
 /**
  * The Home dashboard: wallet, the running expedition, the latest summons, the
@@ -74,45 +67,109 @@ export function HomeDashboard() {
   const pendingTrades = incoming.data?.length ?? 0;
 
   return (
-    <div className="space-y-4">
-      <Panel
-        title={`Welcome back, ${user.displayName}`}
-        action={
-          <span className="text-pixel text-ink-dim text-[8px]">
-            {creatureCount} cats
-          </span>
-        }
-        bodyClassName="space-y-3"
-      >
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Stat label="Gold" value={wallet.gold.toLocaleString()} tone="gold" />
-          <Stat label="Gems" value={wallet.gems.toLocaleString()} tone="mint" />
-          <Stat label="Rating" value={user.rating} tone="sky" />
-          <Stat
-            label="Rank"
-            value={ladder.data ? `#${ladder.data.me.rank}` : "—"}
-            tone="pink"
-          />
-        </div>
-        <MaterialsStrip materials={wallet.materials} />
-      </Panel>
-
-      <nav
-        aria-label="Quick links"
-        className="grid grid-cols-2 gap-2 sm:grid-cols-4"
-      >
-        {QUICK_LINKS.map(([href, label, icon]) => (
-          <Link
-            key={href}
-            href={href}
-            className="text-pixel border-edge bg-panel text-ink-dim hover:border-gold hover:text-gold flex items-center gap-2 border-2 px-2 py-2 text-[9px] shadow-[3px_3px_0_#000]"
-          >
-            <span aria-hidden className="text-sm">
-              {icon}
+    <div className="page-wrap space-y-5">
+      <section className="surface-sky relative grid overflow-hidden rounded-[28px] p-5 sm:p-7 lg:grid-cols-[1fr_1.1fr] lg:items-center lg:p-9">
+        <div className="relative z-10 max-w-xl">
+          <p className="text-cobalt-dark mb-2 text-sm font-bold">
+            Your cattery is open
+          </p>
+          <h1 className="text-ink text-4xl sm:text-5xl">
+            Welcome back, {user.displayName}
+          </h1>
+          <p className="text-ink-soft mt-4 max-w-md text-lg">
+            A small crew of elemental cats is waiting for the next good idea.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href={current ? "/adventure" : "/summon"}
+              className="touch-target bg-cobalt inline-flex items-center justify-center rounded-full px-6 py-3 font-extrabold text-white shadow-[0_10px_20px_rgb(21_87_216_/_0.22)]"
+            >
+              {current ? "Check expedition" : "Summon a cat"}
+            </Link>
+            <span className="pill text-ink-soft inline-flex items-center bg-white/75 px-4 py-3 text-sm font-bold">
+              {creatureCount} collected
             </span>
-            {label}
+          </div>
+        </div>
+        <Image
+          src={MASCOT_ART}
+          alt="HaduMon mascot, a mildly unimpressed tuxedo cat"
+          width={520}
+          height={360}
+          priority
+          className="relative z-10 mx-auto mt-5 -mb-8 w-full max-w-[520px] object-contain lg:mt-0"
+        />
+        <div className="pointer-events-none absolute -top-20 -right-16 h-64 w-64 rounded-full bg-white/35" />
+      </section>
+
+      <section className="reward-console grid gap-5 p-5 sm:p-7 lg:grid-cols-[1.15fr_1fr] lg:items-center">
+        <div>
+          <p className="text-sm font-bold text-white/75">Return-player loop</p>
+          <h2 className="mt-2 text-3xl sm:text-4xl">
+            {current.data
+              ? "Keep the expedition moving"
+              : "Your next pull is ready"}
+          </h2>
+          <p className="mt-3 max-w-lg text-base text-white/80">
+            {current.data
+              ? "Your squad is earning while you are away. Check the latest encounter and claim when it is ready."
+              : "Start with a ten-pull or send your starter cats into Whisker Meadows."}
+          </p>
+        </div>
+        <div className="rounded-2xl bg-white/10 p-4">
+          <div className="flex items-end justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-white/70">
+                {current.data ? "Expedition status" : "Starter welcome"}
+              </p>
+              <p className="mt-1 text-2xl font-extrabold">
+                {current.data ? current.data.zone.name : "1,000 gems"}
+              </p>
+            </div>
+            <span className="capsule-float text-5xl" aria-hidden="true">
+              ◉
+            </span>
+          </div>
+          <Link
+            href={current.data ? "/adventure" : "/summon"}
+            className="bg-lime text-ink mt-4 block min-h-12 rounded-full px-5 py-3 text-center font-extrabold shadow-[0_10px_20px_rgb(216_255_79_/_0.24)]"
+          >
+            {current.data ? "Open adventure" : "Visit the summoning hub"}
           </Link>
-        ))}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <Stat label="Gold" value={wallet.gold.toLocaleString()} tone="gold" />
+        <Stat label="Gems" value={wallet.gems.toLocaleString()} tone="mint" />
+        <Stat label="Rating" value={user.rating} tone="sky" />
+        <Stat
+          label="Rank"
+          value={ladder.data ? `#${ladder.data.me.rank}` : "—"}
+          tone="pink"
+        />
+      </section>
+      <MaterialsStrip materials={wallet.materials} />
+
+      <nav aria-label="Game modes" className="grid gap-3 sm:grid-cols-3">
+        <ModeLink
+          href="/adventure"
+          title="Adventure"
+          text="Explore new places"
+          className="bg-sky-surface"
+        />
+        <ModeLink
+          href="/summon"
+          title="Summon"
+          text="Meet a new HaduMon"
+          className="bg-coral text-white"
+        />
+        <ModeLink
+          href="/battle"
+          title="Battle"
+          text="Test your squad"
+          className="bg-lime"
+        />
       </nav>
 
       {creatureCount === 0 ? (
@@ -232,7 +289,7 @@ export function HomeDashboard() {
                   href={`/collection/${creature.id}`}
                   className="flex flex-col items-center gap-1"
                 >
-                  <PixelSprite speciesId={creature.speciesId} size={64} />
+                  <CreatureArt speciesId={creature.speciesId} size={88} />
                   <span className="text-pixel text-ink text-[8px]">
                     {creature.name}
                   </span>
@@ -247,6 +304,28 @@ export function HomeDashboard() {
         )}
       </Panel>
     </div>
+  );
+}
+
+function ModeLink({
+  href,
+  title,
+  text,
+  className,
+}: {
+  href: string;
+  title: string;
+  text: string;
+  className: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`mode-tile text-ink flex flex-col justify-end p-5 shadow-sm ${className}`}
+    >
+      <span className="text-2xl font-extrabold">{title}</span>
+      <span className="mt-1 text-sm font-semibold opacity-75">{text}</span>
+    </Link>
   );
 }
 
@@ -342,7 +421,7 @@ function ExpeditionCard({
         <ul className="flex flex-wrap gap-2">
           {current.squad.map((creature) => (
             <li key={creature.id} className="flex flex-col items-center">
-              <PixelSprite speciesId={creature.speciesId} size={40} />
+              <CreatureArt speciesId={creature.speciesId} size={52} />
               <span className="text-ink-dim text-base leading-none">
                 Lv {creature.level}
               </span>

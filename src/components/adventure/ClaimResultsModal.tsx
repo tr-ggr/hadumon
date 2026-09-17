@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button, Stat } from "~/components/ui";
 import { MATERIAL_LABELS } from "~/server/game/elements";
 import type { RouterOutputs } from "~/trpc/react";
@@ -110,7 +110,7 @@ export function ClaimResultsModal({
                       gain.leveledUp ? "border-gold" : ""
                     }`}
                   >
-                    <PixelSprite speciesId={gain.speciesId} size={32} />
+                    <CreatureArt speciesId={gain.speciesId} size={32} />
                     <span className="text-pixel text-ink min-w-0 flex-1 truncate text-[8px]">
                       {gain.name}
                     </span>

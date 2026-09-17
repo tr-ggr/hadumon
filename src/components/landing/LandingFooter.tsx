@@ -8,20 +8,20 @@ import { SECTION_SHELL } from "./LandingSection";
  */
 export function LandingFooter() {
   return (
-    <footer className="border-edge bg-panel border-t-2">
+    <footer className="bg-ink text-white">
       <div
         className={`${SECTION_SHELL} flex flex-wrap items-center gap-x-4 gap-y-2 py-6`}
       >
         {/* Same lettering as `LandingHeader`, one mark for the whole page. */}
-        <span className="text-pixel text-gold shrink-0 text-xs">
+        <span className="text-pixel shrink-0 text-xl text-white">
           Hadu<span className="text-pink">Mon</span>
         </span>
 
-        <p className="text-ink-dim text-lg">Made with pixel cats.</p>
+        <p className="text-sm text-white/60">Small cats. Long afternoons.</p>
 
         <Link
           href="/login"
-          className="text-mint focus-visible:outline-gold ml-auto inline-flex min-h-11 items-center text-lg underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="ml-auto inline-flex min-h-11 items-center text-sm font-bold text-white underline decoration-white/40 underline-offset-4"
         >
           Log in
         </Link>

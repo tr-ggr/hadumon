@@ -2,16 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { CreatureArt } from "~/components/CreatureArt";
 import {
   GachaAnimations,
-  PityBar,
-  RevealCard,
   REVEAL_STAGGER_MS,
   type RevealCardResult,
 } from "~/components/gacha";
-import { PixelSprite } from "~/components/PixelSprite";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
-import { Button, ElementBadge, RarityBadge } from "~/components/ui";
+import { Button } from "~/components/ui";
 import { STARTING_GEMS } from "~/server/game/economy";
 import type { Banner } from "~/server/game/gacha";
 import {
@@ -22,212 +20,240 @@ import {
 } from "~/server/game/species";
 import { ActionLink } from "./LandingHeader";
 import { SECTION_SHELL } from "./LandingSection";
-import { RosterStats } from "./RosterStats";
 import { useDemoSummon } from "./useDemoSummon";
 import { useLoopWhileSeen } from "./useLoopWhileSeen";
 
-/** Height of `LandingHeader`: 44px touch targets, 8px padding either side, 2px edge. */
-const HEADER_PX = 62;
-
-/** Matches `.land-jolt` in globals.css, with a frame to spare. */
-const JOLT_MS = 160;
+const ANTICIPATION_MS = 240;
 
 export interface SummonAltarProps {
-  /** The Weekly Spotlight banner, resolved on the server for this week. */
   banner: Banner;
-  /** The banner's rate-up cat. */
   featured: Species;
 }
 
-/**
- * The hero: a working ten-pull on the real rates, before an account exists.
- *
- * Everything here runs in the browser off `src/server/game/gacha` — the same
- * weights, the same pity, the same ten-pull guarantee the account gets. The
- * wallet is a preview and nothing is written anywhere.
- */
 export function SummonAltar({ banner, featured }: SummonAltarProps) {
   const { gems, pity, results, summon, costOf, canAfford, pityThreshold } =
     useDemoSummon(banner);
-
   const revealed = useStaggeredReveal(results);
   const revealing = revealed < results.length;
-  const jolting = useLegendaryJolt(results, revealed);
-  const bob = useLoopWhileSeen<HTMLSpanElement>();
-
-  const glow = RARITY_PALETTES[featured.rarity].glow;
-  const singleCost = costOf(1);
-  const multiCost = costOf(10);
+  const recoil = useConsoleRecoil(results);
+  const featuredMotion = useLoopWhileSeen<HTMLDivElement>();
   const broke = !canAfford(1);
 
   return (
-    <section
-      /* Below `lg` this is one column in reading order: what it is, the altar,
-         then the counts. At `lg` the copy and counts share the left column and
-         the altar spans both rows on the right. */
-      className={`${SECTION_SHELL} grid items-center gap-6 py-6 lg:grid-cols-[2fr_3fr] lg:grid-rows-[auto_auto] lg:gap-x-8 lg:gap-y-4 lg:py-2`}
-      style={{ minHeight: `calc(100dvh - ${HEADER_PX}px)` }}
-    >
+    <section className="bg-sky-surface/45 relative isolate overflow-hidden">
       <GachaAnimations />
-
-      <div className="space-y-4 lg:col-start-1 lg:row-start-1 lg:self-end">
-        {/* One line at every width: the 2fr column at lg is ~435px, which holds
-            the 21-character headline at 18px and not at 20px. */}
-        <h1 className="text-pixel text-ink text-lg leading-relaxed sm:text-2xl lg:text-lg">
-          Cats answer the call.
-        </h1>
-        <p className="text-ink-dim max-w-prose text-xl leading-snug">
-          Summon feline Fakemon, send the squad out to fight while you&rsquo;re
-          away, and come back to the loot. In your browser. Nothing to buy.
-        </p>
-      </div>
-
-      <RosterStats className="lg:col-start-1 lg:row-start-2 lg:self-start" />
-
       <div
-        className={`panel scanlines flex flex-col gap-3 p-3 sm:p-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:gap-2.5 lg:self-center lg:p-3 ${
-          jolting ? "land-jolt" : ""
-        }`}
-        style={{
-          borderColor: "var(--color-gold)",
-          boxShadow: `0 0 12px ${glow}, 4px 4px 0 #000`,
-        }}
+        className={`${SECTION_SHELL} grid min-h-[calc(100svh-4rem)] items-center gap-5 py-6 lg:min-h-[calc(100svh-4.5rem)] lg:grid-cols-[0.78fr_1.22fr] lg:gap-10 lg:py-10`}
       >
-        <header>
-          <h2 className="text-pixel text-gold text-[10px] sm:text-xs">
-            {banner.name}
-          </h2>
-          <p className="text-ink-dim mt-1 text-base leading-tight">
-            {banner.description}
+        <div className="land-hero-copy relative z-10 max-w-xl text-center lg:text-left">
+          <h1 className="text-ink text-[2.25rem] leading-[0.94] text-balance sm:text-[clamp(2.65rem,6vw,5.4rem)]">
+            Collect strange cats. Let them adventure.
+          </h1>
+          <p className="text-ink-soft mx-auto mt-3 max-w-[44ch] text-base leading-relaxed text-pretty sm:mt-5 sm:text-xl lg:mx-0">
+            <span className="sm:hidden">
+              Summon a squad, send it out, and return to the loot.
+            </span>
+            <span className="hidden sm:inline">
+              An idle creature RPG for people with other things to do. Summon a
+              squad, send it out, and return when you feel like it.
+            </span>
           </p>
-        </header>
-
-        <div className="flex items-center gap-3">
-          <span
-            ref={bob.ref}
-            className={`shrink-0 ${bob.active ? "land-bob" : ""}`}
-          >
-            <PixelSprite speciesId={featured.id} size={128} />
-          </span>
-          <div className="min-w-0 space-y-1">
-            <p className="text-pixel text-pink text-[8px] uppercase">Rate-up</p>
-            <p className="text-ink text-lg leading-none">{featured.name}</p>
-            <p className="flex flex-wrap items-center gap-1">
-              <ElementBadge element={featured.element} />
-              <RarityBadge rarity={featured.rarity} />
-            </p>
+          <div className="mt-6 hidden flex-wrap items-center justify-center gap-3 lg:flex lg:justify-start">
+            <ActionLink href="/signup" size="lg">
+              Create account
+            </ActionLink>
+            <span className="text-ink-soft text-sm">
+              {STARTING_GEMS} gems and three cats. No card required.
+            </span>
           </div>
         </div>
 
-        {/* Before the first summon the stage is one compact row on a phone: an
-            empty 2×5 grid there is a thousand pixels of nothing between the
-            buttons and the rest of the page. */}
-        <ul
-          className={`order-2 grid sm:order-none sm:grid-cols-5 sm:gap-2 ${
-            results.length === 0 ? "grid-cols-5 gap-1" : "grid-cols-2 gap-2"
-          }`}
+        <div
+          className={`land-hero-console bg-cobalt relative z-10 rounded-[28px] p-3 shadow-[0_24px_60px_rgb(13_60_157_/_0.26)] sm:p-4 ${recoil ? "land-console-recoil" : ""}`}
         >
-          {Array.from({ length: banner.multiCount }, (_, index) => {
-            const result = index < revealed ? results[index] : undefined;
-            return (
-              <li key={index}>
-                {result ? (
-                  <RevealCard result={result} dense />
-                ) : (
-                  <EmptySlot index={index} />
-                )}
-              </li>
-            );
-          })}
-        </ul>
+          <div className="rounded-[20px] bg-white p-3 sm:p-4">
+            <header className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-ink text-xl sm:text-2xl">{banner.name}</h2>
+                <p className="text-ink-soft mt-1 hidden max-w-[48ch] text-sm sm:block">
+                  This week, {featured.name} is twice as likely to answer.
+                </p>
+              </div>
+              <div className="bg-sky-soft shrink-0 rounded-full px-3 py-2 text-right">
+                <span className="text-ink-soft block text-[11px] font-bold tracking-wide uppercase">
+                  Preview gems
+                </span>
+                <span className="text-cobalt text-lg font-extrabold tabular-nums">
+                  ◆ {gems}
+                </span>
+              </div>
+            </header>
 
-        {/* Below `sm` the ten slots are two columns deep, so the controls come
-            first and the cats land underneath them. */}
-        <div className="order-1 flex flex-col gap-3 sm:order-none">
-          {broke ? (
-            <ActionLink href="/signup" variant="primary" className="w-full">
-              Create an account for {STARTING_GEMS} real gems
-            </ActionLink>
-          ) : (
-            <div className="flex items-end gap-2">
-              {/* The ×10 is the page's primary action, so it is the wider and
-                  taller of the two. The ×1 keeps its label on one line at
-                  375px, which is what sets these widths. */}
-              <Button
-                variant="secondary"
-                className="min-h-11 flex-1 flex-col gap-0 px-2 text-[10px] whitespace-nowrap"
-                disabled={revealing}
-                onClick={() => summon(1)}
+            <div className="mt-3 grid gap-3 sm:grid-cols-[0.72fr_1.28fr] sm:items-center">
+              <div
+                ref={featuredMotion.ref}
+                className="bg-sky-soft relative flex min-h-28 items-end justify-center overflow-hidden rounded-2xl sm:min-h-52"
               >
-                <span>SUMMON &times;1</span>
-                <span className="text-[9px] opacity-80">
-                  &#9670;{singleCost}
-                </span>
-              </Button>
-              <Button
-                variant="primary"
-                className="min-h-14 flex-[1.6] flex-col gap-0 px-2 text-sm whitespace-nowrap"
-                disabled={revealing || !canAfford(10)}
-                onClick={() => summon(10)}
-              >
-                <span>SUMMON &times;{banner.multiCount}</span>
-                <span className="text-[10px] opacity-80">
-                  &#9670;{multiCost}
-                </span>
-              </Button>
+                <div
+                  className={featuredMotion.active ? "land-featured-float" : ""}
+                >
+                  <CreatureArt
+                    speciesId={featured.id}
+                    size={190}
+                    priority
+                    label={`${featured.name}, this week's featured cat`}
+                  />
+                </div>
+                <div className="absolute inset-x-2 bottom-2 rounded-xl bg-white/95 px-3 py-2 text-center shadow-[0_5px_16px_rgb(23_33_43_/_0.1)]">
+                  <p className="text-ink font-extrabold">{featured.name}</p>
+                  <p className="text-ink-soft line-clamp-1 text-xs">
+                    {featured.flavor}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <ul
+                  className="grid grid-cols-5 gap-1.5 sm:gap-2"
+                  aria-label="Summon results"
+                >
+                  {Array.from({ length: banner.multiCount }, (_, index) => {
+                    const result =
+                      index < revealed ? results[index] : undefined;
+                    return (
+                      <li key={index}>
+                        {result ? (
+                          <LandingReveal result={result} />
+                        ) : (
+                          <EmptySlot
+                            index={index}
+                            waiting={revealing && index >= revealed}
+                          />
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+
+                <div className="mt-3 grid grid-cols-[0.8fr_1.35fr] gap-2">
+                  <Button
+                    variant="secondary"
+                    className="min-h-12 flex-col gap-0 px-2 text-xs"
+                    disabled={revealing || !canAfford(1)}
+                    onClick={() => summon(1)}
+                  >
+                    <span>Summon ×1</span>
+                    <span className="text-[11px] opacity-70">
+                      ◆ {costOf(1)}
+                    </span>
+                  </Button>
+                  <Button
+                    variant="hero"
+                    className="min-h-14 flex-col gap-0 px-2 text-base"
+                    disabled={revealing || !canAfford(10)}
+                    onClick={() => summon(10)}
+                  >
+                    <span>Summon ×10</span>
+                    <span className="text-xs opacity-70">◆ {costOf(10)}</span>
+                  </Button>
+                </div>
+
+                <div className="mt-3">
+                  <div className="flex items-center justify-between text-xs font-bold">
+                    <span className="text-ink-soft">Epic+ pity</span>
+                    <span className="text-ink tabular-nums">
+                      {pity}/{pityThreshold}
+                    </span>
+                  </div>
+                  <div
+                    className="bg-sky-soft mt-1 h-2 overflow-hidden rounded-full"
+                    role="progressbar"
+                    aria-label="Pulls until guaranteed epic or better"
+                    aria-valuemin={0}
+                    aria-valuemax={pityThreshold}
+                    aria-valuenow={pity}
+                  >
+                    <div
+                      className="bg-coral h-full rounded-full transition-[width] duration-300"
+                      style={{
+                        width: `${Math.min(100, (pity / pityThreshold) * 100)}%`,
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          )}
 
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="panel-flat text-mint px-2 py-1 text-base leading-none tabular-nums">
-              <span className="text-pixel mr-1 text-[8px]">&#9670;</span>
-              {gems} preview gems
-            </span>
-            {!broke && !canAfford(10) ? (
-              <span className="text-ink-dim text-base leading-tight">
-                Not enough preview gems for a ten-pull.
-              </span>
-            ) : null}
+            {broke ? (
+              <ActionLink href="/signup" className="mt-3 w-full">
+                Create an account for {STARTING_GEMS} real gems
+              </ActionLink>
+            ) : results.length > 0 && !revealing ? (
+              <div className="bg-sky-soft mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-2">
+                <p className="text-ink-soft text-sm">
+                  Preview only. Your pulls are not saved.
+                </p>
+                <ActionLink href="/signup" size="sm">
+                  Keep playing
+                </ActionLink>
+              </div>
+            ) : (
+              <p className="text-ink-soft mt-3 text-center text-xs">
+                Real rates. Real pity. Preview pulls are not saved.
+              </p>
+            )}
+            <p aria-live="polite" className="sr-only">
+              {revealing || results.length === 0 ? "" : summaryOf(results)}
+            </p>
           </div>
-
-          <PityBar count={pity} threshold={pityThreshold} />
-
-          <p className="text-ink-dim text-base leading-tight">
-            Preview pulls. Nothing here is saved — your real {STARTING_GEMS}{" "}
-            gems arrive with your account.
-          </p>
-
-          {/* The story's last beat, where the visitor is looking: once the
-              cats have landed, the way to keep pulling for real is right here. */}
-          {!broke && !revealing && results.length > 0 ? (
-            <ActionLink href="/signup" variant="primary" className="w-full">
-              Create account &mdash; {STARTING_GEMS} real gems are waiting
-            </ActionLink>
-          ) : null}
-
-          <p aria-live="polite" className="sr-only">
-            {revealing || results.length === 0 ? "" : summaryOf(results)}
-          </p>
         </div>
       </div>
     </section>
   );
 }
 
-/** A slot waiting for a cat. Matches `PullReveal`'s pending card. */
-function EmptySlot({ index }: { index: number }) {
+function EmptySlot({ index, waiting }: { index: number; waiting: boolean }) {
   return (
     <div
-      className="panel-flat flex aspect-square items-center justify-center p-2 sm:aspect-[4/5]"
-      aria-hidden
+      className={`bg-sky-soft flex aspect-square items-center justify-center overflow-hidden rounded-xl ${waiting ? "land-slot-waiting" : ""}`}
+      aria-label={`Summon slot ${index + 1}, empty`}
     >
-      <span className="text-pixel text-edge text-[10px]">?</span>
-      <span className="sr-only">Summon slot {index + 1}</span>
+      <span
+        aria-hidden
+        className="h-5 w-5 rounded-full border-[5px] border-white shadow-[inset_0_0_0_2px_rgb(200_223_234)] sm:h-7 sm:w-7"
+      />
     </div>
   );
 }
 
-/** "10 cats answered the call, best: Epic" — for people who cannot see them. */
+function LandingReveal({ result }: { result: RevealCardResult }) {
+  const palette = RARITY_PALETTES[result.rarity];
+  return (
+    <article
+      className="gacha-pop group relative aspect-square overflow-hidden rounded-xl bg-white text-center shadow-[0_6px_16px_rgb(23_33_43_/_0.11)]"
+      style={{
+        boxShadow: `inset 0 0 0 2px ${palette.outline}, 0 6px 16px rgb(23 33 43 / 0.11)`,
+      }}
+      title={`${result.species.name} — ${RARITY_LABELS[result.rarity]}`}
+    >
+      <span
+        aria-hidden
+        className="gacha-flash pointer-events-none absolute inset-0"
+        style={{ backgroundColor: palette.glow }}
+      />
+      <CreatureArt
+        speciesId={result.speciesId}
+        size={74}
+        className={`h-full w-full scale-110 p-1 ${result.rarity === "legendary" ? "gacha-legendary" : ""}`}
+      />
+      <span className="sr-only">
+        {result.species.name}, {RARITY_LABELS[result.rarity]}
+        {result.guaranteed ? ", guaranteed rare or better" : ""}
+      </span>
+    </article>
+  );
+}
+
 function summaryOf(results: readonly RevealCardResult[]): string {
   const noun = results.length === 1 ? "cat" : "cats";
   return `${results.length} ${noun} answered the call, best: ${RARITY_LABELS[bestRarity(results)]}`;
@@ -235,56 +261,35 @@ function summaryOf(results: readonly RevealCardResult[]): string {
 
 function bestRarity(results: readonly RevealCardResult[]): Rarity {
   let best: Rarity = "common";
-  for (const result of results) {
-    if (RARITIES.indexOf(result.rarity) > RARITIES.indexOf(best)) {
+  for (const result of results)
+    if (RARITIES.indexOf(result.rarity) > RARITIES.indexOf(best))
       best = result.rarity;
-    }
-  }
   return best;
 }
 
-/**
- * Turns a batch into a count that climbs one slot every
- * {@link REVEAL_STAGGER_MS}. The stagger is state, not movement, so it survives
- * reduced motion — the cats still arrive one at a time, they just do not pop.
- */
 function useStaggeredReveal(results: readonly RevealCardResult[]): number {
   const [revealed, setRevealed] = useState(0);
-
   useEffect(() => {
     setRevealed(0);
     if (results.length === 0) return;
-
     const timers = results.map((_, index) =>
-      setTimeout(() => setRevealed(index + 1), REVEAL_STAGGER_MS * (index + 1)),
+      setTimeout(
+        () => setRevealed(index + 1),
+        ANTICIPATION_MS + REVEAL_STAGGER_MS * (index + 1),
+      ),
     );
-
     return () => timers.forEach(clearTimeout);
   }, [results]);
-
   return revealed;
 }
 
-/**
- * True for one frame-run of `.land-jolt` each time a legendary flips in.
- *
- * The class is toggled rather than remounted on a key: remounting the altar
- * would drop keyboard focus from the summon button mid-reveal. CSS already
- * flattens the jolt under `prefers-reduced-motion`.
- */
-function useLegendaryJolt(
-  results: readonly RevealCardResult[],
-  revealed: number,
-): boolean {
-  const [jolting, setJolting] = useState(false);
-
+function useConsoleRecoil(results: readonly RevealCardResult[]): boolean {
+  const [active, setActive] = useState(false);
   useEffect(() => {
-    if (revealed === 0) return;
-    if (results[revealed - 1]?.rarity !== "legendary") return;
-    setJolting(true);
-    const timer = setTimeout(() => setJolting(false), JOLT_MS);
+    if (results.length === 0) return;
+    setActive(true);
+    const timer = setTimeout(() => setActive(false), 340);
     return () => clearTimeout(timer);
-  }, [results, revealed]);
-
-  return jolting;
+  }, [results]);
+  return active;
 }

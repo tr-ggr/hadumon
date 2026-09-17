@@ -77,7 +77,7 @@ function Toast({ toast, onDone }: { toast: ToastItem; onDone: () => void }) {
   return (
     <output
       aria-live="polite"
-      className={`panel-flat pointer-events-auto flex max-w-sm items-center gap-3 px-3 py-2 text-base shadow-[4px_4px_0_#000] ${
+      className={`panel-flat pointer-events-auto flex max-w-sm items-center gap-3 px-3 py-2 text-base shadow-[0_12px_24px_rgb(23_33_43_/_0.14)] ${
         toast.tone === "error"
           ? "border-pink text-pink"
           : "border-mint text-mint"

@@ -1,7 +1,6 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Press_Start_2P, VT323 } from "next/font/google";
 
 import { AppShell } from "~/components/AppShell";
 import { ToastProvider } from "~/components/ui";
@@ -37,24 +36,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  themeColor: "#0f0b1e",
+  themeColor: "#fff8e7",
   width: "device-width",
   initialScale: 1,
 };
-
-const pixel = Press_Start_2P({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-press-start",
-  display: "swap",
-});
-
-const body = VT323({
-  subsets: ["latin"],
-  weight: "400",
-  variable: "--font-vt323",
-  display: "swap",
-});
 
 export default async function RootLayout({
   children,
@@ -63,7 +48,7 @@ export default async function RootLayout({
   const user = await getCurrentUser();
 
   return (
-    <html lang="en" className={`${pixel.variable} ${body.variable}`}>
+    <html lang="en">
       <body>
         <TRPCReactProvider>
           <ToastProvider>

@@ -1,6 +1,6 @@
 "use client";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Panel } from "~/components/ui";
 import type { LadderRowView } from "~/server/api/routers/battle";
 import { api } from "~/trpc/react";
@@ -59,7 +59,7 @@ function LadderRow({ row }: { row: LadderRowView }) {
       </span>
       <span className="flex h-8 w-8 shrink-0 items-center justify-center">
         {row.sprite ? (
-          <PixelSprite speciesId={row.sprite} size={32} />
+          <CreatureArt speciesId={row.sprite} size={32} />
         ) : (
           <span className="text-ink-dim">·</span>
         )}

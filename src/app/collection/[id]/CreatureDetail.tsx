@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { UpgradeButton } from "~/components/adventure";
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import {
   Button,
@@ -119,7 +119,7 @@ export function CreatureDetail({ id }: { id: string }) {
               boxShadow: `0 0 10px ${palette.glow}`,
             }}
           >
-            <PixelSprite speciesId={c.speciesId} size={160} />
+            <CreatureArt speciesId={c.speciesId} size={160} />
           </div>
 
           <div className="min-w-0 flex-1 space-y-3">

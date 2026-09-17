@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import type { Element } from "~/server/game/elements";
 import type { Rarity } from "~/server/game/species";
@@ -43,21 +43,19 @@ export function CreatureCard({
 
   return (
     <article
-      className={`panel-flat flex flex-col items-center gap-1 p-2 text-center ${className}`}
+      className={`panel-flat flex flex-col items-center gap-2 p-3 text-center ${className}`}
       style={{
         borderColor: selected ? "var(--color-gold)" : palette.outline,
         boxShadow: selected
-          ? `0 0 0 2px var(--color-gold), 4px 4px 0 #000`
+          ? `0 0 0 3px var(--color-cobalt)`
           : creature.species.rarity === "legendary" ||
               creature.species.rarity === "epic"
-            ? `0 0 8px ${palette.glow}, 4px 4px 0 #000`
-            : "4px 4px 0 #000",
+            ? `0 8px 20px ${palette.glow}`
+            : "0 8px 20px rgb(23 33 43 / 0.08)",
       }}
     >
-      <PixelSprite speciesId={creature.speciesId} size={spriteSize} />
-      <h3 className="text-pixel text-ink w-full truncate text-[9px]">
-        {creature.name}
-      </h3>
+      <CreatureArt speciesId={creature.speciesId} size={spriteSize + 24} />
+      <h3 className="text-pixel text-ink w-full text-base">{creature.name}</h3>
       <div className="flex flex-wrap items-center justify-center gap-1">
         <ElementBadge element={creature.species.element} />
         <RarityBadge rarity={creature.species.rarity} />

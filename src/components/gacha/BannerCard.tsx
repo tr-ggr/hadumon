@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Button, ElementBadge, RarityBadge } from "~/components/ui";
 import type { RouterOutputs } from "~/trpc/react";
@@ -42,7 +42,7 @@ export function BannerCard({ banner, gems, busy, onSummon }: BannerCardProps) {
       <header className="flex items-start gap-3">
         {banner.featured ? (
           <div className="shrink-0">
-            <PixelSprite speciesId={banner.featured.id} size={64} />
+            <CreatureArt speciesId={banner.featured.id} size={64} />
           </div>
         ) : null}
         <div className="min-w-0 flex-1">

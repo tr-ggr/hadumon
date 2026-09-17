@@ -1,73 +1,46 @@
-import { PixelSprite } from "~/components/PixelSprite";
-import { ElementBadge } from "~/components/ui";
+import { CreatureArt } from "~/components/CreatureArt";
 import { STARTING_GEMS } from "~/server/game/economy";
 import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
 import { ActionLink } from "./LandingHeader";
-import { SECTION_SHELL, SectionHeading } from "./LandingSection";
+import { SECTION_SHELL } from "./LandingSection";
 
-/**
- * The close: the offer, the two account actions, and the one thing the page
- * has not shown yet — the three cats every account is handed on day one.
- *
- * Deliberately the bookend of the hero rather than one more section: the
- * ground drops to the deepest navy, and the panel wears the same gold border,
- * glow and scanlines as the altar the page opened on.
- */
 export function FinalCall() {
   return (
-    <section
-      aria-labelledby="close-heading"
-      className="border-edge bg-navy-deep border-t-2"
-    >
-      <div className={`${SECTION_SHELL} py-20 sm:py-28`}>
-        <div
-          className="panel scanlines mx-auto max-w-3xl p-5 text-center sm:p-8"
-          style={{
-            borderColor: "var(--color-gold)",
-            boxShadow:
-              "0 0 16px color-mix(in srgb, var(--color-gold) 35%, transparent), 4px 4px 0 #000",
-          }}
-        >
-          <SectionHeading
-            titleId="close-heading"
-            title={`Your first ${STARTING_GEMS} gems are waiting.`}
-            intro="Free account, no store. Pull ten, pick a zone, and let the squad get on with it."
-            tone="gold"
-            align="center"
-          />
-
-          <div className="mt-6 flex flex-wrap justify-center gap-2">
-            <ActionLink href="/signup" variant="primary">
+    <section aria-labelledby="close-heading" className="bg-sky-surface">
+      <div className={`${SECTION_SHELL} py-16 sm:py-24`}>
+        <div className="relative overflow-hidden rounded-[28px] bg-white px-5 pt-9 text-center shadow-[0_20px_50px_rgb(13_60_157_/_0.15)] sm:px-10 sm:pt-12">
+          <h2
+            id="close-heading"
+            className="text-ink mx-auto max-w-2xl text-4xl text-balance sm:text-6xl"
+          >
+            Three cats already packed.
+          </h2>
+          <p className="text-ink-soft mx-auto mt-4 max-w-xl text-lg">
+            Create an account and they arrive with {STARTING_GEMS} gems and
+            nowhere urgent to be.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <ActionLink href="/signup" size="lg">
               Create account
             </ActionLink>
-            <ActionLink href="/login" variant="secondary">
-              Log in
-            </ActionLink>
           </div>
-
           <ul
             aria-label="Starter cats every new account receives"
-            className="mt-6 grid grid-cols-3 gap-2"
+            className="mx-auto mt-5 flex max-w-xl items-end justify-center"
           >
-            {STARTER_SPECIES_IDS.map((id) => {
+            {STARTER_SPECIES_IDS.map((id, index) => {
               const species = getSpecies(id);
               return (
                 <li
                   key={id}
-                  className="panel-flat flex flex-col items-center gap-1 p-2"
+                  className={`relative flex w-1/3 flex-col items-center ${index === 1 ? "z-10" : ""}`}
                 >
-                  <PixelSprite speciesId={id} size={56} />
-                  <span className="text-pixel text-ink text-[8px] leading-relaxed">
-                    {species.name}
-                  </span>
-                  <ElementBadge element={species.element} />
+                  <CreatureArt speciesId={id} size={index === 1 ? 180 : 150} />
+                  <span className="sr-only">{species.name}</span>
                 </li>
               );
             })}
           </ul>
-          <p className="text-ink-dim mt-2 text-base leading-tight">
-            Yours from the first minute, before a single pull.
-          </p>
         </div>
       </div>
     </section>

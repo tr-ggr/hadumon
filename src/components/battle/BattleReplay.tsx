@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button } from "~/components/ui";
 import type { BattleDetailView } from "~/server/api/routers/battle";
 import { maxHpOf, type Combatant } from "~/server/game/battle";
@@ -207,7 +207,7 @@ function Side({
                 fighter.id === activeId ? "translate-x-0.5" : ""
               }`}
             >
-              <PixelSprite speciesId={fighter.speciesId} size={32} />
+              <CreatureArt speciesId={fighter.speciesId} size={32} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-1">
                   <span className="text-pixel text-ink truncate text-[7px]">
@@ -218,7 +218,7 @@ function Side({
                   </span>
                 </div>
                 <div
-                  className={`border-edge bg-navy-deep h-2 w-full border ${
+                  className={`border-edge bg-navy-deep h-2 w-full overflow-hidden border ${
                     fighter.id === targetId
                       ? "outline-gold outline outline-1"
                       : ""
@@ -227,8 +227,9 @@ function Side({
                   <div
                     className={`h-full ${tone === "mint" ? "bg-mint" : "bg-pink"}`}
                     style={{
-                      width: `${pct}%`,
-                      transition: "width 120ms steps(4)",
+                      transform: `scaleX(${pct / 100})`,
+                      transformOrigin: "left center",
+                      transition: "transform 180ms ease-out",
                     }}
                   />
                 </div>

@@ -9,7 +9,7 @@ import {
 
 import { SECTION_SHELL } from "./LandingSection";
 
-type ActionVariant = Extract<ButtonVariant, "primary" | "secondary">;
+type ActionVariant = Extract<ButtonVariant, "primary" | "secondary" | "ghost">;
 
 export interface ActionLinkProps {
   href: string;
@@ -58,11 +58,13 @@ export function ActionLink({
  */
 export function LandingHeader() {
   return (
-    <header className="border-edge bg-panel sticky top-0 z-20 border-b-2">
-      <div className={`${SECTION_SHELL} flex items-center gap-2 py-2`}>
+    <header className="border-edge/70 bg-cream/95 sticky top-0 z-30 border-b backdrop-blur-md">
+      <div
+        className={`${SECTION_SHELL} flex h-16 items-center gap-2 sm:h-[72px]`}
+      >
         <Link
           href="/"
-          className="text-pixel text-gold focus-visible:outline-gold shrink-0 text-xs focus-visible:outline-2 focus-visible:outline-offset-2"
+          className="text-pixel text-ink shrink-0 text-xl tracking-[-0.035em] sm:text-2xl"
         >
           Hadu<span className="text-pink">Mon</span>
         </Link>
@@ -70,9 +72,9 @@ export function LandingHeader() {
         <nav aria-label="Account" className="ml-auto flex items-center gap-1.5">
           <ActionLink
             href="/login"
-            variant="secondary"
+            variant="ghost"
             size="sm"
-            className="sm:px-3 sm:py-2 sm:text-xs"
+            className="px-2 text-sm sm:px-4"
           >
             Log in
           </ActionLink>
@@ -80,7 +82,7 @@ export function LandingHeader() {
             href="/signup"
             variant="primary"
             size="sm"
-            className="sm:px-3 sm:py-2 sm:text-xs"
+            className="px-3 text-xs sm:px-5 sm:text-sm"
           >
             Create account
           </ActionLink>

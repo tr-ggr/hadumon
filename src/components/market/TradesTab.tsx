@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button, Panel, useToast } from "~/components/ui";
 import { api } from "~/trpc/react";
 import type { RouterOutputs } from "~/trpc/react";
@@ -227,7 +227,7 @@ function Side({
       <span className={`text-pixel text-[7px] uppercase ${tone}`}>
         {caption}
       </span>
-      <PixelSprite speciesId={creature.speciesId} size={56} />
+      <CreatureArt speciesId={creature.speciesId} size={56} />
       <span className="text-ink w-full truncate text-base">
         {creature.name}
       </span>

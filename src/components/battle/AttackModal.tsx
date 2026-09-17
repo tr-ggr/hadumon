@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button, useToast } from "~/components/ui";
 import type {
   BattleDetailView,
@@ -83,7 +83,7 @@ export function AttackModal({
                   key={member.id}
                   className="flex w-14 flex-col items-center text-center"
                 >
-                  <PixelSprite speciesId={member.speciesId} size={40} />
+                  <CreatureArt speciesId={member.speciesId} size={40} />
                   <span className="text-ink-dim text-sm leading-none">
                     Lv {member.level}
                   </span>

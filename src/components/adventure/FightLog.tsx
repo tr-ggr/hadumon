@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import type { LatestFight } from "~/server/game/idle";
 
 export interface FightLogProps {
@@ -102,7 +102,7 @@ function Side({
       <ul className="flex flex-wrap items-center gap-1">
         {members.map((member) => (
           <li key={member.id} title={member.name}>
-            <PixelSprite speciesId={member.speciesId} size={28} />
+            <CreatureArt speciesId={member.speciesId} size={28} />
           </li>
         ))}
       </ul>

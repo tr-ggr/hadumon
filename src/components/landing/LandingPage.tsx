@@ -1,12 +1,9 @@
 import { featuredSpeciesFor, getBanner, getBanners } from "~/server/game/gacha";
-import { ElementBands } from "./ElementBands";
-import { ElementWheel } from "./ElementWheel";
 import { FairPlayPanel } from "./FairPlayPanel";
 import { FinalCall } from "./FinalCall";
-import { IdleTimeline } from "./IdleTimeline";
+import { ElementCollection, IdleLoop, ProofStrip } from "./LandingHighlights";
 import { LandingFooter } from "./LandingFooter";
 import { LandingHeader } from "./LandingHeader";
-import { ProductShots } from "./ProductShots";
 import { SummonAltar } from "./SummonAltar";
 
 export interface LandingPageProps {
@@ -26,16 +23,14 @@ export function LandingPage({ now }: LandingPageProps) {
   const featured = featuredSpeciesFor(now);
 
   return (
-    /* `landing-root` scopes the page's gold focus ring — see globals.css. */
-    <div className="landing-root bg-navy flex min-h-dvh flex-col">
+    <div className="landing-root bg-cream flex min-h-dvh flex-col overflow-hidden">
       <LandingHeader />
       <main className="flex-1">
         <SummonAltar banner={banner} featured={featured} />
-        <ElementBands />
-        <IdleTimeline />
-        <ElementWheel />
+        <ProofStrip />
+        <IdleLoop />
+        <ElementCollection />
         <FairPlayPanel banners={banners} />
-        <ProductShots />
         <FinalCall />
       </main>
       <LandingFooter />

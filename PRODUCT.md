@@ -45,15 +45,16 @@ Four claims the product can truthfully make and a neighbouring idle-gacha could 
 
 ## Brand Commitments
 
-- Name: HaduMon. Wordmark is text: "Hadu" in gold, "Mon" in pink, set in Press Start 2P.
-- The visual world is an established retro pixel interface: near-black indigo ground, violet panels with 2px edges, zero border radius, hard black offset shadows, Press Start 2P headings and VT323 body, coloured rarity glows, stepped (`steps(n)`) motion. New surfaces inherit it.
-- All creature art is generated inline-SVG pixel sprites (`src/components/PixelSprite.tsx`); there are no image files of cats.
+- Name: HaduMon. The wordmark is bold rounded type with Hadu in near-black and Mon in coral.
+- The visual world is the Gachapon Counter system: warm cream canvas, sky-blue structural surfaces, cobalt primary actions, acid-lime rewards, coral notifications, near-black text, rounded toy-like cards, and controlled soft shadows.
+- Every species resolves to transparent soft 3D collectible art through `src/components/CreatureArt.tsx` and `public/creatures/`. The tuxedo-cat identity stays consistent across forms.
 - Voice: dry and wry, in the register of the species flavor text ("Moss grows along its shoulders. It has not moved since Tuesday."). No hype.
 
 ## Evidence on Hand
 
 - Seed data and game rules in `src/server/game/*` (species, elements, banners, rates, zones, ladder tiers): the only source for any number shown to visitors.
 - Real app screenshots from the seeded `demo` account in `public/screenshots/` (desktop dashboard; mobile login, home, summon, adventure, battle, market).
+- Approved Gachapon Counter desktop/mobile comps in `.impeccable/mocks/approved/` and the creature-art provenance brief in `public/creatures/GENERATION_PROMPTS.md`.
 - `README.md` feature descriptions.
 - Absent, and must not be fabricated: testimonials, player counts, press mentions, ratings, awards, download or revenue figures.
 

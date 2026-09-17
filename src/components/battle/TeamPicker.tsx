@@ -1,6 +1,6 @@
 "use client";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { ElementBadge } from "~/components/ui";
 import type { Element } from "~/server/game/elements";
 import type { Rarity } from "~/server/game/species";
@@ -66,7 +66,7 @@ export function TeamPicker({
               }`}
             >
               <span className="relative">
-                <PixelSprite speciesId={creature.speciesId} size={44} />
+                <CreatureArt speciesId={creature.speciesId} size={44} />
                 {picked ? (
                   <span className="text-pixel bg-gold text-navy absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center text-[8px]">
                     {slot + 1}

@@ -1,498 +1,60 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-07T05:00:46+00:00",
-  "title": "Design System: HaduMon",
+  "generatedAt": "2026-09-17T17:52:09+08:00",
+  "title": "Design System: HaduMon Gachapon Counter",
   "extensions": {
     "colorMeta": {
-      "navy": {
-        "role": "neutral",
-        "displayName": "Indigo Ground",
-        "canonical": "oklch(16.6% 0.039 291.3)",
-        "tonalRamp": [
-          "oklch(15.0% 0.039 291.3)",
-          "oklch(26.4% 0.039 291.3)",
-          "oklch(37.9% 0.039 291.3)",
-          "oklch(49.3% 0.039 291.3)",
-          "oklch(60.7% 0.039 291.3)",
-          "oklch(72.1% 0.039 291.3)",
-          "oklch(83.6% 0.039 291.3)",
-          "oklch(95.0% 0.039 291.3)"
-        ]
-      },
-      "navy-deep": {
-        "role": "neutral",
-        "displayName": "Deep Well",
-        "canonical": "oklch(13.8% 0.035 290.9)",
-        "tonalRamp": [
-          "oklch(15.0% 0.035 290.9)",
-          "oklch(26.4% 0.035 290.9)",
-          "oklch(37.9% 0.035 290.9)",
-          "oklch(49.3% 0.035 290.9)",
-          "oklch(60.7% 0.035 290.9)",
-          "oklch(72.1% 0.035 290.9)",
-          "oklch(83.6% 0.035 290.9)",
-          "oklch(95.0% 0.035 290.9)"
-        ]
-      },
-      "panel": {
-        "role": "neutral",
-        "displayName": "Violet Panel",
-        "canonical": "oklch(22.7% 0.055 294.3)",
-        "tonalRamp": [
-          "oklch(15.0% 0.055 294.3)",
-          "oklch(26.4% 0.055 294.3)",
-          "oklch(37.9% 0.055 294.3)",
-          "oklch(49.3% 0.055 294.3)",
-          "oklch(60.7% 0.055 294.3)",
-          "oklch(72.1% 0.055 294.3)",
-          "oklch(83.6% 0.055 294.3)",
-          "oklch(95.0% 0.055 294.3)"
-        ]
-      },
-      "panel-hi": {
-        "role": "neutral",
-        "displayName": "Panel Highlight",
-        "canonical": "oklch(27.7% 0.070 293.1)",
-        "tonalRamp": [
-          "oklch(15.0% 0.070 293.1)",
-          "oklch(26.4% 0.070 293.1)",
-          "oklch(37.9% 0.070 293.1)",
-          "oklch(49.3% 0.070 293.1)",
-          "oklch(60.7% 0.070 293.1)",
-          "oklch(72.1% 0.070 293.1)",
-          "oklch(83.6% 0.070 293.1)",
-          "oklch(95.0% 0.070 293.1)"
-        ]
-      },
-      "edge": {
-        "role": "neutral",
-        "displayName": "Violet Edge",
-        "canonical": "oklch(40.0% 0.103 292.0)",
-        "tonalRamp": [
-          "oklch(15.0% 0.103 292.0)",
-          "oklch(26.4% 0.103 292.0)",
-          "oklch(37.9% 0.103 292.0)",
-          "oklch(49.3% 0.103 292.0)",
-          "oklch(60.7% 0.103 292.0)",
-          "oklch(72.1% 0.103 292.0)",
-          "oklch(83.6% 0.103 292.0)",
-          "oklch(95.0% 0.103 292.0)"
-        ]
-      },
-      "gold": {
-        "role": "primary",
-        "displayName": "Loot Gold",
-        "canonical": "oklch(84.4% 0.151 87.9)",
-        "tonalRamp": [
-          "oklch(15.0% 0.151 87.9)",
-          "oklch(26.4% 0.151 87.9)",
-          "oklch(37.9% 0.151 87.9)",
-          "oklch(49.3% 0.151 87.9)",
-          "oklch(60.7% 0.151 87.9)",
-          "oklch(72.1% 0.151 87.9)",
-          "oklch(83.6% 0.151 87.9)",
-          "oklch(95.0% 0.151 87.9)"
-        ]
-      },
-      "mint": {
-        "role": "secondary",
-        "displayName": "Gain Mint",
-        "canonical": "oklch(86.5% 0.156 161.6)",
-        "tonalRamp": [
-          "oklch(15.0% 0.156 161.6)",
-          "oklch(26.4% 0.156 161.6)",
-          "oklch(37.9% 0.156 161.6)",
-          "oklch(49.3% 0.156 161.6)",
-          "oklch(60.7% 0.156 161.6)",
-          "oklch(72.1% 0.156 161.6)",
-          "oklch(83.6% 0.156 161.6)",
-          "oklch(95.0% 0.156 161.6)"
-        ]
-      },
-      "pink": {
-        "role": "secondary",
-        "displayName": "Warning Pink",
-        "canonical": "oklch(73.6% 0.189 352.4)",
-        "tonalRamp": [
-          "oklch(15.0% 0.189 352.4)",
-          "oklch(26.4% 0.189 352.4)",
-          "oklch(37.9% 0.189 352.4)",
-          "oklch(49.3% 0.189 352.4)",
-          "oklch(60.7% 0.189 352.4)",
-          "oklch(72.1% 0.189 352.4)",
-          "oklch(83.6% 0.189 352.4)",
-          "oklch(95.0% 0.189 352.4)"
-        ]
-      },
-      "sky": {
-        "role": "secondary",
-        "displayName": "Rare Sky",
-        "canonical": "oklch(71.6% 0.153 250.4)",
-        "tonalRamp": [
-          "oklch(15.0% 0.153 250.4)",
-          "oklch(26.4% 0.153 250.4)",
-          "oklch(37.9% 0.153 250.4)",
-          "oklch(49.3% 0.153 250.4)",
-          "oklch(60.7% 0.153 250.4)",
-          "oklch(72.1% 0.153 250.4)",
-          "oklch(83.6% 0.153 250.4)",
-          "oklch(95.0% 0.153 250.4)"
-        ]
-      },
-      "ink": {
-        "role": "neutral",
-        "displayName": "Ink",
-        "canonical": "oklch(94.5% 0.030 298.3)",
-        "tonalRamp": [
-          "oklch(15.0% 0.030 298.3)",
-          "oklch(26.4% 0.030 298.3)",
-          "oklch(37.9% 0.030 298.3)",
-          "oklch(49.3% 0.030 298.3)",
-          "oklch(60.7% 0.030 298.3)",
-          "oklch(72.1% 0.030 298.3)",
-          "oklch(83.6% 0.030 298.3)",
-          "oklch(95.0% 0.030 298.3)"
-        ]
-      },
-      "ink-dim": {
-        "role": "neutral",
-        "displayName": "Dim Ink",
-        "canonical": "oklch(69.8% 0.078 296.4)",
-        "tonalRamp": [
-          "oklch(15.0% 0.078 296.4)",
-          "oklch(26.4% 0.078 296.4)",
-          "oklch(37.9% 0.078 296.4)",
-          "oklch(49.3% 0.078 296.4)",
-          "oklch(60.7% 0.078 296.4)",
-          "oklch(72.1% 0.078 296.4)",
-          "oklch(83.6% 0.078 296.4)",
-          "oklch(95.0% 0.078 296.4)"
-        ]
-      },
-      "flame": {
-        "role": "tertiary",
-        "displayName": "Flame",
-        "canonical": "oklch(70.0% 0.173 46.8)",
-        "tonalRamp": [
-          "oklch(15.0% 0.173 46.8)",
-          "oklch(26.4% 0.173 46.8)",
-          "oklch(37.9% 0.173 46.8)",
-          "oklch(49.3% 0.173 46.8)",
-          "oklch(60.7% 0.173 46.8)",
-          "oklch(72.1% 0.173 46.8)",
-          "oklch(83.6% 0.173 46.8)",
-          "oklch(95.0% 0.173 46.8)"
-        ]
-      },
-      "mist": {
-        "role": "tertiary",
-        "displayName": "Mist",
-        "canonical": "oklch(79.4% 0.086 228.8)",
-        "tonalRamp": [
-          "oklch(15.0% 0.086 228.8)",
-          "oklch(26.4% 0.086 228.8)",
-          "oklch(37.9% 0.086 228.8)",
-          "oklch(49.3% 0.086 228.8)",
-          "oklch(60.7% 0.086 228.8)",
-          "oklch(72.1% 0.086 228.8)",
-          "oklch(83.6% 0.086 228.8)",
-          "oklch(95.0% 0.086 228.8)"
-        ]
-      },
-      "volt": {
-        "role": "tertiary",
-        "displayName": "Volt",
-        "canonical": "oklch(87.1% 0.163 95.8)",
-        "tonalRamp": [
-          "oklch(15.0% 0.163 95.8)",
-          "oklch(26.4% 0.163 95.8)",
-          "oklch(37.9% 0.163 95.8)",
-          "oklch(49.3% 0.163 95.8)",
-          "oklch(60.7% 0.163 95.8)",
-          "oklch(72.1% 0.163 95.8)",
-          "oklch(83.6% 0.163 95.8)",
-          "oklch(95.0% 0.163 95.8)"
-        ]
-      },
-      "thorn": {
-        "role": "tertiary",
-        "displayName": "Thorn",
-        "canonical": "oklch(73.7% 0.160 146.5)",
-        "tonalRamp": [
-          "oklch(15.0% 0.160 146.5)",
-          "oklch(26.4% 0.160 146.5)",
-          "oklch(37.9% 0.160 146.5)",
-          "oklch(49.3% 0.160 146.5)",
-          "oklch(60.7% 0.160 146.5)",
-          "oklch(72.1% 0.160 146.5)",
-          "oklch(83.6% 0.160 146.5)",
-          "oklch(95.0% 0.160 146.5)"
-        ]
-      },
-      "shade": {
-        "role": "tertiary",
-        "displayName": "Shade",
-        "canonical": "oklch(60.7% 0.139 296.4)",
-        "tonalRamp": [
-          "oklch(15.0% 0.139 296.4)",
-          "oklch(26.4% 0.139 296.4)",
-          "oklch(37.9% 0.139 296.4)",
-          "oklch(49.3% 0.139 296.4)",
-          "oklch(60.7% 0.139 296.4)",
-          "oklch(72.1% 0.139 296.4)",
-          "oklch(83.6% 0.139 296.4)",
-          "oklch(95.0% 0.139 296.4)"
-        ]
-      }
+      "cream": { "role": "neutral", "displayName": "Warm Counter Cream", "canonical": "#FFF8E7", "tonalRamp": ["#302C23", "#5E5747", "#8B816A", "#B9AC8E", "#E7D7B2", "#F4E8CC", "#FFF2D8", "#FFF8E7"] },
+      "sky": { "role": "secondary", "displayName": "Structural Sky", "canonical": "#A9DDF5", "tonalRamp": ["#16313D", "#285669", "#3D7B95", "#61A1BF", "#8BC8E3", "#A9DDF5", "#D4EEFA", "#EDF9FE"] },
+      "cobalt": { "role": "primary", "displayName": "Action Cobalt", "canonical": "#1557D8", "tonalRamp": ["#081B44", "#0D327B", "#1248B2", "#1557D8", "#4A7CE3", "#7FA2ED", "#B4C8F6", "#E9EFFF"] },
+      "cobaltDark": { "role": "primary", "displayName": "Pressed Cobalt", "canonical": "#0D3C9D", "tonalRamp": ["#07142F", "#0A2766", "#0D3C9D", "#315BB0", "#657FC5", "#98A7DB", "#CCD3ED", "#F0F2FA"] },
+      "lime": { "role": "secondary", "displayName": "Ready Lime", "canonical": "#D8FF4F", "tonalRamp": ["#29320B", "#536619", "#7D9927", "#A8CC37", "#D8FF4F", "#E4FF7B", "#EFFFAB", "#F9FFE2"] },
+      "coral": { "role": "secondary", "displayName": "Notice Coral", "canonical": "#FF7163", "tonalRamp": ["#3D1714", "#762D28", "#B0443C", "#E85E52", "#FF7163", "#FF9B91", "#FFC4BE", "#FFF0EE"] },
+      "ink": { "role": "neutral", "displayName": "Toy Box Ink", "canonical": "#17212B", "tonalRamp": ["#17212B", "#34414E", "#53616F", "#758290", "#9AA5AF", "#C0C7CD", "#E4E8EB", "#F7F9FA"] },
+      "inkSoft": { "role": "neutral", "displayName": "Blue Grey Copy", "canonical": "#5B6C7D", "tonalRamp": ["#17202A", "#303D49", "#495968", "#5B6C7D", "#81909E", "#A9B3BC", "#D1D7DC", "#F2F5F7"] },
+      "flameSoft": { "role": "tertiary", "displayName": "Flame Shelf", "canonical": "#FFE6D8", "tonalRamp": ["#40261A", "#744A36", "#A97053", "#DC9B7B", "#F2BFA1", "#FFE6D8", "#FFF0E8", "#FFF9F5"] },
+      "mistSoft": { "role": "tertiary", "displayName": "Mist Shelf", "canonical": "#DFF4FC", "tonalRamp": ["#1B333D", "#365E70", "#548AA2", "#79B7D1", "#A8D9EA", "#DFF4FC", "#ECF9FE", "#F8FDFF"] },
+      "voltSoft": { "role": "tertiary", "displayName": "Volt Shelf", "canonical": "#FFF3BD", "tonalRamp": ["#3C3210", "#736222", "#AA9338", "#DDC65B", "#F2DD83", "#FFF3BD", "#FFF8D8", "#FFFCEF"] },
+      "thornSoft": { "role": "tertiary", "displayName": "Thorn Shelf", "canonical": "#E2F3D2", "tonalRamp": ["#24351B", "#466437", "#6D9456", "#9BC47A", "#BFE0A2", "#E2F3D2", "#EEF9E6", "#F8FDF4"] },
+      "shadeSoft": { "role": "tertiary", "displayName": "Shade Shelf", "canonical": "#E7E1FA", "tonalRamp": ["#2D2642", "#554879", "#806CAF", "#AA98D8", "#C9BDEB", "#E7E1FA", "#F0ECFC", "#FAF8FF"] }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "The landing page's single H1; always one line."
-      },
-      "headline": {
-        "displayName": "Headline",
-        "purpose": "Section titles, the wordmark, wide-screen panel titles."
-      },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Panel header titles and button text."
-      },
-      "body": {
-        "displayName": "Body",
-        "purpose": "Descriptions, flavor text, logs; VT323 at 16–20px with tabular numerals."
-      },
-      "label": {
-        "displayName": "Label",
-        "purpose": "Uppercase gold data labels inside panels, never eyebrows above headings."
-      }
+      "display": { "displayName": "Rounded Display", "purpose": "Wordmark, page headlines, and high-salience actions." },
+      "body": { "displayName": "Rounded Body", "purpose": "Readable explanations, labels, and game data." }
     },
     "shadows": [
-      {
-        "name": "panel-offset",
-        "value": "4px 4px 0 #000",
-        "purpose": "Every panel, card and toast."
-      },
-      {
-        "name": "control-offset",
-        "value": "3px 3px 0 #000",
-        "purpose": "Buttons, action links, stat tiles, zone cards."
-      },
-      {
-        "name": "pressed",
-        "value": "2px 2px 0 #000",
-        "purpose": "pixel-press active state, with translate(2px,2px)."
-      },
-      {
-        "name": "rarity-halo",
-        "value": "0 0 12px <rarity glow>, 4px 4px 0 #000",
-        "purpose": "Epic and legendary cards; 6px on badges; 16px gold on the landing close."
-      },
-      {
-        "name": "selected-ring",
-        "value": "0 0 0 2px #f5c542, 3px 3px 0 #000",
-        "purpose": "A selected zone or creature card."
-      }
+      { "name": "surface", "value": "0 10px 30px rgb(23 33 43 / 0.08)", "purpose": "Ambient lift for white panels." },
+      { "name": "console", "value": "0 24px 60px rgb(13 60 157 / 0.26)", "purpose": "Structural depth for the cobalt summon console." },
+      { "name": "auth", "value": "0 28px 80px rgb(13 60 157 / 0.20)", "purpose": "Single calm elevation for the auth shell." }
     ],
     "motion": [
-      {
-        "name": "pixel-press",
-        "value": "60ms steps(2)",
-        "purpose": "Button press: translate 2px, shadow shrinks."
-      },
-      {
-        "name": "gacha-pop",
-        "value": "260ms steps(6, end)",
-        "purpose": "Revealed card enters; cards stagger 150ms."
-      },
-      {
-        "name": "gacha-flash",
-        "value": "420ms ease-out",
-        "purpose": "Rarity-coloured overlay fades on reveal."
-      },
-      {
-        "name": "gacha-shine",
-        "value": "1.4s steps(8, end) infinite",
-        "purpose": "Legendary sprite brightness pulse."
-      },
-      {
-        "name": "land-bob",
-        "value": "1s steps(2, end) infinite",
-        "purpose": "Featured cat two-frame idle; paused offscreen or hidden tab."
-      },
-      {
-        "name": "land-jolt",
-        "value": "120ms steps(2, end)",
-        "purpose": "Altar shake when a legendary lands."
-      },
-      {
-        "name": "land-reveal",
-        "value": "320ms steps(6, end) both",
-        "purpose": "Scroll reveal: opacity and 8px rise; opacity-only under reduced motion."
-      },
-      {
-        "name": "bar-step",
-        "value": "160ms steps(4, end)",
-        "purpose": "Progress and HP bars via transform: scaleX."
-      },
-      {
-        "name": "wheel-step",
-        "value": "200ms steps(1, end)",
-        "purpose": "Type-chart arrow highlight, one stop every 900ms."
-      }
+      { "name": "entrance", "value": "360ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "One-shot hero and auth entrance." },
+      { "name": "tactile", "value": "140ms ease", "purpose": "Button press feedback." },
+      { "name": "reveal-stagger", "value": "150ms", "purpose": "Ordered summon result arrival." }
     ],
     "breakpoints": [
-      {
-        "name": "sm",
-        "value": "640px"
-      },
-      {
-        "name": "md",
-        "value": "768px"
-      },
-      {
-        "name": "lg",
-        "value": "1024px"
-      },
-      {
-        "name": "xl",
-        "value": "1280px"
-      }
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "short-landscape", "value": "min-width 700px and max-height 560px" }
     ]
   },
   "components": [
-    {
-      "name": "Primary Button",
-      "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Gold action button; the one primary per screen.",
-      "html": "<button class=\"ds-btn-primary\">SUMMON ×10</button>",
-      "css": ".ds-btn-primary{font-family:'Press Start 2P','Courier New',monospace;font-size:12px;line-height:1.6;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border:2px solid;border-radius:0;box-shadow:3px 3px 0 #000;cursor:pointer;transition:transform 60ms steps(2),box-shadow 60ms steps(2);background:#f5c542;color:#0f0b1e;border-color:#0f0b1e}.ds-btn-primary:hover{background:#ffd968}.ds-btn-primary:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #000;}.ds-btn-primary:focus-visible{outline:2px solid #f5c542;outline-offset:2px}.ds-btn-primary:disabled{opacity:.4;box-shadow:none;cursor:not-allowed}"
-    },
-    {
-      "name": "Secondary Button",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Violet secondary action.",
-      "html": "<button class=\"ds-btn-secondary\">Log in</button>",
-      "css": ".ds-btn-secondary{font-family:'Press Start 2P','Courier New',monospace;font-size:12px;line-height:1.6;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border:2px solid;border-radius:0;box-shadow:3px 3px 0 #000;cursor:pointer;transition:transform 60ms steps(2),box-shadow 60ms steps(2);background:#2a2047;color:#efe9ff;border-color:#4a3b7a}.ds-btn-secondary:hover{background:#4a3b7a}.ds-btn-secondary:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #000;}.ds-btn-secondary:focus-visible{outline:2px solid #f5c542;outline-offset:2px}"
-    },
-    {
-      "name": "Danger Button",
-      "kind": "button",
-      "refersTo": "button-danger",
-      "description": "Pink destructive action (logout, cancel a listing).",
-      "html": "<button class=\"ds-btn-danger\">Logout</button>",
-      "css": ".ds-btn-danger{font-family:'Press Start 2P','Courier New',monospace;font-size:12px;line-height:1.6;letter-spacing:.02em;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:8px 12px;border:2px solid;border-radius:0;box-shadow:3px 3px 0 #000;cursor:pointer;transition:transform 60ms steps(2),box-shadow 60ms steps(2);background:#ff6fb5;color:#0f0b1e;border-color:#0f0b1e}.ds-btn-danger:hover{background:#ff92c8}.ds-btn-danger:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #000;}"
-    },
-    {
-      "name": "Panel",
-      "kind": "card",
-      "refersTo": "panel",
-      "description": "The universal container: header bar, gold title, hard offset.",
-      "html": "<section class=\"ds-panel\"><header class=\"ds-panel-header\"><h2>Summoning</h2><a href=\"#\">Summon</a></header><div class=\"ds-panel-body\"><p>50 more summons until a guaranteed Epic+.</p></div></section>",
-      "css": ".ds-panel{background:#1e1633;border:2px solid #4a3b7a;border-radius:0;box-shadow:4px 4px 0 #000;color:#efe9ff;font-family:VT323,'Courier New',monospace;font-size:20px;line-height:1.35;max-width:420px}.ds-panel-header{display:flex;justify-content:space-between;align-items:center;gap:8px;background:#2a2047;border-bottom:2px solid #4a3b7a;padding:8px 12px}.ds-panel-header h2{margin:0;font-family:'Press Start 2P','Courier New',monospace;font-size:10px;line-height:1.6;letter-spacing:.02em;color:#f5c542}.ds-panel-header a{color:#5ef2b2;font-size:16px;text-decoration:underline;text-underline-offset:4px}.ds-panel-body{padding:12px}.ds-panel-body p{margin:0;color:#a294c9}"
-    },
-    {
-      "name": "Rarity Badge",
-      "kind": "chip",
-      "refersTo": "badge",
-      "description": "Uppercase pixel chip coloured by rarity or element; legendary glows.",
-      "html": "<span class=\"ds-badge ds-badge-legendary\">Legendary</span> <span class=\"ds-badge ds-badge-flame\">Flame</span>",
-      "css": ".ds-badge{display:inline-block;font-family:'Press Start 2P','Courier New',monospace;font-size:7px;line-height:1.6;letter-spacing:.02em;text-transform:uppercase;padding:2px 4px;border:1px solid currentColor;border-radius:0;background:#090616}.ds-badge-legendary{color:#f5c542;box-shadow:0 0 6px #fff0a8}.ds-badge-flame{color:#f2762e}"
-    },
-    {
-      "name": "Creature Card",
-      "kind": "custom",
-      "refersTo": "panel",
-      "description": "Rarity-framed tile with sprite, name, badges and Lv/PWR line; epic and legendary carry a halo.",
-      "html": "<article class=\"ds-creature ds-creature-legendary\"><svg class=\"ds-sprite\" viewBox=\"0 0 8 8\" shape-rendering=\"crispEdges\" width=\"72\" height=\"72\"><rect x=\"2\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"2\" width=\"4\" height=\"4\" fill=\"#f5d33a\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#fff0a8\"/><rect x=\"5\" y=\"3\" width=\"1\" height=\"1\" fill=\"#fff0a8\"/><rect x=\"2\" y=\"6\" width=\"4\" height=\"1\" fill=\"#6d4bd6\"/></svg><h3>Aurelynx</h3><div class=\"ds-creature-badges\"><span class=\"ds-badge ds-badge-volt\">Volt</span><span class=\"ds-badge ds-badge-legendary\">Legendary</span></div><p>Lv <b>1</b> <i>|</i> <em>555</em> PWR</p></article>",
-      "css": ".ds-creature{display:flex;flex-direction:column;align-items:center;gap:4px;width:120px;padding:8px;text-align:center;background:#1e1633;border:2px solid #7b8ba6;border-radius:0;box-shadow:4px 4px 0 #000;color:#efe9ff}.ds-creature-legendary{border-color:#f5c542;border-width:3px;box-shadow:0 0 12px #fff0a8,4px 4px 0 #000}.ds-sprite{image-rendering:pixelated}.ds-creature h3{margin:0;font-family:'Press Start 2P','Courier New',monospace;font-size:9px;line-height:1.6;width:100%}.ds-creature-badges{display:flex;flex-wrap:wrap;justify-content:center;gap:4px}.ds-creature p{margin:0;font-family:VT323,'Courier New',monospace;font-size:16px;line-height:1;color:#a294c9}.ds-creature b{font-weight:400;color:#efe9ff}.ds-creature i{font-style:normal;color:#4a3b7a;margin:0 4px}.ds-creature em{font-style:normal;color:#f5c542}.ds-badge{display:inline-block;font-family:'Press Start 2P','Courier New',monospace;font-size:7px;line-height:1.6;text-transform:uppercase;padding:2px 4px;border:1px solid currentColor;background:#090616}.ds-badge-volt{color:#f5d33a}.ds-badge-legendary{color:#f5c542;box-shadow:0 0 6px #fff0a8}"
-    },
-    {
-      "name": "Pity Bar",
-      "kind": "custom",
-      "refersTo": "panel",
-      "description": "Label/value row over an 8px inset track; the fill steps in four frames.",
-      "html": "<div class=\"ds-pity\"><div class=\"ds-pity-row\"><span class=\"ds-pity-label\">Pity</span><span class=\"ds-pity-value\">37/50</span></div><div class=\"ds-pity-track\" role=\"progressbar\" aria-valuemin=\"0\" aria-valuemax=\"50\" aria-valuenow=\"37\"><div class=\"ds-pity-fill\" style=\"transform:scaleX(.74)\"></div></div></div>",
-      "css": ".ds-pity{width:320px;display:flex;flex-direction:column;gap:4px}.ds-pity-row{display:flex;justify-content:space-between;align-items:baseline}.ds-pity-label{font-family:'Press Start 2P','Courier New',monospace;font-size:8px;letter-spacing:.025em;text-transform:uppercase;color:#a294c9}.ds-pity-value{font-family:VT323,'Courier New',monospace;font-size:16px;color:#efe9ff;font-variant-numeric:tabular-nums}.ds-pity-track{height:8px;border:2px solid #4a3b7a;background:#090616;box-sizing:content-box}.ds-pity-fill{height:100%;background:#5ef2b2;transform-origin:left;transition:transform 160ms steps(4,end)}"
-    },
-    {
-      "name": "Stat Tile",
-      "kind": "card",
-      "refersTo": "panel",
-      "description": "Value-first tile for wallets and roster counts.",
-      "html": "<dl class=\"ds-stat\"><dd>25</dd><dt>Cats</dt></dl>",
-      "css": ".ds-stat{display:flex;flex-direction:column;gap:4px;width:120px;margin:0;padding:8px;background:#1e1633;border:2px solid #4a3b7a;box-shadow:3px 3px 0 #000}.ds-stat dd{margin:0;font-family:'Press Start 2P','Courier New',monospace;font-size:12px;color:#f5c542;font-variant-numeric:tabular-nums}.ds-stat dt{font-family:'Press Start 2P','Courier New',monospace;font-size:8px;letter-spacing:.025em;text-transform:uppercase;color:#a294c9}"
-    },
-    {
-      "name": "Side Nav Item",
-      "kind": "nav",
-      "refersTo": "button-secondary",
-      "description": "Bordered nav item; the active one turns gold on Panel Hi.",
-      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-active\" href=\"#\">⌂ Home</a><a class=\"ds-nav-item\" href=\"#\">✦ Summon</a><a class=\"ds-nav-item\" href=\"#\">▶ Adventure</a></nav>",
-      "css": ".ds-nav{display:flex;flex-direction:column;gap:8px;width:160px}.ds-nav-item{display:block;padding:8px 12px;font-family:'Press Start 2P','Courier New',monospace;font-size:8px;line-height:1.6;text-decoration:none;color:#a294c9;background:#1e1633;border:2px solid #4a3b7a}.ds-nav-item:hover{color:#efe9ff}.ds-nav-active{color:#f5c542;background:#2a2047;border-color:#f5c542}"
-    }
+    { "name": "Primary Button", "kind": "button", "refersTo": "button-primary", "description": "Cobalt capsule for the main action.", "html": "<button class=\"ds-btn-primary\">Create account</button>", "css": ".ds-btn-primary{min-height:48px;padding:12px 20px;border:0;border-radius:999px;background:#1557D8;color:#fff;font:800 14px ui-rounded,system-ui;transition:transform 140ms ease,background 140ms ease}.ds-btn-primary:hover{background:#0D3C9D}.ds-btn-primary:active{transform:translateY(2px) scale(.99)}.ds-btn-primary:focus-visible{outline:3px solid #1557D8;outline-offset:3px}" },
+    { "name": "Reward Button", "kind": "button", "refersTo": "button-hero", "description": "Acid-lime capsule reserved for ready rewards and the primary summon.", "html": "<button class=\"ds-btn-reward\">Summon ×10</button>", "css": ".ds-btn-reward{min-height:56px;padding:14px 24px;border:0;border-radius:999px;background:#D8FF4F;color:#17212B;font:800 16px ui-rounded,system-ui;box-shadow:0 10px 20px rgb(216 255 79 / .24);transition:transform 140ms ease,filter 140ms ease}.ds-btn-reward:hover{filter:brightness(.96)}.ds-btn-reward:active{transform:translateY(2px) scale(.99)}.ds-btn-reward:focus-visible{outline:3px solid #1557D8;outline-offset:3px}" },
+    { "name": "Text Field", "kind": "input", "refersTo": "input", "description": "Stable white field with cobalt focus.", "html": "<label class=\"ds-label\">Username<input class=\"ds-input\" /></label>", "css": ".ds-label{display:grid;gap:8px;color:#17212B;font:800 14px ui-rounded,system-ui}.ds-input{min-height:48px;padding:0 16px;border:1px solid #C8DFEA;border-radius:12px;background:#fff;color:#17212B;font:400 16px ui-rounded,system-ui}.ds-input:focus{border-color:#1557D8;outline:3px solid #1557D8;outline-offset:3px}" },
+    { "name": "Surface Card", "kind": "card", "refersTo": "card", "description": "Quiet white toy surface with ambient depth.", "html": "<article class=\"ds-card\"><strong>A small ritual</strong><p>Summon, send, return.</p></article>", "css": ".ds-card{padding:20px;border-radius:16px;background:#fff;color:#17212B;box-shadow:0 12px 30px rgb(23 33 43 / .08);font-family:ui-rounded,system-ui}.ds-card strong{font-size:22px}.ds-card p{color:#5B6C7D}.ds-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgb(23 33 43 / .12)}" },
+    { "name": "Sticky Public Header", "kind": "nav", "refersTo": "navigation", "description": "Cream wordmark bar with direct account actions.", "html": "<nav class=\"ds-nav\"><strong>Hadu<span>Mon</span></strong><a href=\"#\">Log in</a><button>Create account</button></nav>", "css": ".ds-nav{display:flex;align-items:center;gap:16px;min-height:64px;padding:0 16px;background:#FFF8E7;color:#17212B;border-bottom:1px solid #C8DFEA;font-family:ui-rounded,system-ui}.ds-nav strong{font-size:24px}.ds-nav strong span{color:#FF7163}.ds-nav a{margin-left:auto;color:#17212B}.ds-nav button{min-height:40px;padding:8px 16px;border:0;border-radius:999px;background:#1557D8;color:#fff;font-weight:800}" }
   ],
   "narrative": {
-    "northStar": "The Handheld That Never Sleeps",
-    "overview": "## Overview\n\nHaduMon looks like a game that runs on a small, dark, backlit handheld: a near-black indigo screen, violet card panels with two-pixel edges, hard black drop shadows that sit exactly four pixels down and right, and every letter set in a bitmap face. Nothing is rounded, nothing is blurred, nothing tweens. Motion happens in frames (`steps(n)`), the way a sprite sheet animates, and colour is used as signal: gold means value and headings, mint means gain, pink means warning or a new thing, and each of the five elements and five rarities owns a colour the whole interface honours.\n\nThe system is dense but legible. The pixel display face (Press Start 2P) is tiny by design, six to twelve pixels for chrome and eighteen to twenty-four for a page headline, and it is always paired with a tall, narrow terminal face (VT323) for anything a player has to read at length. Depth comes from edges and offsets, not from light: a panel is a panel because it has a border and a shadow, not because it floats.\n\nThe public landing page inherits this world unchanged and adds one register the game itself does not use: full-bleed bands drenched in an element's own fur palette, one per element.",
-    "keyCharacteristics": [
-      "Near-black indigo ground with violet panels and 2px violet edges.",
-      "Zero border radius everywhere, including the Open Graph card.",
-      "Hard black offset shadows (4px panels, 3px buttons) plus coloured rarity glows.",
-      "Press Start 2P for headings and labels, VT323 for body; both bitmap-flavoured.",
-      "Stepped motion only, with a reduced-motion path for every animation.",
-      "Inline-SVG pixel sprites for every creature; no raster art of cats exists."
-    ],
+    "northStar": "Gachapon Counter",
+    "overview": "A bright collectible-toy counter where the next action is obvious, the cats carry the personality, and every reward feels tactile without becoming noisy.",
+    "keyCharacteristics": ["Warm cream canvas and sky-blue structure", "Cobalt actions and lime-ready rewards", "Soft 3D cats as the identity anchor", "Rounded surfaces with ambient depth", "Dry, factual copy"],
     "rules": [
-      {
-        "name": "The Signal Rule",
-        "body": "Gold, mint and pink are meanings before they are decoration: value, gain, warning. A gold border is reserved for the thing on the page that pays out (the altar, the close, a selected card); a second gold-bordered element on the same screen dilutes the first.",
-        "section": "colors"
-      },
-      {
-        "name": "The Ground Rule",
-        "body": "The page ground is Navy (#0f0b1e) and inset wells are Navy Deep; panels are the only lighter surfaces. Nothing sits on white.",
-        "section": "colors"
-      },
-      {
-        "name": "The Two-Voice Rule",
-        "body": "Press Start 2P names and labels; VT323 explains. Never set a paragraph in the pixel face, and never set a label in VT323.",
-        "section": "typography"
-      },
-      {
-        "name": "The Label-Not-Eyebrow Rule",
-        "body": "The gold 8px uppercase label lives inside panels beside a value. It is not placed above a section heading as a kicker; a heading carries itself.",
-        "section": "typography"
-      },
-      {
-        "name": "The One-Line Headline Rule",
-        "body": "Headline sizes are chosen so the text does not wrap in its column (the landing H1 steps 18 → 24 → 18px across breakpoints for exactly this reason).",
-        "section": "typography"
-      },
-      {
-        "name": "The Hard Offset Rule",
-        "body": "A shadow is a solid black rectangle offset down-right. No blur radius, no spread, no colour other than black, except a rarity halo, which is always paired with the offset.",
-        "section": "elevation"
-      }
+      { "name": "Reward color", "body": "Lime is reserved for a reward or summon that is ready now.", "section": "colors" },
+      { "name": "One focal motion", "body": "Use one authored reward moment; supporting movement stays restrained and finite.", "section": "elevation" }
     ],
-    "dos": [
-      "Do set every corner to 0px and every border to 2px Edge (1px on badges, 3px on legendary).",
-      "Do use `4px 4px 0 #000` on panels and `3px 3px 0 #000` on controls, and pair any glow with that offset.",
-      "Do draw creatures with `PixelSprite` (inline SVG runs) at 24, 32, 56, 64, 72 or 128px.",
-      "Do derive every number shown to players from `src/server/game/*`; the landing page has no hand-typed counts, rates or rewards.",
-      "Do animate with `steps(n)` and transform/opacity, stop loops when their element is off screen or the tab is hidden, and provide a `prefers-reduced-motion` path that keeps the state change.",
-      "Do keep the gold 8px uppercase label as an in-panel data label beside a value.",
-      "Do give every focusable element a visible 2px Gold outline on the landing page, and keep touch targets at 44px."
-    ],
-    "donts": [
-      "Don't introduce border radius, blurred shadows, gradients other than the 45° stripe, or a lighter ground.",
-      "Don't place an eyebrow kicker above a heading; the heading and its VT323 intro carry the section.",
-      "Don't set body copy in Press Start 2P or labels in VT323, and don't let a pixel-type heading wrap where a smaller step would keep it to one line.",
-      "Don't truncate a creature's name; use the dense card variant or a wider column instead.",
-      "Don't put a second gold-bordered surface on a screen that already has one.",
-      "Don't add icon packs, animation libraries or a second display face; the world is complete with two fonts, Unicode glyphs in the app shell, and inline SVG."
-    ]
+    "dos": ["Do derive public numbers from game constants.", "Do keep creature art large enough to carry personality.", "Do preserve 48px touch targets and cobalt focus."],
+    "donts": ["Don't use pixel art, hard offset shadows, or CRT effects.", "Don't imply paid gems or invent social proof.", "Don't animate continuously when a surface is offscreen or motion is reduced."]
   }
 }

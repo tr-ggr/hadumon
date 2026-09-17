@@ -1,80 +1,13 @@
 import { ImageResponse } from "next/og";
 
-import {
-  ARCHETYPE_SPRITES,
-  SPRITE_SIZE,
-} from "~/components/sprites/archetypes";
-import { buildRuns } from "~/components/PixelSprite";
-import { spriteColors } from "~/components/sprites/palettes";
-import { getSpecies, STARTER_SPECIES_IDS } from "~/server/game/species";
-
-/**
- * The share card. Everything here is drawn from the same modules the game
- * draws from — `ARCHETYPE_SPRITES`, `spriteColors`, `STARTER_SPECIES_IDS` —
- * all of which are pure TypeScript and safe on the edge runtime. Nothing from
- * `~/server/db`, `~/server/auth` or `~/env` may be imported into this route.
- */
 export const runtime = "edge";
-
 export const alt =
   "HaduMon — summon cats, send them to work, come back to the loot.";
-
 export const size = { width: 1200, height: 630 };
-
 export const contentType = "image/png";
 
-/* Palette, spelled out: Satori has no Tailwind theme to read tokens from.
-   These mirror `src/styles/globals.css`. */
-const NAVY = "#0f0b1e";
-const PANEL = "#1e1633";
-const EDGE = "#4a3b7a";
-const GOLD = "#f5c542";
-const PINK = "#ff6fb5";
-const INK = "#efe9ff";
-
-const TAGLINE = "Summon cats. Send them to work. Come back to the loot.";
-
-/** Press Start 2P is monospace at 1em, so a line's width is chars × size. */
-const TAGLINE_SIZE = 28;
-/** Wide enough for 35 characters, which breaks the tagline at its full stop. */
-const TAGLINE_WIDTH = TAGLINE_SIZE * 35;
-
-/** One starter, as inline SVG. Satori renders `<svg>` and its `<rect>`s. */
-function Sprite({ speciesId, size: px }: { speciesId: string; size: number }) {
-  const species = getSpecies(speciesId);
-  const runs = buildRuns(
-    ARCHETYPE_SPRITES[species.archetype],
-    spriteColors(species.element, species.rarity),
-  );
-
-  return (
-    <svg
-      width={px}
-      height={px}
-      viewBox={`0 0 ${SPRITE_SIZE} ${SPRITE_SIZE}`}
-      shapeRendering="crispEdges"
-    >
-      {runs.map((run) => (
-        <rect
-          key={`${run.y}-${run.x}`}
-          x={run.x}
-          y={run.y}
-          width={run.width}
-          height={1}
-          fill={run.fill}
-        />
-      ))}
-    </svg>
-  );
-}
-
 export default async function Image() {
-  // Press Start 2P by CodeMan38, licensed under the SIL Open Font License 1.1.
-  // Satori needs a TTF, so the woff2 `next/font` serves is no use here.
-  const pixelFont = await fetch(
-    new URL("./fonts/PressStart2P-Regular.ttf", import.meta.url),
-  ).then((res) => res.arrayBuffer());
-
+  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hadumon.vercel.app";
   return new ImageResponse(
     <div
       style={{
@@ -82,58 +15,84 @@ export default async function Image() {
         height: "100%",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-        background: NAVY,
-        fontFamily: "Press Start 2P",
+        gap: 48,
+        padding: 64,
+        background: "#fff8e7",
+        color: "#17212b",
+        fontFamily: "Arial, sans-serif",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          width: 1080,
-          padding: "52px 56px",
-          background: PANEL,
-          border: `4px solid ${EDGE}`,
-          /* The app's hard offset, scaled to the card. No blur, no radius. */
-          boxShadow: "12px 12px 0 #000",
-        }}
-      >
-        <div style={{ display: "flex", fontSize: 96, lineHeight: 1.2 }}>
-          <span style={{ color: GOLD }}>Hadu</span>
-          <span style={{ color: PINK }}>Mon</span>
-        </div>
-
+      <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
         <div
           style={{
             display: "flex",
-            marginTop: 30,
-            width: TAGLINE_WIDTH,
-            fontSize: TAGLINE_SIZE,
-            lineHeight: 1.6,
-            color: INK,
+            fontSize: 86,
+            fontWeight: 900,
+            letterSpacing: -5,
           }}
         >
-          {TAGLINE}
+          <span>Hadu</span>
+          <span style={{ color: "#ff7163" }}>Mon</span>
         </div>
-
-        <div style={{ display: "flex", gap: 32, marginTop: 36 }}>
-          {STARTER_SPECIES_IDS.map((speciesId) => (
-            <Sprite key={speciesId} speciesId={speciesId} size={128} />
-          ))}
+        <div
+          style={{
+            display: "flex",
+            marginTop: 24,
+            fontSize: 32,
+            fontWeight: 700,
+          }}
+        >
+          Summon cats. Send them to work. Come back to the loot.
+        </div>
+        <div style={{ display: "flex", marginTop: 42, gap: 14 }}>
+          <span
+            style={{
+              display: "flex",
+              background: "#1557d8",
+              color: "white",
+              borderRadius: 999,
+              padding: "14px 24px",
+              fontSize: 24,
+              fontWeight: 800,
+            }}
+          >
+            25 elemental cats
+          </span>
+          <span
+            style={{
+              display: "flex",
+              background: "#d8ff4f",
+              borderRadius: 999,
+              padding: "14px 24px",
+              fontSize: 24,
+              fontWeight: 800,
+            }}
+          >
+            Nothing to buy
+          </span>
         </div>
       </div>
+      <div
+        style={{
+          display: "flex",
+          width: 460,
+          height: 500,
+          borderRadius: 32,
+          background: "#a9ddf5",
+          alignItems: "flex-end",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        <img
+          src={`${site}/creatures/mascot.webp`}
+          alt="HaduMon mascot"
+          width="460"
+          height="420"
+          style={{ objectFit: "contain" }}
+        />
+      </div>
     </div>,
-    {
-      ...size,
-      fonts: [
-        {
-          name: "Press Start 2P",
-          data: pixelFont,
-          style: "normal",
-          weight: 400,
-        },
-      ],
-    },
+    { ...size },
   );
 }

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { Button, Panel } from "~/components/ui";
 import type {
   BattleDetailView,
@@ -119,7 +119,7 @@ function OpponentRow({
         <ul className="mt-1 flex items-end gap-1">
           {opponent.team.map((member) => (
             <li key={member.id} className="flex flex-col items-center">
-              <PixelSprite speciesId={member.speciesId} size={36} />
+              <CreatureArt speciesId={member.speciesId} size={36} />
               <span className="text-ink-dim text-sm leading-none">
                 Lv {member.level}
               </span>

@@ -6,6 +6,7 @@ export interface PanelProps {
   children?: ReactNode;
   className?: string;
   bodyClassName?: string;
+  tone?: "default" | "sky" | "featured";
 }
 
 export function Panel({
@@ -14,22 +15,23 @@ export function Panel({
   children,
   className = "",
   bodyClassName = "",
+  tone = "default",
 }: PanelProps) {
   return (
-    <section className={`panel ${className}`}>
+    <section
+      className={`panel ${tone === "sky" ? "bg-sky-soft" : ""} ${tone === "featured" ? "border-cobalt border-2" : ""} ${className}`}
+    >
       {(title ?? action) ? (
-        <header className="border-edge bg-panel-hi flex items-center justify-between gap-2 border-b-2 px-3 py-2">
+        <header className="flex items-center justify-between gap-3 px-4 pt-4">
           {title ? (
-            <h2 className="text-pixel text-gold text-[10px] sm:text-xs">
-              {title}
-            </h2>
+            <h2 className="text-pixel text-ink text-lg sm:text-xl">{title}</h2>
           ) : (
             <span />
           )}
           {action}
         </header>
       ) : null}
-      <div className={`p-3 ${bodyClassName}`}>{children}</div>
+      <div className={`p-4 ${bodyClassName}`}>{children}</div>
     </section>
   );
 }

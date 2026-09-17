@@ -5,13 +5,14 @@ A web-based **idle creature-collector RPG** about feline "Fakemon".
 Pull cats from a **Gacha Summoning Hub**, send squads on **Idle Adventures**
 that resolve server-side auto-battles over elapsed time, fight other trainers'
 defense teams on an **async ranked ladder**, and buy, sell and trade cats on the
-**Marketplace**. The UI is a retro pixel-art, mobile-first dashboard that works
-down to 375px.
+**Marketplace**. The UI is a bright, mobile-first Gachapon Counter world that
+works down to 375px: warm cream, sky blue, cobalt actions, lime rewards, and
+soft 3D collectible-cat art.
 
 Creatures come in five elements (`flame`, `mist`, `volt`, `thorn`, `shade`) and
-five rarities (`common` → `legendary`), and are drawn as 32×32 pixel sprites
-generated from six archetype maps tinted per element and rarity — no image
-assets, everything is inline SVG.
+five rarities (`common` → `legendary`), and are drawn as transparent soft 3D
+collectible forms under `public/creatures/`. The typed `CreatureArt` manifest
+prevents a species from shipping without art.
 
 ## Features
 
@@ -36,9 +37,8 @@ assets, everything is inline SVG.
   and one-tap claim, your last five summons, pity progress, ladder standing,
   attacks left today and pending trade offers, with empty states that always
   point at the next thing to do.
-- **Retro shell** — pixel font headings, hard-shadow panels, rarity glows,
-  element-tinted badges, and an optional CRT scanline overlay (the `CRT` button
-  in the top bar; off by default, remembered per browser).
+- **Gachapon Counter shell** — rounded navigation rail, raised mobile Summon
+  action, capsule press states, readable wallet pills, and mascot-led Home.
 
 ## Landing page
 
@@ -63,7 +63,12 @@ Open Graph and Twitter card URLs resolve against, including the generated
 
 ## Screenshots
 
-Captured headlessly at 375px (mobile) and 1280px (desktop) from the seeded `demo` account.
+The seeded flow captures below remain as regression fixtures for the game routes. The
+approved Gachapon Counter binding comps and fresh public/auth review captures live
+under [`.impeccable/mocks/approved/`](.impeccable/mocks/approved/).
+
+- [Desktop dashboard comp](.impeccable/mocks/approved/gachapon-dashboard-desktop.png)
+- [Mobile dashboard comp](.impeccable/mocks/approved/gachapon-dashboard-mobile.png)
 
 | Login                                         | Dashboard                                        | Summon                                          | Adventure                                             | Battle                                          | Market                                          |
 | --------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
@@ -77,7 +82,7 @@ Captured headlessly at 375px (mobile) and 1280px (desktop) from the seeded `demo
 - **tRPC v11** + TanStack Query + superjson
 - **Drizzle ORM** with the `postgres` driver, against a **local Postgres**
 - **Tailwind CSS v4** (theme tokens in `src/styles/globals.css`)
-- **Vitest** for the pure game logic (166 tests)
+- **Vitest** for the pure game logic and art manifest (135 tests)
 - Package manager: **pnpm**
 
 Auth is custom: `scrypt` password hashing plus an opaque session cookie
@@ -171,9 +176,8 @@ src/
     collection/           Collection grid + /collection/[id] detail
     not-found.tsx         Shared 404
   components/
-    AppShell.tsx          Top bar (wallet chips, CRT toggle), side + bottom nav
-    PixelSprite.tsx       Inline-SVG 32×32 sprite renderer
-    sprites/              Archetype pixel maps + element/rarity palettes
+    AppShell.tsx          Wallet header, desktop rail, mobile nav + More sheet
+    CreatureArt.tsx       Typed transparent WebP creature-art manifest
     ui/                   Button, Panel, Stat, badges, CreatureCard,
                           Toast (app-wide `useToast`), Skeleton
     gacha/ adventure/     Feature components (banners, pity bar, expedition
@@ -195,7 +199,7 @@ src/
       progression.ts      Upgrade tiers and costs
       rating.ts           Elo, tiers, daily attack quota
       market.ts           Price validation and marketplace rules
-  styles/globals.css      Tailwind v4 theme tokens and retro utilities
+  styles/globals.css      Tailwind v4 Gachapon Counter theme tokens and utilities
 ```
 
 Server-side game rules live in `src/server/game/*` as pure functions with unit

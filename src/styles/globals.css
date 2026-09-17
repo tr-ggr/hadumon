@@ -1,200 +1,321 @@
 @import "tailwindcss";
 
 @theme {
-  /* Retro palette ------------------------------------------------------- */
-  --color-navy: #0f0b1e;
-  --color-navy-deep: #090616;
-  --color-panel: #1e1633;
-  --color-panel-hi: #2a2047;
-  --color-edge: #4a3b7a;
-  --color-gold: #f5c542;
-  --color-mint: #5ef2b2;
-  --color-pink: #ff6fb5;
-  --color-sky: #4fa8ff;
-  --color-ink: #efe9ff;
-  --color-ink-dim: #a294c9;
-
-  /* Element colours ----------------------------------------------------- */
-  --color-flame: #f2762e;
-  --color-mist: #7fc7e8;
-  --color-volt: #f5d33a;
-  --color-thorn: #5cc46a;
-  --color-shade: #8b6ecb;
-
-  /* Fonts --------------------------------------------------------------- */
-  --font-pixel: var(--font-press-start), "Courier New", monospace;
-  --font-body: var(--font-vt323), "Courier New", monospace;
+  --color-cream: #fff8e7;
+  --color-sky-surface: #a9ddf5;
+  --color-sky-soft: #e7f7fd;
+  --color-cobalt: #1557d8;
+  --color-cobalt-dark: #0d3c9d;
+  --color-lime: #d8ff4f;
+  --color-coral: #ff7163;
+  --color-ink: #17212b;
+  --color-ink-soft: #5b6c7d;
+  --color-white: #ffffff;
+  --color-flame: #f07b4d;
+  --color-mist: #8acbe7;
+  --color-volt: #f5c84c;
+  --color-thorn: #77bd70;
+  --color-shade: #8275c6;
+  /* Compatibility aliases for route-level utility classes. */
+  --color-navy: #fff8e7;
+  --color-navy-deep: #f4ead4;
+  --color-panel: #ffffff;
+  --color-panel-hi: #e7f7fd;
+  --color-edge: #c8dfea;
+  --color-gold: #f5c84c;
+  --color-mint: #5cbf89;
+  --color-pink: #ff7163;
+  --color-sky: #1557d8;
+  --color-ink-dim: #5b6c7d;
+  --font-display:
+    ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
+  --font-body: ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
 }
 
 @layer base {
-  html {
-    color-scheme: dark;
+  :root {
+    color-scheme: light;
   }
-
+  html {
+    background: var(--color-cream);
+  }
   body {
-    background-color: var(--color-navy);
+    background: var(--color-cream);
     color: var(--color-ink);
     font-family: var(--font-body);
-    font-size: 20px;
-    line-height: 1.35;
-    -webkit-font-smoothing: none;
+    font-size: 16px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
   }
-
   h1,
   h2,
   h3,
-  h4 {
-    font-family: var(--font-pixel);
-    line-height: 1.6;
-    letter-spacing: 0.02em;
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
   }
-
+  a,
+  button,
+  input,
+  select,
+  textarea {
+    outline-color: var(--color-cobalt);
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-cobalt);
+    outline-offset: 3px;
+  }
   ::selection {
-    background: var(--color-pink);
-    color: var(--color-navy);
+    background: var(--color-lime);
+    color: var(--color-ink);
   }
-
-  /* Chunky retro scrollbars */
   * {
-    scrollbar-color: var(--color-edge) var(--color-navy-deep);
+    scrollbar-color: #8acbe7 var(--color-cream);
     scrollbar-width: thin;
   }
 }
 
-/* Hard-edged panel: 2px border, offset black shadow, zero radius. */
+@utility text-pixel {
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+}
 @utility panel {
-  background-color: var(--color-panel);
-  border: 2px solid var(--color-edge);
-  border-radius: 0;
-  box-shadow: 4px 4px 0 #000;
+  background: var(--color-white);
+  border: 1px solid rgb(23 33 43 / 0.08);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgb(23 33 43 / 0.08);
 }
-
 @utility panel-flat {
-  background-color: var(--color-panel);
-  border: 2px solid var(--color-edge);
-  border-radius: 0;
+  background: var(--color-white);
+  border: 1px solid rgb(23 33 43 / 0.08);
+  border-radius: 16px;
 }
-
-/* Pressable retro button feel. */
 @utility pixel-press {
   transition:
-    transform 60ms steps(2),
-    box-shadow 60ms steps(2);
-
+    transform 140ms ease,
+    box-shadow 140ms ease,
+    filter 140ms ease;
   &:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 #000;
+    transform: translateY(2px) scale(0.99);
   }
 }
-
-@utility text-pixel {
-  font-family: var(--font-pixel);
+.app-shell {
+  background: var(--color-cream);
+}
+.app-main {
+  width: min(100%, 1180px);
+}
+.app-rail {
+  background: var(--color-white);
+  border: 1px solid rgb(23 33 43 / 0.08);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgb(23 33 43 / 0.06);
+}
+.surface-sky {
+  background: var(--color-sky-surface);
+}
+.reward-console {
+  background: var(--color-cobalt);
+  color: var(--color-white);
+  border-radius: 24px;
+  box-shadow: 0 18px 36px rgb(21 87 216 / 0.22);
+}
+.reward-console button {
+  background: var(--color-lime);
+  color: var(--color-ink);
+  border-radius: 999px;
+  box-shadow: 0 8px 18px rgb(216 255 79 / 0.24);
+}
+.mode-tile {
+  min-height: 116px;
+  border-radius: 20px;
+  transition:
+    transform 160ms ease,
+    filter 160ms ease;
+}
+.mode-tile:hover {
+  transform: translateY(-3px);
+  filter: saturate(1.08);
+}
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+.pill {
+  border-radius: 999px;
+}
+.muted {
+  color: var(--color-ink-soft);
+}
+.page-wrap {
+  padding: 24px 16px 64px;
 }
 
-/* Landing ------------------------------------------------------------------
-   Stepped motion for the public landing page. Every animation drops its
-   spatial movement under `prefers-reduced-motion` and keeps its meaning. */
-
-/* One focus ring for the whole page, so the summon buttons, the shot scroller
-   and the account links all light up the same gold instead of falling back to
-   the browser's default outline. Scoped to the landing page so the logged-in
-   app keeps whatever it already does. */
-.landing-root :focus-visible {
-  outline: 2px solid var(--color-gold);
-  outline-offset: 2px;
+.element-surface-flame {
+  background: #ffe6d8;
+}
+.element-surface-mist {
+  background: #dff4fc;
+}
+.element-surface-volt {
+  background: #fff3bd;
+}
+.element-surface-thorn {
+  background: #e2f3d2;
+}
+.element-surface-shade {
+  background: #e7e1fa;
 }
 
-/* Two frames only: `steps(2, end)` samples this at 0% and 50%. */
-@keyframes land-bob {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-
-@keyframes land-jolt {
-  0% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(2px, 2px);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
-@keyframes land-reveal {
-  0% {
+@keyframes land-hero-in {
+  from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(14px);
   }
-  100% {
+  to {
     opacity: 1;
     transform: translateY(0);
   }
 }
-
-.land-bob {
-  animation: land-bob 1s steps(2, end) infinite;
+@keyframes land-featured-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
 }
-
-.land-jolt {
-  animation: land-jolt 120ms steps(2, end);
+@keyframes land-console-recoil {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(3px) scale(0.995);
+  }
 }
-
+@keyframes land-slot-waiting {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes auth-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.land-hero-copy {
+  animation: land-hero-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.land-hero-console {
+  animation: land-hero-in 420ms 90ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.land-featured-float {
+  animation: land-featured-float 3.2s ease-in-out infinite;
+}
+.land-console-recoil {
+  animation: land-console-recoil 340ms ease-out;
+}
+.land-slot-waiting {
+  animation: land-slot-waiting 500ms ease-in-out infinite;
+}
 .land-reveal {
-  animation: land-reveal 320ms steps(6, end) both;
-}
-
-/* Pre-reveal state. Applied from the hook, never in static markup, so the
-   content stays visible if JavaScript never runs. */
-.land-hidden {
   opacity: 0;
+  transform: translateY(14px);
+}
+.land-revealed {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 360ms ease-out,
+    transform 360ms ease-out;
+}
+.landing-lift {
+  transition:
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
+}
+.landing-lift:hover,
+.landing-lift:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 38px rgb(23 33 43 / 0.12);
+}
+.auth-shell {
+  animation: auth-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+@keyframes capsule-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+.capsule-float {
+  animation: capsule-float 2.4s ease-in-out infinite;
+}
 @media (prefers-reduced-motion: reduce) {
-  /* Movement goes; the state change stays. */
-  .land-bob,
-  .land-jolt {
-    animation: none;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .land-reveal,
+  .land-revealed {
+    opacity: 1;
     transform: none;
   }
-
-  @keyframes land-reveal {
-    0% {
-      opacity: 0;
-    }
-    100% {
-      opacity: 1;
-    }
-  }
-
-  .land-hidden {
-    opacity: 1;
+}
+@media (max-width: 767px) {
+  .page-wrap {
+    padding: 16px 12px 92px;
   }
 }
 
-/* Optional CRT scanline overlay (Sprint 06 may wire a toggle to it). */
-@utility scanlines {
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background: repeating-linear-gradient(
-      to bottom,
-      rgb(0 0 0 / 0.16) 0px,
-      rgb(0 0 0 / 0.16) 1px,
-      transparent 1px,
-      transparent 3px
-    );
+@media (min-width: 700px) and (max-height: 560px) {
+  .auth-page {
+    align-items: flex-start;
+    padding-block: 12px;
+  }
+  .auth-shell {
+    grid-template-columns: 0.72fr 1.28fr;
+  }
+  .auth-shell > :first-child {
+    min-height: 405px;
+    margin: 12px;
+    padding-top: 18px;
+    justify-content: center;
+  }
+  .auth-shell > :last-child {
+    padding: 24px 28px;
+  }
+  .auth-shell > :last-child > a {
+    margin-bottom: 14px;
+  }
+  .auth-shell form {
+    margin-top: 14px;
+    gap: 10px;
+  }
+  .auth-mascot {
+    margin-top: 0;
+    max-width: 240px;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { PixelSprite } from "~/components/PixelSprite";
+import { CreatureArt } from "~/components/CreatureArt";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 import { Panel } from "~/components/ui";
 import { RARITY_LABELS } from "~/server/game/species";
@@ -42,7 +42,7 @@ export function RecentPulls({
         <ul className="divide-edge divide-y-2">
           {rows.map((entry) => (
             <li key={entry.id} className="flex items-center gap-2 py-1.5">
-              <PixelSprite speciesId={entry.speciesId} size={28} />
+              <CreatureArt speciesId={entry.speciesId} size={28} />
               <span className="text-ink min-w-0 flex-1 truncate text-lg leading-none">
                 {entry.species.name}
               </span>
