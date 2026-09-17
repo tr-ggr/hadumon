@@ -63,4 +63,4 @@ export function CreatureArt({
   );
 }
 
-export const MASCOT_ART = "/creatures/mascot.webp";
+export const MASCOT_ART = CREATURE_ART_MANIFEST.flameclaw!;

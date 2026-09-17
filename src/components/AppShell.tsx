@@ -40,11 +40,11 @@ export function AppShell({
   )
     return <>{children}</>;
   return (
-    <div className="app-shell flex min-h-dvh flex-col">
-      <TopBar />
-      <div className="mx-auto flex w-full max-w-[1280px] flex-1 gap-5 px-3 py-4 sm:px-5 lg:gap-7 lg:px-6">
-        <SideNav pathname={pathname} />
-        <main className="app-main min-w-0 flex-1 pb-20 md:pb-6">
+    <div className="app-shell min-h-dvh md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
+      <SideNav pathname={pathname} />
+      <div className="flex min-h-dvh min-w-0 flex-col">
+        <TopBar />
+        <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
           {children}
         </main>
       </div>
@@ -66,11 +66,14 @@ function TopBar() {
   });
   return (
     <header className="bg-cream/95 sticky top-0 z-30 border-b border-black/5 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1280px] items-center gap-3 px-3 py-3 sm:px-5 lg:px-6">
-        <Link href="/" className="text-pixel text-ink text-xl sm:text-2xl">
+      <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-3 px-3 py-3 sm:px-5 lg:px-6">
+        <Link
+          href="/"
+          className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
+        >
           Hadu<span className="text-coral">Mon</span>
         </Link>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
           <WalletChip
             label="Gold"
             value={me.data?.wallet.gold}
@@ -85,7 +88,7 @@ function TopBar() {
             type="button"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
-            className="touch-target text-ink-soft hover:bg-sky-soft rounded-full px-3 text-xs font-bold disabled:opacity-50"
+            className="touch-target text-ink-soft hover:bg-sky-soft max-w-40 truncate rounded-full px-3 text-xs font-bold disabled:opacity-50"
           >
             {me.data?.user.displayName ?? "Logout"}
           </button>
@@ -119,13 +122,16 @@ function WalletChip({
 
 function SideNav({ pathname }: { pathname: string }) {
   return (
-    <nav className="app-rail hidden w-48 shrink-0 flex-col gap-1 p-3 md:flex">
-      <Link
-        href="/"
-        className="text-ink-soft mb-4 px-3 text-xs font-bold tracking-[0.16em] uppercase"
-      >
-        Trainer menu
+    <nav
+      aria-label="Primary navigation"
+      className="app-rail sticky top-0 hidden h-dvh w-48 shrink-0 flex-col gap-1 overflow-y-auto px-3 py-4 md:flex"
+    >
+      <Link href="/" className="text-pixel text-ink mb-8 px-3 text-2xl">
+        Hadu<span className="text-coral">Mon</span>
       </Link>
+      <p className="text-ink-soft mb-3 px-3 text-xs font-bold tracking-[0.16em] uppercase">
+        Trainer menu
+      </p>
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.href}

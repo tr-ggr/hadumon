@@ -41,7 +41,7 @@ HaduMon is a bright collectible-toy counter: the player returns to a friendly ca
 
 ## Layout and responsive behavior
 
-Desktop uses a 192px rounded rail and a max-width 1180px content field. Mobile collapses to a five-destination bottom bar with a raised central Summon action; More opens a focusable sheet for Market, Collection, account, and logout. The header keeps the trainer identity and gold/gem pills readable at every width.
+Desktop uses a permanent 192px full-height sidebar with a white surface and subtle right border; the HaduMon wordmark anchors its navigation. The adjacent content column has a sticky account and wallet header plus a centered 1180px maximum-width content field. Mobile collapses to a five-destination bottom bar with a raised central Summon action; More opens a focusable sheet for Market, Collection, account, and logout. On mobile, the header keeps the wordmark, trainer identity, and gold/gem pills readable.
 
 Home leads with greeting and mascot, then one state-aware return-player console, a compact wallet/rank strip, three mode actions, top squad, and grouped updates. Gameplay pages inherit the same surfaces and action hierarchy. Empty, loading, error, and locked states use the same language.
 

@@ -1,10 +1,15 @@
 import { ImageResponse } from "next/og";
 
+import { MASCOT_ART } from "~/components/CreatureArt";
+
 export const runtime = "edge";
 export const alt =
   "HaduMon — summon cats, send them to work, come back to the loot.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+
+// ImageResponse cannot decode WebP, so use the PNG rendition of the shared art.
+const OPEN_GRAPH_MASCOT_ART = MASCOT_ART.replace(/\.webp$/, "-og.png");
 
 export default async function Image() {
   const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hadumon.vercel.app";
@@ -85,10 +90,10 @@ export default async function Image() {
         }}
       >
         <img
-          src={`${site}/creatures/mascot.webp`}
+          src={`${site}${OPEN_GRAPH_MASCOT_ART}`}
           alt="HaduMon mascot"
           width="460"
-          height="420"
+          height="460"
           style={{ objectFit: "contain" }}
         />
       </div>

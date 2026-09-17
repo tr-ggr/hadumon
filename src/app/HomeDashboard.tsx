@@ -95,7 +95,7 @@ export function HomeDashboard() {
           src={MASCOT_ART}
           alt="HaduMon mascot, a mildly unimpressed tuxedo cat"
           width={520}
-          height={360}
+          height={520}
           priority
           className="relative z-10 mx-auto mt-5 -mb-8 w-full max-w-[520px] object-contain lg:mt-0"
         />

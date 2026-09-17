@@ -108,13 +108,12 @@
   background: var(--color-cream);
 }
 .app-main {
-  width: min(100%, 1180px);
+  width: 100%;
+  max-width: 1180px;
 }
 .app-rail {
   background: var(--color-white);
-  border: 1px solid rgb(23 33 43 / 0.08);
-  border-radius: 24px;
-  box-shadow: 0 10px 30px rgb(23 33 43 / 0.06);
+  border-right: 1px solid rgb(23 33 43 / 0.08);
 }
 .surface-sky {
   background: var(--color-sky-surface);
