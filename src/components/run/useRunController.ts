@@ -4,8 +4,9 @@ import { useCallback, useRef, useState } from "react";
 
 import { useToast } from "~/components/ui";
 import type { Element } from "~/server/game/elements";
-import type { Action } from "~/server/game/match";
+import type { Action, MatchEvent } from "~/server/game/match";
 import type { RewardChoice } from "~/server/game/run";
+import type { MatchView } from "~/server/game/view";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import {
@@ -24,6 +25,18 @@ export type RunUpdate = RouterOutputs["run"]["act"];
 /** How many actions the log keeps. */
 const LOG_LIMIT = 12;
 
+/** One answered action, with everything needed to play it back on the table. */
+export interface TurnRecord {
+  /** The id of the log entry this turn wrote. */
+  id: number;
+  before: MatchView;
+  after: MatchView;
+  action: Action;
+  events: MatchEvent[];
+  /** What the rival's card read before this turn. */
+  rivalBefore: RivalNews | null;
+}
+
 interface Recap {
   /** The run and match the recap belongs to; anything else is stale. */
   key: string;
@@ -32,9 +45,17 @@ interface Recap {
   rival: RivalNews | null;
   /** A goal that was just scored and has not been acknowledged. */
   goal: GoalEvent | null;
+  /** The last turn taken. The cache already holds its result. */
+  turn: TurnRecord | null;
 }
 
-const NO_RECAP: Recap = { key: "", log: [], rival: null, goal: null };
+const NO_RECAP: Recap = {
+  key: "",
+  log: [],
+  rival: null,
+  goal: null,
+  turn: null,
+};
 
 function matchKey(snapshot: Pick<RunSnapshot, "id" | "view">): string {
   return `${snapshot.id}:${snapshot.view.matchIndex}`;
@@ -53,6 +74,8 @@ export function useRunController() {
 
   const [final, setFinal] = useState<RunUpdate | null>(null);
   const [recap, setRecap] = useState<Recap>(NO_RECAP);
+  /** The id of the last turn the table finished playing back. */
+  const [played, setPlayed] = useState(0);
   const nextLogId = useRef(1);
 
   const store = useCallback(
@@ -114,6 +137,14 @@ export function useRunController() {
             log: [entry, ...base.log].slice(0, LOG_LIMIT),
             rival: rival ?? base.rival,
             goal: goal ?? base.goal,
+            turn: {
+              id: entry.id,
+              before,
+              after,
+              action: variables.action,
+              events: update.events,
+              rivalBefore: base.rival,
+            },
           };
         });
       }
@@ -136,8 +167,11 @@ export function useRunController() {
   });
 
   const snapshot = current.data ?? null;
-  const live = snapshot && recap.key === matchKey(snapshot) ? recap : NO_RECAP;
+  // The turn that ends a run leaves no snapshot; its recap is still the live one.
+  const shown = snapshot ?? final;
+  const live = shown && recap.key === matchKey(shown) ? recap : NO_RECAP;
   const version = snapshot?.version;
+  const finishTurn = useCallback((id: number) => setPlayed(id), []);
 
   return {
     snapshot,
@@ -155,6 +189,12 @@ export function useRunController() {
     log: live.log,
     news: live.rival,
     goal: live.goal,
+    /**
+     * The last turn while the table is still playing it back, else `null`.
+     * The cache is already at its result, so a reload simply skips it.
+     */
+    turn: live.turn && live.turn.id !== played ? live.turn : null,
+    finishTurn,
     dismissGoal: () => setRecap((prev) => ({ ...prev, goal: null })),
     start: (clanId: Element) => start.mutate({ clanId }),
     act: (action: Action) => {

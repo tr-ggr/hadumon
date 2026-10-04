@@ -1,3 +1,5 @@
+import type { CSSProperties } from "react";
+
 import { PixelSprite } from "~/components/PixelSprite";
 import {
   ELEMENT_PALETTES,
@@ -33,7 +35,7 @@ export function EssencePip({ kind, size = 12 }: EssencePipProps) {
       role="img"
       aria-label={`${label} essence`}
       title={`${label} essence`}
-      className="border-ink text-ink inline-grid shrink-0 place-items-center border-2 text-[8px] leading-none font-black"
+      className="piece border-ink text-ink inline-grid shrink-0 place-items-center border-2 text-[8px] leading-none font-black"
       style={{
         width: size,
         height: size,
@@ -70,10 +72,10 @@ export function CatCard({
 
   return (
     <div
-      className={`border-ink bg-cream text-ink flex flex-col gap-2 border-2 p-2 text-left ${locked ? "opacity-60" : ""} ${className}`}
-      style={{
-        boxShadow: `inset 0 3px 0 ${RARITY_PALETTES[cat.rarity].outline}`,
-      }}
+      className={`piece piece-card cat-card border-ink bg-cream text-ink flex flex-col gap-2 border-2 p-2 text-left ${locked ? "opacity-60" : ""} ${className}`}
+      style={
+        { "--rarity": RARITY_PALETTES[cat.rarity].outline } as CSSProperties
+      }
     >
       <div className="flex items-center gap-2">
         <PixelSprite

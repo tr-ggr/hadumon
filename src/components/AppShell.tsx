@@ -21,6 +21,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/codex", label: "Codex", icon: "codex" },
 ];
 const BARE_ROUTES = ["/login", "/signup"];
+/** The table fills the main column and docks its own bar at the bottom. */
+const TABLE_ROUTE = "/run";
 
 export function AppShell({
   children,
@@ -37,16 +39,21 @@ export function AppShell({
     )
   )
     return <>{children}</>;
+  const table = isActive(pathname, TABLE_ROUTE);
   return (
     <div className="app-shell min-h-dvh md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <SideNav pathname={pathname} />
       <div className="flex min-h-dvh min-w-0 flex-col">
-        <TopBar />
-        <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
-          {children}
-        </main>
+        <TopBar pathname={pathname} table={table} />
+        {table ? (
+          <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+        ) : (
+          <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
+            {children}
+          </main>
+        )}
       </div>
-      <BottomNav pathname={pathname} />
+      {table ? null : <BottomNav pathname={pathname} />}
     </div>
   );
 }
@@ -55,7 +62,7 @@ export function AppShell({
  * Sticky account bar, shown at every width: the wordmark on mobile (the rail
  * carries it on desktop), who is signed in, and Log out behind a confirm.
  */
-function TopBar() {
+function TopBar({ pathname, table }: { pathname: string; table: boolean }) {
   const router = useRouter();
   const utils = api.useUtils();
   const [confirming, setConfirming] = useState(false);
@@ -72,13 +79,33 @@ function TopBar() {
 
   return (
     <header className="bg-cream/95 sticky top-0 z-30 border-b border-black/5 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1180px] items-center gap-3 px-3 py-2 sm:px-5 lg:px-6">
-        <Link
-          href="/"
-          className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
-        >
-          Hadu<span className="text-coral">Mon</span>
-        </Link>
+      <div
+        className={`mx-auto flex w-full items-center gap-3 px-3 sm:px-5 lg:px-6 ${table ? "py-2 md:py-0.5" : "max-w-[1180px] py-2"}`}
+      >
+        {table ? (
+          <nav aria-label="Primary navigation" className="flex gap-1 md:hidden">
+            {NAV_ITEMS.map((item) => {
+              const active = isActive(pathname, item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`touch-target flex items-center justify-center rounded-xl px-2 text-xs font-bold ${active ? "bg-sky-soft text-cobalt" : "text-ink-soft"}`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        ) : (
+          <Link
+            href="/"
+            className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
+          >
+            Hadu<span className="text-coral">Mon</span>
+          </Link>
+        )}
         <div className="ml-auto flex min-w-0 items-center gap-1">
           {displayName ? (
             <span className="text-ink min-w-0 truncate px-2 text-sm font-bold">

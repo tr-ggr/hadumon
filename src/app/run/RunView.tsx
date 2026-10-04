@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { ClanPick } from "~/components/run/ClanPick";
 import { MatchBoard } from "~/components/run/MatchBoard";
-import { MatchResult } from "~/components/run/MatchResult";
 import { RewardPick } from "~/components/run/RewardPick";
+import { RunStrip } from "~/components/run/RunStrip";
 import { RunSummary } from "~/components/run/RunSummary";
 import { SetupKeep } from "~/components/run/SetupKeep";
+import { TableArea, TableSurface } from "~/components/run/TableSurface";
 import { useRunController } from "~/components/run/useRunController";
-import { Button, Modal, Panel, PanelSkeleton } from "~/components/ui";
-import { CLANS } from "~/server/game/run";
+import { TableButton } from "~/components/run/pieces";
+import { Button, Modal, Skeleton } from "~/components/ui";
 
 /**
  * The whole game on one route. Which screen shows is decided by the run's
@@ -20,17 +21,25 @@ export function RunView() {
   const run = useRunController();
   const [abandoning, setAbandoning] = useState(false);
 
+  // The turn that ends a match is still played back on the table before the
+  // result takes its place, so the board outlives its own phase for a moment.
+  const view = run.final?.view ?? run.snapshot?.view;
+  const match = view?.match ?? null;
+  const landing = run.turn !== null && match !== null;
+
   // A new screen starts at its top, not wherever the last one was scrolled to.
-  const view = run.snapshot?.view;
-  const screen = run.final
-    ? "summary"
-    : !view
-      ? "clans"
-      : view.phase === "reward"
-        ? `reward:${view.matchIndex}`
-        : view.match?.phase === "setup"
-          ? `setup:${view.matchIndex}`
-          : `board:${view.matchIndex}`;
+  const screen =
+    run.final && !landing
+      ? "summary"
+      : !view
+        ? "clans"
+        : landing
+          ? `board:${view.matchIndex}`
+          : view.phase === "reward"
+            ? `reward:${view.matchIndex}`
+            : match?.phase === "setup"
+              ? `setup:${view.matchIndex}`
+              : `board:${view.matchIndex}`;
   const lastScreen = useRef(screen);
   useEffect(() => {
     if (lastScreen.current === screen) return;
@@ -38,53 +47,100 @@ export function RunView() {
     window.scrollTo({ top: 0 });
   }, [screen]);
 
-  if (run.final) {
+  if (run.final && !landing) {
     return (
-      <RunSummary
-        view={run.final.view}
-        unlocked={run.final.unlocked}
-        onAgain={run.clearFinal}
-      />
+      <TableSurface>
+        <RunSummary
+          view={run.final.view}
+          unlocked={run.final.unlocked}
+          onAgain={run.clearFinal}
+        />
+      </TableSurface>
     );
   }
 
-  if (run.loading) return <PanelSkeleton title="Play" lines={3} />;
+  if (run.loading) {
+    return (
+      <TableSurface>
+        <TableArea>
+          <div
+            className="tray-well space-y-2 p-4"
+            role="status"
+            aria-busy="true"
+          >
+            <span className="sr-only">Loading the table…</span>
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-2/3" />
+          </div>
+        </TableArea>
+      </TableSurface>
+    );
+  }
 
   if (run.error) {
     return (
-      <Panel title="Play" bodyClassName="space-y-3">
-        <p role="alert" className="text-ink">
-          The run could not be loaded: {run.error.message}
-        </p>
-        <Button variant="secondary" onClick={run.retry}>
-          Try again
-        </Button>
-      </Panel>
+      <TableSurface>
+        <TableArea>
+          <Sheet title="Play">
+            <p role="alert">The run could not be loaded: {run.error.message}</p>
+            <TableButton variant="secondary" onClick={run.retry}>
+              Try again
+            </TableButton>
+          </Sheet>
+        </TableArea>
+      </TableSurface>
     );
   }
 
-  const snapshot = run.snapshot;
-  if (!snapshot || !view) {
-    return <ClanPick busy={run.busy} onStart={run.start} />;
+  if (!view) {
+    return (
+      <TableSurface>
+        <ClanPick busy={run.busy} onStart={run.start} />
+      </TableSurface>
+    );
   }
 
-  const match = view.match;
   // Each match gets fresh screens, so no choice leaks from the one before.
-  const matchKey = `${snapshot.id}:${view.matchIndex}`;
+  const matchKey = `${(run.snapshot ?? run.final)?.id}:${view.matchIndex}`;
+  const stripProps = {
+    run: view,
+    busy: run.busy || run.final !== null,
+    onAbandon: () => setAbandoning(true),
+  };
+  const strip = <RunStrip {...stripProps} />;
 
   return (
-    <div className="space-y-3">
-      {view.phase === "reward" && view.reward ? (
-        <>
-          {match ? <MatchResult match={match} /> : null}
-          <RewardPick
+    <TableSurface>
+      {landing ||
+      (match && match.phase !== "setup" && view.phase === "match") ? (
+        match ? (
+          <MatchBoard
             key={matchKey}
             run={view}
-            offer={view.reward}
+            match={match}
             busy={run.busy}
-            onChoose={run.chooseReward}
+            onAct={run.act}
+            log={run.log}
+            news={run.news}
+            goal={run.goal}
+            onDismissGoal={run.dismissGoal}
+            turn={run.turn}
+            onTurnPlayed={run.finishTurn}
+            runStrip={strip}
+            sideStrip={<RunStrip {...stripProps} compact />}
           />
-        </>
+        ) : null
+      ) : view.phase === "reward" && view.reward ? (
+        <RewardPick
+          key={matchKey}
+          run={view}
+          offer={view.reward}
+          match={match}
+          busy={run.busy}
+          onChoose={run.chooseReward}
+          runStrip={strip}
+        />
       ) : match?.phase === "setup" ? (
         <SetupKeep
           key={matchKey}
@@ -92,41 +148,18 @@ export function RunView() {
           match={match}
           busy={run.busy}
           onAct={run.act}
-        />
-      ) : match ? (
-        <MatchBoard
-          key={matchKey}
-          run={view}
-          match={match}
-          busy={run.busy}
-          onAct={run.act}
-          log={run.log}
-          news={run.news}
-          goal={run.goal}
-          onDismissGoal={run.dismissGoal}
+          runStrip={strip}
         />
       ) : (
-        <Panel title="Play">
-          <p role="alert" className="text-ink">
-            This run has no match to show. Abandon it and start another.
-          </p>
-        </Panel>
+        <TableArea>
+          <Sheet title="Play">
+            <p role="alert">
+              This run has no match to show. Abandon it and start another.
+            </p>
+            {strip}
+          </Sheet>
+        </TableArea>
       )}
-
-      <footer className="flex flex-wrap items-center justify-between gap-2 px-1 pt-2">
-        <p className="text-ink-soft text-xs">
-          {CLANS[view.clanId].name} · {view.deck.length} cards ·{" "}
-          {view.results.length} of {view.gauntlet.length} rivals beaten
-        </p>
-        <button
-          type="button"
-          disabled={run.busy}
-          onClick={() => setAbandoning(true)}
-          className="text-ink-soft hover:text-ink min-h-10 text-xs font-bold underline underline-offset-2 disabled:opacity-45"
-        >
-          Abandon run
-        </button>
-      </footer>
 
       <Modal
         open={abandoning}
@@ -160,6 +193,16 @@ export function RunView() {
           earned still unlocks.
         </p>
       </Modal>
-    </div>
+    </TableSurface>
+  );
+}
+
+/** A plain sheet on the cloth, for the states that have no table to show. */
+function Sheet({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="piece piece-card border-ink text-ink space-y-3 border-2 bg-white p-4">
+      <h1 className="text-print text-3xl">{title}</h1>
+      {children}
+    </section>
   );
 }

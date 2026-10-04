@@ -1,16 +1,21 @@
-import type { ReactNode } from "react";
+import Link from "next/link";
+import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { EssencePip } from "~/components/cats/CatCard";
-import { getGoal } from "~/server/game/goals";
-import {
-  GOAL_LOSE_POINTS,
-  GOAL_WIN_POINTS,
-  type Essence,
-} from "~/server/game/match";
+import { PixelIcon } from "~/components/PixelIcon";
+import type { Essence } from "~/server/game/match";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 
-import { essenceLabel } from "./describe";
+import { essenceLabel, plural } from "./describe";
+
+/** The palette as values, for pixel icons, which take colours and not classes. */
+export const INK = "#17212b";
+export const LIME = "#d8ff4f";
+export const CORAL = "#ff7163";
+export const COBALT = "#1557d8";
+export const WHITE = "#ffffff";
+export const CHIPBOARD = "#b9a47e";
 
 /** Small caps-free label above a group of game pieces. */
 export function Label({
@@ -31,19 +36,30 @@ export interface DieProps {
   onClick?: () => void;
   selected?: boolean;
   disabled?: boolean;
+  /** A key that picks this die, shown where there is a keyboard. */
+  hint?: string;
 }
 
 /** One feeder die. A button only while dice are being chosen. */
-export function Die({ face, onClick, selected = false, disabled }: DieProps) {
+export function Die({
+  face,
+  onClick,
+  selected = false,
+  disabled,
+  hint,
+}: DieProps) {
   const body = (
     <>
       <EssencePip kind={face} size={22} />
       <span className="text-[10px] leading-none font-bold">
         {essenceLabel(face)}
       </span>
+      {hint ? (
+        <KeyHint className="absolute top-0.5 right-0.5">{hint}</KeyHint>
+      ) : null}
     </>
   );
-  const box = `border-ink text-ink flex min-h-12 w-full flex-col items-center justify-center gap-1 border-2 px-1 py-1.5 ${selected ? "bg-lime" : "bg-white"}`;
+  const box = `piece border-ink text-ink relative flex min-h-12 w-full flex-col items-center justify-center gap-1 border-2 px-1 py-1.5 ${selected ? "bg-lime lift" : "bg-white"}`;
   if (!onClick) return <div className={box}>{body}</div>;
   return (
     <button
@@ -59,78 +75,303 @@ export function Die({ face, onClick, selected = false, disabled }: DieProps) {
   );
 }
 
-/** Relics with their rules text; the board has to carry every rule. */
-export function RelicList({ relicIds }: { relicIds: readonly string[] }) {
-  if (relicIds.length === 0) {
-    return <p className="text-ink-soft text-sm">No relics yet.</p>;
-  }
+const TABLE_BUTTON = {
+  primary: "bg-cobalt hover:bg-cobalt-dark text-white",
+  secondary: "bg-cream hover:bg-sky-soft text-ink",
+};
+const TABLE_BUTTON_SIZE = {
+  sm: "min-h-10 px-2.5 text-xs",
+  md: "min-h-12 px-4 text-sm",
+};
+
+function tableButtonClass(
+  variant: keyof typeof TABLE_BUTTON,
+  size: keyof typeof TABLE_BUTTON_SIZE,
+  className: string,
+): string {
+  return `piece border-ink inline-flex items-center justify-center gap-1.5 border-2 text-center leading-tight font-black disabled:cursor-not-allowed disabled:opacity-45 ${TABLE_BUTTON[variant]} ${TABLE_BUTTON_SIZE[size]} ${className}`;
+}
+
+export interface TableButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  /** Cobalt for the one confirm, cream for everything else. */
+  variant?: keyof typeof TABLE_BUTTON;
+  size?: keyof typeof TABLE_BUTTON_SIZE;
+}
+
+/**
+ * An action on the table, cut from the same card as everything else: ink
+ * outline, square corners, an edge that sinks when it is pressed.
+ */
+export function TableButton({
+  variant = "primary",
+  size = "sm",
+  className = "",
+  type = "button",
+  ...props
+}: TableButtonProps) {
   return (
-    <ul className="space-y-1">
-      {relicIds.map((id) => {
-        const relic = getRelic(id);
-        return (
-          <li key={id} className="text-ink text-sm leading-snug">
-            <span className="font-bold">{relic.name}.</span> {relic.text}
-          </li>
-        );
-      })}
-    </ul>
+    <button
+      type={type}
+      className={tableButtonClass(variant, size, className)}
+      {...props}
+    />
   );
 }
 
-/** Who the match is against: name, boss mark, flavor and trait. */
-export function RivalIntro({
-  rivalId,
-  matchIndex,
-  matches,
+/** A link that leaves the table, dressed as a table action. */
+export function TableLink({
+  href,
+  children,
+  className = "",
 }: {
-  rivalId: string;
-  matchIndex: number;
-  matches: number;
+  href: string;
+  children: ReactNode;
+  className?: string;
 }) {
-  const rival = getRival(rivalId);
   return (
-    <div className="space-y-1">
-      <Label>
-        Match {matchIndex + 1} of {matches}
-        {rival.boss ? " · Boss" : ""}
-      </Label>
-      <h2 className="text-pixel text-ink text-xl sm:text-2xl">{rival.name}</h2>
-      <p className="text-ink-soft text-sm italic">{rival.flavor}</p>
-      <p className="text-ink text-sm">
-        {rival.trait ??
-          "No tricks: banks, stashes, raids, burns and pushes like anyone."}
+    <Link
+      href={href}
+      className={tableButtonClass("secondary", "md", className)}
+    >
+      {children}
+    </Link>
+  );
+}
+
+/** The key that does the same as the control it sits on. */
+export function KeyHint({
+  children,
+  className = "",
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <kbd
+      aria-hidden
+      className={`key-hint border-ink/60 text-ink h-4 min-w-4 place-items-center border bg-white px-0.5 font-sans text-[10px] leading-none font-bold ${className}`}
+    >
+      {children}
+    </kbd>
+  );
+}
+
+/** One kind of essence as a token with its count. Empty is a printed space. */
+export function EssenceToken({
+  kind,
+  count,
+}: {
+  kind: Essence;
+  count: number;
+}) {
+  return (
+    <li
+      data-essence={kind}
+      className="text-ink flex items-center gap-1 tabular-nums"
+    >
+      {count > 0 ? (
+        <EssencePip kind={kind} size={22} />
+      ) : (
+        <span
+          aria-hidden
+          className="border-ink/35 block h-[22px] w-[22px] border-2 border-dashed"
+        />
+      )}
+      <span
+        aria-hidden
+        className={`text-pixel w-3.5 text-sm leading-none ${count === 0 ? "text-ink-soft" : ""}`}
+      >
+        {count}
+      </span>
+      <span className="sr-only">
+        {count} {essenceLabel(kind)}
+      </span>
+    </li>
+  );
+}
+
+/** Yarn as token spaces up to a cat's capacity. The count is always said. */
+export function YarnTrack({
+  held,
+  queued = 0,
+  cap,
+  owner = "player",
+  size = 16,
+  className = "",
+}: {
+  held: number;
+  /** Yarn chosen in a Den that has not been sent. */
+  queued?: number;
+  cap: number;
+  owner?: "player" | "rival";
+  size?: number;
+  className?: string;
+}) {
+  const fill = owner === "player" ? LIME : CORAL;
+  return (
+    <span className={`flex flex-wrap items-center gap-px ${className}`}>
+      {Array.from({ length: cap }, (_, i) => {
+        const full = i < held + queued;
+        return (
+          <PixelIcon
+            key={i}
+            name="yarn"
+            size={size}
+            fill={full ? fill : "transparent"}
+            ink={full ? (i >= held ? COBALT : INK) : CHIPBOARD}
+            className={i >= held && full ? "anim-land" : ""}
+          />
+        );
+      })}
+      <span className="sr-only">
+        Yarn {held + queued} of {cap}
+        {queued > 0 ? `, ${queued} of it not laid yet` : ""}
+      </span>
+    </span>
+  );
+}
+
+/** How thick a pile of `count` cards stands, in pixels. */
+function pileEdge(count: number): number {
+  return Math.min(9, 2 + Math.ceil(count / 3));
+}
+
+export interface PileProps {
+  /** Cards in the pile. */
+  count: number;
+  /** What the pile is, for assistive tech: "Your deck". */
+  label: string;
+  /** Whose cards these are. */
+  owner?: "player" | "rival";
+  /** Face-up piles (a discard) show cream instead of a card back. */
+  faceUp?: boolean;
+  className?: string;
+}
+
+/** A stack of cards seen from above: one back, an edge as thick as the stack. */
+export function Pile({
+  count,
+  label,
+  owner = "player",
+  faceUp = false,
+  className = "",
+}: PileProps) {
+  const face = faceUp
+    ? "bg-cream"
+    : owner === "player"
+      ? "bg-cobalt"
+      : "bg-coral";
+  return (
+    <div
+      role="img"
+      aria-label={`${label}: ${plural(count, "card")}`}
+      className={`relative h-12 w-9 shrink-0 ${className}`}
+    >
+      {count > 0 ? (
+        <div
+          className={`piece border-ink grid h-full w-full place-items-center border-2 ${face}`}
+          style={{ ["--e" as string]: `${pileEdge(count)}px` }}
+        >
+          <PixelIcon
+            name="paw"
+            size={16}
+            ink={faceUp ? CHIPBOARD : owner === "player" ? WHITE : INK}
+          />
+        </div>
+      ) : (
+        <div className="border-ink/35 h-full w-full border-2 border-dashed" />
+      )}
+      <span
+        aria-hidden
+        className="border-ink text-ink text-pixel absolute -top-1.5 -right-1.5 min-w-5 border-2 bg-white px-0.5 text-center text-xs leading-4 tabular-nums"
+      >
+        {count}
+      </span>
+    </div>
+  );
+}
+
+/** One turn of a round: a lime cube while it is still to play. */
+export function TurnCube({ spent }: { spent: boolean }) {
+  return spent ? (
+    <span className="border-sky-deep block h-3 w-3 border-2" />
+  ) : (
+    <span className="piece border-ink bg-lime block h-3 w-3 border-2" />
+  );
+}
+
+/** A relic as a tile, with its rules text. */
+export function RelicTile({
+  relicId,
+  className = "",
+}: {
+  relicId: string;
+  className?: string;
+}) {
+  const relic = getRelic(relicId);
+  return (
+    <div
+      className={`piece border-ink bg-cream text-ink border-2 px-2 py-1 ${className}`}
+    >
+      <p className="text-xs leading-snug">
+        <span className="text-pixel text-sm">{relic.name}.</span> {relic.text}
       </p>
     </div>
   );
 }
 
-/** The three round goals, with what each is worth. */
-export function GoalList({
-  goalIds,
-  current,
+export function RelicTiles({
+  relicIds,
+  className = "",
 }: {
-  goalIds: readonly string[];
-  /** The round being played, to mark it; omit before the match starts. */
-  current?: number;
+  relicIds: readonly string[];
+  className?: string;
 }) {
+  if (relicIds.length === 0) {
+    return <p className="text-ink-soft text-sm">No relics yet.</p>;
+  }
   return (
-    <ol className="space-y-1">
-      {goalIds.map((id, round) => {
-        const goal = getGoal(id);
-        return (
-          <li
-            key={`${round}-${id}`}
-            className={`text-sm leading-snug ${round === current ? "text-ink" : "text-ink-soft"}`}
-          >
-            <span className="font-bold">
-              Round {round + 1}: {goal.name}.
-            </span>{" "}
-            {goal.text} {GOAL_WIN_POINTS[round]} to the winner,{" "}
-            {GOAL_LOSE_POINTS[round]} to the other.
-          </li>
-        );
-      })}
-    </ol>
+    <ul className={`grid gap-2.5 ${className}`}>
+      {relicIds.map((id) => (
+        <li key={id}>
+          <RelicTile relicId={id} className="h-full" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** The rival's coral nameplate: name, boss mark and the trait that sets it apart. */
+export function Nameplate({
+  rivalId,
+  flavor = false,
+  className = "",
+}: {
+  rivalId: string;
+  /** Also print the flavor line, when meeting the rival. */
+  flavor?: boolean;
+  className?: string;
+}) {
+  const rival = getRival(rivalId);
+  return (
+    <div
+      className={`piece border-ink bg-coral text-ink flex flex-col justify-center border-2 px-2.5 py-1 ${className}`}
+    >
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+        <h2 className="text-print text-xl">{rival.name}</h2>
+        {rival.boss ? (
+          <span className="border-ink bg-ink text-cream border px-1 text-[11px] leading-4 font-black">
+            Boss
+          </span>
+        ) : null}
+      </div>
+      {flavor ? (
+        <p className="mt-1 text-sm leading-snug italic">{rival.flavor}</p>
+      ) : null}
+      <p className="mt-0.5 text-xs leading-snug font-bold">
+        {rival.trait ??
+          "No tricks: banks, stashes, raids, burns and pushes like anyone."}
+      </p>
+    </div>
   );
 }

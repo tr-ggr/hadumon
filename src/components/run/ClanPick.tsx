@@ -3,17 +3,17 @@
 import { useState } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button, Panel, Skeleton } from "~/components/ui";
+import { Skeleton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 import type { Element } from "~/server/game/elements";
-import { getRelic } from "~/server/game/relics";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLAN_LIST, starterDeck, type Clan } from "~/server/game/run";
 import { UNLOCK_RULES } from "~/server/game/unlocks";
 import { api } from "~/trpc/react";
 
 import { CatDetail } from "./CatPick";
-import { Dock } from "./Dock";
+import { Pile, RelicTile, TableButton } from "./pieces";
+import { TableArea, TableRail } from "./TableSurface";
 
 /** A deck as `[catId, copies]`, most copies first. */
 export function countCats(deck: readonly string[]): [string, number][] {
@@ -25,6 +25,31 @@ export function countCats(deck: readonly string[]): [string, number][] {
 function unlockHint(clanId: Element): string {
   const rule = UNLOCK_RULES.find((r) => r.kind === "clan" && r.key === clanId);
   return rule ? `Locked. ${rule.hint}` : "Locked.";
+}
+
+/** One kind of cat in a deck, as a chip that opens its card. */
+export function DeckChip({
+  catId,
+  copies,
+  onDetail,
+}: {
+  catId: string;
+  copies: number;
+  onDetail: (catId: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onDetail(catId)}
+      aria-label={`${copies} ${getCat(catId).name}, details`}
+      className="piece border-ink bg-cream text-ink hover:bg-sky-soft flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold"
+    >
+      <PixelSprite catId={catId} size={32} decorative />
+      <span className="tabular-nums">
+        {copies}× {getCat(catId).name}
+      </span>
+    </button>
+  );
 }
 
 export interface ClanPickProps {
@@ -46,63 +71,73 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
   const firstRival = GAUNTLET[0];
 
   return (
-    <div className="space-y-3">
-      <Panel title="Pick a clan" bodyClassName="space-y-2">
-        <p className="text-ink">
-          A run is {GAUNTLET.length} matches against {GAUNTLET.length} rivals.
-          Lose one and it is over. The clan decides the deck you start with.
-        </p>
-        {clans.error ? (
-          <p role="alert" className="text-ink font-semibold">
-            The clans could not be loaded: {clans.error.message}
+    <>
+      <TableArea className="space-y-4">
+        <header className="max-w-[65ch] space-y-1.5 pt-2">
+          <h1 className="text-print text-ink text-3xl">Pick a clan</h1>
+          <p className="text-ink">
+            A run is {GAUNTLET.length} matches against {GAUNTLET.length} rivals.
+            Lose one and it is over. The clan decides the deck you start with
+            and the relic you carry.
           </p>
-        ) : null}
-      </Panel>
+          {clans.error ? (
+            <p role="alert" className="text-ink font-semibold">
+              The clans could not be loaded: {clans.error.message}
+            </p>
+          ) : null}
+        </header>
 
-      {clans.isLoading ? (
-        <div className="panel space-y-2 p-4" role="status" aria-busy="true">
-          <span className="sr-only">Loading…</span>
-          <Skeleton className="h-4 w-1/2" />
-          <Skeleton className="h-4 w-3/4" />
-        </div>
-      ) : (
-        <ul className="grid gap-3 lg:grid-cols-2">
-          {CLAN_LIST.map((clan) => (
-            <li key={clan.id}>
-              <ClanOption
-                clan={clan}
-                locked={!unlocked.includes(clan.id)}
-                selected={chosen === clan.id}
-                onSelect={() => setPicked(clan.id)}
-                onDetail={setDetail}
-              />
-            </li>
-          ))}
-        </ul>
-      )}
+        {clans.isLoading ? (
+          <div
+            className="tray-well space-y-2 p-4"
+            role="status"
+            aria-busy="true"
+          >
+            <span className="sr-only">Loading…</span>
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        ) : (
+          <ul className="grid gap-4 lg:grid-cols-2">
+            {CLAN_LIST.map((clan) => (
+              <li key={clan.id}>
+                <ClanOption
+                  clan={clan}
+                  locked={!unlocked.includes(clan.id)}
+                  selected={chosen === clan.id}
+                  onSelect={() => setPicked(clan.id)}
+                  onDetail={setDetail}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </TableArea>
 
-      <Dock className="sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-ink hidden text-sm sm:block">
+      <TableRail>
+        <p className="text-ink text-sm font-semibold">
           {chosenClan && firstRival
-            ? `First rival: ${getRival(firstRival).name}.`
+            ? `${chosenClan.name}. First across the table: ${getRival(firstRival).name}.`
             : clans.isLoading
               ? "Loading your clans."
               : "No clan is open yet."}
         </p>
-        <Button
+        <TableButton
+          size="md"
           disabled={busy || !chosenClan}
           onClick={() => chosenClan && onStart(chosenClan.id)}
+          className="sm:shrink-0"
         >
           {busy
             ? "Dealing…"
             : chosenClan
               ? `Start a run with the ${chosenClan.name}`
               : "Start a run"}
-        </Button>
-      </Dock>
+        </TableButton>
+      </TableRail>
 
       <CatDetail catId={detail} onClose={() => setDetail(null)} />
-    </div>
+    </>
   );
 }
 
@@ -119,60 +154,52 @@ function ClanOption({
   onSelect: () => void;
   onDetail: (catId: string) => void;
 }) {
-  const relic = getRelic(clan.relicId);
   const deck = starterDeck(clan.id);
 
   return (
     <div
-      className={`panel flex h-full flex-col gap-3 p-4 ${selected ? "border-cobalt border-2" : ""} ${locked ? "opacity-60" : ""}`}
+      className={`tray-well flex h-full flex-col gap-3 p-3 ${selected ? "outline-cobalt outline-4 -outline-offset-2" : ""}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3 className="text-pixel text-ink text-lg">{clan.name}</h3>
-          <p className="text-ink-soft text-sm">{clan.text}</p>
+      <div className="flex items-start gap-3">
+        <Pile
+          count={deck.length}
+          label={`${clan.name} starter deck`}
+          className={selected ? "lift" : locked ? "opacity-50" : ""}
+        />
+        <div className="min-w-0 flex-1">
+          <h2 className="text-print text-ink text-xl">{clan.name}</h2>
+          <p
+            className={`text-ink mt-1 text-sm leading-snug ${locked ? "font-semibold" : ""}`}
+          >
+            {locked ? unlockHint(clan.id) : clan.text}
+          </p>
         </div>
-        <Button
-          size="sm"
-          variant={selected ? "primary" : "secondary"}
+        <button
+          type="button"
           disabled={locked}
           aria-pressed={selected}
           onClick={onSelect}
-          className="shrink-0"
+          className={`piece border-ink min-h-11 shrink-0 border-2 px-3 text-sm font-black disabled:cursor-not-allowed ${selected ? "bg-lime text-ink is-pressed" : locked ? "text-ink bg-white" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
         >
           {locked ? "Locked" : selected ? "Chosen" : "Choose"}
-        </Button>
+        </button>
       </div>
 
-      {locked ? (
-        <p className="text-ink text-sm font-semibold">{unlockHint(clan.id)}</p>
-      ) : null}
+      <RelicTile
+        relicId={clan.relicId}
+        className={locked ? "opacity-50" : ""}
+      />
 
-      <p className="text-ink text-sm">
-        <span className="font-bold">{relic.name}.</span> {relic.text}
-      </p>
-
-      <div>
-        <p className="text-ink-soft text-xs font-bold">
-          Starter deck, {deck.length} cards
-        </p>
-        <ul className="mt-1.5 flex flex-wrap gap-1.5">
-          {countCats(deck).map(([catId, copies]) => (
-            <li key={catId}>
-              <button
-                type="button"
-                onClick={() => onDetail(catId)}
-                aria-label={`${copies} ${getCat(catId).name}, details`}
-                className="border-ink bg-cream text-ink hover:bg-sky-soft flex items-center gap-1 border-2 py-0.5 pr-1.5 pl-0.5 text-xs font-bold"
-              >
-                <PixelSprite catId={catId} size={24} decorative />
-                <span>
-                  {copies}× {getCat(catId).name}
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </div>
+      <ul
+        aria-label={`Starter deck, ${deck.length} cards`}
+        className={`flex flex-wrap gap-x-2 gap-y-3 pb-1.5 ${locked ? "opacity-50" : ""}`}
+      >
+        {countCats(deck).map(([catId, copies]) => (
+          <li key={catId}>
+            <DeckChip catId={catId} copies={copies} onDetail={onDetail} />
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

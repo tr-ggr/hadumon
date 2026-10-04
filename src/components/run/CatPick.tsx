@@ -6,6 +6,7 @@ import { CatCard } from "~/components/cats/CatCard";
 import { Button, Modal } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 
+import { KeyHint } from "./pieces";
 import { rowsLabel } from "./turn";
 
 export interface CatPickProps {
@@ -23,6 +24,8 @@ export interface CatPickProps {
   verb?: string;
   /** Replaces the row list in the card's footer. */
   note?: ReactNode;
+  /** A key that selects this card, shown where there is a keyboard. */
+  hint?: string;
   className?: string;
 }
 
@@ -41,14 +44,21 @@ export function CatPick({
   dimmed = false,
   verb = "Select",
   note,
+  hint,
   className = "",
 }: CatPickProps) {
   const cat = getCat(catId);
-  const card = <CatCard catId={catId} className="h-full pb-9" />;
+  const open = pickable && !disabled;
+  const card = (
+    <CatCard
+      catId={catId}
+      className={`h-full pb-8 ${selected ? "is-chosen" : open ? "is-open" : ""}`}
+    />
+  );
 
   return (
     <div
-      className={`relative ${selected ? "ring-cobalt ring-4" : pickable && !disabled ? "ring-cobalt ring-2" : ""} ${dimmed && !selected ? "opacity-60" : ""} ${className}`}
+      className={`relative ${selected ? "lift" : onSelect && !disabled ? "liftable" : ""} ${dimmed && !selected ? "opacity-60" : ""} ${className}`}
     >
       {onSelect ? (
         <button
@@ -64,7 +74,7 @@ export function CatPick({
       ) : (
         card
       )}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 p-1.5 pl-2">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5 pl-2">
         <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
           {selected ? (
             <span className="text-cobalt">Chosen</span>
@@ -72,7 +82,10 @@ export function CatPick({
             (note ?? rowsLabel(cat.rows))
           )}
         </span>
-        <InfoButton name={cat.name} onClick={onDetail} />
+        <span className="flex shrink-0 items-center gap-1.5">
+          {hint ? <KeyHint>{hint}</KeyHint> : null}
+          <InfoButton name={cat.name} onClick={onDetail} />
+        </span>
       </div>
     </div>
   );

@@ -1,53 +1,119 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 
-import { EssencePip } from "~/components/cats/CatCard";
-import { Button } from "~/components/ui";
 import { ROWS, type Row } from "~/server/game/cats";
-import { ESSENCES, type Action, type SlotRef } from "~/server/game/match";
-import { getRival } from "~/server/game/rival";
+import type { Action, SlotRef } from "~/server/game/match";
+import { CLANS } from "~/server/game/run";
 import type { MatchView, RunView } from "~/server/game/view";
 
-import { ActionDock, type TurnControls } from "./ActionDock";
 import { BoardRow } from "./BoardRow";
-import { CatDetail, CatPick } from "./CatPick";
+import { CatDetail } from "./CatPick";
 import {
-  essenceLabel,
   plural,
   type GoalEvent,
   type LogEntry,
   type RivalNews,
 } from "./describe";
-import {
-  EventLog,
-  GoalNotice,
-  GoalPanel,
-  RivalPanel,
-  StatusStrip,
-} from "./MatchPanels";
-import { Die, Label, RelicList } from "./pieces";
+import { fly, launchFrom, type Launch } from "./flight";
+import { EventLog, GoalNotice } from "./MatchPanels";
+import { RelicTiles } from "./pieces";
+import { PlayerEdge, type TurnControls } from "./PlayerEdge";
+import { RivalSide } from "./RivalSide";
+import { RoundBoard } from "./RoundBoard";
+import { Scorepad } from "./Scorepad";
+import { Supply } from "./Supply";
 import {
   deckPicks,
   fillYarn,
   huntTake,
   IDLE,
   toggleDie,
-  whyUnplayable,
   yarnRoom,
   type Mode,
 } from "./turn";
+import { usePlayback } from "./usePlayback";
+import type { TurnRecord } from "./useRunController";
 
-/** Scrolls a section into the clear space between the top bar and the dock. */
-function reveal(element: HTMLElement | null): void {
+/** Scrolls a zone into the clear space between the top bar and the edge. */
+function reveal(element: Element | null | undefined): void {
   if (!element) return;
   const rect = element.getBoundingClientRect();
-  if (rect.top >= 64 && rect.bottom <= window.innerHeight - 220) return;
+  const edge = document.querySelector(".rail")?.getBoundingClientRect().top;
+  if (rect.top >= 64 && rect.bottom <= (edge ?? window.innerHeight)) return;
   const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   element.scrollIntoView({
     block: "center",
     behavior: calm ? "auto" : "smooth",
   });
+}
+
+/** The lane each key activates, or plays the chosen card into. */
+const LANE_KEYS: Record<string, Row> = { h: "hunt", d: "den", p: "prowl" };
+
+/**
+ * The pieces an action moves from one zone to another, copied where they
+ * stand now so they can be flown to where they land.
+ */
+function launchesFor(
+  root: HTMLElement | null,
+  match: MatchView,
+  action: Action,
+): Launch[] {
+  const from = (source: string, target: string, hide = true): Launch[] => {
+    const launch = launchFrom(root, source, target, hide);
+    return launch ? [launch] : [];
+  };
+  switch (action.type) {
+    case "play":
+      return from(
+        `[data-hand="${action.hand}"]`,
+        `[data-slot="${action.row}-${match.board[action.row].length}"]`,
+      );
+    case "hunt":
+      return action.dice.flatMap((die) =>
+        from(
+          `[data-die="${die}"]`,
+          `[data-essence="${match.feeder[die]}"]`,
+          false,
+        ),
+      );
+    case "prowl": {
+      // Tray picks reach the hand highest index first, then the deck's.
+      const order = [
+        ...action.picks
+          .filter((pick): pick is number => pick !== "deck")
+          .sort((a, b) => b - a),
+        ...action.picks.filter((pick) => pick === "deck"),
+      ];
+      return order.flatMap((pick, i) =>
+        from(
+          pick === "deck" ? '[data-pile="deck"]' : `[data-tray="${pick}"]`,
+          `[data-hand="${match.hand.length + i}"]`,
+        ),
+      );
+    }
+    case "resolve": {
+      const slot = match.pending?.slot;
+      return match.pending?.kind === "tuckHand" &&
+        action.choice !== null &&
+        slot
+        ? from(
+            `[data-hand="${action.choice}"]`,
+            `[data-slot="${slot.row}-${slot.col}"]`,
+            false,
+          )
+        : [];
+    }
+    default:
+      return [];
+  }
 }
 
 export interface MatchBoardProps {
@@ -59,30 +125,52 @@ export interface MatchBoardProps {
   news: RivalNews | null;
   goal: GoalEvent | null;
   onDismissGoal: () => void;
+  /** The turn still to be played back on the table, if any. */
+  turn: TurnRecord | null;
+  onTurnPlayed: (id: number) => void;
+  /** The run's own strip: the gauntlet track and the way out. */
+  runStrip: ReactNode;
+  /** The same strip cut down for the column beside the table. */
+  sideStrip: ReactNode;
 }
 
-/** The match in play: everything needed for a decision, and one way to make it. */
+/**
+ * The match as a table: the rival across, the shared supply, the player's
+ * mat of three lanes, and the player's edge docked at the bottom. A turn
+ * that has just been answered is played back step by step before the table
+ * takes input again.
+ */
 export function MatchBoard({
   run,
-  match,
-  busy,
+  match: served,
+  busy: sending,
   onAct,
   log,
   news,
   goal,
   onDismissGoal,
+  turn,
+  onTurnPlayed,
+  runStrip,
+  sideStrip,
 }: MatchBoardProps) {
+  const { frame, playing, skip } = usePlayback(turn, onTurnPlayed);
+  /** What the table shows: a step of the turn landing, else the server's view. */
+  const match = frame?.view ?? served;
+  const busy = sending || playing;
+
   // A choice in progress belongs to one server step; a new step discards it.
   const [draft, setDraft] = useState<{ step: number; mode: Mode }>({
-    step: match.step,
+    step: served.step,
     mode: IDLE,
   });
   const [detail, setDetail] = useState<string | null>(null);
-  const boardRef = useRef<HTMLDivElement>(null);
-  const supplyRef = useRef<HTMLElement>(null);
-  const handRef = useRef<HTMLElement>(null);
+  const tableRef = useRef<HTMLDivElement>(null);
+  const matRef = useRef<HTMLElement>(null);
+  const supplyRef = useRef<HTMLDivElement>(null);
+  const launches = useRef<Launch[]>([]);
 
-  const drafted = draft.step === match.step ? draft.mode : IDLE;
+  const drafted = draft.step === served.step && !playing ? draft.mode : IDLE;
   const tucking = match.pending?.kind === "tuckHand";
   const mode: Mode = match.pending
     ? tucking && drafted.kind === "tuck"
@@ -93,12 +181,20 @@ export function MatchBoard({
     : drafted.kind === "tuck"
       ? IDLE
       : drafted;
-  const setMode = (next: Mode) => setDraft({ step: match.step, mode: next });
+  const setMode = (next: Mode) => setDraft({ step: served.step, mode: next });
 
-  // A tuck is answered from the hand, which may be off screen on a phone.
-  useEffect(() => {
-    if (tucking) reveal(handRef.current);
-  }, [tucking, match.step]);
+  // Pieces leave for their new zone as soon as the answered turn is drawn.
+  const turnId = turn?.id ?? null;
+  useLayoutEffect(() => {
+    if (turnId === null) return;
+    fly(tableRef.current, launches.current);
+    launches.current = [];
+  }, [turnId]);
+
+  const act = (action: Action) => {
+    launches.current = launchesFor(tableRef.current, match, action);
+    onAct(action);
+  };
 
   const take = huntTake(match);
   const deckAvailable = match.deckCount + match.discardCount;
@@ -114,34 +210,45 @@ export function MatchBoard({
     if (row === "hunt") {
       // Nothing to choose when the Hunt takes every die that is left.
       if (take === match.feeder.length) {
-        return onAct({ type: "hunt", dice: match.feeder.map((_, i) => i) });
+        return act({ type: "hunt", dice: match.feeder.map((_, i) => i) });
       }
       setMode({ kind: "hunt", dice: [] });
       return reveal(supplyRef.current);
     }
     if (row === "den") {
       setMode({ kind: "den", targets: [] });
-      return reveal(boardRef.current);
+      return reveal(matRef.current);
     }
-    if (match.prowlPicks === 0) return onAct({ type: "prowl", picks: [] });
+    if (match.prowlPicks === 0) return act({ type: "prowl", picks: [] });
     setMode({ kind: "prowl", picks: [] });
     reveal(supplyRef.current);
   };
 
-  const turn: TurnControls = {
+  const controls: TurnControls = {
     mode,
     busy,
-    labels,
     take,
-    activate,
     playInto: (row) => {
-      if (mode.kind === "play") onAct({ type: "play", hand: mode.hand, row });
+      if (
+        mode.kind === "play" &&
+        (match.playable[mode.hand] ?? []).includes(row)
+      ) {
+        act({ type: "play", hand: mode.hand, row });
+      }
     },
     cancel: () => setMode(IDLE),
     confirm: () => {
-      if (mode.kind === "hunt") onAct({ type: "hunt", dice: mode.dice });
-      if (mode.kind === "den") onAct({ type: "den", targets: mode.targets });
-      if (mode.kind === "prowl") onAct({ type: "prowl", picks: mode.picks });
+      if (mode.kind === "hunt" && mode.dice.length === take) {
+        act({ type: "hunt", dice: mode.dice });
+      }
+      if (mode.kind === "den") act({ type: "den", targets: mode.targets });
+      if (mode.kind === "prowl" && mode.picks.length === match.prowlPicks) {
+        act({ type: "prowl", picks: mode.picks });
+      }
+      if (mode.kind === "tuck" && mode.hand !== null) {
+        act({ type: "resolve", choice: mode.hand });
+      }
+      if (match.pending?.kind === "trade") act({ type: "resolve", choice: 1 });
     },
     fillDen: () => {
       if (mode.kind !== "den") return;
@@ -154,7 +261,7 @@ export function MatchBoard({
       if (mode.kind !== "den") return;
       setMode({ kind: "den", targets: mode.targets.slice(0, -1) });
     },
-    resolve: (choice) => onAct({ type: "resolve", choice }),
+    resolve: (choice) => act({ type: "resolve", choice }),
   };
 
   const onSlot = (slot: SlotRef) => {
@@ -172,6 +279,7 @@ export function MatchBoard({
   };
 
   const onHandCard = (index: number) => {
+    if (busy || match.hand[index] === undefined) return;
     if (mode.kind === "tuck") {
       return setMode({
         kind: "tuck",
@@ -179,15 +287,20 @@ export function MatchBoard({
       });
     }
     if (match.phase !== "turn") return;
-    setMode(
-      mode.kind === "play" && mode.hand === index
-        ? IDLE
-        : { kind: "play", hand: index },
-    );
+    if (mode.kind === "play" && mode.hand === index) return setMode(IDLE);
+    setMode({ kind: "play", hand: index });
+    // On a phone the lane that can take the card may be off screen.
+    const lane = (match.playable[index] ?? [])[0];
+    reveal(tableRef.current?.querySelector(`[data-lane="${lane ?? "hunt"}"]`));
+  };
+
+  const onDie = (index: number) => {
+    if (mode.kind !== "hunt" || match.feeder[index] === undefined) return;
+    setMode({ kind: "hunt", dice: toggleDie(mode.dice, index, take) });
   };
 
   const onTrayCard = (index: number) => {
-    if (mode.kind !== "prowl") return;
+    if (mode.kind !== "prowl" || match.tray[index] === undefined) return;
     if (mode.picks.includes(index)) {
       return setMode({
         kind: "prowl",
@@ -199,259 +312,202 @@ export function MatchBoard({
     }
   };
 
-  const fromDeck = mode.kind === "prowl" ? deckPicks(mode.picks) : 0;
   const changeDeckPicks = (delta: 1 | -1) => {
     if (mode.kind !== "prowl") return;
     if (delta === 1) {
-      return setMode({ kind: "prowl", picks: [...mode.picks, "deck"] });
+      if (
+        mode.picks.length < match.prowlPicks &&
+        deckPicks(mode.picks) < deckAvailable
+      ) {
+        setMode({ kind: "prowl", picks: [...mode.picks, "deck"] });
+      }
+      return;
     }
     const last = mode.picks.lastIndexOf("deck");
     setMode({ kind: "prowl", picks: mode.picks.filter((_, i) => i !== last) });
   };
 
-  const selectedHand =
-    mode.kind === "play" || mode.kind === "tuck" ? mode.hand : null;
-  const { score } = match;
+  /** The nth cat on the mat, reading the lanes top to bottom. */
+  const nthPlaced = (n: number): SlotRef | null => {
+    const slots = ROWS.flatMap((row) =>
+      match.board[row].map((_, col) => ({ row, col })),
+    );
+    return slots[n] ?? null;
+  };
+
+  // The keys do what the pieces do. They read the latest handlers through a
+  // ref, so the listener is bound once.
+  const onKey = (event: KeyboardEvent) => {
+    if (event.metaKey || event.ctrlKey || event.altKey || busy) return;
+    if (document.querySelector('[role="dialog"]')) return;
+    const target = event.target;
+    const typing =
+      target instanceof HTMLElement &&
+      (target.isContentEditable ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName));
+    if (typing) return;
+    const key = event.key.toLowerCase();
+
+    if (key === "escape" && mode.kind !== "idle" && mode.kind !== "tuck") {
+      event.preventDefault();
+      return setMode(IDLE);
+    }
+    if (key === "enter") {
+      // A focused control keeps its own Enter.
+      if (
+        target instanceof HTMLElement &&
+        ["BUTTON", "A", "SUMMARY"].includes(target.tagName)
+      ) {
+        return;
+      }
+      event.preventDefault();
+      return controls.confirm();
+    }
+    const lane = LANE_KEYS[key];
+    if (lane && !match.pending) {
+      event.preventDefault();
+      if (mode.kind === "play") return controls.playInto(lane);
+      return activate(lane);
+    }
+    if (/^[0-9]$/.test(key)) {
+      const n = Number(key) - 1;
+      event.preventDefault();
+      if (mode.kind === "hunt") return onDie(n);
+      if (mode.kind === "prowl") {
+        return n < 0 ? changeDeckPicks(1) : onTrayCard(n);
+      }
+      if (mode.kind === "den") {
+        const slot = nthPlaced(n);
+        return slot ? onSlot(slot) : undefined;
+      }
+      if (n >= 0) onHandCard(n);
+    }
+  };
+  const keyRef = useRef(onKey);
+  useEffect(() => {
+    keyRef.current = onKey;
+  });
+  useEffect(() => {
+    const listener = (event: KeyboardEvent) => keyRef.current(event);
+    window.addEventListener("keydown", listener);
+    return () => window.removeEventListener("keydown", listener);
+  }, []);
+
+  // The lane being resolved keeps its tile down until the chain has run.
+  const resolving: Row | null = !playing
+    ? null
+    : turn?.action.type === "hunt" ||
+        turn?.action.type === "den" ||
+        turn?.action.type === "prowl"
+      ? turn.action.type
+      : turn?.action.type === "resolve"
+        ? (turn.before.pending?.slot.row ?? null)
+        : null;
+
+  // On a phone the choice was made at the feeder or in the hand; the chain
+  // fires on the mat, so the lane it runs along is brought into view.
+  const firingRow = frame?.firing?.row ?? null;
+  const watched = firingRow ?? resolving;
+  useEffect(() => {
+    if (watched === null) return;
+    reveal(tableRef.current?.querySelector(`[data-lane="${watched}"]`));
+  }, [watched, turnId]);
+
+  // Until the rival's card turns over, its last one is still face up.
+  const shownNews =
+    playing && !frame?.flipped ? (turn?.rivalBefore ?? null) : news;
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-        <h1 className="text-pixel text-ink text-xl sm:text-2xl">
-          Match {run.matchIndex + 1} of {run.gauntlet.length}
-        </h1>
-        <p className="text-ink-soft text-sm font-bold">
-          against {getRival(match.rivalId).name}
-        </p>
-      </div>
-      <StatusStrip match={match} />
+    <div ref={tableRef} className="flex flex-1 flex-col">
+      <h1 className="sr-only">
+        Match {run.matchIndex + 1} of {run.gauntlet.length}
+      </h1>
+      <div className="mx-auto grid w-full max-w-[1400px] flex-1 content-start gap-x-4 gap-y-3 px-3 pt-2.5 pb-3 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
+        <div className="flex min-w-0 flex-col gap-2.5">
+          <div className="lg:hidden">{runStrip}</div>
 
-      <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
-        <div className="contents lg:block lg:space-y-3">
-          <div ref={boardRef} className="order-1 space-y-2">
-            {ROWS.map((row) => (
-              <BoardRow
-                key={row}
-                row={row}
-                match={match}
-                mode={mode}
-                busy={busy}
-                activateLabel={labels[row]}
-                onActivate={() => activate(row)}
-                onPlayHere={() => turn.playInto(row)}
-                onSlot={onSlot}
-              />
-            ))}
-            <p className="text-ink-soft px-1 text-xs leading-snug">
-              Activating a row gives its reward, then fires each power in it
-              from right to left. Either way it is your whole turn.
-            </p>
+          <RivalSide
+            match={match}
+            news={shownNews}
+            flipping={frame?.flipping ?? false}
+          />
+
+          <section
+            ref={matRef}
+            aria-label="Your mat"
+            className="mat order-2 lg:order-3"
+          >
+            <RoundBoard match={match} className="px-2 pt-2 pb-3.5 sm:px-3" />
+            <div className="divide-sky-deep border-sky-deep divide-y-2 border-t-2">
+              {ROWS.map((row) => (
+                <BoardRow
+                  key={row}
+                  row={row}
+                  match={match}
+                  mode={mode}
+                  busy={busy}
+                  activateLabel={labels[row]}
+                  firing={frame?.firing ?? null}
+                  resolving={resolving === row}
+                  onActivate={() => activate(row)}
+                  onPlayHere={() => controls.playInto(row)}
+                  onSlot={onSlot}
+                />
+              ))}
+            </div>
+          </section>
+
+          <div ref={supplyRef} className="order-3 lg:order-2">
+            <Supply
+              match={match}
+              mode={mode}
+              busy={busy}
+              take={take}
+              rolling={frame?.rolling ?? false}
+              onDie={onDie}
+              onTrayCard={onTrayCard}
+              onDeckPicks={changeDeckPicks}
+              onReroll={() => act({ type: "reroll" })}
+              onDetail={setDetail}
+              deckNote={`${CLANS[run.clanId].name} deck, ${plural(run.deck.length, "card")}.`}
+            />
           </div>
-
-          <section ref={handRef} className="panel order-2 space-y-3 p-3">
-            <div>
-              <Label>Your essence</Label>
-              <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5">
-                {ESSENCES.map((kind) => (
-                  <li
-                    key={kind}
-                    className={`text-ink flex items-center gap-1 text-sm font-bold tabular-nums ${match.essence[kind] === 0 ? "opacity-45" : ""}`}
-                  >
-                    <EssencePip kind={kind} size={18} />
-                    <span aria-hidden>{match.essence[kind]}</span>
-                    <span className="sr-only">
-                      {match.essence[kind]} {essenceLabel(kind)}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <Label>Your hand, {plural(match.hand.length, "cat")}</Label>
-              {match.hand.length === 0 ? (
-                <p className="text-ink-soft mt-1 text-sm">
-                  Empty. The Prowl draws more.
-                </p>
-              ) : (
-                <ul className="-mx-1 mt-0.5 flex gap-2 overflow-x-auto p-2 sm:flex-wrap sm:overflow-visible">
-                  {match.hand.map((catId, index) => (
-                    <li key={`${index}-${catId}`} className="w-52 shrink-0">
-                      <CatPick
-                        catId={catId}
-                        verb={mode.kind === "tuck" ? "Choose" : "Play"}
-                        onDetail={() => setDetail(catId)}
-                        onSelect={() => onHandCard(index)}
-                        selected={selectedHand === index}
-                        pickable={mode.kind === "tuck"}
-                        disabled={busy || match.phase === "over"}
-                        dimmed={
-                          match.phase === "turn" &&
-                          whyUnplayable(match, index) !== null
-                        }
-                        className="h-full"
-                      />
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </section>
-
-          <section ref={supplyRef} className="panel order-3 space-y-3 p-3">
-            <div>
-              <div className="flex items-center justify-between gap-2">
-                <Label>Feeder</Label>
-                {match.canReroll ? (
-                  <Button
-                    size="sm"
-                    variant="secondary"
-                    disabled={busy}
-                    onClick={() => onAct({ type: "reroll" })}
-                  >
-                    Reroll, free
-                  </Button>
-                ) : null}
-              </div>
-              <ul className="mt-1.5 grid max-w-sm grid-cols-5 gap-1.5">
-                {match.feeder.map((face, index) => (
-                  <li key={index}>
-                    <Die
-                      face={face}
-                      selected={
-                        mode.kind === "hunt" && mode.dice.includes(index)
-                      }
-                      disabled={busy}
-                      onClick={
-                        mode.kind === "hunt"
-                          ? () =>
-                              setMode({
-                                kind: "hunt",
-                                dice: toggleDie(mode.dice, index, take),
-                              })
-                          : undefined
-                      }
-                    />
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="text-ink text-sm font-semibold">
-                Deck {match.deckCount} · Discard {match.discardCount}
-              </p>
-              {mode.kind === "prowl" ? (
-                <div className="flex items-center gap-2">
-                  <StepButton
-                    label="Take one fewer from the deck"
-                    disabled={busy || fromDeck === 0}
-                    onClick={() => changeDeckPicks(-1)}
-                  >
-                    −
-                  </StepButton>
-                  <span className="text-ink text-sm font-bold tabular-nums">
-                    {fromDeck} from the deck
-                  </span>
-                  <StepButton
-                    label="Take one more from the deck"
-                    disabled={
-                      busy ||
-                      mode.picks.length >= match.prowlPicks ||
-                      fromDeck >= deckAvailable
-                    }
-                    onClick={() => changeDeckPicks(1)}
-                  >
-                    +
-                  </StepButton>
-                </div>
-              ) : null}
-            </div>
-
-            <div>
-              <Label>Tray</Label>
-              {match.tray.length === 0 ? (
-                <p className="text-ink-soft mt-1 text-sm">The tray is empty.</p>
-              ) : (
-                <ul className="mt-1.5 grid gap-2 p-1 sm:grid-cols-3">
-                  {match.tray.map((catId, index) => {
-                    const picked =
-                      mode.kind === "prowl" && mode.picks.includes(index);
-                    return (
-                      <li key={`${index}-${catId}`}>
-                        <CatPick
-                          catId={catId}
-                          verb="Draw"
-                          onDetail={() => setDetail(catId)}
-                          onSelect={
-                            mode.kind === "prowl"
-                              ? () => onTrayCard(index)
-                              : undefined
-                          }
-                          selected={picked}
-                          pickable={mode.kind === "prowl"}
-                          disabled={
-                            busy ||
-                            (mode.kind === "prowl" &&
-                              !picked &&
-                              mode.picks.length >= match.prowlPicks)
-                          }
-                          className="h-full"
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-          </section>
         </div>
 
-        <div className="contents lg:block lg:space-y-3">
-          <RivalPanel match={match} news={news} className="order-4" />
-          <GoalPanel match={match} className="order-5" />
-          <EventLog log={log} className="order-7" />
-          <section className="panel order-6 space-y-2 p-3">
-            <h2 className="text-pixel text-ink text-lg leading-tight">
-              Your relics
-            </h2>
-            <RelicList relicIds={run.relics} />
-            <p className="text-ink-soft text-xs leading-snug">
-              Your score {score.total}: cats {score.cats}, yarn {score.yarn},
-              cached {score.cached}, tucked {score.tucked}, goals {score.goals},
-              relics {score.relics}.
-            </p>
-          </section>
+        {/* Beside the table the pad takes the table's height and scrolls in
+            place, so it never makes the page longer than the table. */}
+        <div className="relative min-w-0">
+          <aside className="flex flex-col gap-3.5 lg:absolute lg:inset-0 lg:gap-2.5 lg:overflow-y-auto lg:pb-3">
+            <div className="hidden lg:block">{sideStrip}</div>
+            <Scorepad match={match} />
+            <section aria-label="Your relics">
+              <RelicTiles relicIds={run.relics} />
+            </section>
+            <EventLog
+              log={log}
+              landed={playing ? frame?.lines : undefined}
+              className="max-h-80 lg:max-h-none lg:min-h-40 lg:flex-1"
+            />
+          </aside>
         </div>
       </div>
 
-      <ActionDock match={match} news={news} turn={turn} />
+      <PlayerEdge
+        match={match}
+        turn={controls}
+        playing={playing ? (frame?.text ?? "") : null}
+        rivalStep={playing && frame?.tone === "rival"}
+        onSkip={skip}
+        onHandCard={onHandCard}
+        onDetail={setDetail}
+      />
 
       <CatDetail catId={detail} onClose={() => setDetail(null)} />
-      <GoalNotice match={match} goal={goal} onClose={onDismissGoal} />
+      <GoalNotice
+        match={served}
+        goal={playing ? null : goal}
+        onClose={onDismissGoal}
+      />
     </div>
-  );
-}
-
-function StepButton({
-  label,
-  disabled,
-  onClick,
-  children,
-}: {
-  label: string;
-  disabled: boolean;
-  onClick: () => void;
-  children: string;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className="border-ink text-ink hover:bg-sky-soft h-10 w-10 border-2 bg-white text-lg leading-none font-black disabled:cursor-not-allowed disabled:opacity-45"
-    >
-      {children}
-    </button>
   );
 }
