@@ -1,6 +1,8 @@
 # HaduMon
 
-HaduMon is a web-based, idle creature-collector RPG centered on feline-inspired "Fakemon" that combines low-touch passive progression with active economy and collection loops. The core loop begins with a Gacha Summoning Hub, where players spend earned in-game currency on banners to pull feline creatures across distinct rarity tiers and elemental typings (such as Flameclaw, Mistpaw, or Voltwhisk). Once acquired, players assign their squad to an automated Idle Adventure Mode, sending their feline party through progressive zones that passively generate experience, gold, and upgrade materials over time, resolving encounters via server-calculated auto-battles based on core stats like Speed, Attack, and Affinity without requiring constant user intervention.
+HaduMon is a web-based roguelike engine-builder about feline-inspired "Fakemon" (Flameclaw, Mistpaw, Voltwhisk and 22 more). A run is a gauntlet of six short matches against scripted rivals. In a match the player plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to take its reward and fire every cat's power in it from right to left, over three rounds of five, four and three turns, in the manner of base-game Wingspan. Winning a match adds a cat or a relic to the run's deck; losing one ends the run. Only unlocks (cats, relics, clans) persist between runs. There is no gacha, no idle play, no currency, and no multiplayer.
+
+`PRODUCT.md` describes the product, `sprints/08-roguelike-overview.md` the rules, and `sprints/10-engine.md` the engine and API.
 
 ## Stack
 

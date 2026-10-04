@@ -1,80 +1,42 @@
 # HaduMon
 
-A web-based **idle creature-collector RPG** about feline "Fakemon".
+A web-based **roguelike engine-builder** about feline "Fakemon".
 
-Pull cats from a **Gacha Summoning Hub**, send squads on **Idle Adventures**
-that resolve server-side auto-battles over elapsed time, fight other trainers'
-defense teams on an **async ranked ladder**, and buy, sell and trade cats on the
-**Marketplace**. The UI is a bright, mobile-first Gachapon Counter world that
-works down to 375px: warm cream, sky blue, cobalt actions, lime rewards, and
-soft 3D collectible-cat art.
+A run is a gauntlet of **six short matches** against scripted rivals. In a match
+you play pixel-art cats into three habitat rows and activate a row to take its
+reward and fire every cat's power in it, right to left, in the manner of
+base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
+and the run is over. Only unlocks carry between runs.
 
-Creatures come in five elements (`flame`, `mist`, `volt`, `thorn`, `shade`) and
-five rarities (`common` → `legendary`), and are drawn as transparent soft 3D
-collectible forms under `public/creatures/`. The typed `CreatureArt` manifest
-prevents a species from shipping without art.
+There is no gacha, no idle play, no currency and no multiplayer.
 
-## Features
+## How a match plays
 
-- **Gacha summoning** — two banners, weighted rarity tables, 10-pull discount,
-  a pity counter that guarantees an Epic+ and an animated reveal.
-- **Idle adventures** — five zones with unlock requirements; expeditions bank
-  one encounter a minute for up to 8 hours offline, resolve as real auto-battles
-  and pay out gold, XP, gems and per-element upgrade shards. Three losses in a
-  row force a retreat.
-- **Upgrades** — spend gold + matching shards to raise a cat's upgrade tier
-  (+5% to every stat per tier), from the squad, the dashboard or the collection.
-- **Async PvP ladder** — set a defense team, attack any of eight nearby
-  trainers, 10 attacks a UTC day, Elo ratings with a rating floor, cosmetic
-  tiers (Kitten → Apex), a top-50 ladder and a turn-by-turn battle replay.
-- **Marketplace** — list idle cats for gold, browse and filter the board, buy
-  with an escrowed transfer, and propose or accept 1:1 cat-for-cat trades.
-  Every ownership change happens in one transaction with `FOR UPDATE` locks, so
-  a cat can never be sold and traded at the same time.
-- **Collection** — filter and sort your roster, rename cats, and see at a glance
-  whether one is idle, on expedition, listed or reserved by a trade.
-- **Dashboard** — wallet and shards, the running expedition with a live timer
-  and one-tap claim, your last five summons, pity progress, ladder standing,
-  attacks left today and pending trade offers, with empty states that always
-  point at the next thing to do.
-- **Gachapon Counter shell** — rounded navigation rail, raised mobile Summon
-  action, capsule press states, readable wallet pills, and mascot-led Home.
+- **The board** is three rows of four slots: **Hunt** takes essence dice from
+  the feeder, **Den** lays yarn on your cats, **Prowl** draws cats from the tray
+  or your deck.
+- **A turn** is one action: play a cat from your hand, or activate a row. An
+  activated row pays its base reward, which grows with the cats in it, then
+  fires each "when activated" power from right to left.
+- **Cats** cost essence (five kinds, one per element, plus wild), and later
+  columns also cost yarn. Yarn, cached essence and tucked cats are each worth a
+  point.
+- **Three rounds** of 5, 4 and 3 turns. Each round ends with a goal, scored
+  against the rival.
+- **The rival** flips one card from a ten-card deck after every turn: bank a
+  cat, stash yarn, raid the feeder, burn a tray card, or push the round's goal.
+- **You win** by outscoring it after the twelfth turn.
 
-## Landing page
+## How a run plays
 
-`/` serves two different pages. Logged out, it is a public landing page
-(`src/components/landing/LandingPage.tsx`) — a summon altar, the 25-cat
-catalogue in five element bands, a day of idling with a live fight log, the
-type chart and ladder, the printed rates, real screenshots and the close.
-Logged in, `/` is the dashboard exactly as before, and signing up lands on
-`/summon` with the starting 1000 gems.
-
-The hero summon is a **client-side preview**, not a mock-up: `useDemoSummon`
-runs the real `rollMulti` from `src/server/game/gacha.ts` on the real banner —
-same weights, same pity counter, same ten-pull guarantee. The wallet is a
-preview 2700 gems, nothing is persisted, and no account is touched. Every
-other number on the page is read out of `src/server/game/*` too (roster counts,
-zone drops, rating tiers, banner rates), so the page cannot drift from the
-game.
-
-`NEXT_PUBLIC_SITE_URL` (optional, see `.env.example`) sets the origin that the
-Open Graph and Twitter card URLs resolve against, including the generated
-`src/app/opengraph-image.tsx`. Unset, it falls back to the production origin.
-
-## Screenshots
-
-The seeded flow captures below remain as regression fixtures for the game routes. The
-approved Gachapon Counter binding comps and fresh public/auth review captures live
-under [`.impeccable/mocks/approved/`](.impeccable/mocks/approved/).
-
-- [Desktop dashboard comp](.impeccable/mocks/approved/gachapon-dashboard-desktop.png)
-- [Mobile dashboard comp](.impeccable/mocks/approved/gachapon-dashboard-mobile.png)
-
-| Login                                         | Dashboard                                        | Summon                                          | Adventure                                             | Battle                                          | Market                                          |
-| --------------------------------------------- | ------------------------------------------------ | ----------------------------------------------- | ----------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
-| ![Login](public/screenshots/mobile-login.png) | ![Dashboard](public/screenshots/mobile-home.png) | ![Summon](public/screenshots/mobile-summon.png) | ![Adventure](public/screenshots/mobile-adventure.png) | ![Battle](public/screenshots/mobile-battle.png) | ![Market](public/screenshots/mobile-market.png) |
-
-![Desktop dashboard](public/screenshots/desktop-home.png)
+- Pick a **clan**: a 16-card starter deck built around one element, plus that
+  clan's relic.
+- Six rivals in a fixed order, with **bosses at 3 and 6**.
+- After each win, add one of three offered cats (or skip) and optionally trim a
+  card. After matches 1, 3 and 5, also choose a **relic**, a run-long passive.
+- The board resets every match; the deck and relics carry through.
+- Finished runs unlock new cats, relics and clans. Nothing makes a later run
+  stronger from the start.
 
 ## Stack
 
@@ -82,7 +44,7 @@ under [`.impeccable/mocks/approved/`](.impeccable/mocks/approved/).
 - **tRPC v11** + TanStack Query + superjson
 - **Drizzle ORM** with the `postgres` driver, against a **local Postgres**
 - **Tailwind CSS v4** (theme tokens in `src/styles/globals.css`)
-- **Vitest** for the pure game logic and art manifest (135 tests)
+- **Vitest** for the game engine
 - Package manager: **pnpm**
 
 Auth is custom: `scrypt` password hashing plus an opaque session cookie
@@ -96,50 +58,44 @@ Requires Node 20+, pnpm and a local Postgres you can connect to as `postgres`.
 createdb -h localhost -U postgres hadumon   # once
 cp .env.example .env                        # DATABASE_URL
 pnpm install
-pnpm db:push                                # create the tables
-pnpm db:seed                                # bots, demo account, ladder, listings
+pnpm db:migrate                             # create the tables
+pnpm db:seed                                # the demo account
 pnpm dev
 ```
 
-Then open <http://localhost:3000>. Sign up for a fresh account (1000 gems,
-500 gold, 3 starter cats) or sign in with a seeded trainer:
+Then open <http://localhost:3000>. Sign up, or sign in as `demo` / `demo1234`.
 
-| Account                         | Password     |
-| ------------------------------- | ------------ |
-| `demo`                          | `demo1234`   |
-| `whiskerbot_1` … `whiskerbot_5` | `botpass123` |
-
-`pnpm db:seed` is idempotent — it tops accounts back up instead of duplicating
-anything, so it is safe to re-run at any time. It creates the five bot trainers
-and the demo account, gives every bot a defense team for the ladder, and puts
-ten bot-owned cats up for sale on the market. To start over completely:
+`pnpm db:seed` is idempotent. To start over completely:
 
 ```bash
 dropdb -h localhost -U postgres hadumon && createdb -h localhost -U postgres hadumon
-pnpm db:push && pnpm db:seed
+pnpm db:migrate && pnpm db:seed
 ```
 
 ## Deploying
 
-Production (Vercel + Neon) does not use `db:push`. The `vercel-build` script
-runs `drizzle-kit migrate` before `next build`, so every deploy applies the
-SQL migrations committed under `drizzle/` (over `DATABASE_URL_UNPOOLED` when
-the Neon integration provides it). After changing the schema:
+Production (Vercel + Neon) applies migrations on every deploy: the
+`vercel-build` script runs `drizzle-kit migrate` before `next build` (over
+`DATABASE_URL_UNPOOLED` when the Neon integration provides it). After changing
+the schema:
 
 ```bash
 pnpm db:generate        # writes drizzle/NNNN_*.sql + meta/
 git add drizzle && git commit
 ```
 
-The demo and bot accounts are not created on deploy; seed them once by hand:
+Migration `0001_drop_old_game` removes the tables of the earlier idle game.
+Deploying it deletes that game's data for every account; logins survive.
+
+The demo account is not created on deploy; seed it once by hand:
 
 ```bash
 vercel env pull .env.production.local --environment production
 pnpm db:seed:prod
 ```
 
-`.env.production.local` is git-ignored. The seed is idempotent, so re-running
-it after a schema change is safe.
+`NEXT_PUBLIC_SITE_URL` (optional, see `.env.example`) sets the origin that the
+Open Graph and Twitter card URLs resolve against.
 
 ## Scripts
 
@@ -147,18 +103,16 @@ it after a schema change is safe.
 | ----------------------------------------- | --------------------------------------------------------------- |
 | `pnpm dev`                                | Next dev server (turbo)                                         |
 | `pnpm build` / `pnpm start`               | Production build / serve                                        |
-| `pnpm check`                              | `next lint` + `tsc --noEmit` — the gate before any commit       |
+| `pnpm check`                              | `next lint` + `tsc --noEmit`: the gate before any commit        |
 | `pnpm typecheck`                          | Type check only                                                 |
 | `pnpm lint` / `pnpm lint:fix`             | ESLint                                                          |
 | `pnpm test`                               | Vitest, single run                                              |
 | `pnpm test:watch`                         | Vitest in watch mode                                            |
-| `pnpm db:push`                            | Push the Drizzle schema straight to your local Postgres         |
 | `pnpm db:generate`                        | Write a SQL migration in `drizzle/` from the schema (commit it) |
 | `pnpm db:migrate`                         | Apply committed migrations (runs automatically on Vercel)       |
-| `pnpm db:seed`                            | Full idempotent dev seed (accounts → defense teams → listings)  |
+| `pnpm db:push`                            | Push the schema straight to a scratch database                  |
+| `pnpm db:seed`                            | Create the demo account                                         |
 | `pnpm db:seed:prod`                       | Same seed against `.env.production.local` (see Deploying)       |
-| `pnpm db:seed:battle`                     | Re-seed bot defense teams only                                  |
-| `pnpm db:seed:market`                     | Top the marketplace back up to 10 listings                      |
 | `pnpm db:studio`                          | Drizzle Studio                                                  |
 | `pnpm format:write` / `pnpm format:check` | Prettier                                                        |
 
@@ -166,60 +120,48 @@ it after a schema change is safe.
 
 ```
 src/
-  app/                    App Router pages
-    page.tsx              Home dashboard (HomeDashboard.tsx)
+  app/
+    page.tsx              Landing (signed out) or home (HomeDashboard.tsx)
     login/  signup/       Auth forms (render without the app shell)
-    summon/               Gacha Summoning Hub
-    adventure/            Zone map, squad picker, running expedition
-    battle/               Arena, ladder and battle history tabs
-    market/               Browse, my listings and trades tabs
-    collection/           Collection grid + /collection/[id] detail
-    not-found.tsx         Shared 404
+    run/                  The game: clan pick, match, reward, summary
+    codex/                Every cat, relic, clan and rival; locked or not
   components/
-    AppShell.tsx          Wallet header, desktop rail, mobile nav + More sheet
-    CreatureArt.tsx       Typed transparent WebP creature-art manifest
-    ui/                   Button, Panel, Stat, badges, CreatureCard,
-                          Toast (app-wide `useToast`), Skeleton
-    gacha/ adventure/     Feature components (banners, pity bar, expedition
-    battle/ market/       panel, upgrade button, team picker, listings…)
+    AppShell.tsx          Sidebar, top bar and mobile nav
+    PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
+    sprites/              Sprite grids and element/rarity palettes
+    cats/                 CatCard and EssencePip
+    run/  codex/          Screen components
+    ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/
-    api/                  tRPC root, context, routers (auth, creatures, gacha,
-                          adventure, battle, market)
+    api/                  tRPC root, context, routers (auth, run, codex)
     auth/                 scrypt hashing + session cookie helpers
-    db/                   Drizzle client, schema/, seed.ts + seed-battle/-market
-    game/                 Pure game logic (unit tested)
-      elements.ts         Element wheel and damage multipliers
-      species.ts          The 25-species catalogue
-      stats.ts            Effective stats, power, XP curve
+    db/                   Drizzle client, schema/ (users, sessions, runs,
+                          unlocks), seed.ts
+    game/                 The engine: pure, seeded, unit tested
+      cats.ts             The 25 cats and their powers, as data
+      match.ts            One match: actions, powers, rival turn, goals, score
+      rival.ts            The six rivals and their action decks
+      goals.ts            Round goals
+      relics.ts           Relics and the rule changes they make
+      run.ts              The gauntlet: clans, rewards, match-to-match flow
+      unlocks.ts          What a finished run unlocks
+      view.ts             The redacted state the client is allowed to see
+      sim.ts              Bots used to tune the numbers
       rng.ts              Seeded deterministic RNG
-      battle.ts           Shared auto-battle engine
-      wallet.ts           Guarded gold/gem/material mutations
-      gacha.ts            Banner tables and pity rolls
-      zones.ts idle.ts    Zone definitions and offline expedition resolution
-      progression.ts      Upgrade tiers and costs
-      rating.ts           Elo, tiers, daily attack quota
-      market.ts           Price validation and marketplace rules
-  styles/globals.css      Tailwind v4 Gachapon Counter theme tokens and utilities
+  styles/globals.css      Tailwind v4 theme tokens and utilities
 ```
 
-Server-side game rules live in `src/server/game/*` as pure functions with unit
-tests; tRPC routers stay thin. Every mutation validates its input with zod, uses
-`protectedProcedure`, and re-checks creature status inside its transaction so an
-idle cat can never be spent twice.
+The engine is a pair of pure state machines. `applyAction(state, action)` never
+mutates its input and draws all randomness from an RNG seeded by the run seed
+and a step counter, so a state and an action always give the same result. The
+server is authoritative: the client receives `toRunView(state)`, which leaves
+out the deck order, the rival's deck and the seed. Routers stay thin: lock the
+run row, check its `version`, call the engine, persist.
 
 ## Sprints
 
-The MVP was built in six sprints — see [`sprints/`](./sprints):
-
-| #   | Sprint                                                                                                      |
-| --- | ----------------------------------------------------------------------------------------------------------- |
-| 01  | [Foundation](./sprints/01-foundation.md) — auth, schema, species, sprites, battle engine, shell, collection |
-| 02  | [Gacha Summoning Hub](./sprints/02-gacha.md)                                                                |
-| 03  | [Idle Adventure Mode](./sprints/03-idle-adventure.md)                                                       |
-| 04  | [Async PvP & Ranked Ladder](./sprints/04-pvp-ladder.md)                                                     |
-| 05  | [Trading Post & Marketplace](./sprints/05-marketplace.md)                                                   |
-| 06  | [Integration & Polish](./sprints/06-integration-polish.md)                                                  |
-
-[`sprints/00-overview.md`](./sprints/00-overview.md) holds the shared domain
-rules (element wheel, rarity multipliers, stat formulas, currencies, ownership
-locks) that every sprint respects.
+[`sprints/08-roguelike-overview.md`](./sprints/08-roguelike-overview.md) holds
+the rules and conventions of the current game, and
+[`sprints/10-engine.md`](./sprints/10-engine.md) is the engine and API
+reference. Sprints 00 to 07 describe the earlier idle game and are kept as
+history.
