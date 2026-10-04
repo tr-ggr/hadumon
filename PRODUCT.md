@@ -35,7 +35,7 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 ## Capabilities and Constraints
 
 - 25 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 2 legendary. Rarity is a power tier: it weights reward offers and gates unlocks.
-- Five elements, which are also the five kinds of essence cats cost. There is no advantage wheel.
+- Five elements, each with the cat food its cats cost: Beef, Fish, Chicken, Dry food and Pork. A Treat pays for anything. There is no advantage wheel.
 - A match: 3 rows of 4 slots; 3 rounds of 5 / 4 / 3 turns; a five-dice feeder; a three-card tray; one goal per round contested with the rival.
 - A run: pick a clan (a starter deck built around one element), six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
 - Between runs only unlocks persist: cats, relics, and clans. No permanent power upgrades.

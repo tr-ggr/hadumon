@@ -221,10 +221,10 @@ components:
     height: "48px"
   die-selected:
     backgroundColor: "{colors.lime}"
-  essence-pip:
+  food-icon:
     backgroundColor: "{colors.flame}"
     rounded: "{rounded.none}"
-    size: "12px"
+    size: "16px"
   points-tag:
     backgroundColor: "{colors.lime}"
     textColor: "{colors.ink}"
@@ -403,17 +403,17 @@ components:
 
 **Creative North Star: "Pieces on a Cream Table"**
 
-HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.
+HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.
 
 The pieces come in two states of the same material, and the route decides which. Everywhere outside a run (the landing page, home, the codex, login, signup, and every dialog) a piece is flat: border and fill, no thickness. On the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the run summary) the screen is a tabletop, and the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. The scope is one class, `.tabletop`, opened by `TableSurface`; a piece carries the `piece` class everywhere and only gains its thickness inside it.
 
-The match is a table you sit at, not a dashboard you read: the rival across the top, the shared supply between, the player's sky mat with three printed lanes in the centre, a scorepad to the side, and the player's own edge (prompt, essence, hand) docked along the bottom. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.
+The match is a table you sit at, not a dashboard you read: the rival across the top, the shared supply between, the player's sky mat with three printed lanes in the centre, a scorepad to the side, and the player's own edge (prompt, food, hand) docked along the bottom. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.
 
-The cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.
+The cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron), the seven food icons (beef, fish, chicken, dry food, pork, a treat, and a question mark for a cost any food pays), and the five element marks (flame, drop, bolt, leaf, crescent). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.
 
 Density follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.
 
-The public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface, and it sits in the same world with flat pieces. It has no app shell and no white panel: a wordmark and two small account buttons above, a hairline footer below, and everything between laid straight on the cream table. It is built from the app's own pieces (cat cards, dice, essence pips, sprites, the rival bar, a flat Hunt row run by the real match engine) and adds one structure of its own, the ladder: the six rivals of a run read top to bottom along a 2px ink track.
+The public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface, and it sits in the same world with flat pieces. It has no app shell and no white panel: a wordmark and two small account buttons above, a hairline footer below, and everything between laid straight on the cream table. It is built from the app's own pieces (cat cards, dice, food icons, sprites, the rival bar, a flat Hunt row run by the real match engine) and adds one structure of its own, the ladder: the six rivals of a run read top to bottom along a 2px ink track.
 
 **Key Characteristics:**
 - Warm cream canvas; sky blue for the board and the home hero.
@@ -433,11 +433,11 @@ A light, warm palette: one cream canvas, one blue family for structure and actio
 - **Pressed Cobalt** (`cobalt-dark`): hover on cobalt buttons and tiles, and link text that sits on a white surface.
 
 ### Secondary
-- **Chosen Lime** (`lime`): the player's colour. The points tag on a cat card, a selected die, a kept essence, the "Play here" space, the marker on a lane's current reward step, turns still to play, the player's score token and yarn, the player's goal marker, a cat while its power fires, a lane's activate tile while that lane resolves, won matches on the gauntlet track, new unlocks. On the landing page also the gain markers and a rival's marker once its round is won. Also the text selection colour. Always carries ink text.
+- **Chosen Lime** (`lime`): the player's colour. The points tag on a cat card, a selected die, a kept food, food given up in a swap, the "Play here" space, the marker on a lane's current reward step, turns still to play, the player's score token and yarn, the player's goal marker, a cat while its power fires, a lane's activate tile while that lane resolves, won matches on the gauntlet track, new unlocks. On the landing page also the gain markers and a rival's marker once its round is won. Also the text selection colour. Always carries ink text.
 - **Rival Coral** (`coral`): the rival's colour. The rival's nameplate, score token, deck back, yarn and goal marks, its goal marker, its lines in the event log, the last-card piece while a card has just turned over, the prompt line on the step the rival acts, and the rival currently across the table on the gauntlet track. On the landing ladder a rival's marker is coral while that rival stands, and so is the Boss tag. Outside the table it is also the destructive button, the "Mon" in the wordmark, and the epic rarity colour.
 
 ### Tertiary
-- **Element hues** (`flame`, `mist`, `volt`, `thorn`, `shade`): the primary fur tone of each element and the fill of its essence pip. They appear only on sprites, pips, and dice faces, never as page surfaces or text colours.
+- **Element hues** (`flame`, `mist`, `volt`, `thorn`, `shade`): the primary fur tone of each element and the fill of its food icon and its element mark. They appear only on sprites, food icons, element marks, and dice faces, never as page surfaces or text colours.
 - **Rarity marks** (`rarity-common`, `rarity-uncommon`, then `cobalt` for rare, `coral` for epic, `volt` for legendary): the 3px band across the top of a cat card.
 
 Each element has two further fur tones used only inside sprites (`src/components/sprites/palettes.ts`): flame `#ffd36b` and `#b7492d`; mist `#e7f7fd` and `#3c83a8`; volt `#fff2a8` and `#1557d8`; thorn `#c9ec9b` and `#39734a`; shade `#c9c1f2` and `#40336d`. Rarity eye tints: common and uncommon `#5cbf89`, rare `#9ac4ff`, epic `#ffd7d2`, legendary `#fff0a8`.
@@ -466,7 +466,7 @@ Tabletop only:
 
 **The Ink On Colour Rule.** Text on lime, coral, sky, cream, or an element hue is ink. White text appears only on cobalt. The one inverse is the small ink tag, which carries cream text.
 
-**The Element Stays On The Cat Rule.** Element hues colour sprites, pips, and dice. Panels, buttons, and headings never take an element colour.
+**The Element Stays On The Cat Rule.** Element hues colour sprites, food icons, element marks, and dice. Panels, buttons, and headings never take an element colour.
 
 ## Typography
 
@@ -514,7 +514,7 @@ Mobile-first, and it must hold at 375px.
 - **The match table.** A grid capped at 1400px with 12px side padding. From 1024px it is two columns 16px apart: the table, and a 280px side column. The table column reads top to bottom as the far side to the near side: the rival (nameplate, deck and bank piles with counts, last card, score token, in one row), the supply (a 256px column holding the feeder well and the player's deck and discard piles, beside the tray of three face-up cats), then the mat (three round tiles across its top, then the three lanes divided by 2px deep-sky lines). The side column holds the gauntlet strip, the scorepad, the relic tiles, and the event log, which fills what is left; the column takes the table's height and scrolls in place, so it never makes the page longer than the table. At 1440x900 the whole page is exactly 900px tall with no scroll.
 - **The match on a phone.** One column: gauntlet strip, rival (nameplate and score token on one row, piles and last card on the next), the mat, the supply, then the scorepad, relics, and log (capped at 320px). Only the current round's tile shows during play. When a choice or a firing chain happens off screen, the zone it happens in is scrolled into the clear space between the top bar and the docked edge.
 - **A lane.** From 640px the activate tile sits in a 152px column to the left of four spaces and an end cap (44px), 6px apart, each at least 60px tall. Below 640px the tile sits above; the spaces are at least 96px tall and the end cap is 28px.
-- **The docked edge.** The player's edge of the table sticks to the bottom of the viewport: white, a 2px ink line along its top. From 1024px it is a fixed 194px tall, in two columns: 416px for the prompt, its actions, the essence tokens, and the score token; the rest for the hand. From 640px the first column is 272px. On a phone the prompt sits above the hand, and the hand folds to a 64px peek of card tops with a "Show the hand" control; cards are 224px wide and scroll sideways. A tuck opens the hand by itself.
+- **The docked edge.** The player's edge of the table sticks to the bottom of the viewport: white, a 2px ink line along its top. From 1024px it is a fixed 194px tall, in two columns: 416px for the prompt, its actions, the food tokens with the swap rule printed under them, and the score token; the rest for the hand. From 640px the first column is 272px. On a phone the prompt sits above the hand, and the hand folds to a 64px peek of card tops with a "Show the hand" control; cards are 224px wide and scroll sideways. A tuck opens the hand by itself.
 - **Other run screens.** A centered column, maximum 1120px, 12px side padding rising to 20px at 640px, 12px above and 32px below. Clan pick, the opening hand, and reward pick end in a rail docked to the bottom the same way: one sentence saying what will happen, and one cobalt confirm, stacked on a phone and side by side from 640px. The run summary has no rail; its two actions sit at the end of the column.
 - **Grids.** Card grids outside a run are one column, two from 640px, three from 1024px, with a 12px gap. On the table, offers are three across from 640px, the opening hand five across from 1024px, clans two across from 1024px. The feeder is always five dice across.
 - **Targets.** Pill buttons are 40, 48, or 56px tall; chips 44px; nav items 48px; dice 48px; table buttons 40 or 48px; a lane's activate tile 48px (60px from 640px); lane spaces 60px (96px on a phone). The Info control on a card is 24px tall with its hit area extended 8px on every side.
@@ -536,7 +536,7 @@ Hybrid, split by material and by scope. Chrome is lifted by one soft ambient sha
 
 ### Heights
 - **Print (0).** Anything printed on the mat or on another piece: lane dividers, empty spaces, reward steps, markers on a round tile, a tag on a card. A piece nested inside a piece has no height of its own.
-- **Token or tile (2px).** Dice, essence pips, turn cubes, lane tiles, placed cats, round tiles, relic tiles, table buttons, score tokens, gauntlet markers, the scorepad, the event log.
+- **Token or tile (2px).** Dice, a food token while it can be given up, turn cubes, lane tiles, placed cats, round tiles, relic tiles, table buttons, score tokens, gauntlet markers, the scorepad, the event log.
 - **Card (3px).** Cat cards, the rival's last card, the match result sheet, the run summary sheet.
 - **Stacks.** A pile's edge grows with its count (2px plus 1px per three cards, to 9px). A placed cat with cats tucked under it stands 4px, then 6px.
 - **Cast colour.** On the cloth, chipboard at 42% in cream. On the mat, deep sky. On the docked edge, chipboard at 34% in white.
@@ -558,8 +558,8 @@ Hybrid, split by material and by scope. Chrome is lifted by one soft ambient sha
 Two corner languages, one per material.
 
 - **Chrome is rounded.** Panels 20px; flat panels, the mobile bar, and the inner auth card 16px; inputs, nav items, and inline notes 12px; the home hero and the auth shell 28px; pill buttons and chips are full pills. Chrome borders are 1px hairlines of ink at 8 to 15%.
-- **Pieces are square.** Cat cards, the mat, lanes, spaces, dice, pips, tags, table buttons, the gauntlet track, the landing ladder's markers and rival pieces, and score tokens have no radius and a solid 2px ink border. Small marks on a piece (a key hint, the cached and tucked tag, the Boss tag) use a 1px ink border.
-- **Printed and empty spaces are outlines.** On the mat an empty space is a 2px deep-sky outline; the next free space is a 2px dashed ink outline (55%) over white at 45%. An empty pile, an empty essence, and a rival yet to come on the gauntlet track are 2px dashed ink outlines (35 to 40%). In the landing demo an empty slot is a 2px dashed ink outline (50%).
+- **Pieces are square.** Cat cards, the mat, lanes, spaces, dice, tags, table buttons, the gauntlet track, the landing ladder's markers and rival pieces, and score tokens have no radius and a solid 2px ink border. Small marks on a piece (a key hint, the cached and tucked tag, the Boss tag) use a 1px ink border.
+- **Printed and empty spaces are outlines.** On the mat an empty space is a 2px deep-sky outline; the next free space is a 2px dashed ink outline (55%) over white at 45%. An empty pile and a rival yet to come on the gauntlet track are 2px dashed ink outlines (35 to 40%). A food the player holds none of is its own icon at 35%, so its place still says which food it is. In the landing demo an empty slot is a 2px dashed ink outline (50%).
 - **Sprites are pixels.** A 16x16 grid drawn with crisp edges. Sizes in use: 28, 40, 44, 48, 56, 64, 72, 144, and 320px.
 - **Icons.** Navigation and the password toggle use 20px line icons with a 2px stroke and round caps, drawn inline. Anything that sits on a piece is drawn as pixels instead: the tabletop's icons are 8x8 grids shown at 16px (24px on a lane's activate tile), with an outline colour and one fill; the plus in a landing gain marker is a 5x5 grid shown at 10px.
 
@@ -590,14 +590,14 @@ An action on the table is a piece, cut from the same card as everything else.
 - A way out that is not a move in the game ("Abandon run", "Show the hand") is an underlined 12px bold text link, not a piece.
 
 ### Chips
-- **Style:** 44px pill, white with a 1px ink hairline (15%), 14px bold ink text; may lead with an essence pip.
+- **Style:** 44px pill, white with a 1px ink hairline (15%), 14px bold ink text; may lead with an element mark.
 - **State:** selected is cobalt fill, cobalt border, white text; hover on unselected is soft sky. Used for codex filters and codex section links.
 
 ### Cards / Containers
 - **Panel:** white, 20px radius, 1px ink hairline (8%), the panel shadow, 16px padding, optional title row. Chrome only.
 - **Flat panel:** white, 16px radius, hairline, no shadow. The codex link row, skeleton cards.
 - **Hero surface:** board sky, 28px radius, 24 to 36px padding; holds a 144px sprite, a greeting, the display headline, and one large button.
-- **Dialog:** a panel, 448px maximum, over a 40% ink scrim; bottom-anchored on a phone, centered from 640px. Buttons stack on a phone with the primary on top and sit right-aligned from 640px. Dialogs opened from the table (a cat's full card, a scored round, abandon run) are chrome like any other: rounded, pill buttons, and the card inside is flat.
+- **Dialog:** a panel, 448px maximum, over a 40% ink scrim; bottom-anchored on a phone, centered from 640px. Buttons stack on a phone with the primary on top and sit right-aligned from 640px. Dialogs opened from the table (a cat's full card, a scored round, abandon run) are chrome like any other: rounded, pill buttons, and the card inside is flat. A placed cat's dialog adds, under its card, a 14px bold line naming the cat and how many are tucked under it, then those cats as flat compact cards two across (one on a phone), oldest first.
 - **Skeleton:** soft sky bars with a 1px edge border and a pulse, shaped like the content they replace.
 
 ### Inputs / Fields
@@ -613,15 +613,19 @@ An action on the table is a piece, cut from the same card as everything else.
 - **Wordmark:** "Hadu" in ink, "Mon" in coral, bold rounded, 24px in the rail.
 
 ### Cat Card
-The signature piece. Cream face, 2px ink border, square, 8px padding, with the rarity band across the top. First line: the sprite (44px compact, 72px full), the name in the card-title style, the cost as a row of essence pips beneath it, and the points in a lime tag at the right. Then, under a faint ink rule, the power written out in 12px text. The full variant adds a soft-ink line for rarity, element, rows, and yarn capacity, and the flavor text in italics. A locked card drops to 60% opacity, greys its sprite, and shows the unlock hint in place of the power. On the tabletop it stands at card height.
+The signature piece. Cream face, 2px ink border, square, 8px padding, with the rarity band across the top. First line: the sprite (44px compact, 72px full), the name in the card-title style, the cost as a row of 16px food icons beneath it, and the points in a lime tag at the right. Then, under a faint ink rule, the power written out in 12px text. The full variant adds a soft-ink line for rarity, element, rows, and yarn capacity, and the flavor text in italics. A locked card drops to 60% opacity, greys its sprite, and shows the unlock hint in place of the power. On the tabletop it stands at card height.
 
 When a card is a choice (hand, tray, offer) the whole card is the select control, and its footer carries a soft-ink line saying which lanes it can go in, the key that picks it, and a small white "Info" piece that opens the full card in a dialog and never selects. Open to pick: cobalt border. Chosen: cobalt border and inner line, lifted 4px, and the footer reads "Chosen" in cobalt. A card that cannot be played now drops to 60% opacity but stays selectable, so the prompt can say why.
 
-### Essence Pip and Essence Token
-A square of essence: 12px by default (14px in lists, 22px on a die or as a token), 2px ink border, filled with the element's primary fur tone. A cost that any essence pays, and wild essence, are white pips. On the docked edge the essence the player holds is a row of 22px pips each followed by its count in the card-title style; a kind the player holds none of is a dashed empty space with a soft-ink 0.
+### Food Icon, Element Mark and Food Token
+Cats cost cat food, and each food is its own 8x8 pixel shape with an ink outline, filled with the primary fur tone of the element that eats it: Beef (Flame, a steak), Fish (Mist), Chicken (Volt, a drumstick), Dry food (Thorn, a full bowl), Pork (Shade, a rasher). A Treat pays for anything and is a white spark; a cost that any food pays is a white question mark. No square is drawn around a food. It is shown at 16px on cards and in lists and at 24px on a die or as a token, always a whole multiple of the grid. The code still calls food essence and keys it by element.
+
+An element named on its own (a codex filter, a clan, a past run) leads with its element mark instead: a flame, a drop, a bolt, a leaf, or a crescent, drawn and filled the same way at 16px.
+
+On the docked edge the food the player holds is a row of 24px icons each followed by its count in the card-title style, with the rule "Any 2 food pay for 1 you lack." printed under the row in 11px soft ink. A food the player holds none of is its icon at 35% with a soft-ink 0. While a cat that is short is selected, each food that can be given up becomes a token-height button with the cobalt open frame; a food already given up fills lime with the chosen frame and its count shows what would be left. Tapping an open food gives one up; tapping one that can give no more takes it back.
 
 ### Die
-A white square piece, 48px tall, holding a 22px pip above the element's name in 10px bold. Selected fills lime and, on the tabletop, lifts 4px; hover is soft sky. It is a button only while dice are being chosen. On the table the feeder's dice sit in a tray well.
+A white square piece, 48px tall, holding a 24px food icon above the food's name in 10px bold. Selected fills lime and, on the tabletop, lifts 4px; hover is soft sky. It is a button only while dice are being chosen. On the table the feeder's dice sit in a tray well.
 
 ### Mat, Tray Well, Rail
 The three surfaces of the tabletop under the pieces.
@@ -632,7 +636,7 @@ The three surfaces of the tabletop under the pieces.
 ### Lane
 One of three lanes printed on the mat.
 - **Activate tile:** a cobalt tile with the lane's pixel icon (24px), its name in print at 20px, and what activating gives now in 12px bold ("Take 2 dice"), white text. While its lane is being chosen or resolved it is lime with ink text and pressed. The other tiles dim to 55% while a turn plays back.
-- **Placed cat:** a cream tile with the sprite (40px on a phone, 48px from 640px), the cat's name, and a yarn track: one 16px yarn icon per space of capacity, lime with an ink outline when held, lime with a cobalt outline when chosen in a Den but not yet laid, a chipboard outline when empty. What the cat holds besides yarn (cached, tucked) is a small white tag on the sprite's corner. Tapping it opens the cat's card, or lays yarn during a Den (cobalt border while it can take one). Waiting on the player: the cobalt and lime frame. Firing: lime, pressed.
+- **Placed cat:** a cream tile with the sprite (40px on a phone, 48px from 640px), the cat's name, and a yarn track: one 16px yarn icon per space of capacity, lime with an ink outline when held, lime with a cobalt outline when chosen in a Den but not yet laid, a chipboard outline when empty. What the cat holds besides yarn (cached, tucked) is a small white tag on the sprite's corner. Tapping it opens the cat's card, which lists the cats tucked under it, or lays yarn during a Den (cobalt border while it can take one). Waiting on the player: the cobalt and lime frame. Firing: lime, pressed.
 - **Next free space:** a dashed outline printing its yarn cost and the reward the lane gives now, with the lime marker on that reward. When the chosen card can go there it becomes a lime "Play here" piece with the cost under it.
 - **Later spaces:** deep-sky outlines printing their yarn cost (yarn icons, with the words from 640px) and the reward the lane will give once it reaches them.
 - **End cap:** a cobalt pixel chevron pointing left (powers fire right to left) above the reward of a full lane.
@@ -657,7 +661,7 @@ Six markers, 28px wide, numbered in print at 20px: a lime tile for a rival beate
 
 ### Other Run Screens
 - **Clan pick:** each clan in a tray well: its name in print at 20px, what it does, a cobalt "Choose" tile (lime and pressed once chosen, white for a locked clan), its relic tile, and its starting deck spread out as small tiles (sprite, count, name).
-- **Opening hand:** the rival's nameplate with flavor, the round tiles on a mat, the hand five across to keep from, five essence tiles to keep from (white; lime, framed, and lifted when kept), then the feeder, piles, and tray as they will be on the table.
+- **Opening hand:** the rival's nameplate with flavor, the round tiles on a mat, the hand five across to keep from, five food tiles to keep from (white; lime, framed, and lifted when kept), then the feeder, piles, and tray as they will be on the table.
 - **Match result:** a white card-height sheet: the headline in print at 30px, the score in a lime marker for a win or a coral one for a loss, both score sheets, and the three goals in a sentence each.
 - **Reward pick:** cats to add as cards, relics as cream tiles (lime, framed, and lifted when chosen), and the deck spread out as small tiles to trim from. A tile marked for trimming turns white, takes the chosen frame and lift, and carries an ink "Trim 1" tag.
 - **Run summary:** the headline in print at 30px, the gauntlet track, a white card-height sheet with the run as a table (won and lost as lime and coral markers), new unlocks as their own pieces (a clan unlock is a lime tile), then a medium cobalt table button and a cream table link.
@@ -681,7 +685,7 @@ A flat board row cut down to one round, played in place against the first rival.
 - **Row:** a board-sky band with a 2px ink border, 8px padding (12px from 640px). The row name is in the title step; the turn count sits opposite in 12px bold, tabular.
 - **Slots:** four across at a 6px gap, at least 96px tall. A filled slot is a cream piece holding a "Fires 1st" mark (white, 1px ink border, 10px bold), the sprite (48px, 64px from 640px), and from 640px the cat's name and power in 12px. Below 640px the powers are listed under the slots instead. A tucked count uses the same small mark. The empty slot is a dashed 2px outline reading "Empty".
 - **Feeder and button:** five dice with a 12px bold label above. The activate button is the large pill, under the dice on a phone and to their right from 640px.
-- **Under the row:** the rival bar (the name in a coral cell with a 2px ink divider, then the last card in 14px bold), then the turn's lines in 14px with the first in bold, beside a tally of essence pips (14px) and the score in 12px bold, tabular. The round's goal result is a lime tag with a 2px ink border.
+- **Under the row:** the rival bar (the name in a coral cell with a 2px ink divider, then the last card in 14px bold), then the turn's lines in 14px with the first in bold, beside a tally of food icons (16px) and the score in 12px bold, tabular. The round's goal result is a lime tag with a 2px ink border.
 - **After the round:** the activate button is replaced by a secondary "Deal again", and one sentence with a large primary button follows the demo.
 
 ### Motion
@@ -711,7 +715,7 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 - **Do** keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px unless its hit area is extended.
 - **Do** write counts and scores in tabular figures and labels in sentence case.
 - **Do** give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry.
-- **Do** build the landing page from the app's own components (cat cards, dice, essence pips, sprites, the rival bar) laid flat on the cream table, with no app shell around them.
+- **Do** build the landing page from the app's own components (cat cards, dice, food icons, sprites, the rival bar) laid flat on the cream table, with no app shell around them.
 
 ### Don't:
 - **Don't** round the corners of a game piece.

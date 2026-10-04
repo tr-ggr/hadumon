@@ -9,8 +9,8 @@ Everything is pure, deterministic, and safe to import in client components.
 | File | What it gives you |
 |------|-------------------|
 | `cats.ts` | `CATS`, `CAT_LIST`, `getCat(id)`, `Cat`, `Row`, `ROWS`, `ROW_LABELS`, `CostPip`, `RARITY_LABELS`, `describePower(power)` (the rules text for a card) |
-| `elements.ts` | `ELEMENTS`, `Element`, `ELEMENT_LABELS` |
-| `match.ts` | `Action`, `MatchEvent`, `Essence`, `PlacedCat`, `SlotRef`, `Pending`, `GoalResult`, `ScoreBreakdown`; constants `SLOTS` (4), `ROUND_TURNS` ([5,4,3]), `SETUP_KEEP` (5), `COLUMN_YARN_COST`, `GOAL_WIN_POINTS`, `GOAL_LOSE_POINTS` |
+| `elements.ts` | `ELEMENTS`, `Element`, `ELEMENT_LABELS`, `FOOD_LABELS` (the cat food each element eats; the player-facing name for essence), `TREAT_LABEL` (wild) |
+| `match.ts` | `Action`, `MatchEvent`, `Essence`, `PlacedCat`, `swapOffer(pool, cost)`, `playPayment(pool, hand, index, swap)`, `defaultSwap(pool, hand, index)`, `SlotRef`, `Pending`, `GoalResult`, `ScoreBreakdown`; constants `SLOTS` (4), `ROUND_TURNS` ([5,4,3]), `SETUP_KEEP` (5), `COLUMN_YARN_COST`, `GOAL_WIN_POINTS`, `GOAL_LOSE_POINTS` |
 | `goals.ts` | `getGoal(id)` → `{ name, text, par }` |
 | `relics.ts` | `getRelic(id)` → `{ name, text }`, `RELIC_LIST` |
 | `rival.ts` | `getRival(id)` → `{ name, boss, trait, flavor, bankPoints, stashYarn, raidDice, burnCards, deck }`, `GAUNTLET` |
@@ -23,7 +23,7 @@ Everything is pure, deterministic, and safe to import in client components.
 | Action | When | Meaning |
 |--------|------|---------|
 | `{ type: "keep", cats: number[], essence: Element[] }` | phase `setup` | Indices into `view.setup` to keep, plus essence to keep (at most one of each element). Exactly 5 in total. Not a turn. |
-| `{ type: "play", hand: number, row: Row }` | phase `turn` | Play `view.hand[hand]`. Legal rows are in `view.playable[hand]`. Essence and yarn are paid automatically. |
+| `{ type: "play", hand: number, row: Row, swap?: Essence[] }` | phase `turn` | Play `view.hand[hand]`. Legal rows are in `view.playable[hand]`, which counts a play that only a swap can pay for. Food and yarn are paid automatically. If `swapOffer(view.essence, cat.cost).short` is not empty, `swap` must name exactly two essence from `.spare` for each pip short; otherwise leave it out. |
 | `{ type: "hunt", dice: number[] }` | phase `turn` | Indices into `view.feeder`. Exactly `min(view.rewards.hunt, view.feeder.length)` dice. |
 | `{ type: "den", targets: SlotRef[] }` | phase `turn` | One `{ row, col }` per yarn, at most `view.rewards.den`; a slot may repeat up to the cat's `yarnCap`. Fewer is allowed. |
 | `{ type: "prowl", picks: ("deck" \| number)[] }` | phase `turn` | Tray indices or `"deck"`. Exactly `view.prowlPicks` picks; at most `view.deckCount + view.discardCount` of them from the deck. |
@@ -38,7 +38,7 @@ Every player turn is followed by one rival action and, after the last turn of a 
 
 ### `MatchView` fields worth knowing
 
-`phase` (`setup` / `turn` / `pending` / `over`), `round` (0–2), `turnsLeft`, `board` (`Record<Row, PlacedCat[]>`, each `{ catId, yarn, cached, tucked }`), `hand`, `tray`, `setup`, `essence` (five elements plus `wild`), `feeder`, `goals` (one id per round), `goalResults`, `standing` (this round's goal as it would score now), `pending`, `result`, `score` (`ScoreBreakdown`), `rival` (`banked`, `bankValue`, `yarn`, `pushes`, `goalPoints`, `score`, `last`, `seen`, `deckCount`), `rewards`, `yarnCosts` (per row, `null` when full), `playable`, `canReroll`, `prowlPicks`, `deckCount`, `discardCount`, `mods`.
+`phase` (`setup` / `turn` / `pending` / `over`), `round` (0–2), `turnsLeft`, `board` (`Record<Row, PlacedCat[]>`, each `{ catId, yarn, cached, tucked, under }`; `under` lists the tucked cat ids, oldest first, and can be missing or shorter than `tucked` on a match saved before tucks were recorded), `hand`, `tray`, `setup`, `essence` (five elements plus `wild`), `feeder`, `goals` (one id per round), `goalResults`, `standing` (this round's goal as it would score now), `pending`, `result`, `score` (`ScoreBreakdown`), `rival` (`banked`, `bankValue`, `yarn`, `pushes`, `goalPoints`, `score`, `last`, `seen`, `deckCount`), `rewards`, `yarnCosts` (per row, `null` when full), `playable`, `canReroll`, `prowlPicks`, `deckCount`, `discardCount`, `mods`.
 
 ### `RunView`
 
@@ -64,5 +64,5 @@ Every player turn is followed by one rival action and, after the last turn of a 
 ## Shared components
 
 - `<PixelSprite catId size decorative />` in `src/components/PixelSprite.tsx`.
-- `<CatCard catId variant="compact" | "full" lockedHint />` and `<EssencePip kind />` in `src/components/cats/CatCard.tsx`.
+- `<CatCard catId variant="compact" | "full" lockedHint />`, `<EssencePip kind />` (a food icon) and `<ElementMark element />` in `src/components/cats/CatCard.tsx`.
 - `Button`, `ButtonLink`, `Panel`, `Stat`, `Modal`, `RarityBadge`, `ElementBadge`, `Skeleton`, `useToast` in `src/components/ui`.

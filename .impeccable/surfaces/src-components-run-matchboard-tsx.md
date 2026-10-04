@@ -29,7 +29,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 ## Signature interaction
 
-The firing chain. A played card lifts from the hand and lands in its space; taken dice travel to the essence tokens; each cat in the lane fires right to left (tile presses, lights lime, its line lands in the log, its counters settle); then the rival's card flips and flashes coral. About 380ms a step, pixel-stepped easing. Any click or key skips to the end; reduced motion lands everything at once. The last frame is always the server's view.
+The firing chain. A played card lifts from the hand and lands in its space; taken dice travel to the food tokens; each cat in the lane fires right to left (tile presses, lights lime, its line lands in the log, its counters settle); then the rival's card flips and flashes coral. About 380ms a step, pixel-stepped easing. Any click or key skips to the end; reduced motion lands everything at once. The last frame is always the server's view.
 
 ## Motion grammar
 
@@ -43,6 +43,10 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 
 - The pixel face is Jersey 20, set at 20px and 30px. Pixelify Sans, named in the plan, drew "5" as "S" and "C" as "O".
 - A lane's reward ladder is printed inside the spaces: each space shows what the lane gives while that space is the next free one, and the lime marker sits on it. The full-lane step is in the end cap. The lane's name is on its activate tile.
+
+- Cats cost cat food (Beef, Fish, Chicken, Dry food, Pork, and a Treat that pays for anything), each drawn as its own pixel icon with no square around it.
+- Any 2 food pay for 1 a cat lacks. The player picks the two on the food tokens at the docked edge; the lanes only open for the play once the swap is whole. The rule is printed under the tokens.
+- A placed cat's dialog lists the cats tucked under it, face up, wherever they came from.
 
 ## Keys
 

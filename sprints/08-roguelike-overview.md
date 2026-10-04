@@ -25,10 +25,10 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 ### Vocabulary
 
 - **Cat**: a card. 25 exist, defined in `src/server/game/cats.ts`.
-- **Essence**: the resource cats cost. Five kinds, one per element (`flame`, `mist`, `volt`, `thorn`, `shade`), plus `wild`, which pays for anything.
+- **Cat food** (`essence` in the code): the resource cats cost. Five kinds, one per element: Beef (`flame`), Fish (`mist`), Chicken (`volt`), Dry food (`thorn`), Pork (`shade`), plus a Treat (`wild`), which pays for anything. Any 2 food pay for 1 element pip the player can cover with neither that food nor a Treat; the player chooses which two.
 - **Yarn**: laid on cats; each is worth a point and is spent to play cats into later columns.
-- **Rows**: `hunt` (take essence from the feeder), `den` (lay yarn), `prowl` (draw cats).
-- **Feeder**: five six-sided dice, one face per element plus a wild face.
+- **Rows**: `hunt` (take food from the feeder), `den` (lay yarn), `prowl` (draw cats).
+- **Feeder**: five six-sided dice, one face per food plus a Treat face.
 - **Tray**: three face-up cats from the player's own deck.
 - **Rival**: the scripted opponent. It flips one action card after every player turn.
 - **Relic**: a run-long passive.
@@ -40,9 +40,9 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 - 3 rounds of 5 / 4 / 3 turns. A turn is exactly one of: play a cat, activate Hunt, activate Den, activate Prowl.
 - Activating a row gives its base reward by the number of cats in it (Hunt 1/1/2/2/3 dice, Den 2/2/3/3/4 yarn, Prowl 1/1/2/2/3 cats), then fires each "when activated" power in that row from right to left.
 - Power timings: when played, when activated, between turns (reacts to a rival action), end of round.
-- Setup: the player is dealt 5 cats and one essence of each element and keeps any 5 in total.
+- Setup: the player is dealt 5 cats and one of each food and keeps any 5 in total.
 - One goal per round. The higher count takes 4 / 5 / 6 points, the lower 1 / 2 / 3.
-- Final score: cat points + yarn + cached essence + tucked cats + goal points + relic bonuses. The player wins by scoring strictly more than the rival.
+- Final score: cat points + yarn + cached food + tucked cats + goal points + relic bonuses. The player wins by scoring strictly more than the rival.
 
 ### Run
 

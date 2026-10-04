@@ -12,15 +12,17 @@ There is no gacha, no idle play, no currency and no multiplayer.
 
 ## How a match plays
 
-- **The board** is three rows of four slots: **Hunt** takes essence dice from
+- **The board** is three rows of four slots: **Hunt** takes food dice from
   the feeder, **Den** lays yarn on your cats, **Prowl** draws cats from the tray
   or your deck.
 - **A turn** is one action: play a cat from your hand, or activate a row. An
   activated row pays its base reward, which grows with the cats in it, then
   fires each "when activated" power from right to left.
-- **Cats** cost essence (five kinds, one per element, plus wild), and later
-  columns also cost yarn. Yarn, cached essence and tucked cats are each worth a
-  point.
+- **Cats** cost cat food: Beef, Fish, Chicken, Dry food and Pork, one for each
+  element, plus a Treat that pays for anything. Any 2 food pay for 1 you lack,
+  and you pick the two. Later columns also cost yarn. Yarn, cached food and
+  tucked cats are each worth a point, and tapping a cat on the board shows the
+  cats tucked under it.
 - **Three rounds** of 5, 4 and 3 turns. Each round ends with a goal, scored
   against the rival.
 - **The rival** flips one card from a ten-card deck after every turn: bank a
@@ -142,7 +144,7 @@ src/
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
     sprites/              Sprite and icon grids, element/rarity palettes
-    cats/                 CatCard and EssencePip
+    cats/                 CatCard, the food icons (EssencePip) and ElementMark
     run/  codex/          Screen components
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/
