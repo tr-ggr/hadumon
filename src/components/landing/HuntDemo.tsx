@@ -71,26 +71,42 @@ function firstDice(state: MatchState): number[] {
 }
 
 interface Step {
+  /** The line for the log; empty for the closing step that only settles. */
   text: string;
   tone: LogTone;
   /** The Hunt slot whose power this step is, if any. */
   col: number | null;
+  /** The match as it stands once this step has landed. */
+  frame: MatchState;
 }
 
-/** The turn as the lines the visitor reads, in the order things happened. */
+/**
+ * The turn as the lines the visitor reads, in the order things happened. Each
+ * step carries the state to show with it, so the dice leave the feeder and
+ * the tally moves as each line lands. The last frame is the engine's result.
+ */
 function turnSteps(
   before: MatchState,
-  action: Action,
-): {
-  after: MatchState;
-  steps: Step[];
-} {
+  action: Extract<Action, { type: "hunt" }>,
+): Step[] {
   const { state: after, events } = applyAction(before, action);
   const beforeView = toMatchView(before);
   const lines = describeEvents(beforeView, toMatchView(after), events);
+
+  let frame = structuredClone(before);
+  for (const index of [...action.dice].sort((a, b) => b - a)) {
+    const [face] = frame.feeder.splice(index, 1);
+    if (face) frame.essence[face] += 1;
+  }
   const steps: Step[] = [
-    { text: describeAction(beforeView, action), tone: "note", col: null },
+    {
+      text: describeAction(beforeView, action),
+      tone: "note",
+      col: null,
+      frame,
+    },
   ];
+
   let line = 0;
   for (const event of events) {
     if (
@@ -104,13 +120,29 @@ function turnSteps(
     }
     const described = lines[line++];
     if (!described || event.type === "goal") continue;
+
+    frame = structuredClone(frame);
+    if (event.type === "feeder") frame.feeder = [...event.faces];
+    if (event.type === "rival") {
+      frame.rival = after.rival;
+      frame.feeder = after.feeder;
+    }
+    if (event.type === "power") {
+      const effect = getCat(event.catId).power?.effect;
+      const slot = frame.board.hunt[event.col];
+      const settled = after.board.hunt[event.col];
+      if (effect?.kind === "essence") frame.essence[effect.element] += effect.n;
+      if (slot && settled) slot.tucked = settled.tucked;
+    }
     steps.push({
       text: described.text,
       tone: described.tone,
       col: event.type === "power" ? event.col : null,
+      frame,
     });
   }
-  return { after, steps };
+  steps.push({ text: "", tone: "note", col: null, frame: after });
+  return steps;
 }
 
 /**
@@ -123,11 +155,11 @@ export function HuntDemo() {
   const [dice, setDice] = useState(() => firstDice(state));
   const [steps, setSteps] = useState<Step[]>([]);
   const [shown, setShown] = useState(0);
-  /** The state the turn in progress resolves to, while its steps play out. */
-  const [pending, setPending] = useState<MatchState | null>(null);
+  /** True while a turn's steps are still landing. */
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!pending) return;
+    if (!busy) return;
     const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const id = window.setTimeout(
       () => {
@@ -135,32 +167,39 @@ export function HuntDemo() {
           setShown(shown + 1);
           return;
         }
-        setState(pending);
-        setDice(firstDice(pending));
-        setPending(null);
+        const settled = steps[steps.length - 1]?.frame;
+        if (settled) {
+          setState(settled);
+          setDice(firstDice(settled));
+        }
+        setBusy(false);
       },
       still ? 0 : STEP_MS,
     );
     return () => window.clearTimeout(id);
-  }, [pending, shown, steps.length]);
+  }, [busy, shown, steps]);
 
   const rival = getRival(RIVAL_ID);
-  const busy = pending !== null;
+  const current = busy ? steps[shown - 1] : undefined;
+  /** What the board shows: mid-turn, the state as of the latest step. */
+  const view = current?.frame ?? state;
   const done = !busy && state.round > 0;
   const take = takeCount(state);
-  const firing = busy ? (steps[shown - 1]?.col ?? null) : null;
-  const visible = steps.slice(0, shown);
+  const firing = current?.col ?? null;
+  const visible = steps.slice(0, shown).filter((step) => step.text !== "");
   const rivalLine = [...visible]
     .reverse()
     .find((step) => step.tone === "rival");
+  const rivalFlash = current?.tone === "rival";
   const goal = state.goalResults[0];
-  const cats = state.board.hunt;
+  const cats = view.board.hunt;
+  const score = playerScore(view).total;
+  const rivalTotal = rivalScore(view);
 
   const hunt = () => {
-    const turn = turnSteps(state, { type: "hunt", dice });
-    setSteps(turn.steps);
+    setSteps(turnSteps(state, { type: "hunt", dice }));
     setShown(1);
-    setPending(turn.after);
+    setBusy(true);
   };
 
   const dealAgain = () => {
@@ -173,7 +212,7 @@ export function HuntDemo() {
   };
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-won={done && score > rivalTotal}>
       <section
         aria-label="Hunt row"
         className="border-ink bg-sky-surface border-2 p-2 sm:p-3"
@@ -183,7 +222,7 @@ export function HuntDemo() {
           <p className="text-ink text-xs font-bold tabular-nums">
             {done
               ? "Round 1 is over"
-              : `Round 1 · ${state.turnsLeft} of ${ROUND_TURNS[0]} turns left`}
+              : `Round 1 · ${view.turnsLeft} of ${ROUND_TURNS[0]} turns left`}
           </p>
         </header>
 
@@ -204,7 +243,7 @@ export function HuntDemo() {
             return (
               <li
                 key={col}
-                className={`border-ink text-ink flex min-h-24 flex-col items-center gap-0.5 border-2 p-1 text-center transition-colors duration-200 ${firing === col ? "bg-lime" : "bg-cream"}`}
+                className={`border-ink text-ink flex min-h-24 flex-col items-center gap-0.5 border-2 p-1 text-center transition-colors ${firing === col ? "bg-lime duration-150" : "bg-cream duration-700"}`}
               >
                 <span className="border-ink self-start border bg-white px-1 text-[10px] leading-4 font-bold">
                   Fires {ORDINALS[cats.length - 1 - col]}
@@ -253,11 +292,11 @@ export function HuntDemo() {
                 : `The feeder. Pick ${take} ${take === 1 ? "die" : "dice"}.`}
             </p>
             <div className="mt-1 grid max-w-sm grid-cols-5 gap-1.5">
-              {state.feeder.map((face, index) => (
+              {view.feeder.map((face, index) => (
                 <Die
-                  key={`${state.step}-${index}`}
+                  key={`${view.step}-${view.feeder.length}-${index}`}
                   face={face}
-                  selected={!done && dice.includes(index)}
+                  selected={!done && !busy && dice.includes(index)}
                   disabled={busy}
                   onClick={
                     done
@@ -272,17 +311,19 @@ export function HuntDemo() {
             <Button
               variant="secondary"
               onClick={dealAgain}
-              className="bg-white"
+              className="hover:bg-cream! bg-white!"
             >
               Deal again
             </Button>
           ) : (
             <Button
               size="lg"
+              variant={busy ? "hero" : "primary"}
               disabled={busy || dice.length !== take}
               onClick={hunt}
+              className={busy ? "disabled:opacity-100" : ""}
             >
-              Take {take} {take === 1 ? "die" : "dice"}
+              {busy ? "Hunting" : `Take ${take} ${take === 1 ? "die" : "dice"}`}
             </Button>
           )}
         </div>
@@ -293,7 +334,7 @@ export function HuntDemo() {
           {rival.name}
         </span>
         <span
-          className={`min-w-0 flex-1 px-2 py-1.5 transition-colors duration-300 ${rivalLine ? "bg-coral" : "bg-cream"}`}
+          className={`min-w-0 flex-1 px-2 py-1.5 transition-colors ${rivalFlash ? "bg-coral duration-150" : "bg-cream duration-700"}`}
         >
           {rivalLine
             ? rivalLine.text
@@ -331,18 +372,15 @@ export function HuntDemo() {
           <dt>Your essence</dt>
           <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 tabular-nums">
             {ESSENCES.map((kind) => (
-              <span
-                key={kind}
-                className={`flex items-center gap-1 ${state.essence[kind] === 0 ? "opacity-40" : ""}`}
-              >
+              <span key={kind} className="flex items-center gap-1">
                 <EssencePip kind={kind} size={14} />
-                {state.essence[kind]}
+                {view.essence[kind]}
               </span>
             ))}
           </dd>
           <dt>Score</dt>
           <dd className="tabular-nums">
-            You {playerScore(state).total} · {rival.name} {rivalScore(state)}
+            You {score} · {rival.name} {rivalTotal}
           </dd>
         </dl>
       </div>
