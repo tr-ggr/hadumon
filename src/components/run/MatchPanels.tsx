@@ -57,22 +57,37 @@ export function StatusStrip({ match }: { match: MatchView }) {
     ["You", String(match.score.total)],
     ["Rival", String(match.rival.score)],
   ];
+  const standing = match.standing;
   return (
-    <dl
-      aria-label={`Match against ${rival.name}`}
-      className="panel-flat grid grid-cols-4 divide-x divide-black/10"
-    >
-      {cells.map(([label, value]) => (
-        <div key={label} className="px-2 py-2 text-center">
-          <dt className="text-ink-soft text-[11px] leading-tight font-bold">
-            {label}
-          </dt>
-          <dd className="text-pixel text-ink text-lg leading-tight tabular-nums">
-            {value}
-          </dd>
-        </div>
-      ))}
-    </dl>
+    <div className="panel-flat overflow-hidden">
+      <dl
+        aria-label={`Match against ${rival.name}`}
+        className="grid grid-cols-4 divide-x divide-black/10"
+      >
+        {cells.map(([label, value]) => (
+          <div key={label} className="px-2 py-2 text-center">
+            <dt className="text-ink-soft text-[11px] leading-tight font-bold">
+              {label}
+            </dt>
+            <dd className="text-pixel text-ink text-lg leading-tight tabular-nums">
+              {value}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      {/* On a phone the goal panel sits below the board; its gist stays up here. */}
+      {standing ? (
+        <p className="text-ink border-t border-black/10 px-3 py-1.5 text-xs leading-snug lg:hidden">
+          <span className="font-black">
+            Goal, {getGoal(standing.goalId).name}:
+          </span>{" "}
+          {getGoal(standing.goalId).text}{" "}
+          <span className="font-black tabular-nums">
+            You {standing.player} · Rival {standing.rival}
+          </span>
+        </p>
+      ) : null}
+    </div>
   );
 }
 
@@ -137,8 +152,8 @@ export function RivalPanel({
       </p>
       <p className="text-ink-soft text-xs leading-snug">
         {deckCount > 0
-          ? `${plural(deckCount, "card")} left in its deck: ${cardsLeft(match)}.`
-          : "Its deck is empty. It reshuffles before the next card."}
+          ? `${plural(deckCount, "card")} left in the deck: ${cardsLeft(match)}.`
+          : "The deck is empty and is reshuffled before the next card."}
       </p>
       <p className="text-ink-soft text-xs leading-snug">
         Score {score}: {banked} banked at {bankValue} each, {yarn} yarn,{" "}
@@ -181,7 +196,7 @@ export function GoalPanel({
             {GOAL_WIN_POINTS[round]}, the lower {GOAL_LOSE_POINTS[round]}; a tie
             splits them, and a count of 0 takes nothing.
             {match.rival.pushes > 0
-              ? ` Its count includes ${plural(match.rival.pushes, "push", "pushes")}.`
+              ? ` The rival's count includes ${plural(match.rival.pushes, "push", "pushes")}.`
               : ""}
           </p>
         </>

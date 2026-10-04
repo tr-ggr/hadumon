@@ -227,7 +227,7 @@ export function MatchBoard({
 
       <div className="flex flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start">
         <div className="contents lg:block lg:space-y-3">
-          <div ref={boardRef} className="order-3 space-y-2">
+          <div ref={boardRef} className="order-1 space-y-2">
             {ROWS.map((row) => (
               <BoardRow
                 key={row}
@@ -247,7 +247,7 @@ export function MatchBoard({
             </p>
           </div>
 
-          <section ref={handRef} className="panel order-4 space-y-3 p-3">
+          <section ref={handRef} className="panel order-2 space-y-3 p-3">
             <div>
               <Label>Your essence</Label>
               <ul className="mt-1.5 flex flex-wrap gap-x-3 gap-y-1.5">
@@ -275,13 +275,14 @@ export function MatchBoard({
               ) : (
                 <ul className="-mx-1 mt-0.5 flex gap-2 overflow-x-auto p-2 sm:flex-wrap sm:overflow-visible">
                   {match.hand.map((catId, index) => (
-                    <li key={`${index}-${catId}`} className="w-48 shrink-0">
+                    <li key={`${index}-${catId}`} className="w-52 shrink-0">
                       <CatPick
                         catId={catId}
-                        verb={mode.kind === "tuck" ? "Tuck" : "Play"}
+                        verb={mode.kind === "tuck" ? "Choose" : "Play"}
                         onDetail={() => setDetail(catId)}
                         onSelect={() => onHandCard(index)}
                         selected={selectedHand === index}
+                        pickable={mode.kind === "tuck"}
                         disabled={busy || match.phase === "over"}
                         dimmed={
                           mode.kind !== "tuck" &&
@@ -296,7 +297,7 @@ export function MatchBoard({
             </div>
           </section>
 
-          <section ref={supplyRef} className="panel order-5 space-y-3 p-3">
+          <section ref={supplyRef} className="panel order-3 space-y-3 p-3">
             <div>
               <div className="flex items-center justify-between gap-2">
                 <Label>Feeder</Label>
@@ -335,42 +336,6 @@ export function MatchBoard({
               </ul>
             </div>
 
-            <div>
-              <Label>Tray</Label>
-              {match.tray.length === 0 ? (
-                <p className="text-ink-soft mt-1 text-sm">The tray is empty.</p>
-              ) : (
-                <ul className="mt-1.5 grid gap-2 p-1 sm:grid-cols-3">
-                  {match.tray.map((catId, index) => {
-                    const picked =
-                      mode.kind === "prowl" && mode.picks.includes(index);
-                    return (
-                      <li key={`${index}-${catId}`}>
-                        <CatPick
-                          catId={catId}
-                          verb="Draw"
-                          onDetail={() => setDetail(catId)}
-                          onSelect={
-                            mode.kind === "prowl"
-                              ? () => onTrayCard(index)
-                              : undefined
-                          }
-                          selected={picked}
-                          disabled={
-                            busy ||
-                            (mode.kind === "prowl" &&
-                              !picked &&
-                              mode.picks.length >= match.prowlPicks)
-                          }
-                          className="h-full"
-                        />
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
-
             <div className="flex flex-wrap items-center justify-between gap-2">
               <p className="text-ink text-sm font-semibold">
                 Deck {match.deckCount} · Discard {match.discardCount}
@@ -401,12 +366,49 @@ export function MatchBoard({
                 </div>
               ) : null}
             </div>
+
+            <div>
+              <Label>Tray</Label>
+              {match.tray.length === 0 ? (
+                <p className="text-ink-soft mt-1 text-sm">The tray is empty.</p>
+              ) : (
+                <ul className="mt-1.5 grid gap-2 p-1 sm:grid-cols-3">
+                  {match.tray.map((catId, index) => {
+                    const picked =
+                      mode.kind === "prowl" && mode.picks.includes(index);
+                    return (
+                      <li key={`${index}-${catId}`}>
+                        <CatPick
+                          catId={catId}
+                          verb="Draw"
+                          onDetail={() => setDetail(catId)}
+                          onSelect={
+                            mode.kind === "prowl"
+                              ? () => onTrayCard(index)
+                              : undefined
+                          }
+                          selected={picked}
+                          pickable={mode.kind === "prowl"}
+                          disabled={
+                            busy ||
+                            (mode.kind === "prowl" &&
+                              !picked &&
+                              mode.picks.length >= match.prowlPicks)
+                          }
+                          className="h-full"
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </section>
         </div>
 
         <div className="contents lg:block lg:space-y-3">
-          <RivalPanel match={match} news={news} className="order-1" />
-          <GoalPanel match={match} className="order-2" />
+          <RivalPanel match={match} news={news} className="order-4" />
+          <GoalPanel match={match} className="order-5" />
           <EventLog log={log} className="order-7" />
           <section className="panel order-6 space-y-2 p-3">
             <h2 className="text-pixel text-ink text-lg leading-tight">

@@ -17,6 +17,7 @@ import {
 } from "./describe";
 import {
   boardYarnRoom,
+  essenceSpent,
   fillYarn,
   huntTake,
   toggleDie,
@@ -236,5 +237,17 @@ describe("turn helpers", () => {
       whyUnplayable({ ...base, yarnCosts: { hunt: 1, den: 0, prowl: 0 } }, 1),
     ).toBe("Not enough yarn: the next slot costs 1 and your cats hold 0.");
     expect(whyUnplayable({ ...base, playable: [[], ["hunt"]] }, 1)).toBeNull();
+  });
+
+  it("says which essence a play spends, as the engine will pay it", () => {
+    const essence = { flame: 1, mist: 0, volt: 0, thorn: 0, shade: 1, wild: 1 };
+    const view = { ...kept.after, hand: ["sparkmew", "burrfang"], essence };
+    // An "any" pip takes from the fullest element; a tie goes to the first.
+    expect(essenceSpent(view, 0)).toEqual(["flame"]);
+    // Thorn is paid with wild, then "any" takes an element before wild.
+    expect(essenceSpent(view, 1)).toEqual(["flame", "wild"]);
+    expect(
+      essenceSpent({ ...view, essence: { ...essence, flame: 0, shade: 0 } }, 1),
+    ).toBeNull();
   });
 });

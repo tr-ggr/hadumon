@@ -72,7 +72,7 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
             <thead>
               <tr className="border-ink border-b-2 text-left text-xs">
                 <th scope="col" className="py-1 pr-2 font-bold">
-                  Rival
+                  Match
                 </th>
                 <th scope="col" className="px-2 py-1 text-right font-bold">
                   You

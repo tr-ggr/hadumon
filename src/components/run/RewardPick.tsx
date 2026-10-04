@@ -92,7 +92,7 @@ export function RewardPick({ run, offer, busy, onChoose }: RewardPickProps) {
                     disabled={busy}
                     aria-pressed={chosen}
                     onClick={() => setRelic(chosen ? null : id)}
-                    className={`border-ink text-ink h-full w-full border-2 p-2 text-left ${chosen ? "ring-cobalt bg-lime ring-4" : "bg-cream hover:bg-sky-soft"}`}
+                    className={`border-ink text-ink flex h-full w-full flex-col justify-start border-2 p-2 text-left ${chosen ? "ring-cobalt bg-lime ring-4" : "bg-cream hover:bg-sky-soft"}`}
                   >
                     <span className="text-pixel block text-sm">
                       {item.name}

@@ -82,7 +82,7 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
       )}
 
       <Dock className="sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-ink text-sm">
+        <p className="text-ink hidden text-sm sm:block">
           {chosenClan && firstRival
             ? `First rival: ${getRival(firstRival).name}.`
             : "No clan is open yet."}

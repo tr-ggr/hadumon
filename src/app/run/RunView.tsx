@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ClanPick } from "~/components/run/ClanPick";
 import { MatchBoard } from "~/components/run/MatchBoard";
@@ -19,6 +19,24 @@ import { CLANS } from "~/server/game/run";
 export function RunView() {
   const run = useRunController();
   const [abandoning, setAbandoning] = useState(false);
+
+  // A new screen starts at its top, not wherever the last one was scrolled to.
+  const view = run.snapshot?.view;
+  const screen = run.final
+    ? "summary"
+    : !view
+      ? "clans"
+      : view.phase === "reward"
+        ? `reward:${view.matchIndex}`
+        : view.match?.phase === "setup"
+          ? `setup:${view.matchIndex}`
+          : `board:${view.matchIndex}`;
+  const lastScreen = useRef(screen);
+  useEffect(() => {
+    if (lastScreen.current === screen) return;
+    lastScreen.current = screen;
+    window.scrollTo({ top: 0 });
+  }, [screen]);
 
   if (run.final) {
     return (
@@ -46,9 +64,10 @@ export function RunView() {
   }
 
   const snapshot = run.snapshot;
-  if (!snapshot) return <ClanPick busy={run.busy} onStart={run.start} />;
+  if (!snapshot || !view) {
+    return <ClanPick busy={run.busy} onStart={run.start} />;
+  }
 
-  const { view } = snapshot;
   const match = view.match;
   // Each match gets fresh screens, so no choice leaks from the one before.
   const matchKey = `${snapshot.id}:${view.matchIndex}`;

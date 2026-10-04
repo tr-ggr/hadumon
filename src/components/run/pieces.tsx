@@ -99,7 +99,7 @@ export function RivalIntro({
       <p className="text-ink-soft text-sm italic">{rival.flavor}</p>
       <p className="text-ink text-sm">
         {rival.trait ??
-          "No tricks. It banks, stashes, raids, burns and pushes like anyone."}
+          "No tricks: banks, stashes, raids, burns and pushes like anyone."}
       </p>
     </div>
   );

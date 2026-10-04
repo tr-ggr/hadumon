@@ -45,7 +45,8 @@ export function SetupKeep({ run, match, busy, onAct }: SetupKeepProps) {
         />
         <p className="text-ink-soft text-sm">
           Three rounds of {firstRound}, {ROUND_TURNS[1]} and {ROUND_TURNS[2]}{" "}
-          turns. It flips one card after each of yours. Score more than it does.
+          turns. The rival flips one card after each of your turns. Score more
+          than the rival to win.
         </p>
       </Panel>
 
@@ -142,7 +143,7 @@ export function SetupKeep({ run, match, busy, onAct }: SetupKeepProps) {
       </Panel>
 
       <Dock className="sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-ink text-sm" aria-live="polite">
+        <p className="text-ink hidden text-sm sm:block" aria-live="polite">
           {chosen} of {SETUP_KEEP} chosen: {cats.length}{" "}
           {cats.length === 1 ? "cat" : "cats"}, {essence.length} essence.
           {chosen > SETUP_KEEP ? " That is too many." : ""}

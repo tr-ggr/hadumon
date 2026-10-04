@@ -5,7 +5,13 @@
  */
 
 import { getCat, ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
-import { payCost, type Board, type SlotRef } from "~/server/game/match";
+import {
+  ESSENCES,
+  payCost,
+  type Board,
+  type Essence,
+  type SlotRef,
+} from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
 import { listWords } from "./describe";
@@ -89,6 +95,21 @@ export function whyUnplayable(view: MatchView, hand: number): string | null {
   }
   const cheapest = Math.min(...open.map((row) => view.yarnCosts[row] ?? 0));
   return `Not enough yarn: the next slot costs ${cheapest} and your cats hold ${view.score.yarn}.`;
+}
+
+/**
+ * The essence playing a hand card would spend, one entry per pip, or `null`
+ * if it cannot be paid. The engine pays automatically (an "any" pip takes from
+ * the fullest element), so the player is told before confirming.
+ */
+export function essenceSpent(view: MatchView, hand: number): Essence[] | null {
+  const catId = view.hand[hand];
+  if (!catId) return null;
+  const left = payCost(view.essence, getCat(catId).cost);
+  if (!left) return null;
+  return ESSENCES.flatMap((kind) =>
+    Array.from({ length: view.essence[kind] - left[kind] }, () => kind),
+  );
 }
 
 /** Toggles a die in a Hunt; when the take is full the oldest choice gives way. */

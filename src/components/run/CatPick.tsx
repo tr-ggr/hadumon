@@ -15,6 +15,8 @@ export interface CatPickProps {
   onSelect?: () => void;
   selected?: boolean;
   disabled?: boolean;
+  /** Marks the card as one of the things to choose from right now. */
+  pickable?: boolean;
   /** Greys the card without disabling it, e.g. a cat with no legal row. */
   dimmed?: boolean;
   /** What selecting does, for assistive tech: "Play", "Keep", "Draw". */
@@ -35,6 +37,7 @@ export function CatPick({
   onSelect,
   selected = false,
   disabled = false,
+  pickable = false,
   dimmed = false,
   verb = "Select",
   note,
@@ -45,7 +48,7 @@ export function CatPick({
 
   return (
     <div
-      className={`relative ${selected ? "ring-cobalt ring-4" : ""} ${dimmed && !selected ? "opacity-60" : ""} ${className}`}
+      className={`relative ${selected ? "ring-cobalt ring-4" : pickable && !disabled ? "ring-cobalt ring-2" : ""} ${dimmed && !selected ? "opacity-60" : ""} ${className}`}
     >
       {onSelect ? (
         <button

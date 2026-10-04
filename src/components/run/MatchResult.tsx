@@ -47,7 +47,7 @@ export function MatchResult({ match }: { match: MatchView }) {
     >
       <p className="text-ink">
         {result.won
-          ? `${player.total} to ${result.rival}. ${plural(margin, "point")} is enough.`
+          ? `${player.total} to ${result.rival}. ${margin <= 3 ? "Close, and it still counts." : "Not close."}`
           : margin === 0
             ? `${result.rival} all. A tie goes to the rival.`
             : `${result.rival} to ${player.total}. Short by ${margin}.`}
@@ -83,7 +83,7 @@ export function MatchResult({ match }: { match: MatchView }) {
               Round {round + 1}, {getGoal(goal.goalId).name}:
             </span>{" "}
             you {goal.player}, {rival.name} {goal.rival}. You took{" "}
-            {goal.playerPoints}, it took {goal.rivalPoints}.
+            {goal.playerPoints}, {rival.name} took {goal.rivalPoints}.
           </li>
         ))}
       </ol>

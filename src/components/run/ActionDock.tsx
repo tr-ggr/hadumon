@@ -8,10 +8,10 @@ import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
 import { yarnCostLabel } from "./BoardRow";
-import { plural, type RivalNews } from "./describe";
+import { essenceLabel, listWords, plural, type RivalNews } from "./describe";
 import { Dock } from "./Dock";
 import { rivalLastText, useFlash } from "./MatchPanels";
-import { boardYarnRoom, whyUnplayable, type Mode } from "./turn";
+import { boardYarnRoom, essenceSpent, whyUnplayable, type Mode } from "./turn";
 
 export interface TurnControls {
   mode: Mode;
@@ -149,8 +149,14 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       const name = catId ? getCat(catId).name : "this cat";
       const rows = match.playable[mode.hand] ?? [];
       const reason = whyUnplayable(match, mode.hand);
+      const spent = essenceSpent(match, mode.hand) ?? [];
       return (
-        <Row2 text={reason ?? `Play ${name} into:`}>
+        <Row2
+          text={
+            reason ??
+            `Play ${name} into a row. It spends ${listWords(spent.map(essenceLabel))} essence.`
+          }
+        >
           {rows.map((row) => (
             <Button
               key={row}
@@ -236,13 +242,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       );
     default:
       return (
-        <Row2
-          text={
-            busy
-              ? "Working…"
-              : "Your turn. Play a cat from your hand, or activate a row."
-          }
-        >
+        <Row2 text="Your turn. Play a cat, or activate a row.">
           {/* The rows carry these too; down here they are a thumb away. */}
           <div className="grid w-full grid-cols-3 gap-1.5 lg:hidden">
             {ROWS.map((row) => (
