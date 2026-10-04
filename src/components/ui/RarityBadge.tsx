@@ -1,4 +1,4 @@
-import { RARITY_LABELS, type Rarity } from "~/server/game/species";
+import { RARITY_LABELS, type Rarity } from "~/server/game/cats";
 import { RARITY_PALETTES } from "~/components/sprites/palettes";
 
 export interface RarityBadgeProps {

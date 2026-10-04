@@ -1,5 +1,5 @@
 import type { Element } from "~/server/game/elements";
-import type { Rarity } from "~/server/game/species";
+import type { Rarity } from "~/server/game/cats";
 
 export interface FurPalette {
   /** `1` primary fur */
@@ -41,7 +41,7 @@ export const OUTLINE_COLOR = "#1a1120";
 export const WHITE_COLOR = "#ffffff";
 
 /**
- * Resolves the legend character → CSS colour map for one creature.
+ * Resolves the legend character → CSS colour map for one cat.
  * Returns `null` for transparent pixels.
  */
 export function spriteColors(
