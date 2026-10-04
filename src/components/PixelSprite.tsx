@@ -32,7 +32,7 @@ export function PixelSprite({
   decorative = false,
 }: PixelSpriteProps) {
   const cat = getCat(catId);
-  const colors = spriteColors(cat.element, cat.rarity);
+  const colors = spriteColors(cat.element, cat.rarity, cat.id);
   const runs = buildRuns(catSprite(catId), colors);
 
   return (

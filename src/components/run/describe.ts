@@ -174,6 +174,7 @@ function describePower(
   event: Extract<MatchEvent, { type: "power" }>,
   before: MatchView,
   after: MatchView,
+  nth: number,
 ): string {
   const cat = getCat(event.catId);
   const effect = cat.power?.effect;
@@ -184,8 +185,9 @@ function describePower(
   const waiting =
     after.pending?.slot.row === event.row &&
     after.pending?.slot.col === event.col;
-  // The cats this power put under it, where the match has kept them.
-  const tucked = (now?.under ?? [])
+  // The cats put under it this action, where the match has kept them. Set
+  // off again by an encore, a cat fires twice; `nth` says which firing this is.
+  const under = (now?.under ?? [])
     .slice(was?.under?.length ?? 0)
     .map((id) => getCat(id).name);
 
@@ -204,13 +206,16 @@ function describePower(
       return `${name} drew ${plural(effect.n, "cat")}.`;
     case "cache":
       return `${name} cached ${effect.n} food.`;
-    case "tuckDeck":
+    case "tuckDeck": {
+      const tucked = under.slice(nth * effect.n, (nth + 1) * effect.n);
       return tucked.length > 0
         ? `${name} tucked ${listWords(tucked)} from the deck.`
         : `${name} tucked ${plural(effect.n, "cat")} from the deck.`;
+    }
     case "pounce":
-      return (now?.tucked ?? 0) > (was?.tucked ?? 0)
-        ? `${name} pounced and tucked ${tucked.length > 0 ? listWords(tucked) : "a cat"}.`
+      // Which pounce landed is the server's to know; the count is right.
+      return (now?.tucked ?? 0) - (was?.tucked ?? 0) > nth
+        ? `${name} pounced and tucked ${under[nth] ?? "a cat"}.`
         : `${name} pounced and came back with nothing.`;
     case "tuckHand":
       return waiting
@@ -220,6 +225,8 @@ function describePower(
       return waiting
         ? `${name} offers a trade: 1 yarn for 1 ${TREAT_LABEL}.`
         : `${name} had no yarn to trade.`;
+    case "encore":
+      return `${name} set the rest of ${rowName(event.row)} off again.`;
   }
 }
 
@@ -231,18 +238,23 @@ export function describeEvents(
 ): LogLine[] {
   const rival = getRival(after.rivalId).name;
   const lines: LogLine[] = [];
+  const fired = new Map<string, number>();
   for (const event of events) {
     switch (event.type) {
       case "kept":
       case "played":
       case "activated":
         break;
-      case "power":
+      case "power": {
+        const slot = `${event.row}:${event.col}`;
+        const nth = fired.get(slot) ?? 0;
+        fired.set(slot, nth + 1);
         lines.push({
           tone: "power",
-          text: describePower(event, before, after),
+          text: describePower(event, before, after, nth),
         });
         break;
+      }
       case "feeder":
         lines.push({
           tone: "note",

@@ -521,6 +521,95 @@ describe("prowl", () => {
   });
 });
 
+describe("encore", () => {
+  it("fires every other activated cat in the row a second time", () => {
+    const state = turnState({
+      board: {
+        hunt: [placed("flameclaw"), placed("hadu"), placed("burrfang")],
+        den: [],
+        prowl: [],
+      },
+    });
+    const { state: next, events } = applyAction(state, {
+      type: "hunt",
+      dice: [0, 1],
+    });
+    expect(powers(events)).toEqual([
+      "burrfang",
+      "hadu",
+      "flameclaw",
+      "burrfang",
+      "flameclaw",
+    ]);
+    expect(next.essence).toEqual(pool({ flame: 3, mist: 1, thorn: 2 }));
+  });
+
+  it("ends when two share a row, and neither sets the other off", () => {
+    const state = turnState({
+      board: {
+        hunt: [placed("hadu"), placed("flameclaw"), placed("hadu")],
+        den: [],
+        prowl: [],
+      },
+    });
+    const { state: next, events } = applyAction(state, {
+      type: "hunt",
+      dice: [0, 1],
+    });
+    expect(powers(events)).toEqual([
+      "hadu",
+      "flameclaw",
+      "hadu",
+      "flameclaw",
+      "flameclaw",
+    ]);
+    expect(next.essence).toEqual(pool({ flame: 4, mist: 1 }));
+    expect(next.queue).toEqual([]);
+  });
+
+  it("leaves alone a cat whose power is not an activated one", () => {
+    const state = turnState({
+      board: {
+        hunt: [placed("emberkit"), placed("nimbustail"), placed("hadu")],
+        den: [],
+        prowl: [],
+      },
+    });
+    const { state: next, events } = applyAction(state, {
+      type: "hunt",
+      dice: [0, 1],
+    });
+    expect(powers(events)).toEqual(["hadu"]);
+    expect(next.hand).toEqual(state.hand);
+  });
+
+  it("asks a choice again for a cat it sets off", () => {
+    const state = turnState({
+      board: {
+        hunt: [],
+        den: [],
+        prowl: [placed("voltwhisk"), placed("hadu")],
+      },
+      hand: ["flameclaw", "burrfang"],
+    });
+    const first = applyAction(state, {
+      type: "prowl",
+      picks: ["deck", "deck"],
+    }).state;
+    expect(first.pending?.kind).toBe("tuckHand");
+    const second = applyAction(first, { type: "resolve", choice: 0 }).state;
+    expect(second.phase).toBe("pending");
+    expect(second.pending?.slot).toEqual({ row: "prowl", col: 0 });
+    // The rival still waits.
+    expect(second.rival.banked).toBe(0);
+
+    const done = applyAction(second, { type: "resolve", choice: 0 }).state;
+    expect(done.phase).toBe("turn");
+    expect(done.board.prowl[0]?.under).toEqual(["flameclaw", "burrfang"]);
+    expect(done.rival.banked).toBe(1);
+  });
+});
+
 describe("pending choices", () => {
   const withVoltwhisk = () =>
     turnState({

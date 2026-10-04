@@ -80,7 +80,9 @@ export type Effect =
   /** Player choice: may tuck a hand card under this cat to draw. */
   | { kind: "tuckHand"; draw: number }
   /** Player choice: may spend 1 yarn from this cat for 1 wild essence. */
-  | { kind: "trade" };
+  | { kind: "trade" }
+  /** Every other cat in this cat's row fires its activated power again. */
+  | { kind: "encore" };
 
 export type Power =
   | { timing: "played" | "activated" | "roundEnd"; effect: Effect }
@@ -546,6 +548,21 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
       },
       "A living lightning rod in gilded plate. Storms ask permission.",
     ),
+    c(
+      "hadu",
+      "Hadu",
+      "shade",
+      "legendary",
+      "familiar",
+      {
+        rows: ["hunt", "den", "prowl"],
+        cost: ["any"],
+        points: 10,
+        yarnCap: 9,
+        power: { timing: "activated", effect: { kind: "encore" } },
+      },
+      "Loafs on the warm laptop with his paws crossed. The game is named after him, and he knows it.",
+    ),
   ].map((cat) => [cat.id, cat] as const),
 );
 
@@ -607,6 +624,8 @@ export function describeEffect(effect: Effect): string {
       return `you may tuck a cat from your hand to draw ${plural(effect.draw, "cat")}`;
     case "trade":
       return `you may spend 1 yarn from this cat to gain 1 ${TREAT_LABEL}`;
+    case "encore":
+      return "every other cat in this row fires again";
   }
 }
 

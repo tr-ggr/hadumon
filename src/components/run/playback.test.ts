@@ -184,6 +184,37 @@ describe("buildSteps", () => {
     throw new Error("no lane has two activated cats in the starter deck");
   });
 
+  it("fires a row twice over for an encore, and settles where the server does", () => {
+    const state = dealt({ prowl: ["duskmew", "pyrelynx", "hadu", "mistpaw"] });
+    const { before, after, events, frames } = play(state, {
+      type: "prowl",
+      picks: ["deck", "deck", "deck"],
+    });
+    const fired = frames.flatMap((f) => (f.firing ? [f.firing.col] : []));
+    expect(fired).toEqual([3, 2, 1, 0, 3, 1, 0]);
+
+    const settled = frames[frames.length - 2]?.view;
+    expect(settled?.board).toEqual(after.board);
+    expect(settled?.essence).toEqual(after.essence);
+    expect(settled?.hand).toEqual(after.hand);
+    expect(after.board.prowl[1]?.cached).toBe(2);
+
+    // Duskmew takes one cat under it at each of its two firings.
+    const duskmew = frames.filter((f) => f.firing?.col === 0);
+    expect(duskmew.map((f) => f.view.board.prowl[0]?.tucked)).toEqual([1, 2]);
+
+    // Each of Duskmew's two firings names the cat that one tucked.
+    const under = (after.board.prowl[0]?.under ?? []).map(
+      (id) => getCat(id).name,
+    );
+    expect(under).toHaveLength(2);
+    const lines = describeEvents(before, after, events).map((l) => l.text);
+    expect(lines).toContain("Hadu set the rest of the Prowl off again.");
+    expect(lines.filter((text) => text.startsWith("Duskmew tucked"))).toEqual(
+      under.map((name) => `Duskmew tucked ${name} from the deck.`),
+    );
+  });
+
   it("flips the rival's card once, after the player's powers", () => {
     const state = dealt();
     const { frames } = play(state, { type: "hunt", dice: [0] });

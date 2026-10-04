@@ -390,6 +390,25 @@ export const SPRITE_PATCHES: Record<string, readonly SpritePatch[]> = {
     [14, 5, "22"],
     [14, 9, "22"],
   ],
+  // A tuxedo in his own palette: black mask, white blaze and chest, pink
+  // ears and nose, and the bell on his collar in the eye's gold.
+  hadu: [
+    [3, 1, "131"],
+    [3, 12, "131"],
+    [4, 7, "22"],
+    [5, 6, "2222"],
+    [6, 6, "2222"],
+    [7, 6, "2222"],
+    [8, 3, "22"],
+    [8, 11, "22"],
+    [9, 2, "222"],
+    [9, 11, "222"],
+    [11, 5, "22ee22"],
+    [12, 5, "22222"],
+    [13, 5, "2222"],
+    [14, 5, "22"],
+    [14, 9, "22"],
+  ],
 };
 
 /** Returns `rows` with one patch written over it. */

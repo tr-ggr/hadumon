@@ -12,7 +12,7 @@ export function countUnlocked(entries: readonly CodexEntry[]): number {
   return entries.filter((entry) => entry.unlocked).length;
 }
 
-/** "18 of 25", the way every codex count is written. */
+/** "18 of 26", the way every codex count is written. */
 export function progressText(entries: readonly CodexEntry[]): string {
   return `${countUnlocked(entries)} of ${entries.length}`;
 }

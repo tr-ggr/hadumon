@@ -19,7 +19,7 @@ export default async function Image() {
   const mascot = getCat(MASCOT_ID);
   const runs = buildRuns(
     catSprite(MASCOT_ID),
-    spriteColors(mascot.element, mascot.rarity),
+    spriteColors(mascot.element, mascot.rarity, mascot.id),
   );
 
   return new ImageResponse(

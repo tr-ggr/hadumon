@@ -165,16 +165,22 @@ function applyPower(
       placed.cached += effect.n;
       break;
     case "tuckDeck":
-    case "pounce":
-      // What the deck gave up is the server's to know; a cat fires once an
-      // action, so what is settled under it is this power's doing.
-      if (settled) {
-        placed.tucked = settled.tucked;
-        if (settled.under) placed.under = [...settled.under];
+    case "pounce": {
+      // What the deck gave up is the server's to know, so the cat takes its
+      // share of what is settled under it: one firing's worth at a time, for
+      // an encore fires it twice.
+      if (!settled) break;
+      const n = effect.kind === "tuckDeck" ? effect.n : 1;
+      placed.tucked = Math.min(settled.tucked, placed.tucked + n);
+      if (settled.under) {
+        placed.under = settled.under.slice(0, (placed.under?.length ?? 0) + n);
       }
       break;
+    }
     case "tuckHand":
     case "trade":
+    // The cats an encore sets off again each come as a power of their own.
+    case "encore":
       break;
   }
 }

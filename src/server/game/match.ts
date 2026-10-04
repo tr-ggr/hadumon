@@ -646,6 +646,22 @@ function firePower(
         s.pending = { kind: "trade", slot };
       }
       return;
+    case "encore":
+      // Queued behind what is still to fire, so the row finishes its first
+      // pass before the second. Another encore is left out, or two would
+      // set each other off for ever.
+      for (let col = s.board[slot.row].length - 1; col >= 0; col--) {
+        const other = s.board[slot.row][col];
+        const power = other ? getCat(other.catId).power : null;
+        if (
+          col !== slot.col &&
+          power?.timing === "activated" &&
+          power.effect.kind !== "encore"
+        ) {
+          s.queue.push({ row: slot.row, col });
+        }
+      }
+      return;
   }
 }
 

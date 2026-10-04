@@ -19,6 +19,14 @@ export const ELEMENT_PALETTES: Record<Element, FurPalette> = {
   shade: { "1": "#8275c6", "2": "#c9c1f2", "3": "#40336d" },
 };
 
+/**
+ * Cats drawn from life, in their own colours rather than their element's.
+ * Hadu is a tuxedo: black fur, white fur, and a pink nose and ears.
+ */
+export const CAT_PALETTES: Partial<Record<string, FurPalette>> = {
+  hadu: { "1": "#2f2838", "2": "#ffffff", "3": "#f4a6b7" },
+};
+
 export interface RarityPalette {
   /** Card border / sprite frame colour. */
   outline: string;
@@ -47,8 +55,10 @@ export const WHITE_COLOR = "#ffffff";
 export function spriteColors(
   element: Element,
   rarity: Rarity,
+  catId?: string,
 ): Record<string, string | null> {
-  const fur = ELEMENT_PALETTES[element];
+  const own = catId ? CAT_PALETTES[catId] : undefined;
+  const fur = own ?? ELEMENT_PALETTES[element];
   return {
     ".": null,
     o: OUTLINE_COLOR,

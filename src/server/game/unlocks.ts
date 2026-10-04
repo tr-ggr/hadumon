@@ -105,6 +105,7 @@ export const UNLOCK_RULES: UnlockRule[] = [
     hint: "Win a run with the Static Clan.",
     test: (run) => run.won && run.clanId === "volt",
   },
+  { kind: "cat", key: "hadu", hint: "Win a run.", test: (run) => run.won },
 
   { kind: "relic", key: "early-riser", hint: "Win a match.", test: wins(1) },
   {

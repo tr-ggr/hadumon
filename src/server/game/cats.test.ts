@@ -11,13 +11,13 @@ import {
 import { ELEMENTS } from "./elements";
 
 describe("cat catalogue", () => {
-  it("has 25 cats in the documented rarity split", () => {
-    expect(CAT_LIST).toHaveLength(25);
+  it("has 26 cats in the documented rarity split", () => {
+    expect(CAT_LIST).toHaveLength(26);
     expect(catsByRarity("common")).toHaveLength(10);
     expect(catsByRarity("uncommon")).toHaveLength(5);
     expect(catsByRarity("rare")).toHaveLength(5);
     expect(catsByRarity("epic")).toHaveLength(3);
-    expect(catsByRarity("legendary")).toHaveLength(2);
+    expect(catsByRarity("legendary")).toHaveLength(3);
   });
 
   it("gives every element two commons, an uncommon and a rare", () => {
