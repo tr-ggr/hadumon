@@ -1,13 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { count, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 
 import { hashPassword, verifyPassword } from "~/server/auth/password";
 import { createSession, deleteSession } from "~/server/auth/session";
-import { creatures } from "~/server/db/schema/creatures";
 import { users } from "~/server/db/schema/auth";
-import { STARTER_SPECIES_IDS } from "~/server/game/species";
-import { getWallet } from "~/server/game/wallet";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -64,44 +61,31 @@ export const authRouter = createTRPCRouter({
 
       const passwordHash = await hashPassword(input.password);
 
-      const userId = await ctx.db.transaction(async (tx) => {
-        const [created] = await tx
-          .insert(users)
-          .values({ username, displayName: input.username, passwordHash })
-          .returning({ id: users.id })
-          .catch((error: unknown) => {
-            // Two signups raced past the pre-check; the unique index wins.
-            if (isUniqueViolation(error)) {
-              throw new TRPCError({
-                code: "CONFLICT",
-                message: "That username is taken",
-              });
-            }
-            throw error;
-          });
+      const [created] = await ctx.db
+        .insert(users)
+        .values({ username, displayName: input.username, passwordHash })
+        .returning({ id: users.id })
+        .catch((error: unknown) => {
+          // Two signups raced past the pre-check; the unique index wins.
+          if (isUniqueViolation(error)) {
+            throw new TRPCError({
+              code: "CONFLICT",
+              message: "That username is taken",
+            });
+          }
+          throw error;
+        });
 
-        if (!created) {
-          throw new TRPCError({
-            code: "INTERNAL_SERVER_ERROR",
-            message: "Signup failed",
-          });
-        }
+      if (!created) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Signup failed",
+        });
+      }
 
-        await tx.insert(creatures).values(
-          STARTER_SPECIES_IDS.map((speciesId) => ({
-            ownerId: created.id,
-            speciesId,
-            obtainedVia: "starter" as const,
-          })),
-        );
-
-        return created.id;
-      });
-
-      await createSession(userId);
-      return { id: userId, username };
+      await createSession(created.id);
+      return { id: created.id, username };
     }),
-
   login: publicProcedure.input(credentials).mutation(async ({ ctx, input }) => {
     const username = input.username.toLowerCase();
 
@@ -137,17 +121,5 @@ export const authRouter = createTRPCRouter({
     return { ok: true };
   }),
 
-  me: protectedProcedure.query(async ({ ctx }) => {
-    const wallet = await getWallet(ctx.db, ctx.user.id);
-    const [creatureCount] = await ctx.db
-      .select({ value: count() })
-      .from(creatures)
-      .where(eq(creatures.ownerId, ctx.user.id));
-
-    return {
-      user: ctx.user,
-      wallet,
-      creatureCount: creatureCount?.value ?? 0,
-    };
-  }),
+  me: protectedProcedure.query(({ ctx }) => ({ user: ctx.user })),
 });
