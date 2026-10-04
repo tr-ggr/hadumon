@@ -38,6 +38,18 @@ There is no gacha, no idle play, no currency and no multiplayer.
 - Finished runs unlock new cats, relics and clans. Nothing makes a later run
   stronger from the start.
 
+## At the table
+
+The match is laid out as a table: the rival across the top, the shared supply
+(feeder, tray, deck) in the middle, your mat of three lanes, and your hand
+docked at the bottom edge. After each action the turn is played back one step
+at a time: the lane's cats fire from right to left, then the rival's card
+flips. Any click or key skips to the end, and reduced motion lands it at once.
+
+Keys, where there is a keyboard: `1`-`9` pick a hand card (or a die, tray card
+or cat while a lane is being resolved), `H` `D` `P` activate a lane or play the
+picked card into it, `Enter` confirms, `Esc` backs out.
+
 ## Stack
 
 - **Next.js 15** (App Router) + **TypeScript** (strict, no `any`)
@@ -128,7 +140,8 @@ src/
   components/
     AppShell.tsx          Sidebar, top bar and mobile nav
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
-    sprites/              Sprite grids and element/rarity palettes
+    PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
+    sprites/              Sprite and icon grids, element/rarity palettes
     cats/                 CatCard and EssencePip
     run/  codex/          Screen components
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
