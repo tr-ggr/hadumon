@@ -1,60 +1,575 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-17T17:52:09+08:00",
-  "title": "Design System: HaduMon Gachapon Counter",
+  "generatedAt": "2026-10-04T21:30:00+08:00",
+  "title": "Design System: HaduMon",
   "extensions": {
     "colorMeta": {
-      "cream": { "role": "neutral", "displayName": "Warm Counter Cream", "canonical": "#FFF8E7", "tonalRamp": ["#302C23", "#5E5747", "#8B816A", "#B9AC8E", "#E7D7B2", "#F4E8CC", "#FFF2D8", "#FFF8E7"] },
-      "sky": { "role": "secondary", "displayName": "Structural Sky", "canonical": "#A9DDF5", "tonalRamp": ["#16313D", "#285669", "#3D7B95", "#61A1BF", "#8BC8E3", "#A9DDF5", "#D4EEFA", "#EDF9FE"] },
-      "cobalt": { "role": "primary", "displayName": "Action Cobalt", "canonical": "#1557D8", "tonalRamp": ["#081B44", "#0D327B", "#1248B2", "#1557D8", "#4A7CE3", "#7FA2ED", "#B4C8F6", "#E9EFFF"] },
-      "cobaltDark": { "role": "primary", "displayName": "Pressed Cobalt", "canonical": "#0D3C9D", "tonalRamp": ["#07142F", "#0A2766", "#0D3C9D", "#315BB0", "#657FC5", "#98A7DB", "#CCD3ED", "#F0F2FA"] },
-      "lime": { "role": "secondary", "displayName": "Ready Lime", "canonical": "#D8FF4F", "tonalRamp": ["#29320B", "#536619", "#7D9927", "#A8CC37", "#D8FF4F", "#E4FF7B", "#EFFFAB", "#F9FFE2"] },
-      "coral": { "role": "secondary", "displayName": "Notice Coral", "canonical": "#FF7163", "tonalRamp": ["#3D1714", "#762D28", "#B0443C", "#E85E52", "#FF7163", "#FF9B91", "#FFC4BE", "#FFF0EE"] },
-      "ink": { "role": "neutral", "displayName": "Toy Box Ink", "canonical": "#17212B", "tonalRamp": ["#17212B", "#34414E", "#53616F", "#758290", "#9AA5AF", "#C0C7CD", "#E4E8EB", "#F7F9FA"] },
-      "inkSoft": { "role": "neutral", "displayName": "Blue Grey Copy", "canonical": "#5B6C7D", "tonalRamp": ["#17202A", "#303D49", "#495968", "#5B6C7D", "#81909E", "#A9B3BC", "#D1D7DC", "#F2F5F7"] },
-      "flameSoft": { "role": "tertiary", "displayName": "Flame Shelf", "canonical": "#FFE6D8", "tonalRamp": ["#40261A", "#744A36", "#A97053", "#DC9B7B", "#F2BFA1", "#FFE6D8", "#FFF0E8", "#FFF9F5"] },
-      "mistSoft": { "role": "tertiary", "displayName": "Mist Shelf", "canonical": "#DFF4FC", "tonalRamp": ["#1B333D", "#365E70", "#548AA2", "#79B7D1", "#A8D9EA", "#DFF4FC", "#ECF9FE", "#F8FDFF"] },
-      "voltSoft": { "role": "tertiary", "displayName": "Volt Shelf", "canonical": "#FFF3BD", "tonalRamp": ["#3C3210", "#736222", "#AA9338", "#DDC65B", "#F2DD83", "#FFF3BD", "#FFF8D8", "#FFFCEF"] },
-      "thornSoft": { "role": "tertiary", "displayName": "Thorn Shelf", "canonical": "#E2F3D2", "tonalRamp": ["#24351B", "#466437", "#6D9456", "#9BC47A", "#BFE0A2", "#E2F3D2", "#EEF9E6", "#F8FDF4"] },
-      "shadeSoft": { "role": "tertiary", "displayName": "Shade Shelf", "canonical": "#E7E1FA", "tonalRamp": ["#2D2642", "#554879", "#806CAF", "#AA98D8", "#C9BDEB", "#E7E1FA", "#F0ECFC", "#FAF8FF"] }
+      "cream": {
+        "role": "neutral",
+        "displayName": "Table Cream",
+        "canonical": "#fff8e7",
+        "tonalRamp": [
+          "#0f0b02",
+          "#2b2619",
+          "#484234",
+          "#696354",
+          "#8c8676",
+          "#b1aa9a",
+          "#d4cdbd",
+          "#f5eedd"
+        ]
+      },
+      "sky-surface": {
+        "role": "neutral",
+        "displayName": "Board Sky",
+        "canonical": "#a9ddf5",
+        "tonalRamp": [
+          "#000e16",
+          "#002b3b",
+          "#15495d",
+          "#396a80",
+          "#5c8ea4",
+          "#81b3ca",
+          "#a3d7ee",
+          "#dbf3fe"
+        ]
+      },
+      "sky-soft": {
+        "role": "neutral",
+        "displayName": "Soft Sky",
+        "canonical": "#e7f7fd",
+        "tonalRamp": [
+          "#030d11",
+          "#1c292d",
+          "#38454a",
+          "#58666b",
+          "#7a898e",
+          "#9faeb3",
+          "#c1d1d7",
+          "#e2f2f8"
+        ]
+      },
+      "cobalt": {
+        "role": "primary",
+        "displayName": "Action Cobalt",
+        "canonical": "#1557d8",
+        "tonalRamp": [
+          "#000039",
+          "#001d64",
+          "#00359f",
+          "#1456d7",
+          "#3c7dff",
+          "#7caafe",
+          "#b4cffe",
+          "#e7effe"
+        ]
+      },
+      "cobalt-dark": {
+        "role": "primary",
+        "displayName": "Pressed Cobalt",
+        "canonical": "#0d3c9d",
+        "tonalRamp": [
+          "#000039",
+          "#001b67",
+          "#083798",
+          "#2b5cc0",
+          "#4d81e8",
+          "#7daaff",
+          "#b4cfff",
+          "#e6efff"
+        ]
+      },
+      "lime": {
+        "role": "secondary",
+        "displayName": "Chosen Lime",
+        "canonical": "#d8ff4f",
+        "tonalRamp": [
+          "#090e00",
+          "#222b00",
+          "#3b4900",
+          "#596d00",
+          "#799303",
+          "#9bba09",
+          "#bbe01f",
+          "#deff7d"
+        ]
+      },
+      "coral": {
+        "role": "secondary",
+        "displayName": "Rival Coral",
+        "canonical": "#ff7163",
+        "tonalRamp": [
+          "#210000",
+          "#500001",
+          "#820005",
+          "#b22721",
+          "#dc5146",
+          "#ff7f71",
+          "#febab1",
+          "#fee9e6"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#17212b",
+        "tonalRamp": [
+          "#040c15",
+          "#1d2832",
+          "#39444f",
+          "#596571",
+          "#7b8894",
+          "#a0acba",
+          "#c2cfdd",
+          "#e3f0fe"
+        ]
+      },
+      "ink-soft": {
+        "role": "neutral",
+        "displayName": "Soft Ink",
+        "canonical": "#5b6c7d",
+        "tonalRamp": [
+          "#020c19",
+          "#192836",
+          "#344454",
+          "#546576",
+          "#77889a",
+          "#9badc0",
+          "#bdd0e3",
+          "#e3f0fe"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#0b0b0b",
+          "#262626",
+          "#424242",
+          "#636363",
+          "#868686",
+          "#ababab",
+          "#cecece",
+          "#eeeeee"
+        ]
+      },
+      "edge": {
+        "role": "neutral",
+        "displayName": "Edge",
+        "canonical": "#c8dfea",
+        "tonalRamp": [
+          "#000d15",
+          "#172932",
+          "#32464f",
+          "#526770",
+          "#758a94",
+          "#99afb9",
+          "#bbd2dd",
+          "#dcf3fe"
+        ]
+      },
+      "flame": {
+        "role": "tertiary",
+        "displayName": "Flame Fur",
+        "canonical": "#f07b4d",
+        "tonalRamp": [
+          "#1d0200",
+          "#461300",
+          "#722600",
+          "#a73b00",
+          "#d15f30",
+          "#fb8557",
+          "#febca3",
+          "#feeae2"
+        ]
+      },
+      "mist": {
+        "role": "tertiary",
+        "displayName": "Mist Fur",
+        "canonical": "#8acbe7",
+        "tonalRamp": [
+          "#000e16",
+          "#002b3a",
+          "#014a60",
+          "#2a6c85",
+          "#5090aa",
+          "#75b5d1",
+          "#97d9f5",
+          "#daf3ff"
+        ]
+      },
+      "volt": {
+        "role": "tertiary",
+        "displayName": "Volt Fur",
+        "canonical": "#f5c84c",
+        "tonalRamp": [
+          "#110a00",
+          "#322400",
+          "#533f00",
+          "#7b5f00",
+          "#a58101",
+          "#d0a418",
+          "#f5c84c",
+          "#ffedc2"
+        ]
+      },
+      "thorn": {
+        "role": "tertiary",
+        "displayName": "Thorn Fur",
+        "canonical": "#77bd70",
+        "tonalRamp": [
+          "#001100",
+          "#003100",
+          "#025200",
+          "#30752a",
+          "#54994e",
+          "#79bf72",
+          "#9ce394",
+          "#ccffc6"
+        ]
+      },
+      "shade": {
+        "role": "tertiary",
+        "displayName": "Shade Fur",
+        "canonical": "#8275c6",
+        "tonalRamp": [
+          "#0e002d",
+          "#29135c",
+          "#43337d",
+          "#6355a3",
+          "#8578ca",
+          "#a99df2",
+          "#ccc6ff",
+          "#eeecff"
+        ]
+      },
+      "sprite-outline": {
+        "role": "neutral",
+        "displayName": "Sprite Outline",
+        "canonical": "#1a1120",
+        "tonalRamp": [
+          "#0f0715",
+          "#2c2232",
+          "#483e4f",
+          "#695e71",
+          "#8c8195",
+          "#b1a5ba",
+          "#d5c8de",
+          "#f6e9ff"
+        ]
+      },
+      "rarity-common": {
+        "role": "tertiary",
+        "displayName": "Common Mark",
+        "canonical": "#9aa9b7",
+        "tonalRamp": [
+          "#030c16",
+          "#1c2833",
+          "#374450",
+          "#576572",
+          "#7a8896",
+          "#9eadbb",
+          "#c0d0de",
+          "#e2f1fe"
+        ]
+      },
+      "rarity-uncommon": {
+        "role": "tertiary",
+        "displayName": "Uncommon Mark",
+        "canonical": "#5cbf89",
+        "tonalRamp": [
+          "#001005",
+          "#003019",
+          "#01502f",
+          "#037648",
+          "#359c68",
+          "#5fc28c",
+          "#84e6ae",
+          "#c4ffda"
+        ]
+      }
     },
     "typographyMeta": {
-      "display": { "displayName": "Rounded Display", "purpose": "Wordmark, page headlines, and high-salience actions." },
-      "body": { "displayName": "Rounded Body", "purpose": "Readable explanations, labels, and game data." }
+      "display": {
+        "displayName": "Display",
+        "purpose": "The one headline of a page: home's next step, the auth heading, Codex. 1.875rem below 640px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Match title, rival names, dialog titles, the wordmark. 1.25rem below 640px."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Panel titles, side-panel headings, board row names, status-strip numbers."
+      },
+      "card-title": {
+        "displayName": "Card title",
+        "purpose": "A cat's or relic's name on its piece, and the points tag."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Page and dialog copy."
+      },
+      "body-sm": {
+        "displayName": "Body small",
+        "purpose": "In-game prose: traits, goals, the event log, table rows."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Rules text on a card, secondary notes, italic flavor text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Sentence-case heading above a group of pieces, in soft ink."
+      },
+      "piece-label": {
+        "displayName": "Piece label",
+        "purpose": "Text on a board slot or die, 10 to 11px, ink, bold or black. The floor."
+      }
     },
     "shadows": [
-      { "name": "surface", "value": "0 10px 30px rgb(23 33 43 / 0.08)", "purpose": "Ambient lift for white panels." },
-      { "name": "console", "value": "0 24px 60px rgb(13 60 157 / 0.26)", "purpose": "Structural depth for the cobalt summon console." },
-      { "name": "auth", "value": "0 28px 80px rgb(13 60 157 / 0.20)", "purpose": "Single calm elevation for the auth shell." }
+      {
+        "name": "panel",
+        "value": "0 10px 30px rgb(23 33 43 / 0.08)",
+        "purpose": "Ambient lift for white panels and dialogs."
+      },
+      {
+        "name": "dock",
+        "value": "0 10px 30px rgb(23 33 43 / 0.16)",
+        "purpose": "The sticky decision bar floating over the board."
+      },
+      {
+        "name": "floating-bar",
+        "value": "0 12px 36px rgb(23 33 43 / 0.18)",
+        "purpose": "The mobile navigation bar."
+      },
+      {
+        "name": "auth-shell",
+        "value": "0 28px 80px rgb(13 60 157 / 0.2)",
+        "purpose": "The single card on login and signup."
+      },
+      {
+        "name": "hero-button",
+        "value": "0 10px 20px rgb(216 255 79 / 0.24)",
+        "purpose": "Soft lime glow under the hero button."
+      },
+      {
+        "name": "rarity-band",
+        "value": "inset 0 3px 0 <rarity colour>",
+        "purpose": "Strip across the top of a cat card; an inset band, not a shadow."
+      }
     ],
     "motion": [
-      { "name": "entrance", "value": "360ms cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "One-shot hero and auth entrance." },
-      { "name": "tactile", "value": "140ms ease", "purpose": "Button press feedback." },
-      { "name": "reveal-stagger", "value": "150ms", "purpose": "Ordered summon result arrival." }
+      {
+        "name": "press",
+        "value": "140ms ease; translateY(2px) scale(0.99) on :active",
+        "purpose": "Press feedback on buttons, chips, and clickable cards."
+      },
+      {
+        "name": "rival-flash-in",
+        "value": "150ms background-color",
+        "purpose": "The rival bar turns coral when the rival acts."
+      },
+      {
+        "name": "rival-flash-out",
+        "value": "700ms background-color",
+        "purpose": "The rival bar fades back to cream."
+      },
+      {
+        "name": "auth-enter",
+        "value": "320ms cubic-bezier(0.16, 1, 0.3, 1); 12px rise and fade",
+        "purpose": "One-shot entrance of the auth card."
+      },
+      {
+        "name": "skeleton-pulse",
+        "value": "Tailwind animate-pulse (2s cubic-bezier(0.4, 0, 0.6, 1) infinite)",
+        "purpose": "Loading placeholders."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animation and transition durations 0.01ms",
+        "purpose": "Applied globally under prefers-reduced-motion: reduce."
+      }
     ],
     "breakpoints": [
-      { "name": "sm", "value": "640px" },
-      { "name": "md", "value": "768px" },
-      { "name": "lg", "value": "1024px" },
-      { "name": "short-landscape", "value": "min-width 700px and max-height 560px" }
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      },
+      {
+        "name": "short-landscape",
+        "value": "min-width 700px and max-height 560px"
+      }
     ]
   },
   "components": [
-    { "name": "Primary Button", "kind": "button", "refersTo": "button-primary", "description": "Cobalt capsule for the main action.", "html": "<button class=\"ds-btn-primary\">Create account</button>", "css": ".ds-btn-primary{min-height:48px;padding:12px 20px;border:0;border-radius:999px;background:#1557D8;color:#fff;font:800 14px ui-rounded,system-ui;transition:transform 140ms ease,background 140ms ease}.ds-btn-primary:hover{background:#0D3C9D}.ds-btn-primary:active{transform:translateY(2px) scale(.99)}.ds-btn-primary:focus-visible{outline:3px solid #1557D8;outline-offset:3px}" },
-    { "name": "Reward Button", "kind": "button", "refersTo": "button-hero", "description": "Acid-lime capsule reserved for ready rewards and the primary summon.", "html": "<button class=\"ds-btn-reward\">Summon ×10</button>", "css": ".ds-btn-reward{min-height:56px;padding:14px 24px;border:0;border-radius:999px;background:#D8FF4F;color:#17212B;font:800 16px ui-rounded,system-ui;box-shadow:0 10px 20px rgb(216 255 79 / .24);transition:transform 140ms ease,filter 140ms ease}.ds-btn-reward:hover{filter:brightness(.96)}.ds-btn-reward:active{transform:translateY(2px) scale(.99)}.ds-btn-reward:focus-visible{outline:3px solid #1557D8;outline-offset:3px}" },
-    { "name": "Text Field", "kind": "input", "refersTo": "input", "description": "Stable white field with cobalt focus.", "html": "<label class=\"ds-label\">Username<input class=\"ds-input\" /></label>", "css": ".ds-label{display:grid;gap:8px;color:#17212B;font:800 14px ui-rounded,system-ui}.ds-input{min-height:48px;padding:0 16px;border:1px solid #C8DFEA;border-radius:12px;background:#fff;color:#17212B;font:400 16px ui-rounded,system-ui}.ds-input:focus{border-color:#1557D8;outline:3px solid #1557D8;outline-offset:3px}" },
-    { "name": "Surface Card", "kind": "card", "refersTo": "card", "description": "Quiet white toy surface with ambient depth.", "html": "<article class=\"ds-card\"><strong>A small ritual</strong><p>Summon, send, return.</p></article>", "css": ".ds-card{padding:20px;border-radius:16px;background:#fff;color:#17212B;box-shadow:0 12px 30px rgb(23 33 43 / .08);font-family:ui-rounded,system-ui}.ds-card strong{font-size:22px}.ds-card p{color:#5B6C7D}.ds-card:hover{transform:translateY(-3px);box-shadow:0 18px 38px rgb(23 33 43 / .12)}" },
-    { "name": "Sticky Public Header", "kind": "nav", "refersTo": "navigation", "description": "Cream wordmark bar with direct account actions.", "html": "<nav class=\"ds-nav\"><strong>Hadu<span>Mon</span></strong><a href=\"#\">Log in</a><button>Create account</button></nav>", "css": ".ds-nav{display:flex;align-items:center;gap:16px;min-height:64px;padding:0 16px;background:#FFF8E7;color:#17212B;border-bottom:1px solid #C8DFEA;font-family:ui-rounded,system-ui}.ds-nav strong{font-size:24px}.ds-nav strong span{color:#FF7163}.ds-nav a{margin-left:auto;color:#17212B}.ds-nav button{min-height:40px;padding:8px 16px;border:0;border-radius:999px;background:#1557D8;color:#fff;font-weight:800}" }
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Cobalt capsule for the one action that moves the game or the page forward.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Start a run</button>",
+      "css": ".ds-btn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:-0.025em;cursor:pointer;transition:transform 140ms ease,box-shadow 140ms ease,filter 140ms ease}.ds-btn:active{transform:translateY(2px) scale(.99)}.ds-btn:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn-primary{background:var(--color-cobalt,#1557d8);border-color:var(--color-cobalt,#1557d8);color:#fff}.ds-btn-primary:hover{background:var(--color-cobalt-dark,#0d3c9d)}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Soft sky capsule for cancel, back, and retry.",
+      "html": "<button class=\"ds-btn ds-btn-secondary\">Try again</button>",
+      "css": ".ds-btn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:-0.025em;cursor:pointer;transition:transform 140ms ease,box-shadow 140ms ease,filter 140ms ease}.ds-btn:active{transform:translateY(2px) scale(.99)}.ds-btn:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn-secondary{background:var(--color-sky-soft,#e7f7fd);color:var(--color-ink,#17212b)}.ds-btn-secondary:hover{background:var(--color-sky-surface,#a9ddf5)}"
+    },
+    {
+      "name": "Hero Button",
+      "kind": "button",
+      "refersTo": "button-hero",
+      "description": "Lime capsule: a row's activate button while that row is being resolved.",
+      "html": "<button class=\"ds-btn ds-btn-hero\" aria-pressed=\"true\">Take 2 dice</button>",
+      "css": ".ds-btn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:-0.025em;cursor:pointer;transition:transform 140ms ease,box-shadow 140ms ease,filter 140ms ease}.ds-btn:active{transform:translateY(2px) scale(.99)}.ds-btn:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn-hero{min-height:40px;padding:8px 12px;font-size:12px;background:var(--color-lime,#d8ff4f);border-color:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b);box-shadow:0 10px 20px rgb(216 255 79 / .24)}.ds-btn-hero:hover{filter:brightness(.95)}"
+    },
+    {
+      "name": "Filter Chips",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Single-choice filter pills in the codex; the selected chip is cobalt.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"true\">All</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-pip\" style=\"background:#f07b4d\"></span>Flame</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-pip\" style=\"background:#8acbe7\"></span>Mist</button></div>",
+      "css": ".ds-pip{display:inline-block;width:12px;height:12px;border:2px solid var(--color-ink,#17212b);flex-shrink:0}.ds-chips{display:flex;flex-wrap:wrap;gap:6px}.ds-chip{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid rgb(23 33 43 / .15);background:#fff;color:var(--color-ink,#17212b);font-size:14px;font-weight:700;cursor:pointer;transition:transform 140ms ease}.ds-chip:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-chip[aria-pressed=true]{background:var(--color-cobalt,#1557d8);border-color:var(--color-cobalt,#1557d8);color:#fff}.ds-chip:active{transform:translateY(2px) scale(.99)}.ds-chip:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "White field with an edge border; the border turns cobalt on focus.",
+      "html": "<label class=\"ds-field\"><span>Username</span><input class=\"ds-input\" /></label>",
+      "css": ".ds-field{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:block;max-width:320px;color:var(--color-ink,#17212b);font-size:14px;font-weight:800}.ds-field span{display:block;margin-bottom:8px}.ds-input{font:inherit;font-size:16px;font-weight:400;width:100%;min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--color-edge,#c8dfea);background:#fff;color:var(--color-ink,#17212b);outline:none;transition:border-color 150ms}.ds-input:focus{border-color:var(--color-cobalt,#1557d8)}"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "The standard chrome container: white, rounded, hairline, one soft shadow.",
+      "html": "<section class=\"ds-panel\"><h2>Recent runs</h2><p>Nothing on record. Finish a run, win or lose, and it is written down here.</p></section>",
+      "css": ".ds-panel{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);max-width:420px;padding:16px;background:#fff;border:1px solid rgb(23 33 43 / .08);border-radius:20px;box-shadow:0 10px 30px rgb(23 33 43 / .08);color:var(--color-ink,#17212b)}.ds-panel h2{margin:0 0 12px;font-size:18px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-panel p{margin:0;font-size:16px;line-height:1.45;color:var(--color-ink-soft,#5b6c7d)}"
+    },
+    {
+      "name": "Navigation Rail",
+      "kind": "nav",
+      "refersTo": "nav-item",
+      "description": "Desktop rail: wordmark and three destinations; the active one is cobalt.",
+      "html": "<nav class=\"ds-rail\"><a class=\"ds-wordmark\" href=\"#\">Hadu<span>Mon</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H11v6H7a1 1 0 0 1-1-1z\"/></svg><span>Home</span></a><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 5v14l11-7z\"/></svg><span>Play</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4zM9 4v16M13 9h2\"/></svg><span>Codex</span></a></nav>",
+      "css": ".ds-rail{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:4px;width:192px;padding:16px 12px;background:#fff;border-right:1px solid rgb(23 33 43 / .08)}.ds-wordmark{margin-bottom:32px;padding:0 12px;font-size:24px;font-weight:800;letter-spacing:-0.025em;color:var(--color-ink,#17212b);text-decoration:none}.ds-wordmark span{color:var(--color-coral,#ff7163)}.ds-nav-item{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:12px;font-size:14px;font-weight:700;color:var(--color-ink-soft,#5b6c7d);text-decoration:none;transition:background 150ms,color 150ms}.ds-nav-item:hover{background:var(--color-sky-soft,#e7f7fd);color:var(--color-ink,#17212b)}.ds-nav-item[aria-current=page]{background:var(--color-cobalt,#1557d8);color:#fff}.ds-nav-item:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+    },
+    {
+      "name": "Cat Card",
+      "kind": "custom",
+      "refersTo": "cat-card",
+      "description": "The signature piece: sprite, name, cost pips, lime points tag, and the power in words. Common rarity band shown.",
+      "html": "<div class=\"ds-cat-card\"><div class=\"ds-cat-head\"><svg viewBox=\"0 0 16 16\" width=\"44\" height=\"44\" shape-rendering=\"crispEdges\" style=\"image-rendering:pixelated;flex-shrink:0\" aria-hidden=\"true\"><rect x=\"7\" y=\"0\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"7\" y=\"1\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"7\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"4\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"3\" width=\"4\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"13\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"4\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"5\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"6\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"7\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"8\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"9\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"14\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"10\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"10\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"11\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"11\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"12\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"12\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"12\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"15\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"13\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"13\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"13\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"14\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"14\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"14\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/></svg><div class=\"ds-cat-id\"><p class=\"ds-cat-name\">Flameclaw</p><div class=\"ds-cat-cost\"><span class=\"ds-pip\" style=\"background:#f07b4d\"></span></div></div><p class=\"ds-cat-points\">2</p></div><p class=\"ds-cat-rule\">When activated: gain 1 Flame essence.</p></div>",
+      "css": ".ds-pip{display:inline-block;width:12px;height:12px;border:2px solid var(--color-ink,#17212b);flex-shrink:0}.ds-cat-card{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:8px;width:208px;padding:8px;background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);box-shadow:inset 0 3px 0 #9aa9b7}.ds-cat-head{display:flex;align-items:center;gap:8px}.ds-cat-id{min-width:0;flex:1}.ds-cat-name{margin:0;font-size:14px;font-weight:800;letter-spacing:-0.025em;line-height:1.25}.ds-cat-cost{display:flex;gap:4px;margin-top:4px}.ds-cat-points{margin:0;padding:0 6px;font-size:14px;font-weight:800;line-height:24px;background:var(--color-lime,#d8ff4f);border:2px solid var(--color-ink,#17212b)}.ds-cat-rule{margin:0;padding-top:6px;border-top:1px solid rgb(23 33 43 / .2);font-size:12px;line-height:1.375}"
+    },
+    {
+      "name": "Board Row",
+      "kind": "custom",
+      "refersTo": "board-row",
+      "description": "A habitat row: sky band, activate button, one placed cat, the lime play target, and dashed empty slots.",
+      "html": "<section class=\"ds-row\"><header class=\"ds-row-head\"><div><h3>Hunt</h3><p>Next slot: 1 yarn</p></div><button class=\"ds-row-act\">Take 2 dice</button></header><ol class=\"ds-slots\"><li><button class=\"ds-slot ds-slot-placed\"><svg viewBox=\"0 0 16 16\" width=\"40\" height=\"40\" shape-rendering=\"crispEdges\" style=\"image-rendering:pixelated;flex-shrink:0\" aria-hidden=\"true\"><rect x=\"7\" y=\"0\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"7\" y=\"1\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"7\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"4\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"3\" width=\"4\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"13\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"4\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"5\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"6\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"7\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"8\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"9\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"14\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"10\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"10\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"11\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"11\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"12\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"12\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"12\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"15\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"13\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"13\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"13\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"14\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"14\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"14\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/></svg><span class=\"ds-slot-name\">Flameclaw</span><span class=\"ds-yarn\">Yarn 1/3</span></button></li><li><button class=\"ds-slot ds-slot-play\"><span>Play here</span><small>1 yarn</small></button></li><li><div class=\"ds-slot ds-slot-empty\">1 yarn</div></li><li><div class=\"ds-slot ds-slot-empty\">2 yarn</div></li></ol></section>",
+      "css": ".ds-row{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:8px;max-width:420px;padding:8px;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b);color:var(--color-ink,#17212b)}.ds-row-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.ds-row-head h3{margin:0;font-size:16px;font-weight:800;letter-spacing:-0.025em;line-height:1.25}.ds-row-head p{margin:0;font-size:11px;font-weight:600;line-height:1.25}.ds-row-act{font:inherit;min-height:40px;padding:8px 12px;border:1px solid var(--color-cobalt,#1557d8);border-radius:999px;background:var(--color-cobalt,#1557d8);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:transform 140ms ease}.ds-row-act:hover{background:var(--color-cobalt-dark,#0d3c9d)}.ds-row-act:active{transform:translateY(2px) scale(.99)}.ds-slots{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.ds-slot{font:inherit;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;width:100%;height:100%;min-height:96px;padding:4px;text-align:center;font-size:10px;font-weight:700;line-height:1.25;color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b)}.ds-slot-placed{background:var(--color-cream,#fff8e7);justify-content:flex-start;cursor:pointer}.ds-slot-placed:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-slot-name{font-weight:900;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ds-yarn{padding:0 4px;background:#fff;border:1px solid var(--color-ink,#17212b);line-height:16px;font-variant-numeric:tabular-nums}.ds-slot-play{background:var(--color-lime,#d8ff4f);font-size:12px;font-weight:900;cursor:pointer}.ds-slot-play small{font-size:10px;font-weight:700}.ds-slot-play:hover{filter:brightness(.95)}.ds-slot-empty{box-sizing:border-box;border:2px dashed rgb(23 33 43 / .45);background:rgb(255 255 255 / .4)}.ds-slot:focus-visible,.ds-row-act:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+    },
+    {
+      "name": "Feeder Dice",
+      "kind": "custom",
+      "refersTo": "die",
+      "description": "Square dice holding an essence pip; a chosen die fills lime.",
+      "html": "<ul class=\"ds-dice\"><li><button class=\"ds-die\" aria-pressed=\"true\"><span class=\"ds-die-pip\" style=\"background:#f07b4d\"></span><span>Flame</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8acbe7\"></span><span>Mist</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#f5c84c\"></span><span>Volt</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#77bd70\"></span><span>Thorn</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8275c6\"></span><span>Shade</span></button></li></ul>",
+      "css": ".ds-dice{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:384px;margin:0;padding:0;list-style:none}.ds-die{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;padding:6px 4px;background:#fff;color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:1;cursor:pointer}.ds-die-pip{width:22px;height:22px;box-sizing:border-box;border:2px solid var(--color-ink,#17212b)}.ds-die:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-die[aria-pressed=true],.ds-die[aria-pressed=true]:hover{background:var(--color-lime,#d8ff4f)}.ds-die:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+    }
   ],
   "narrative": {
-    "northStar": "Gachapon Counter",
-    "overview": "A bright collectible-toy counter where the next action is obvious, the cats carry the personality, and every reward feels tactile without becoming noisy.",
-    "keyCharacteristics": ["Warm cream canvas and sky-blue structure", "Cobalt actions and lime-ready rewards", "Soft 3D cats as the identity anchor", "Rounded surfaces with ambient depth", "Dry, factual copy"],
-    "rules": [
-      { "name": "Reward color", "body": "Lime is reserved for a reward or summon that is ready now.", "section": "colors" },
-      { "name": "One focal motion", "body": "Use one authored reward moment; supporting movement stays restrained and finite.", "section": "elevation" }
+    "northStar": "Pieces on a Cream Table",
+    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, board rows and slots, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills, no drop shadow. A player can tell at a glance what is furniture and what is in play.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. They are drawn as inline SVG and scaled in whole pixels, so they stay crisp from a 28px deck token to a 320px mascot. The sprite is the only illustration in the product. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. A match screen is compact (12px rhythm between sections, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe landing page is not yet designed. `src/components/landing/LandingPage.tsx` is a one-section placeholder and is not a source for this system.",
+    "keyCharacteristics": [
+      "Warm cream canvas; sky blue for the board and the home hero.",
+      "Two materials: rounded white chrome, square 2px-ink game pieces.",
+      "Cobalt is the action, lime is what you chose or earned, coral is the rival and the warning.",
+      "16x16 pixel cats as inline SVG, the only imagery.",
+      "One rounded bold type voice; sentence-case labels; tabular numbers for scores.",
+      "Every state has a border, fill, or ring change, never colour alone on text."
     ],
-    "dos": ["Do derive public numbers from game constants.", "Do keep creature art large enough to carry personality.", "Do preserve 48px touch targets and cobalt focus."],
-    "donts": ["Don't use pixel art, hard offset shadows, or CRT effects.", "Don't imply paid gems or invent social proof.", "Don't animate continuously when a surface is offscreen or motion is reduced."]
+    "rules": [
+      {
+        "name": "The Lime Is Yours Rule",
+        "body": "Lime marks something the player chose, holds, or won. It is never decoration and never the rival's.",
+        "section": "colors"
+      },
+      {
+        "name": "The Coral Is Theirs Rule",
+        "body": "Coral marks the rival's move, a pending obligation, or a destructive act. Text sitting on a coral fill is ink.",
+        "section": "colors"
+      },
+      {
+        "name": "The Ink On Colour Rule",
+        "body": "Text on lime, coral, sky, cream, or an element hue is ink. White text appears only on cobalt.",
+        "section": "colors"
+      },
+      {
+        "name": "The Element Stays On The Cat Rule",
+        "body": "Element hues colour sprites, pips, and dice. Panels, buttons, and headings never take an element colour.",
+        "section": "colors"
+      },
+      {
+        "name": "The Numbers Line Up Rule",
+        "body": "Every score, count, and cost that can change uses tabular figures.",
+        "section": "typography"
+      },
+      {
+        "name": "The Sentence Case Rule",
+        "body": "Headings, buttons, and labels are sentence case. Uppercase is reserved for two small marks: the filter group label and the Boss tag in the codex.",
+        "section": "typography"
+      },
+      {
+        "name": "The Rules Are On The Piece Rule",
+        "body": "A card states its own cost, points, and power in words. Type on a piece may get small, but it stays ink and stays bold enough to read on a phone.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Piece Rule",
+        "body": "A game piece never casts a shadow. If a piece needs to stand out, give it a ring or change its fill.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Ring Means State Rule",
+        "body": "Rings are cobalt and sit outside the ink border: 4px for selected or the valid target, 2px for available to pick. A 4px coral ring means the piece is waiting on a decision.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do decide which material a new element is before styling it. In play: square, 2px ink border, flat fill. Around play: rounded, white, hairline, soft shadow.",
+      "Do render every cat through `src/components/PixelSprite.tsx` at a whole-pixel multiple of 16 where the layout allows.",
+      "Do use ink text on lime, coral, sky, and cream; white text only on cobalt.",
+      "Do show selection with a cobalt ring outside the piece's border (4px selected, 2px available) and reinforce a chosen piece with a lime fill.",
+      "Do end every multi-step choice in the sticky dock, with a sentence saying what will happen and one primary button.",
+      "Do keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px.",
+      "Do write counts and scores in tabular figures and labels in sentence case.",
+      "Do give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry."
+    ],
+    "donts": [
+      "Don't round the corners of a game piece or give it a drop shadow.",
+      "Don't put a 2px ink border or square corners on page chrome.",
+      "Don't use gradients or emoji anywhere.",
+      "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
+      "Don't use an element hue for a panel, a button, or a heading.",
+      "Don't use lime for anything the rival owns, or coral for a reward.",
+      "Don't introduce currency, shop, or premium styling; nothing is for sale.",
+      "Don't treat the landing placeholder as a pattern source."
+    ]
   }
 }
