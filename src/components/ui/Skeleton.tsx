@@ -51,7 +51,7 @@ export function PanelSkeleton({
   );
 }
 
-/** Grid of card-shaped placeholders, for the collection and market boards. */
+/** Grid of card-shaped placeholders, for boards of cats. */
 export function CardGridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <ul

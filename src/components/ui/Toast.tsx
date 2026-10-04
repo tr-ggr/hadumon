@@ -27,8 +27,8 @@ const ToastContext = createContext<Notify | null>(null);
 /**
  * App-wide ephemeral notice stack, pinned above the mobile bottom nav.
  *
- * Mounted once in the root layout, so every page — summon, adventure, battle,
- * market — reports mutation errors and successes the same way.
+ * Mounted once in the root layout, so every page reports mutation errors and
+ * successes the same way.
  */
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);

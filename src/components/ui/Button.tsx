@@ -30,7 +30,7 @@ const SIZES: Record<Size, string> = {
 
 /**
  * The button's full class list, for elements that must look like a
- * `Button` without being one (the landing page's account links are anchors).
+ * `Button` without being one (see `ButtonLink`).
  */
 export function buttonClassName(
   variant: ButtonVariant = "primary",
