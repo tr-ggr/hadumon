@@ -24,7 +24,7 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 
 ### Vocabulary
 
-- **Cat**: a card. 25 exist, defined in `src/server/game/cats.ts`.
+- **Cat**: a card. 26 exist, defined in `src/server/game/cats.ts`.
 - **Cat food** (`essence` in the code): the resource cats cost. Five kinds, one per element: Beef (`flame`), Fish (`mist`), Chicken (`volt`), Dry food (`thorn`), Pork (`shade`), plus a Treat (`wild`), which pays for anything. Any 2 food pay for 1 element pip the player can cover with neither that food nor a Treat; the player chooses which two.
 - **Yarn**: laid on cats; each is worth a point and is spent to play cats into later columns.
 - **Rows**: `hunt` (take food from the feeder), `den` (lay yarn), `prowl` (draw cats).
@@ -38,7 +38,7 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 
 - Board: 3 rows of 4 slots. Yarn cost to play into column 1–4: 0 / 1 / 1 / 2.
 - 3 rounds of 5 / 4 / 3 turns. A turn is exactly one of: play a cat, activate Hunt, activate Den, activate Prowl.
-- Activating a row gives its base reward by the number of cats in it (Hunt 1/1/2/2/3 dice, Den 2/2/3/3/4 yarn, Prowl 1/1/2/2/3 cats), then fires each "when activated" power in that row from right to left.
+- Activating a row gives its base reward by the number of cats in it (Hunt 1/1/2/2/3 dice, Den 2/2/3/3/4 yarn, Prowl 1/1/2/2/3 cats), then fires each "when activated" power in that row from right to left. Hadu, the one cat with the encore power, then fires every other "when activated" cat in his row a second time, right to left; two Hadus do not set each other off.
 - Power timings: when played, when activated, between turns (reacts to a rival action), end of round.
 - Setup: the player is dealt 5 cats and one of each food and keeps any 5 in total.
 - One goal per round. The higher count takes 4 / 5 / 6 points, the lower 1 / 2 / 3.

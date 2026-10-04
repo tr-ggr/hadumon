@@ -153,7 +153,7 @@ src/
     db/                   Drizzle client, schema/ (users, sessions, runs,
                           unlocks), seed.ts
     game/                 The engine: pure, seeded, unit tested
-      cats.ts             The 25 cats and their powers, as data
+      cats.ts             The 26 cats and their powers, as data
       match.ts            One match: actions, powers, rival turn, goals, score
       rival.ts            The six rivals and their action decks
       goals.ts            Round goals

@@ -34,7 +34,7 @@ Every player turn is followed by one rival action and, after the last turn of a 
 
 ### Events (`MatchEvent`)
 
-`kept`, `played { catId, row, col }`, `activated { row, reward }`, `power { catId, row, col, effect }`, `feeder { faces }` (rerolled), `rival { action, removed }` (`removed` lists raided dice faces or burned cat ids), `goal { round, goalId, player, rival, playerPoints, rivalPoints }`, `over { won, player, rival }`.
+`kept`, `played { catId, row, col }`, `activated { row, reward }`, `power { catId, row, col, effect }`, `feeder { faces }` (rerolled), `rival { action, removed }` (`removed` lists raided dice faces or burned cat ids), `goal { round, goalId, player, rival, playerPoints, rivalPoints }`, `over { won, player, rival }`. A cat set off again by an encore (Hadu) sends a second `power` event for the same slot in the same action.
 
 ### `MatchView` fields worth knowing
 

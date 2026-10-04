@@ -20,7 +20,7 @@ HaduMon is a web-based roguelike engine-builder about feline "Fakemon". A run is
 
 Four claims the product can truthfully make and a neighbouring roguelike could not copy as a set:
 
-1. The cast is feline Fakemon with elemental typing: 25 named cats (Flameclaw, Mistpaw, Voltwhisk, Nyxaroth, ...) across Flame, Mist, Volt, Thorn, and Shade, each with hand-written flavor text.
+1. The cast is feline Fakemon with elemental typing: 26 named cats (Flameclaw, Mistpaw, Voltwhisk, Nyxaroth, ...) across Flame, Mist, Volt, Thorn, and Shade, each with hand-written flavor text.
 2. The match is an engine-builder, not a combat game: three rows, one action a turn, and powers that chain from right to left. Nothing attacks anything.
 3. Matches are short: twelve turns each, with a rival that takes one visible, scripted action after every turn.
 4. It runs in the browser on any device, and nothing is for sale. No install, no currency, no shop.
@@ -34,7 +34,7 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 
 ## Capabilities and Constraints
 
-- 25 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 2 legendary. Rarity is a power tier: it weights reward offers and gates unlocks.
+- 26 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 3 legendary. Rarity is a power tier: it weights reward offers and gates unlocks.
 - Five elements, each with the cat food its cats cost: Beef, Fish, Chicken, Dry food and Pork. A Treat pays for anything. There is no advantage wheel.
 - A match: 3 rows of 4 slots; 3 rounds of 5 / 4 / 3 turns; a five-dice feeder; a three-card tray; one goal per round contested with the rival.
 - A run: pick a clan (a starter deck built around one element), six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
