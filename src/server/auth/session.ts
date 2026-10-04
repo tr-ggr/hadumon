@@ -11,17 +11,13 @@ import { sessions, users, type User } from "~/server/db/schema/auth";
 export const SESSION_COOKIE = "hadumon_session";
 export const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
-/** The trainer record minus anything secret. */
+/** The player record minus anything secret. */
 export type SessionUser = Omit<User, "passwordHash">;
 
 const PUBLIC_USER_COLUMNS = {
   id: users.id,
   username: users.username,
   displayName: users.displayName,
-  gold: users.gold,
-  gems: users.gems,
-  rating: users.rating,
-  isBot: users.isBot,
   createdAt: users.createdAt,
 } as const;
 
@@ -38,7 +34,7 @@ export async function createSession(userId: string): Promise<string> {
   return token;
 }
 
-/** Looks up a non-expired session and returns its trainer, or null. */
+/** Looks up a non-expired session and returns its player, or null. */
 export async function validateSession(
   token: string | undefined | null,
 ): Promise<SessionUser | null> {
@@ -71,7 +67,7 @@ export async function getSessionToken(): Promise<string | undefined> {
 }
 
 /**
- * Resolves the signed-in trainer for the current request, if any.
+ * Resolves the signed-in player for the current request, if any.
  *
  * Wrapped in React `cache()` so the layout and the page share one lookup per
  * request instead of hitting the sessions table twice.

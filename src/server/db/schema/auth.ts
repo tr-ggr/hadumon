@@ -1,37 +1,21 @@
 import { relations } from "drizzle-orm";
-import {
-  boolean,
-  index,
-  integer,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { index, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
-import { STARTING_GEMS, STARTING_GOLD } from "../../game/economy";
 import { createTable } from "./_table";
 
 /**
- * Trainers. `username` is always stored lowercase (it is the unique login key);
+ * Players. `username` is always stored lowercase (it is the unique login key);
  * `displayName` keeps whatever casing the player typed at signup.
  */
-export const users = createTable(
-  "users",
-  {
-    id: uuid("id").primaryKey().defaultRandom(),
-    username: text("username").notNull().unique(),
-    displayName: text("display_name").notNull(),
-    passwordHash: text("password_hash").notNull(),
-    gold: integer("gold").notNull().default(STARTING_GOLD),
-    gems: integer("gems").notNull().default(STARTING_GEMS),
-    rating: integer("rating").notNull().default(1000),
-    isBot: boolean("is_bot").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-  },
-  (t) => [index("users_rating_idx").on(t.rating)],
-);
+export const users = createTable("users", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  username: text("username").notNull().unique(),
+  displayName: text("display_name").notNull(),
+  passwordHash: text("password_hash").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 /** Opaque session tokens (32 random bytes, hex) stored server-side. */
 export const sessions = createTable(
