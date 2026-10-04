@@ -6,9 +6,9 @@ const AUTH_ROUTES = ["/login", "/signup"];
 const PUBLIC_ROUTES = ["/", "/opengraph-image"];
 
 /**
- * Cheap cookie-presence gate. Real session validation happens in tRPC
- * (`protectedProcedure`); this only keeps signed-out visitors off app routes
- * and signed-in trainers off the auth pages.
+ * Cheap cookie-presence gate: keeps visitors with no session cookie off app
+ * routes. It cannot tell a live session from a stale cookie, so it never
+ * redirects away from the auth pages; those check the real session themselves.
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -19,13 +19,6 @@ export function middleware(request: NextRequest) {
   if (!hasSession && !isAuthRoute && !isPublicRoute) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.search = "";
-    return NextResponse.redirect(url);
-  }
-
-  if (hasSession && isAuthRoute) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/";
     url.search = "";
     return NextResponse.redirect(url);
   }
