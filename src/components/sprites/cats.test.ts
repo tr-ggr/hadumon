@@ -11,6 +11,26 @@ import {
 
 const LEGEND = new Set(Object.keys(SPRITE_LEGEND));
 
+/** `[row, from, to)`: both eyes on rows 6 and 7, the muzzle on rows 8 and 9. */
+const FACE: readonly (readonly [number, number, number])[] = [
+  [6, 3, 5],
+  [6, 11, 13],
+  [7, 3, 5],
+  [7, 11, 13],
+  [8, 5, 11],
+  [9, 5, 11],
+];
+
+function pixelsChanged(rows: readonly string[]): number {
+  let changed = 0;
+  rows.forEach((row, y) => {
+    for (let x = 0; x < row.length; x++) {
+      if (row[x] !== BASE_SPRITE[y]?.[x]) changed++;
+    }
+  });
+  return changed;
+}
+
 function expectValidGrid(rows: readonly string[]) {
   expect(rows).toHaveLength(SPRITE_SIZE);
   for (const row of rows) {
@@ -60,5 +80,40 @@ describe("cat sprites", () => {
 
   it("returns the base unchanged for a cat with no patches", () => {
     expect(catSprite("not-drawn-yet")).toBe(BASE_SPRITE);
+  });
+
+  it("has patches for every cat", () => {
+    for (const cat of CAT_LIST) {
+      expect(SPRITE_PATCHES[cat.id]?.length ?? 0, cat.id).toBeGreaterThan(0);
+    }
+  });
+
+  it("draws every cat as more than a stray pixel on the base", () => {
+    for (const cat of CAT_LIST) {
+      expect(pixelsChanged(catSprite(cat.id)), cat.id).toBeGreaterThanOrEqual(
+        8,
+      );
+    }
+  });
+
+  it("gives no two cats the same grid", () => {
+    const owners = new Map<string, string>();
+    for (const cat of CAT_LIST) {
+      const grid = catSprite(cat.id).join("\n");
+      expect(owners.get(grid), `${cat.id} repeats a grid`).toBeUndefined();
+      owners.set(grid, cat.id);
+    }
+    expect(owners.size).toBe(CAT_LIST.length);
+  });
+
+  it("leaves the eyes and the muzzle of the base where they are", () => {
+    for (const cat of CAT_LIST) {
+      const grid = catSprite(cat.id);
+      for (const [row, from, to] of FACE) {
+        expect(grid[row]?.slice(from, to), `${cat.id} row ${row}`).toBe(
+          BASE_SPRITE[row]?.slice(from, to),
+        );
+      }
+    }
   });
 });
