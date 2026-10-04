@@ -269,12 +269,13 @@ export function columnYarnCost(mods: Mods, col: number): number {
 
 /**
  * Pays a cost from a pool, or returns `null` if it cannot be paid. Element
- * pips take that element, then wild. `any` pips take from the fullest element
- * and use wild last.
+ * pips take that element, then wild. `any` pips take the element with the
+ * most to spare after `reserve` is set aside, and use wild last.
  */
 export function payCost(
   pool: EssencePool,
   cost: readonly CostPip[],
+  reserve: Partial<Record<Element, number>> = {},
 ): EssencePool | null {
   const next = { ...pool };
   for (const pip of cost) {
@@ -283,11 +284,15 @@ export function payCost(
     else if (next.wild > 0) next.wild -= 1;
     else return null;
   }
+  const spare = (element: Element) => next[element] - (reserve[element] ?? 0);
   for (const pip of cost) {
     if (pip !== "any") continue;
     let best: Essence | null = null;
     for (const element of ELEMENTS) {
-      if (next[element] > 0 && (best === null || next[element] > next[best])) {
+      if (
+        next[element] > 0 &&
+        (best === null || spare(element) > spare(best))
+      ) {
         best = element;
       }
     }
@@ -296,6 +301,28 @@ export function payCost(
     next[best] -= 1;
   }
   return next;
+}
+
+/**
+ * What playing `hand[index]` leaves in the pool, or `null` if it cannot be
+ * paid. `any` pips avoid essence the rest of the hand needs by element, so
+ * paying for one cat does not strand another.
+ */
+export function playPayment(
+  pool: EssencePool,
+  hand: readonly string[],
+  index: number,
+): EssencePool | null {
+  const catId = hand[index];
+  if (!catId) return null;
+  const reserve: Partial<Record<Element, number>> = {};
+  hand.forEach((other, i) => {
+    if (i === index) return;
+    for (const pip of getCat(other).cost) {
+      if (pip !== "any") reserve[pip] = (reserve[pip] ?? 0) + 1;
+    }
+  });
+  return payCost(pool, getCat(catId).cost, reserve);
 }
 
 export function canPlay(state: MatchState, hand: number, row: Row): boolean {
@@ -599,7 +626,7 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
   if (!cat.rows.includes(action.row))
     fail(`${cat.name} cannot live in that row.`);
   if (line.length >= SLOTS) fail("That row is full.");
-  const paid = payCost(s.essence, cat.cost);
+  const paid = playPayment(s.essence, s.hand, action.hand);
   if (!paid) fail(`Not enough essence for ${cat.name}.`);
   const col = line.length;
   const yarn = columnYarnCost(s.mods, col);

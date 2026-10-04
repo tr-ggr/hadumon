@@ -8,6 +8,7 @@ import { getCat, ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
 import {
   ESSENCES,
   payCost,
+  playPayment,
   type Board,
   type Essence,
   type SlotRef,
@@ -99,13 +100,11 @@ export function whyUnplayable(view: MatchView, hand: number): string | null {
 
 /**
  * The essence playing a hand card would spend, one entry per pip, or `null`
- * if it cannot be paid. The engine pays automatically (an "any" pip takes from
- * the fullest element), so the player is told before confirming.
+ * if it cannot be paid. The engine pays automatically (an "any" pip avoids
+ * essence the rest of the hand needs), so the player is told before confirming.
  */
 export function essenceSpent(view: MatchView, hand: number): Essence[] | null {
-  const catId = view.hand[hand];
-  if (!catId) return null;
-  const left = payCost(view.essence, getCat(catId).cost);
+  const left = playPayment(view.essence, view.hand, hand);
   if (!left) return null;
   return ESSENCES.flatMap((kind) =>
     Array.from({ length: view.essence[kind] - left[kind] }, () => kind),

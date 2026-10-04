@@ -85,7 +85,9 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
         <p className="text-ink hidden text-sm sm:block">
           {chosenClan && firstRival
             ? `First rival: ${getRival(firstRival).name}.`
-            : "No clan is open yet."}
+            : clans.isLoading
+              ? "Loading your clans."
+              : "No clan is open yet."}
         </p>
         <Button
           disabled={busy || !chosenClan}

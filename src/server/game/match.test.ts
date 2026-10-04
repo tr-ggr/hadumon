@@ -10,6 +10,7 @@ import {
   IllegalAction,
   legalActions,
   payCost,
+  playPayment,
   playerScore,
   rivalScore,
   type Essence,
@@ -145,6 +146,35 @@ describe("payCost", () => {
     );
     expect(payCost(pool({ wild: 1 }), ["any"])).toEqual(pool({}));
     expect(payCost(pool({ flame: 1 }), ["flame", "any"])).toBeNull();
+  });
+});
+
+describe("playPayment", () => {
+  it("spares essence the rest of the hand needs", () => {
+    // Sparkmew costs any; the Flameclaws still in hand each need Flame.
+    const hand = ["sparkmew", "flameclaw", "flameclaw"];
+    expect(playPayment(pool({ flame: 1, shade: 1 }), hand, 0)).toEqual(
+      pool({ flame: 1 }),
+    );
+    expect(playPayment(pool({ flame: 3, shade: 1 }), hand, 0)).toEqual(
+      pool({ flame: 2, shade: 1 }),
+    );
+    expect(playPayment(pool({ flame: 1 }), hand, 0)).toEqual(pool({}));
+    expect(playPayment(pool({}), hand, 0)).toBeNull();
+    expect(playPayment(pool({ flame: 1 }), hand, 7)).toBeNull();
+  });
+
+  it("is what a play actually spends", () => {
+    const state = turnState({
+      hand: ["sparkmew", "flameclaw"],
+      essence: pool({ flame: 1, shade: 1 }),
+    });
+    const { state: next } = applyAction(state, {
+      type: "play",
+      hand: 0,
+      row: "den",
+    });
+    expect(next.essence).toEqual(pool({ flame: 1 }));
   });
 });
 
