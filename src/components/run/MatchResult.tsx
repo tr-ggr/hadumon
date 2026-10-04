@@ -40,7 +40,7 @@ export function MatchResult({ match }: { match: MatchView }) {
   return (
     <Panel
       title={
-        result.won ? `You beat ${rival.name}` : `${rival.name} takes the match`
+        result.won ? `You beat ${rival.name}` : `You lost to ${rival.name}`
       }
       tone={result.won ? "featured" : "default"}
       bodyClassName="space-y-4"

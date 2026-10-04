@@ -191,7 +191,7 @@ export function GoalPanel({
             You {standing.player} · Rival {standing.rival}
           </p>
           <p className="text-ink-soft text-xs leading-snug">
-            As it stands you take {standing.playerPoints} and {rival.name} takes{" "}
+            As it stands: you {standing.playerPoints} points, {rival.name}{" "}
             {standing.rivalPoints}. The higher count takes{" "}
             {GOAL_WIN_POINTS[round]}, the lower {GOAL_LOSE_POINTS[round]}; a tie
             splits them, and a count of 0 takes nothing.
@@ -242,7 +242,7 @@ export function EventLog({
       </h2>
       {log.length === 0 ? (
         <p className="text-ink-soft text-sm">
-          Nothing yet. The log starts with your first move.
+          Nothing to show yet. Each move and what the rival does next land here.
         </p>
       ) : (
         <ol aria-live="polite" className="space-y-2">

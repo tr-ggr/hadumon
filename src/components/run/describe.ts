@@ -104,7 +104,7 @@ function lowerFirst(text: string): string {
 
 export function goalText(rivalId: string, result: GoalResult): string {
   const rival = getRival(rivalId).name;
-  return `${getGoal(result.goalId).name}: you ${result.player}, ${rival} ${result.rival}. You take ${result.playerPoints}, ${rival} takes ${result.rivalPoints}.`;
+  return `${getGoal(result.goalId).name}: you ${result.player}, ${rival} ${result.rival}. Points: you ${result.playerPoints}, ${rival} ${result.rivalPoints}.`;
 }
 
 /** The sentence for the player's own action. */

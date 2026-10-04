@@ -285,7 +285,7 @@ export function MatchBoard({
                         pickable={mode.kind === "tuck"}
                         disabled={busy || match.phase === "over"}
                         dimmed={
-                          mode.kind !== "tuck" &&
+                          match.phase === "turn" &&
                           whyUnplayable(match, index) !== null
                         }
                         className="h-full"
