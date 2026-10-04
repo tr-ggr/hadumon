@@ -28,6 +28,18 @@ typography:
     fontWeight: 800
     lineHeight: 1.05
     letterSpacing: "-0.035em"
+  display-xl:
+    fontFamily: "ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif"
+    fontSize: "4.5rem"
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "-0.025em"
+  display-lg:
+    fontFamily: "ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif"
+    fontSize: "3.75rem"
+    fontWeight: 800
+    lineHeight: 1
+    letterSpacing: "-0.025em"
   headline:
     fontFamily: "ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif"
     fontSize: "1.5rem"
@@ -190,6 +202,37 @@ components:
     rounded: "{rounded.none}"
     padding: "0 6px"
     height: "24px"
+  board-slot-firing:
+    backgroundColor: "{colors.lime}"
+  rival-piece:
+    backgroundColor: "{colors.cream}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    padding: "20px"
+  ladder-marker:
+    backgroundColor: "{colors.coral}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    size: "40px"
+  ladder-marker-won:
+    backgroundColor: "{colors.lime}"
+  ladder-marker-boss:
+    backgroundColor: "{colors.coral}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    size: "56px"
+  gain-marker:
+    backgroundColor: "{colors.lime}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.none}"
+    size: "24px"
+  deck-count-tag:
+    backgroundColor: "{colors.white}"
+    textColor: "{colors.ink}"
+    typography: "{typography.caption}"
+    rounded: "{rounded.none}"
+    padding: "0 6px"
+    height: "24px"
 ---
 
 # Design System: HaduMon
@@ -204,7 +247,7 @@ The cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, thr
 
 Density follows the game. A match screen is compact (12px rhythm between sections, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.
 
-The landing page is not yet designed. `src/components/landing/LandingPage.tsx` is a one-section placeholder and is not a source for this system.
+The public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface, and it sits in the same world. It has no app shell and no white panel: a wordmark and two small account buttons above, a hairline footer below, and everything between laid straight on the cream table. It is built from the app's own pieces (cat cards, dice, essence pips, sprites, the rival bar, a Hunt row run by the real match engine) and adds one structure of its own, the ladder: the six rivals of a run read top to bottom along a 2px ink track.
 
 **Key Characteristics:**
 - Warm cream canvas; sky blue for the board and the home hero.
@@ -223,8 +266,8 @@ A light, warm palette: one cream canvas, one blue family for structure and actio
 - **Pressed Cobalt** (`cobalt-dark`): hover on primary buttons, and link text that sits on a white row.
 
 ### Secondary
-- **Chosen Lime** (`lime`): a piece the player has chosen or a result in the player's favour: the points tag on a cat card, a selected die, a kept card or essence, the "Play here" slot, the goal standing bar, won matches on the gauntlet track, new unlocks. Also the row's activate button while that row is being resolved, and the text selection colour. Always carries ink text.
-- **Rival Coral** (`coral`): the rival and the warning. The rival's last-card bar flashes coral, rival lines in the event log take a 4px coral left rule, a slot waiting on a decision takes a coral ring, a card marked to be trimmed fills coral, destructive buttons are coral. It is also the "Mon" in the wordmark and the epic rarity colour.
+- **Chosen Lime** (`lime`): a piece the player has chosen or a result in the player's favour: the points tag on a cat card, a selected die, a kept card or essence, the "Play here" slot, the goal standing bar, won matches on the gauntlet track, new unlocks. On the landing page it is also a cat while its power fires, the gain markers on the ladder, and a rival's marker once its round is won. Also the row's activate button while that row is being resolved, and the text selection colour. Always carries ink text.
+- **Rival Coral** (`coral`): the rival and the warning. The rival's last-card bar flashes coral, rival lines in the event log take a 4px coral left rule, a slot waiting on a decision takes a coral ring, a card marked to be trimmed fills coral, destructive buttons are coral. On the landing ladder a rival's marker is coral while that rival stands, and so is the Boss tag. It is also the "Mon" in the wordmark and the epic rarity colour.
 
 ### Tertiary
 - **Element hues** (`flame`, `mist`, `volt`, `thorn`, `shade`): the primary fur tone of each element and the fill of its essence pip. They appear only on sprites, pips, and dice faces, never as page surfaces or text colours.
@@ -259,8 +302,9 @@ Each element has two further fur tones used only inside sprites (`src/components
 **Character:** one bold, rounded, tightly tracked voice for names and numbers, and the same face at regular weight for rules text. No webfont is loaded, so the face differs by platform; see the note at the end of this section.
 
 ### Hierarchy
+- **Landing display** (800, 2.25rem rising to 4.5rem from 640px, line-height 1 at the large size, tracking -0.025em, balanced wrap): the landing headline only. The two boss names on the ladder take the step below it (2.25rem rising to 3.75rem). These are the only sizes above 3rem and they appear on the landing page alone; an app screen stops at Display.
 - **Display** (800, 1.875rem rising to 3rem from 640px, line-height 1.05, tracking -0.035em): the one headline of a page: the next step on home, the auth heading, "Codex" (which stops at 2.25rem).
-- **Headline** (800, 1.25rem rising to 1.5rem from 640px, tracking -0.025em): the match title, a rival's name, dialog titles, the wordmark.
+- **Headline** (800, 1.25rem rising to 1.5rem from 640px, tracking -0.025em): the match title, a rival's name, dialog titles, the wordmark, and the gain headings on the landing ladder. A rival's name on the ladder is one step up (1.5rem rising to 1.875rem).
 - **Title** (800, 1.125rem, line-height 1.25): panel titles, side-panel headings, row names on the board (1rem), status-strip numbers.
 - **Card title** (800, 0.875rem, line-height 1.25): a cat's or relic's name on its piece, and the points tag.
 - **Body** (400, 1rem, line-height 1.45): page copy and dialog copy. Introductory paragraphs are capped near 65ch.
@@ -282,7 +326,8 @@ Note: the type stack is a system stack and has not been chosen as a brand face. 
 
 Mobile-first, and it must hold at 375px.
 
-- **Shell.** From 768px a white rail (192px wide, full height, 1px right hairline) carries the wordmark and three destinations: Home, Play, Codex. Below 768px the rail is replaced by a floating three-item bar (12px from the screen edges, 16px radius, white at 95% with blur). A sticky cream top bar at every width shows the signed-in name and Log out; on mobile it also carries the wordmark. Login and signup render without the shell.
+- **Shell.** From 768px a white rail (192px wide, full height, 1px right hairline) carries the wordmark and three destinations: Home, Play, Codex. Below 768px the rail is replaced by a floating three-item bar (12px from the screen edges, 16px radius, white at 95% with blur). A sticky cream top bar at every width shows the signed-in name and Log out; on mobile it also carries the wordmark. Login, signup, and the landing page render without the shell.
+- **Landing page.** One centered column, maximum 1080px, with 16px side padding rising to 24px at 640px and 80px below the last step. In order: a header (wordmark left, Log in and Sign up right), the headline with a lead paragraph (1rem rising to 1.25rem, capped at 62ch), the ladder as one ordered list, and a footer behind a 1px ink hairline (10%). Each step of the ladder is a two-column grid: a marker column (40px, 56px from 640px) and the content, 12px apart rising to 24px; steps are 40px apart, 56px from 640px. A rival piece splits into two columns from 768px with a 32px gap; example cat cards and relics sit three across from 640px with an 8px gap. Running copy between pieces is capped at 65ch.
 - **Content column.** Centered, maximum 1180px, with 12px side padding rising to 20px at 640px and 24px at 1024px. Bottom padding clears the mobile bar.
 - **Rhythm.** A 4px base. Sections on a game screen stack at 12px; groups inside a panel at 8 to 12px; pieces in a grid at 6px (dice, slots, chips) or 8px (cards). Home and codex stack at 16px. Panel padding is 16px; compact in-match panels use 12px; the hero surface uses 24px rising to 36px.
 - **Match screen.** One column on a phone, in this order: status strip, the three board rows, hand, supply, rival, goal, relics, event log. From 1024px it becomes two columns: the board, hand, and supply in a flexible column, and a fixed 304px side column for rival, goal, relics, and log. A board row puts its name and activate button above its four slots on a phone and to the left (144px) from 640px. The hand scrolls sideways on a phone as 208px cards and wraps from 640px.
@@ -311,9 +356,9 @@ Hybrid, split by material. Chrome is lifted by one soft ambient shadow; game pie
 Two corner languages, one per material.
 
 - **Chrome is rounded.** Panels 20px; flat panels, the mobile bar, and the inner auth card 16px; inputs, nav items, and inline notes 12px; the home hero and the auth shell 28px; buttons and chips are full pills. Chrome borders are 1px hairlines of ink at 8 to 15%.
-- **Pieces are square.** Cat cards, board rows, slots, dice, pips, tags, the gauntlet track, and score boxes have no radius and a solid 2px ink border. An empty slot uses the same 2px border, dashed, at 45% ink. Small marks inside a piece (the yarn counter) use a 1px ink border.
-- **Sprites are pixels.** A 16x16 grid drawn with crisp edges. Sizes in use: 28, 44, 56, 72, 144, and 320px.
-- **Icons.** Navigation and the password toggle use 20px line icons with a 2px stroke and round caps, drawn inline.
+- **Pieces are square.** Cat cards, board rows, slots, dice, pips, tags, the gauntlet track, the landing ladder's markers and rival pieces, and score boxes have no radius and a solid 2px ink border. An empty slot uses the same 2px border, dashed, at 45% ink. Small marks inside a piece (the yarn counter) use a 1px ink border.
+- **Sprites are pixels.** A 16x16 grid drawn with crisp edges. Sizes in use: 28, 44, 48, 56, 64, 72, 144, and 320px.
+- **Icons.** Navigation and the password toggle use 20px line icons with a 2px stroke and round caps, drawn inline. The one mark that sits on a piece, the plus in a gain marker, is drawn as pixels instead: a 5x5 grid with crisp edges, shown at 10px.
 
 ## Components
 
@@ -372,8 +417,27 @@ A row is a board-sky band with a 2px ink border and 8px padding, holding its nam
 - **Gauntlet track:** six 28px squares, lime for won, white for next, dimmed sky for to come.
 - **Empty state:** a 2px dashed ink outline (20%) with one line of copy and a secondary button.
 
+### Ladder (landing page)
+A run read top to bottom: six rival markers and three gain markers on one track.
+- **Track:** a 2px ink line down the marker column, running from under each marker to the next step; the last step has none.
+- **Rival marker:** a square with a 2px ink border, coral fill, and the rival's number in the bold display voice, tabular. 32px (40px from 640px) with an 18px numeral rising to 20px; a boss is 40px (56px from 640px) with a 24px numeral rising to 36px. It turns lime once the round played inside its step is won. Only the first step holds a playable round, so only the first marker changes.
+- **Gain marker:** a 24px lime square with a 2px ink border and a pixel plus in ink. It marks what a win adds: a cat, a relic, the deck that carries over. Its heading sits beside it in the headline step, with the copy and example pieces below.
+- **Rival piece:** cream, 2px ink border, square, 12px padding rising to 20px from 640px. Left: the name, the Boss tag if there is one, the flavor line in soft ink (1rem rising to 1.125rem), and the trait in bold ink. Right, from 768px, the deck.
+- **Deck list:** a two-column list in 14px ink, 12px between columns and 6px between rows. The left column is a white tag with a 2px ink border holding the count and the card's name ("4× Bank") in 12px at weight 900, tabular; the right column is one sentence saying what that card does.
+- **Boss tag:** coral fill, 2px ink border, the word "Boss" in bold ink, sentence case, 14px rising to 16px, on its own line under the name. The codex sets its Boss tag differently (ink fill, cream text, uppercase); both are in the build.
+
+### Hunt Demo (landing page)
+A board row cut down to one round, played in place against the first rival.
+- **Row:** the board-sky band with a 2px ink border, 8px padding (12px from 640px). The row name is in the title step; the turn count sits opposite in 12px bold, tabular.
+- **Slots:** four across at a 6px gap, at least 96px tall. A filled slot is a cream piece holding a "Fires 1st" mark (white, 1px ink border, 10px bold), the sprite (48px, 64px from 640px), and from 640px the cat's name and power in 12px. Below 640px the powers are listed under the slots instead. A tucked count uses the same small mark. The empty slot is a dashed 2px outline reading "Empty".
+- **Feeder and button:** five dice with a 12px bold label above. The activate button is the large size, under the dice on a phone and to their right from 640px. It stays in the row; the demo has no dock.
+- **Under the row:** the rival bar (the name in a coral cell with a 2px ink divider, then the last card in 14px bold), then the turn's lines in 14px with the first in bold, beside a tally of essence pips (14px) and the score in 12px bold, tabular. The round's goal result is a lime tag with a 2px ink border.
+- **After the round:** the activate button is replaced by a secondary "Deal again", and one sentence with a large primary button follows the demo.
+
 ### Motion
 Short and functional. Press feedback is 140ms. The rival bar flashes in over 150ms and fades over 700ms. The auth card rises 12px and fades in once over 320ms on an ease-out curve. Skeletons pulse. All animation and transition durations collapse under `prefers-reduced-motion`.
+
+The landing demo lands a turn one step at a time, 560ms apart. The cat whose power is firing fills lime over 150ms and fades back to cream over 700ms; the rival bar flashes coral on the same 150ms in, 700ms out. While the steps land, the activate button takes the lime hero fill at full opacity, reads "Hunting", and is disabled along with the dice. When the round is won, the step's ladder marker turns from coral to lime over 700ms. Under reduced motion the steps land with no delay between them.
 
 ## Do's and Don'ts
 
@@ -386,6 +450,7 @@ Short and functional. Press feedback is 140ms. The rival bar flashes in over 150
 - **Do** keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px.
 - **Do** write counts and scores in tabular figures and labels in sentence case.
 - **Do** give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry.
+- **Do** build the landing page from the app's own components (cat cards, dice, essence pips, sprites, the rival bar) laid straight on the cream table, with no app shell around them.
 
 ### Don't:
 - **Don't** round the corners of a game piece or give it a drop shadow.
@@ -395,4 +460,3 @@ Short and functional. Press feedback is 140ms. The rival bar flashes in over 150
 - **Don't** use an element hue for a panel, a button, or a heading.
 - **Don't** use lime for anything the rival owns, or coral for a reward.
 - **Don't** introduce currency, shop, or premium styling; nothing is for sale.
-- **Don't** treat the landing placeholder as a pattern source.

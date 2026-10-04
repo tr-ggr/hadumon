@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-04T21:30:00+08:00",
+  "generatedAt": "2026-10-04T21:56:10+08:00",
   "title": "Design System: HaduMon",
   "extensions": {
     "colorMeta": {
@@ -295,9 +295,17 @@
         "displayName": "Display",
         "purpose": "The one headline of a page: home's next step, the auth heading, Codex. 1.875rem below 640px."
       },
+      "display-xl": {
+        "displayName": "Landing display",
+        "purpose": "The landing headline only. 2.25rem below 640px. Not used on app screens."
+      },
+      "display-lg": {
+        "displayName": "Boss name",
+        "purpose": "The two boss names on the landing ladder. 2.25rem below 640px."
+      },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Match title, rival names, dialog titles, the wordmark. 1.25rem below 640px."
+        "purpose": "Match title, rival names, dialog titles, the wordmark, gain headings on the landing ladder. 1.25rem below 640px."
       },
       "title": {
         "displayName": "Title",
@@ -385,6 +393,26 @@
         "name": "skeleton-pulse",
         "value": "Tailwind animate-pulse (2s cubic-bezier(0.4, 0, 0.6, 1) infinite)",
         "purpose": "Loading placeholders."
+      },
+      {
+        "name": "demo-step",
+        "value": "560ms between steps; 0ms under prefers-reduced-motion",
+        "purpose": "The landing demo lands a turn one line at a time."
+      },
+      {
+        "name": "slot-fire-in",
+        "value": "150ms background-color",
+        "purpose": "The cat whose power is firing fills lime."
+      },
+      {
+        "name": "slot-fire-out",
+        "value": "700ms background-color",
+        "purpose": "The fired cat fades back to cream."
+      },
+      {
+        "name": "marker-won",
+        "value": "700ms background-color",
+        "purpose": "A ladder marker turns from coral to lime once its round is won."
       },
       {
         "name": "reduced-motion",
@@ -491,11 +519,27 @@
       "description": "Square dice holding an essence pip; a chosen die fills lime.",
       "html": "<ul class=\"ds-dice\"><li><button class=\"ds-die\" aria-pressed=\"true\"><span class=\"ds-die-pip\" style=\"background:#f07b4d\"></span><span>Flame</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8acbe7\"></span><span>Mist</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#f5c84c\"></span><span>Volt</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#77bd70\"></span><span>Thorn</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8275c6\"></span><span>Shade</span></button></li></ul>",
       "css": ".ds-dice{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:384px;margin:0;padding:0;list-style:none}.ds-die{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;padding:6px 4px;background:#fff;color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:1;cursor:pointer}.ds-die-pip{width:22px;height:22px;box-sizing:border-box;border:2px solid var(--color-ink,#17212b)}.ds-die:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-die[aria-pressed=true],.ds-die[aria-pressed=true]:hover{background:var(--color-lime,#d8ff4f)}.ds-die:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+    },
+    {
+      "name": "Landing Ladder",
+      "kind": "custom",
+      "refersTo": "ladder-marker",
+      "description": "The landing page's structure: a 2px ink track with square numbered rival markers (coral, lime once won), a lime gain marker, and rivals as cream pieces with their deck as a two-column list.",
+      "html": "<ol class=\"ds-ladder\"><li class=\"ds-step\"><div class=\"ds-step-rail\"><span class=\"ds-marker ds-marker-won\">1</span><span class=\"ds-track\"></span></div><div class=\"ds-step-body\"><article class=\"ds-rival\"><div><h3>Alley Tom</h3><p class=\"ds-rival-flavor\">Has never planned anything and is doing fine.</p></div><dl class=\"ds-deck\"><dt>4× Bank</dt><dd>Banks a cat worth 2</dd><dt>2× Stash</dt><dd>Stashes 1 yarn</dd><dt>2× Raid</dt><dd>Takes 1 die from the feeder</dd></dl></article></div></li><li class=\"ds-step\"><div class=\"ds-step-rail\"><span class=\"ds-gain\" aria-hidden=\"true\"><svg viewBox=\"0 0 5 5\" width=\"10\" height=\"10\" shape-rendering=\"crispEdges\"><rect x=\"2\" y=\"0\" width=\"1\" height=\"5\"/><rect x=\"0\" y=\"2\" width=\"5\" height=\"1\"/></svg></span><span class=\"ds-track\"></span></div><div class=\"ds-step-body\"><h3 class=\"ds-gain-title\">Win, and a cat joins your deck</h3></div></li><li class=\"ds-step ds-step-last\"><div class=\"ds-step-rail\"><span class=\"ds-marker ds-marker-boss\">3</span></div><div class=\"ds-step-body\"><article class=\"ds-rival\"><div><h3 class=\"ds-boss-name\">Madame Mittens</h3><p class=\"ds-boss-tag\">Boss</p><p class=\"ds-rival-flavor\">The feeder is hers. You are welcome to what she leaves.</p><p class=\"ds-rival-trait\">Raids take 2 dice, and she raids often.</p></div><dl class=\"ds-deck\"><dt>4× Bank</dt><dd>Banks a cat worth 3</dd><dt>3× Raid</dt><dd>Takes 2 dice from the feeder</dd></dl></article></div></li></ol>",
+      "css": ".ds-ladder{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);max-width:560px;margin:0;padding:0;list-style:none;color:var(--color-ink,#17212b)}.ds-step{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:24px}.ds-step-rail{display:flex;flex-direction:column;align-items:center}.ds-track{width:2px;flex:1;background:var(--color-ink,#17212b)}.ds-step-body{min-width:0;padding-bottom:40px}.ds-step-last .ds-step-body{padding-bottom:0}.ds-marker{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border:2px solid var(--color-ink,#17212b);background:var(--color-coral,#ff7163);font-size:20px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;transition:background-color 700ms}.ds-marker-won{background:var(--color-lime,#d8ff4f)}.ds-marker-boss{width:56px;height:56px;font-size:36px}.ds-gain{display:grid;place-items:center;flex-shrink:0;width:24px;height:24px;border:2px solid var(--color-ink,#17212b);background:var(--color-lime,#d8ff4f)}.ds-gain svg{fill:var(--color-ink,#17212b)}.ds-gain-title{margin:0;font-size:24px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-rival{display:grid;gap:16px;padding:20px;background:var(--color-cream,#fff8e7);border:2px solid var(--color-ink,#17212b)}.ds-rival h3{margin:0;font-size:30px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-rival h3.ds-boss-name{font-size:60px;line-height:1}.ds-boss-tag{display:inline-block;margin:8px 0 0;padding:0 8px;border:2px solid var(--color-ink,#17212b);background:var(--color-coral,#ff7163);font-size:16px;font-weight:800;letter-spacing:-0.025em;line-height:28px}.ds-rival-flavor{margin:8px 0 0;font-size:18px;line-height:1.45;color:var(--color-ink-soft,#5b6c7d)}.ds-rival-trait{margin:8px 0 0;font-size:16px;font-weight:700;line-height:1.45}.ds-deck{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:12px;row-gap:6px;margin:0;font-size:14px;line-height:1.45}.ds-deck dt{padding:0 6px;background:#fff;border:2px solid var(--color-ink,#17212b);font-size:12px;font-weight:900;line-height:20px;font-variant-numeric:tabular-nums}.ds-deck dd{margin:0}"
+    },
+    {
+      "name": "Hunt Demo States",
+      "kind": "custom",
+      "refersTo": "board-slot-firing",
+      "description": "The landing demo while a turn resolves: a firing cat fills lime (150ms in, 700ms out), the rival bar flashes coral on the same timing, and the activate button holds the lime fill. Hover a slot or the bar to see the fade.",
+      "html": "<div class=\"ds-demo\"><ol class=\"ds-fire-row\"><li class=\"ds-fire-slot\"><span class=\"ds-fire-mark\">Fires 2nd</span><b>Flameclaw</b></li><li class=\"ds-fire-slot ds-fire-now\"><span class=\"ds-fire-mark\">Fires 1st</span><b>Burrfang</b></li></ol><div class=\"ds-rival-bar\"><span class=\"ds-rival-name\">Alley Tom</span><span class=\"ds-rival-line\">Flips one card after each of your turns.</span></div><button class=\"ds-hunting\" disabled>Hunting</button></div>",
+      "css": ".ds-demo{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:grid;gap:8px;max-width:420px;color:var(--color-ink,#17212b)}.ds-fire-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0;padding:8px;list-style:none;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b)}.ds-fire-slot{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:96px;padding:4px;border:2px solid var(--color-ink,#17212b);background:var(--color-cream,#fff8e7);font-size:12px;font-weight:900;text-align:center;transition:background-color 700ms}.ds-fire-slot:hover,.ds-fire-now{background:var(--color-lime,#d8ff4f);transition-duration:150ms}.ds-fire-mark{align-self:flex-start;padding:0 4px;background:#fff;border:1px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:16px}.ds-rival-bar{display:flex;align-items:stretch;border:2px solid var(--color-ink,#17212b);font-size:14px;font-weight:700}.ds-rival-name{padding:6px 8px;background:var(--color-coral,#ff7163);border-right:2px solid var(--color-ink,#17212b)}.ds-rival-line{flex:1;min-width:0;padding:6px 8px;background:var(--color-cream,#fff8e7);transition:background-color 700ms}.ds-rival-bar:hover .ds-rival-line{background:var(--color-coral,#ff7163);transition-duration:150ms}.ds-hunting{font:inherit;justify-self:start;min-height:56px;padding:16px 28px;border:1px solid var(--color-lime,#d8ff4f);border-radius:999px;background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b);font-size:16px;font-weight:600;letter-spacing:-0.025em;box-shadow:0 10px 20px rgb(216 255 79 / .24);cursor:not-allowed}@media (prefers-reduced-motion: reduce){.ds-fire-slot,.ds-rival-line{transition-duration:.01ms}}"
     }
   ],
   "narrative": {
     "northStar": "Pieces on a Cream Table",
-    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, board rows and slots, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills, no drop shadow. A player can tell at a glance what is furniture and what is in play.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. They are drawn as inline SVG and scaled in whole pixels, so they stay crisp from a 28px deck token to a 320px mascot. The sprite is the only illustration in the product. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. A match screen is compact (12px rhythm between sections, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe landing page is not yet designed. `src/components/landing/LandingPage.tsx` is a one-section placeholder and is not a source for this system.",
+    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, board rows and slots, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills, no drop shadow. A player can tell at a glance what is furniture and what is in play.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. They are drawn as inline SVG and scaled in whole pixels, so they stay crisp from a 28px deck token to a 320px mascot. The sprite is the only illustration in the product. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. A match screen is compact (12px rhythm between sections, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface, and it sits in the same world. It has no app shell and no white panel: a wordmark and two small account buttons above, a hairline footer below, and everything between laid straight on the cream table. It is built from the app's own pieces (cat cards, dice, essence pips, sprites, the rival bar, a Hunt row run by the real match engine) and adds one structure of its own, the ladder: the six rivals of a run read top to bottom along a 2px ink track.",
     "keyCharacteristics": [
       "Warm cream canvas; sky blue for the board and the home hero.",
       "Two materials: rounded white chrome, square 2px-ink game pieces.",
@@ -559,7 +603,8 @@
       "Do end every multi-step choice in the sticky dock, with a sentence saying what will happen and one primary button.",
       "Do keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px.",
       "Do write counts and scores in tabular figures and labels in sentence case.",
-      "Do give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry."
+      "Do give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry.",
+      "Do build the landing page from the app's own components (cat cards, dice, essence pips, sprites, the rival bar) laid straight on the cream table, with no app shell around them."
     ],
     "donts": [
       "Don't round the corners of a game piece or give it a drop shadow.",
@@ -568,8 +613,7 @@
       "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
       "Don't use an element hue for a panel, a button, or a heading.",
       "Don't use lime for anything the rival owns, or coral for a reward.",
-      "Don't introduce currency, shop, or premium styling; nothing is for sale.",
-      "Don't treat the landing placeholder as a pattern source."
+      "Don't introduce currency, shop, or premium styling; nothing is for sale."
     ]
   }
 }
