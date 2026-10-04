@@ -138,11 +138,12 @@ function GainMarker() {
   );
 }
 
+/** Sits on its own line under the name, so both bosses set it the same way. */
 function BossTag() {
   return (
-    <span className="border-ink bg-coral text-ink ml-3 inline-block border-2 px-2 align-middle text-sm leading-6 tracking-normal sm:text-base sm:leading-7">
+    <p className="text-pixel border-ink bg-coral text-ink mt-2 inline-block border-2 px-2 text-sm leading-6 sm:text-base sm:leading-7">
       Boss
-    </span>
+    </p>
   );
 }
 
@@ -165,8 +166,8 @@ function RivalRung({
             className={`text-pixel text-ink ${rival.boss ? "text-4xl sm:text-6xl" : "text-2xl sm:text-3xl"}`}
           >
             {rival.name}
-            {rival.boss ? <BossTag /> : null}
           </h2>
+          {rival.boss ? <BossTag /> : null}
           <p className="text-ink-soft mt-2 text-base sm:text-lg">
             {rival.flavor}
           </p>

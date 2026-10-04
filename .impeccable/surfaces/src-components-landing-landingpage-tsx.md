@@ -19,7 +19,7 @@ STORY: Press Hunt against Alley Tom and watch three powers fire right to left; s
 
 FIRST VIEWPORT: Wordmark and account actions; the headline "Six rivals. Twelve turns each."; rung 1, Alley Tom, with a live Hunt row of three cats, the feeder, and one cobalt Hunt button.
 
-FORM: The gauntlet, index 3 of 7 on the ordered list, seed 18d439d6. Code-led; the user locked it from a wireframe.
+FORM: The gauntlet, index 3 of 7 on the ordered list, seed 18d439d6. Built code-led although the project default is comp-led: the session had no image generation, so no comp could be made. The user locked the structure from text wireframes and did not downgrade the comp.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
 

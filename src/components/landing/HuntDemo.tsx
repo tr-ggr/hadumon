@@ -287,7 +287,7 @@ export function HuntDemo() {
         <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0">
             <p className="text-ink text-xs font-bold">
-              {done
+              {done || busy
                 ? "The feeder"
                 : `The feeder. Pick ${take} ${take === 1 ? "die" : "dice"}.`}
             </p>
