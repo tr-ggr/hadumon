@@ -9,12 +9,12 @@ import {
 } from "react";
 
 import { ROWS, type Row } from "~/server/game/cats";
-import type { Action, SlotRef } from "~/server/game/match";
+import type { Action, Essence, SlotRef } from "~/server/game/match";
 import { CLANS } from "~/server/game/run";
 import type { MatchView, RunView } from "~/server/game/view";
 
 import { BoardRow } from "./BoardRow";
-import { CatDetail } from "./CatPick";
+import { CatDetail, type TuckedUnder } from "./CatPick";
 import {
   plural,
   type GoalEvent,
@@ -30,10 +30,12 @@ import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
 import { Supply } from "./Supply";
 import {
+  canSwapMore,
   deckPicks,
   fillYarn,
   huntTake,
   IDLE,
+  swapOwed,
   toggleDie,
   yarnRoom,
   type Mode,
@@ -164,7 +166,11 @@ export function MatchBoard({
     step: served.step,
     mode: IDLE,
   });
-  const [detail, setDetail] = useState<string | null>(null);
+  const [detail, setDetail] = useState<{
+    catId: string;
+    tucked?: TuckedUnder;
+  } | null>(null);
+  const showCard = (catId: string) => setDetail({ catId });
   const tableRef = useRef<HTMLDivElement>(null);
   const matRef = useRef<HTMLElement>(null);
   const supplyRef = useRef<HTMLDivElement>(null);
@@ -231,10 +237,30 @@ export function MatchBoard({
     playInto: (row) => {
       if (
         mode.kind === "play" &&
-        (match.playable[mode.hand] ?? []).includes(row)
+        (match.playable[mode.hand] ?? []).includes(row) &&
+        mode.swap.length === swapOwed(match, mode.hand)
       ) {
-        act({ type: "play", hand: mode.hand, row });
+        act(
+          mode.swap.length > 0
+            ? { type: "play", hand: mode.hand, row, swap: mode.swap }
+            : { type: "play", hand: mode.hand, row },
+        );
       }
+    },
+    swapEssence: (kind: Essence) => {
+      if (mode.kind !== "play" || busy) return;
+      if (canSwapMore(match, mode.hand, mode.swap, kind)) {
+        return setMode({ ...mode, swap: [...mode.swap, kind] });
+      }
+      // Nothing more of it can go in, so the tap takes one back.
+      const last = mode.swap.lastIndexOf(kind);
+      if (last >= 0) {
+        setMode({ ...mode, swap: mode.swap.filter((_, i) => i !== last) });
+      }
+    },
+    undoSwap: () => {
+      if (mode.kind !== "play") return;
+      setMode({ ...mode, swap: mode.swap.slice(0, -1) });
     },
     cancel: () => setMode(IDLE),
     confirm: () => {
@@ -267,7 +293,12 @@ export function MatchBoard({
   const onSlot = (slot: SlotRef) => {
     if (mode.kind !== "den") {
       const placed = match.board[slot.row][slot.col];
-      if (placed) setDetail(placed.catId);
+      if (placed) {
+        setDetail({
+          catId: placed.catId,
+          tucked: { count: placed.tucked, under: placed.under ?? [] },
+        });
+      }
       return;
     }
     if (
@@ -288,7 +319,7 @@ export function MatchBoard({
     }
     if (match.phase !== "turn") return;
     if (mode.kind === "play" && mode.hand === index) return setMode(IDLE);
-    setMode({ kind: "play", hand: index });
+    setMode({ kind: "play", hand: index, swap: [] });
     // On a phone the lane that can take the card may be off screen.
     const lane = (match.playable[index] ?? [])[0];
     reveal(tableRef.current?.querySelector(`[data-lane="${lane ?? "hunt"}"]`));
@@ -468,7 +499,7 @@ export function MatchBoard({
               onTrayCard={onTrayCard}
               onDeckPicks={changeDeckPicks}
               onReroll={() => act({ type: "reroll" })}
-              onDetail={setDetail}
+              onDetail={showCard}
               deckNote={`${CLANS[run.clanId].name} deck, ${plural(run.deck.length, "card")}.`}
             />
           </div>
@@ -499,10 +530,14 @@ export function MatchBoard({
         rivalStep={playing && frame?.tone === "rival"}
         onSkip={skip}
         onHandCard={onHandCard}
-        onDetail={setDetail}
+        onDetail={showCard}
       />
 
-      <CatDetail catId={detail} onClose={() => setDetail(null)} />
+      <CatDetail
+        catId={detail?.catId ?? null}
+        tucked={detail?.tucked}
+        onClose={() => setDetail(null)}
+      />
       <GoalNotice
         match={served}
         goal={playing ? null : goal}

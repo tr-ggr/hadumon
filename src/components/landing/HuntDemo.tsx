@@ -369,11 +369,11 @@ export function HuntDemo() {
         </div>
 
         <dl className="text-ink grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1 text-xs font-bold sm:min-w-52">
-          <dt>Your essence</dt>
+          <dt>Your food</dt>
           <dd className="flex flex-wrap items-center gap-x-2 gap-y-1 tabular-nums">
             {ESSENCES.map((kind) => (
               <span key={kind} className="flex items-center gap-1">
-                <EssencePip kind={kind} size={14} />
+                <EssencePip kind={kind} />
                 {view.essence[kind]}
               </span>
             ))}

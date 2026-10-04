@@ -56,6 +56,12 @@ export interface PlacedCat {
   yarn: number;
   cached: number;
   tucked: number;
+  /**
+   * The cats tucked under this one, oldest first. A match saved before tucks
+   * were recorded has the count without the cards, so this can be shorter than
+   * `tucked`, or missing.
+   */
+  under?: string[];
 }
 
 export type Board = Record<Row, PlacedCat[]>;
@@ -137,7 +143,11 @@ export interface MatchState {
 export type Action =
   /** Setup: indices into `setup` to keep, plus the essence to keep. */
   | { type: "keep"; cats: number[]; essence: Element[] }
-  | { type: "play"; hand: number; row: Row }
+  /**
+   * `swap` is the essence given up for pips the pool cannot pay: two for each
+   * pip short, and none when nothing is short.
+   */
+  | { type: "play"; hand: number; row: Row; swap?: Essence[] }
   /** Indices into `feeder` of the dice to take. */
   | { type: "hunt"; dice: number[] }
   /** One entry per yarn laid; a slot may repeat. */
@@ -303,18 +313,41 @@ export function payCost(
   return next;
 }
 
+export interface SwapOffer {
+  /** The element pips that neither their element nor wild can pay. */
+  short: Element[];
+  /** What is left once every pip that can be paid in kind has been. */
+  spare: EssencePool;
+}
+
 /**
- * What playing `hand[index]` leaves in the pool, or `null` if it cannot be
- * paid. `any` pips avoid essence the rest of the hand needs by element, so
- * paying for one cat does not strand another.
+ * How a cost stands against a pool. Any two essence pay for one element pip
+ * the pool is short of, so a cost is within reach when the spare essence
+ * covers two for each pip short and one for each `any` pip. `null` if it is
+ * out of reach even so.
  */
-export function playPayment(
+export function swapOffer(
   pool: EssencePool,
+  cost: readonly CostPip[],
+): SwapOffer | null {
+  const spare = { ...pool };
+  const short: Element[] = [];
+  let any = 0;
+  for (const pip of cost) {
+    if (pip === "any") any += 1;
+    else if (spare[pip] > 0) spare[pip] -= 1;
+    else if (spare.wild > 0) spare.wild -= 1;
+    else short.push(pip);
+  }
+  const left = ESSENCES.reduce((sum, kind) => sum + spare[kind], 0);
+  return left >= 2 * short.length + any ? { short, spare } : null;
+}
+
+/** The element pips the rest of the hand will need, by element. */
+function handReserve(
   hand: readonly string[],
   index: number,
-): EssencePool | null {
-  const catId = hand[index];
-  if (!catId) return null;
+): Partial<Record<Element, number>> {
   const reserve: Partial<Record<Element, number>> = {};
   hand.forEach((other, i) => {
     if (i === index) return;
@@ -322,7 +355,66 @@ export function playPayment(
       if (pip !== "any") reserve[pip] = (reserve[pip] ?? 0) + 1;
     }
   });
-  return payCost(pool, getCat(catId).cost, reserve);
+  return reserve;
+}
+
+/**
+ * What playing `hand[index]` leaves in the pool, or `null` if it cannot be
+ * paid. `any` pips avoid essence the rest of the hand needs by element, so
+ * paying for one cat does not strand another. `swap` must be exactly two
+ * spare essence for each pip short.
+ */
+export function playPayment(
+  pool: EssencePool,
+  hand: readonly string[],
+  index: number,
+  swap: readonly Essence[] = [],
+): EssencePool | null {
+  const catId = hand[index];
+  if (!catId) return null;
+  const cost = getCat(catId).cost;
+  const offer = swapOffer(pool, cost);
+  if (!offer || swap.length !== 2 * offer.short.length) return null;
+  const next = { ...pool };
+  const spare = { ...offer.spare };
+  for (const kind of swap) {
+    if (!(spare[kind] > 0)) return null;
+    spare[kind] -= 1;
+    next[kind] -= 1;
+  }
+  // Each pair given up stands in for one pip, the way wild would.
+  next.wild += offer.short.length;
+  return payCost(next, cost, handReserve(hand, index));
+}
+
+/**
+ * The swap made when nobody chooses: the spare essence the rest of the hand
+ * needs least. Empty when nothing is short or the cost is out of reach.
+ */
+export function defaultSwap(
+  pool: EssencePool,
+  hand: readonly string[],
+  index: number,
+): Essence[] {
+  const catId = hand[index];
+  const offer = catId ? swapOffer(pool, getCat(catId).cost) : null;
+  if (!offer) return [];
+  const reserve: Partial<Record<Essence, number>> = handReserve(hand, index);
+  const spare = { ...offer.spare };
+  const free = (kind: Essence) => spare[kind] - (reserve[kind] ?? 0);
+  const swap: Essence[] = [];
+  for (let i = 0; i < 2 * offer.short.length; i++) {
+    let best: Essence | null = null;
+    for (const kind of ESSENCES) {
+      if (spare[kind] > 0 && (best === null || free(kind) > free(best))) {
+        best = kind;
+      }
+    }
+    if (best === null) return [];
+    spare[best] -= 1;
+    swap.push(best);
+  }
+  return swap;
 }
 
 export function canPlay(state: MatchState, hand: number, row: Row): boolean {
@@ -333,7 +425,7 @@ export function canPlay(state: MatchState, hand: number, row: Row): boolean {
   return (
     cat.rows.includes(row) &&
     line.length < SLOTS &&
-    payCost(state.essence, cat.cost) !== null &&
+    swapOffer(state.essence, cat.cost) !== null &&
     totalYarn(state.board) >= columnYarnCost(state.mods, line.length)
   );
 }
@@ -478,6 +570,12 @@ function addYarn(placed: PlacedCat, n: number): void {
   placed.yarn = Math.min(cap, placed.yarn + n);
 }
 
+/** Tucks a cat under another: a point, and the card kept to be looked at. */
+function tuck(placed: PlacedCat, catId: string): void {
+  placed.tucked += 1;
+  (placed.under ??= []).push(catId);
+}
+
 /* -------------------------------------------------------------- powers */
 
 /**
@@ -527,13 +625,14 @@ function firePower(
       return;
     case "tuckDeck":
       for (let i = 0; i < effect.n; i++) {
-        if (drawCard(ctx) !== null) placed.tucked += 1;
+        const card = drawCard(ctx);
+        if (card !== null) tuck(placed, card);
       }
       return;
     case "pounce": {
       const card = drawCard(ctx);
       if (card === null) return;
-      if (getCat(card).points <= effect.maxPoints) placed.tucked += 1;
+      if (getCat(card).points <= effect.maxPoints) tuck(placed, card);
       else s.discard.push(card);
       return;
     }
@@ -584,9 +683,9 @@ function keep(ctx: Ctx, action: Extract<Action, { type: "keep" }>): void {
   const essenceOk =
     new Set(action.essence).size === action.essence.length &&
     action.essence.every((e) => (ELEMENTS as readonly string[]).includes(e));
-  if (!essenceOk) fail("Keep at most one essence of each element.");
+  if (!essenceOk) fail("Keep at most one of each food.");
   if (action.cats.length + action.essence.length !== SETUP_KEEP) {
-    fail(`Keep exactly ${SETUP_KEEP} cats and essence in total.`);
+    fail(`Keep exactly ${SETUP_KEEP} cats and food in total.`);
   }
 
   s.setup.forEach((catId, i) => {
@@ -626,8 +725,19 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
   if (!cat.rows.includes(action.row))
     fail(`${cat.name} cannot live in that row.`);
   if (line.length >= SLOTS) fail("That row is full.");
-  const paid = playPayment(s.essence, s.hand, action.hand);
-  if (!paid) fail(`Not enough essence for ${cat.name}.`);
+  const offer = swapOffer(s.essence, cat.cost);
+  if (!offer) fail(`Not enough food for ${cat.name}.`);
+  const swap = action.swap ?? [];
+  const owed = 2 * offer.short.length;
+  if (swap.length !== owed) {
+    fail(
+      owed === 0
+        ? `${cat.name} is paid for in full; nothing needs swapping.`
+        : `${cat.name} is ${offer.short.length} food short: give up ${owed} food in its place.`,
+    );
+  }
+  const paid = playPayment(s.essence, s.hand, action.hand, swap);
+  if (!paid) fail(`Give up only food ${cat.name} does not need.`);
   const col = line.length;
   const yarn = columnYarnCost(s.mods, col);
   if (totalYarn(s.board) < yarn) fail(`That column costs ${yarn} yarn.`);
@@ -635,7 +745,7 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
   s.essence = paid;
   spendYarn(s.board, yarn);
   s.hand.splice(action.hand, 1);
-  line.push({ catId, yarn: 0, cached: 0, tucked: 0 });
+  line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
   ctx.events.push({ type: "played", catId, row: action.row, col });
   if (cat.power?.timing === "played") s.queue.push({ row: action.row, col });
 }
@@ -710,8 +820,8 @@ function resolve(ctx: Ctx, choice: number | null): void {
   if (pending.kind === "tuckHand") {
     if (!isIndexList([choice], s.hand.length))
       fail("That cat is not in your hand.");
-    s.hand.splice(choice, 1);
-    placed.tucked += 1;
+    const [card] = s.hand.splice(choice, 1);
+    if (card) tuck(placed, card);
     for (let i = 0; i < pending.draw; i++) {
       const card = drawCard(ctx);
       if (card !== null) s.hand.push(card);
@@ -893,7 +1003,8 @@ export function combinations(n: number, k: number): number[][] {
 /**
  * The actions available now. Complete for every action type except Den, which
  * is listed once with automatic yarn placement; any placement that respects
- * capacity is also legal.
+ * capacity is also legal. A play that is short is listed once with the
+ * default swap; any other spare essence may be given up instead.
  */
 export function legalActions(state: MatchState): Action[] {
   if (state.phase === "over") return [];
@@ -925,8 +1036,14 @@ export function legalActions(state: MatchState): Action[] {
   state.hand.forEach((catId, hand) => {
     if (seen.has(catId)) return;
     seen.add(catId);
+    const swap = defaultSwap(state.essence, state.hand, hand);
     for (const row of ROWS) {
-      if (canPlay(state, hand, row)) actions.push({ type: "play", hand, row });
+      if (!canPlay(state, hand, row)) continue;
+      actions.push(
+        swap.length > 0
+          ? { type: "play", hand, row, swap }
+          : { type: "play", hand, row },
+      );
     }
   });
 

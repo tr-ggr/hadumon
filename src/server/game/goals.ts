@@ -70,7 +70,7 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
       {
         id: "pantry",
         name: "Pantry",
-        text: "Most essence in hand.",
+        text: "Most food in hand.",
         par: [1, 2, 2],
         count: (match: MatchState) =>
           Object.values(match.essence).reduce((sum, n) => sum + n, 0),
@@ -85,7 +85,7 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
       {
         id: "stash",
         name: "Stash",
-        text: "Most cached essence and tucked cats.",
+        text: "Most cached food and tucked cats.",
         par: [1, 1, 2],
         count: (match: MatchState) =>
           placedCats(match).reduce((sum, p) => sum + p.cached + p.tucked, 0),

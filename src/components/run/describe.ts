@@ -10,13 +10,14 @@ import {
   type RivalAction,
   type Row,
 } from "~/server/game/cats";
-import { ELEMENT_LABELS } from "~/server/game/elements";
+import { FOOD_LABELS, TREAT_LABEL } from "~/server/game/elements";
 import { getGoal } from "~/server/game/goals";
-import type {
-  Action,
-  Essence,
-  GoalResult,
-  MatchEvent,
+import {
+  swapOffer,
+  type Action,
+  type Essence,
+  type GoalResult,
+  type MatchEvent,
 } from "~/server/game/match";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
@@ -44,8 +45,9 @@ export interface RivalNews {
   text: string;
 }
 
+/** The food's name on the table: Beef, Fish and so on, or a Treat. */
 export function essenceLabel(kind: Essence): string {
-  return kind === "wild" ? "Wild" : ELEMENT_LABELS[kind];
+  return kind === "wild" ? TREAT_LABEL : FOOD_LABELS[kind];
 }
 
 export function plural(n: number, one: string, many = `${one}s`): string {
@@ -111,11 +113,17 @@ export function goalText(rivalId: string, result: GoalResult): string {
 export function describeAction(before: MatchView, action: Action): string {
   switch (action.type) {
     case "keep":
-      return `You kept ${plural(action.cats.length, "cat")} and ${action.essence.length} essence.`;
+      return `You kept ${plural(action.cats.length, "cat")} and ${action.essence.length} food.`;
     case "play": {
       const catId = before.hand[action.hand];
       const name = catId ? getCat(catId).name : "a cat";
-      return `You played ${name} into ${rowName(action.row)}.`;
+      const swap = action.swap ?? [];
+      const short = catId
+        ? (swapOffer(before.essence, getCat(catId).cost)?.short ?? [])
+        : [];
+      return swap.length > 0 && short.length > 0
+        ? `You played ${name} into ${rowName(action.row)}, giving up ${listWords(swap.map(essenceLabel))} in place of ${listWords(short.map(essenceLabel))}.`
+        : `You played ${name} into ${rowName(action.row)}.`;
     }
     case "hunt": {
       const faces = action.dice.flatMap((i) => before.feeder[i] ?? []);
@@ -153,7 +161,7 @@ export function describeAction(before: MatchView, action: Action): string {
       if (pending?.kind === "trade") {
         return action.choice === null
           ? `You kept the yarn on ${host}.`
-          : `You traded 1 yarn from ${host} for 1 wild essence.`;
+          : `You traded 1 yarn from ${host} for 1 ${TREAT_LABEL}.`;
       }
       if (action.choice === null) return `You tucked nothing under ${host}.`;
       const tucked = before.hand[action.choice];
@@ -176,12 +184,16 @@ function describePower(
   const waiting =
     after.pending?.slot.row === event.row &&
     after.pending?.slot.col === event.col;
+  // The cats this power put under it, where the match has kept them.
+  const tucked = (now?.under ?? [])
+    .slice(was?.under?.length ?? 0)
+    .map((id) => getCat(id).name);
 
   switch (effect.kind) {
     case "essence":
-      return `${name} fetched ${effect.n} ${ELEMENT_LABELS[effect.element]} essence.`;
+      return `${name} fetched ${effect.n} ${FOOD_LABELS[effect.element]}.`;
     case "wild":
-      return `${name} fetched ${effect.n} wild essence.`;
+      return `${name} fetched ${plural(effect.n, TREAT_LABEL)}.`;
     case "yarnSelf":
       return now && now.yarn >= cat.yarnCap
         ? `${name} laid yarn on itself and is full at ${cat.yarnCap}.`
@@ -191,12 +203,14 @@ function describePower(
     case "draw":
       return `${name} drew ${plural(effect.n, "cat")}.`;
     case "cache":
-      return `${name} cached ${effect.n} essence.`;
+      return `${name} cached ${effect.n} food.`;
     case "tuckDeck":
-      return `${name} tucked ${plural(effect.n, "cat")} from the deck.`;
+      return tucked.length > 0
+        ? `${name} tucked ${listWords(tucked)} from the deck.`
+        : `${name} tucked ${plural(effect.n, "cat")} from the deck.`;
     case "pounce":
       return (now?.tucked ?? 0) > (was?.tucked ?? 0)
-        ? `${name} pounced and tucked a cat.`
+        ? `${name} pounced and tucked ${tucked.length > 0 ? listWords(tucked) : "a cat"}.`
         : `${name} pounced and came back with nothing.`;
     case "tuckHand":
       return waiting
@@ -204,7 +218,7 @@ function describePower(
         : `${name} found nothing in your hand to tuck.`;
     case "trade":
       return waiting
-        ? `${name} offers a trade: 1 yarn for 1 wild essence.`
+        ? `${name} offers a trade: 1 yarn for 1 ${TREAT_LABEL}.`
         : `${name} had no yarn to trade.`;
   }
 }

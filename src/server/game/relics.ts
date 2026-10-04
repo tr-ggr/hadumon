@@ -68,7 +68,7 @@ export const RELICS: Record<string, Relic> = Object.fromEntries(
       {
         id: "warm-saucer",
         name: "Warm Saucer",
-        text: "Start every match with 1 wild essence.",
+        text: "Start every match with 1 Treat.",
         mods: { startWild: 1 },
       },
       {

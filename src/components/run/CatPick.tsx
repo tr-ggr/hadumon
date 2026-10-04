@@ -6,6 +6,7 @@ import { CatCard } from "~/components/cats/CatCard";
 import { Button, Modal } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 
+import { plural } from "./describe";
 import { KeyHint } from "./pieces";
 import { rowsLabel } from "./turn";
 
@@ -104,19 +105,33 @@ function InfoButton({ name, onClick }: { name: string; onClick: () => void }) {
   );
 }
 
-/** The full card in a dialog. Rendered once per screen; `catId` opens it. */
+/** What is tucked under a cat on the mat. */
+export interface TuckedUnder {
+  /** Can exceed `under` on a match saved before tucks were recorded. */
+  count: number;
+  under: readonly string[];
+}
+
+/**
+ * The full card in a dialog. Rendered once per screen; `catId` opens it. A
+ * cat on the mat also lists the cats tucked under it.
+ */
 export function CatDetail({
   catId,
+  tucked,
   onClose,
 }: {
   catId: string | null;
+  tucked?: TuckedUnder;
   onClose: () => void;
 }) {
+  const name = catId ? getCat(catId).name : "";
+  const unseen = tucked ? tucked.count - tucked.under.length : 0;
   return (
     <Modal
       open={catId !== null}
       onClose={onClose}
-      title={catId ? getCat(catId).name : ""}
+      title={name}
       footer={
         <Button variant="secondary" data-autofocus onClick={onClose}>
           Close
@@ -124,6 +139,27 @@ export function CatDetail({
       }
     >
       {catId ? <CatCard catId={catId} variant="full" /> : null}
+      {tucked && tucked.count > 0 ? (
+        <section className="mt-4">
+          <h3 className="text-ink text-sm font-bold">
+            Tucked under {name}: {plural(tucked.count, "cat")}, a point each
+          </h3>
+          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+            {tucked.under.map((under, index) => (
+              <li key={`${index}-${under}`}>
+                <CatCard catId={under} variant="compact" className="h-full" />
+              </li>
+            ))}
+          </ul>
+          {unseen > 0 ? (
+            <p className="text-ink-soft mt-2 text-xs">
+              {tucked.under.length > 0
+                ? `${plural(unseen, "more cat")} went under before the table kept track of which.`
+                : `These went under before the table kept track of which cats they were.`}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
     </Modal>
   );
 }

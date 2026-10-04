@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { EssencePip } from "~/components/cats/CatCard";
-import { ELEMENT_LABELS, ELEMENTS, type Element } from "~/server/game/elements";
+import { ELEMENTS, FOOD_LABELS, type Element } from "~/server/game/elements";
 import { SETUP_KEEP, type Action } from "~/server/game/match";
 import type { MatchView, RunView } from "~/server/game/view";
 
@@ -70,9 +70,9 @@ export function SetupKeep({
           <div className="max-w-[65ch]">
             <h2 className="text-print text-ink text-3xl">Keep {SETUP_KEEP}</h2>
             <p className="text-ink mt-1 text-sm">
-              You were dealt five cats and one essence of each element. Keep any{" "}
-              {SETUP_KEEP} in total. Cats cost essence to play, so a hand of
-              five cats is a hand you cannot afford.
+              You were dealt five cats and one of each cat food. Keep any{" "}
+              {SETUP_KEEP} in total. Cats cost food to play, so a hand of five
+              cats is a hand you cannot afford.
             </p>
           </div>
 
@@ -96,7 +96,7 @@ export function SetupKeep({
           </ul>
 
           <ul
-            aria-label="Essence you were dealt"
+            aria-label="Food you were dealt"
             className="grid max-w-md grid-cols-5 gap-2 pt-1"
           >
             {ELEMENTS.map((element) => {
@@ -107,13 +107,13 @@ export function SetupKeep({
                     type="button"
                     disabled={busy}
                     aria-pressed={kept}
-                    aria-label={`Keep ${ELEMENT_LABELS[element]} essence`}
+                    aria-label={`Keep ${FOOD_LABELS[element]}`}
                     onClick={() => setEssence((prev) => toggle(prev, element))}
                     className={`piece border-ink text-ink flex min-h-14 w-full flex-col items-center justify-center gap-1 border-2 px-1 py-1.5 ${kept ? "bg-lime is-chosen lift" : "hover:bg-sky-soft liftable bg-white"}`}
                   >
-                    <EssencePip kind={element} size={22} />
+                    <EssencePip kind={element} size={24} />
                     <span className="text-[11px] leading-none font-bold">
-                      {ELEMENT_LABELS[element]}
+                      {FOOD_LABELS[element]}
                     </span>
                   </button>
                 </li>
@@ -167,7 +167,7 @@ export function SetupKeep({
       <TableRail>
         <p className="text-ink text-sm font-semibold" aria-live="polite">
           {chosen} of {SETUP_KEEP} chosen: {plural(cats.length, "cat")},{" "}
-          {essence.length} essence.
+          {essence.length} food.
           {chosen > SETUP_KEEP ? " That is too many." : ""}
         </p>
         <TableButton

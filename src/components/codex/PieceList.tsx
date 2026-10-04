@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { EssencePip } from "~/components/cats/CatCard";
+import { ElementMark } from "~/components/cats/CatCard";
 import { getRelic } from "~/server/game/relics";
 import { CLANS, isClanId } from "~/server/game/run";
 import { lockedText, type CodexEntry } from "./entries";
@@ -59,7 +59,7 @@ export function ClanList({ entries }: { entries: readonly CodexEntry[] }) {
             name={clan.name}
             text={entry.unlocked ? clan.text : lockedText(entry)}
             locked={!entry.unlocked}
-            mark={<EssencePip kind={clan.id} size={14} />}
+            mark={<ElementMark element={clan.id} />}
           />
         );
       })}

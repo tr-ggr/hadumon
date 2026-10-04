@@ -69,6 +69,23 @@ describe("player view", () => {
     expect(view.rival.bankValue).toBe(2);
   });
 
+  it("offers a play that only a swap pays for, and not one out of reach", () => {
+    const { state } = applyAction(run.match!, {
+      type: "keep",
+      cats: [0, 1, 2],
+      essence: ["volt", "flame"],
+    });
+    const none = { flame: 0, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 };
+    const view = (flame: number) =>
+      toMatchView({
+        ...state,
+        hand: ["mistpaw"],
+        essence: { ...none, flame },
+      });
+    expect(view(2).playable).toEqual([["prowl"]]);
+    expect(view(1).playable).toEqual([[]]);
+  });
+
   it("marks a full row as unplayable", () => {
     const cat = { catId: "sparkmew", yarn: 0, cached: 0, tucked: 0 };
     const view = toMatchView({

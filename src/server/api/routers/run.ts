@@ -36,7 +36,15 @@ const actionSchema = z.discriminatedUnion("type", [
     cats: z.array(index).max(8),
     essence: z.array(z.enum(ELEMENTS)).max(8),
   }),
-  z.object({ type: z.literal("play"), hand: index, row: z.enum(ROWS) }),
+  z.object({
+    type: z.literal("play"),
+    hand: index,
+    row: z.enum(ROWS),
+    swap: z
+      .array(z.enum([...ELEMENTS, "wild"]))
+      .max(8)
+      .optional(),
+  }),
   z.object({ type: z.literal("hunt"), dice: z.array(index).max(8) }),
   z.object({
     type: z.literal("den"),

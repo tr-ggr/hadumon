@@ -8,11 +8,13 @@ import {
   emptyPool,
   goalStanding,
   IllegalAction,
+  defaultSwap,
   legalActions,
   payCost,
   playPayment,
   playerScore,
   rivalScore,
+  swapOffer,
   type Essence,
   type MatchEvent,
   type MatchState,
@@ -55,6 +57,7 @@ const placed = (catId: string, extra: Partial<PlacedCat> = {}): PlacedCat => ({
   yarn: 0,
   cached: 0,
   tucked: 0,
+  under: [],
   ...extra,
 });
 
@@ -175,6 +178,109 @@ describe("playPayment", () => {
       row: "den",
     });
     expect(next.essence).toEqual(pool({ flame: 1 }));
+  });
+});
+
+describe("swapOffer", () => {
+  it("asks for nothing when the cost is paid in kind or with wild", () => {
+    expect(swapOffer(pool({ flame: 1, mist: 2 }), ["flame"])).toEqual({
+      short: [],
+      spare: pool({ mist: 2 }),
+    });
+    expect(swapOffer(pool({ wild: 1 }), ["flame"])?.short).toEqual([]);
+  });
+
+  it("counts the pips short and what is spare to give up", () => {
+    // Burrfang costs Thorn and any: the Thorn is short, any takes one more.
+    expect(swapOffer(pool({ mist: 2, volt: 1 }), ["thorn", "any"])).toEqual({
+      short: ["thorn"],
+      spare: pool({ mist: 2, volt: 1 }),
+    });
+    expect(
+      swapOffer(pool({ flame: 1, shade: 4 }), ["flame", "flame", "flame"]),
+    ).toEqual({ short: ["flame", "flame"], spare: pool({ shade: 4 }) });
+  });
+
+  it("is out of reach without two spare for each pip short", () => {
+    expect(swapOffer(pool({ mist: 1 }), ["flame"])).toBeNull();
+    expect(swapOffer(pool({ mist: 2 }), ["flame", "any"])).toBeNull();
+    expect(
+      swapOffer(pool({ flame: 1, mist: 1 }), ["flame", "flame"]),
+    ).toBeNull();
+    expect(swapOffer(pool({}), ["any"])).toBeNull();
+  });
+});
+
+describe("a play that is short", () => {
+  const short = () =>
+    turnState({
+      hand: ["flameclaw", "mistpaw"],
+      essence: pool({ mist: 1, volt: 2, shade: 1 }),
+    });
+
+  it("takes two spare essence in place of the one it lacks", () => {
+    const { state: next } = applyAction(short(), {
+      type: "play",
+      hand: 0,
+      row: "hunt",
+      swap: ["volt", "shade"],
+    });
+    expect(next.board.hunt).toEqual([placed("flameclaw")]);
+    expect(next.essence).toEqual(pool({ mist: 1, volt: 1 }));
+  });
+
+  it("rejects a swap of the wrong size, or of essence it does not hold", () => {
+    const play = (swap?: Essence[]) => () =>
+      applyAction(short(), { type: "play", hand: 0, row: "hunt", swap });
+    expect(play()).toThrow(/1 food short/);
+    expect(play(["volt"])).toThrow(/give up 2 food/);
+    expect(play(["volt", "volt", "shade"])).toThrow(IllegalAction);
+    expect(play(["shade", "shade"])).toThrow(/does not need/);
+    expect(play(["flame", "volt"])).toThrow(IllegalAction);
+  });
+
+  it("will not give up essence the cost itself needs", () => {
+    // Burrfang: Thorn and any. One of the three spare has to stay for any.
+    const state = turnState({
+      hand: ["burrfang"],
+      essence: pool({ mist: 2, volt: 1 }),
+    });
+    expect(playPayment(state.essence, state.hand, 0, ["mist", "volt"])).toEqual(
+      pool({}),
+    );
+    const tight = pool({ flame: 1, mist: 2 });
+    // Two Flame pips, one held: the Flame held is spoken for.
+    expect(swapOffer(tight, ["flame", "flame"])?.spare).toEqual(
+      pool({ mist: 2 }),
+    );
+  });
+
+  it("refuses a swap when nothing is short", () => {
+    const state = turnState({
+      hand: ["flameclaw"],
+      essence: pool({ flame: 1, mist: 2 }),
+    });
+    expect(() =>
+      applyAction(state, {
+        type: "play",
+        hand: 0,
+        row: "hunt",
+        swap: ["mist", "mist"],
+      }),
+    ).toThrow(/nothing needs swapping/);
+  });
+
+  it("is listed as legal with a swap that spares the rest of the hand", () => {
+    // Mistpaw is still in hand, so the Mist is kept and the rest goes.
+    const state = short();
+    expect(defaultSwap(state.essence, state.hand, 0)).toEqual(["volt", "volt"]);
+    const plays = legalActions(state).filter(
+      (action) => action.type === "play" && action.hand === 0,
+    );
+    expect(plays).toEqual([
+      { type: "play", hand: 0, row: "hunt", swap: ["volt", "volt"] },
+    ]);
+    expect(() => applyAction(state, plays[0]!)).not.toThrow();
   });
 });
 
@@ -442,9 +548,55 @@ describe("pending choices", () => {
     const tucked = applyAction(paused, { type: "resolve", choice: 0 }).state;
     expect(tucked.phase).toBe("turn");
     expect(tucked.board.prowl[0]?.tucked).toBe(1);
+    expect(tucked.board.prowl[0]?.under).toEqual(["flameclaw"]);
     expect(tucked.hand).toHaveLength(2);
     expect(tucked.hand).not.toContain("flameclaw");
     expect(tucked.rival.banked).toBe(1);
+  });
+
+  it("keeps the cats tucked from the deck, in the order they went under", () => {
+    // Duskmew tucks the top of the deck each time the Prowl is activated.
+    const state = turnState({
+      board: { hunt: [], den: [], prowl: [placed("duskmew")] },
+      deck: ["mistpaw", "sparkmew", "flameclaw", "emberkit", "mistpaw"],
+    });
+    const once = applyAction(state, { type: "prowl", picks: ["deck"] }).state;
+    const top = once.board.prowl[0]?.under ?? [];
+    expect(top).toHaveLength(1);
+    expect(once.board.prowl[0]?.tucked).toBe(1);
+    expect(once.deck).not.toContain(top[0]);
+    const twice = applyAction(once, { type: "prowl", picks: ["deck"] }).state;
+    expect(twice.board.prowl[0]?.under).toHaveLength(2);
+    expect(twice.board.prowl[0]?.under?.[0]).toBe(top[0]);
+  });
+
+  it("keeps a pounced cat only when it is tucked", () => {
+    // Cinderpounce tucks a revealed cat worth 2 or less.
+    const pounce = (top: string) =>
+      applyAction(
+        turnState({
+          board: { hunt: [placed("cinderpounce")], den: [], prowl: [] },
+          deck: [top, "flameclaw", "flameclaw"],
+        }),
+        { type: "hunt", dice: [0] },
+      ).state;
+    const cheap = pounce("sparkmew");
+    expect(cheap.board.hunt[0]?.under).toEqual(["sparkmew"]);
+    expect(cheap.board.hunt[0]?.tucked).toBe(1);
+    const dear = pounce("nyxaroth");
+    expect(dear.board.hunt[0]?.under).toEqual([]);
+    expect(dear.discard).toContain("nyxaroth");
+  });
+
+  it("goes on counting on a cat saved before tucks were recorded", () => {
+    const old = { catId: "duskmew", yarn: 0, cached: 0, tucked: 2 };
+    const state = turnState({
+      board: { hunt: [], den: [], prowl: [old] },
+      deck: ["mistpaw", "sparkmew", "flameclaw"],
+    });
+    const next = applyAction(state, { type: "prowl", picks: ["deck"] }).state;
+    expect(next.board.prowl[0]?.tucked).toBe(3);
+    expect(next.board.prowl[0]?.under).toHaveLength(1);
   });
 
   it("lets the player decline", () => {

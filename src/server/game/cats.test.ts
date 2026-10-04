@@ -56,10 +56,10 @@ describe("cat catalogue", () => {
       expect(describePower(cat.power)).toMatch(/^[A-Z].*\.$/);
     }
     expect(describePower(getCat("flameclaw").power!)).toBe(
-      "When activated: gain 1 Flame essence.",
+      "When activated: gain 1 Beef.",
     );
     expect(describePower(getCat("brumefang").power!)).toBe(
-      "Between turns: when the rival raids the feeder, gain 1 Mist essence.",
+      "Between turns: when the rival raids the feeder, gain 1 Fish.",
     );
   });
 

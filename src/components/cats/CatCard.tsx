@@ -1,6 +1,8 @@
 import type { CSSProperties } from "react";
 
+import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
+import type { IconName } from "~/components/sprites/icons";
 import {
   ELEMENT_PALETTES,
   RARITY_PALETTES,
@@ -12,38 +14,71 @@ import {
   ROW_LABELS,
   type CostPip,
 } from "~/server/game/cats";
-import { ELEMENT_LABELS } from "~/server/game/elements";
+import {
+  ELEMENT_LABELS,
+  FOOD_LABELS,
+  TREAT_LABEL,
+  type Element,
+} from "~/server/game/elements";
 
-const WILD_COLOR = "#ffffff";
+const FOOD_ICONS: Record<CostPip | "wild", IconName> = {
+  flame: "beef",
+  mist: "fish",
+  volt: "chicken",
+  thorn: "dryFood",
+  shade: "pork",
+  wild: "treat",
+  any: "any",
+};
 
 export interface EssencePipProps {
-  /** An element, `any` (a cost anything pays), or `wild` (essence that pays anything). */
+  /** A food by its element, `any` (a cost any food pays), or `wild` (a treat, which pays for anything). */
   kind: CostPip | "wild";
+  /** Edge length; a multiple of 8 keeps the pixels whole. */
   size?: number;
 }
 
-/** One square of essence: element colour, or white with a mark for any/wild. */
-export function EssencePip({ kind, size = 12 }: EssencePipProps) {
+/**
+ * One cat food as its own pixel shape, filled with its element's colour. A
+ * treat and a cost any food pays are white.
+ */
+export function EssencePip({ kind, size = 16 }: EssencePipProps) {
   const element = kind !== "any" && kind !== "wild" ? kind : null;
   const label = element
-    ? ELEMENT_LABELS[element]
+    ? FOOD_LABELS[element]
     : kind === "any"
-      ? "Any"
-      : "Wild";
+      ? "Any food"
+      : TREAT_LABEL;
   return (
     <span
       role="img"
-      aria-label={`${label} essence`}
-      title={`${label} essence`}
-      className="piece border-ink text-ink inline-grid shrink-0 place-items-center border-2 text-[8px] leading-none font-black"
-      style={{
-        width: size,
-        height: size,
-        background: element ? ELEMENT_PALETTES[element]["1"] : WILD_COLOR,
-      }}
+      aria-label={label}
+      title={label}
+      className="inline-flex shrink-0"
     >
-      {kind === "any" ? "?" : kind === "wild" ? "*" : null}
+      <PixelIcon
+        name={FOOD_ICONS[kind]}
+        size={size}
+        fill={element ? ELEMENT_PALETTES[element]["1"] : undefined}
+      />
     </span>
+  );
+}
+
+/** An element's own shape in its colour, to sit beside the element's name. */
+export function ElementMark({
+  element,
+  size = 16,
+}: {
+  element: Element;
+  size?: number;
+}) {
+  return (
+    <PixelIcon
+      name={element}
+      size={size}
+      fill={ELEMENT_PALETTES[element]["1"]}
+    />
   );
 }
 

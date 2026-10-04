@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 export interface FilterOption<T extends string> {
   value: T;
   label: string;
-  /** Drawn before the label, e.g. an essence pip. */
+  /** Drawn before the label, e.g. an element's mark. */
   mark?: ReactNode;
 }
 

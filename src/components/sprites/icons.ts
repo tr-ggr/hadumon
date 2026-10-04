@@ -105,6 +105,138 @@ export const ICONS = {
     ".o......",
     ".o......",
   ],
+  /** The Flame element, as a mark beside its name. */
+  flame: [
+    "....o...",
+    "...o1o..",
+    ".o.o1o..",
+    "o1o111o.",
+    "o11111o.",
+    "o111111o",
+    ".o1111o.",
+    "..oooo..",
+  ],
+  /** The Mist element: a drop. */
+  mist: [
+    "...oo...",
+    "..o11o..",
+    "..o11o..",
+    ".o1111o.",
+    "o1w1111o",
+    "o1w1111o",
+    ".o1111o.",
+    "..oooo..",
+  ],
+  /** The Volt element: a bolt. */
+  volt: [
+    "....ooo.",
+    "...o11o.",
+    "..o11o..",
+    ".o111oo.",
+    ".oo111o.",
+    "..o11o..",
+    ".o11o...",
+    ".ooo....",
+  ],
+  /** The Thorn element: a leaf. */
+  thorn: [
+    ".....ooo",
+    "...oo11o",
+    "..o1111o",
+    ".o1111o.",
+    ".o111o..",
+    "o1ooo...",
+    "oo......",
+    "........",
+  ],
+  /** The Shade element: a crescent. */
+  shade: [
+    "..ooo...",
+    ".o111o..",
+    "o11oo...",
+    "o11o....",
+    "o11o....",
+    "o11oo...",
+    ".o111o..",
+    "..ooo...",
+  ],
+  /** Beef, the food Flame cats eat: a steak with its bone. */
+  beef: [
+    "........",
+    ".ooooo..",
+    "o11111oo",
+    "o1ww111o",
+    "o1ww111o",
+    "o111111o",
+    ".oooooo.",
+    "........",
+  ],
+  /** Fish, the food Mist cats eat. */
+  fish: [
+    "........",
+    "..ooo.oo",
+    ".o111o1o",
+    "o1o1111o",
+    "o111111o",
+    ".o111o1o",
+    "..ooo.oo",
+    "........",
+  ],
+  /** Chicken, the food Volt cats eat: a drumstick. */
+  chicken: [
+    ".oooo...",
+    "o1111o..",
+    "o11111o.",
+    "o11111o.",
+    ".o1111o.",
+    "..ooowo.",
+    ".....owo",
+    "......oo",
+  ],
+  /** Dry food, the food Thorn cats eat: a full bowl. */
+  dryFood: [
+    "..oooo..",
+    ".o1111o.",
+    "o111111o",
+    "oooooooo",
+    "owwwwwwo",
+    ".owwwwo.",
+    "..oooo..",
+    "........",
+  ],
+  /** Pork, the food Shade cats eat: a rasher. */
+  pork: [
+    "..oo....",
+    "oo11o..o",
+    "o1ww1ooo",
+    "ow11w11o",
+    "o1oo1wwo",
+    "oo..o11o",
+    ".....oo.",
+    "........",
+  ],
+  /** A treat, which pays for anything. */
+  treat: [
+    "...oo...",
+    "..o11o..",
+    ".oo11oo.",
+    "o111111o",
+    "o111111o",
+    ".oo11oo.",
+    "..o11o..",
+    "...oo...",
+  ],
+  /** A cost that any food pays. */
+  any: [
+    ".oooooo.",
+    "o11oo11o",
+    "o1o11o1o",
+    "o111o11o",
+    "o11o111o",
+    "o111111o",
+    "o11o111o",
+    ".oooooo.",
+  ],
   /** Points left: the way powers fire along a lane. */
   chevron: [
     "....oo..",

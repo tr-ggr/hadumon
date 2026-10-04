@@ -15,7 +15,7 @@ import type { MatchView } from "~/server/game/view";
 
 import { plural } from "./describe";
 import { COBALT, INK, KeyHint, LIME, WHITE, YarnTrack } from "./pieces";
-import { queuedYarn, yarnRoom, type Mode } from "./turn";
+import { queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
 
 export function yarnCostLabel(cost: number): string {
   return cost === 0 ? "Free" : `${cost} yarn`;
@@ -79,8 +79,11 @@ export function BoardRow({
   const line = match.board[row];
   const lane = LANES[row];
   const nextCost = match.yarnCosts[row];
+  // A play that is short is not ready for a lane until its swap is chosen.
   const isTarget =
-    mode.kind === "play" && (match.playable[mode.hand] ?? []).includes(row);
+    mode.kind === "play" &&
+    (match.playable[mode.hand] ?? []).includes(row) &&
+    mode.swap.length === swapOwed(match, mode.hand);
   const activating = mode.kind === row || resolving;
   const denTargets = mode.kind === "den" ? mode.targets : null;
   const denFull = denTargets !== null && denTargets.length >= match.rewards.den;
@@ -277,7 +280,7 @@ function PlacedSlot({
       aria-label={
         laying
           ? `Lay yarn on ${cat.name}, holding ${yarn} of ${cat.yarnCap}`
-          : `${cat.name} details`
+          : `${cat.name} details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
       }
       // Cats tucked underneath show as a thicker edge.
       style={{ ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px` }}

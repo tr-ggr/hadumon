@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { CatCard, EssencePip } from "~/components/cats/CatCard";
+import { CatCard, ElementMark } from "~/components/cats/CatCard";
 import { Button, Modal } from "~/components/ui";
 import {
   getCat,
@@ -17,7 +17,7 @@ import { lockedText, type CodexEntry } from "./entries";
 const ELEMENT_OPTIONS: FilterOption<Element>[] = ELEMENTS.map((element) => ({
   value: element,
   label: ELEMENT_LABELS[element],
-  mark: <EssencePip kind={element} />,
+  mark: <ElementMark element={element} />,
 }));
 
 const RARITY_OPTIONS: FilterOption<Rarity>[] = RARITIES.map((rarity) => ({

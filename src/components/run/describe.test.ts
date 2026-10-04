@@ -17,9 +17,13 @@ import {
 } from "./describe";
 import {
   boardYarnRoom,
+  canSwapMore,
   essenceSpent,
   fillYarn,
+  handSwap,
   huntTake,
+  shortWords,
+  swapOwed,
   toggleDie,
   whyUnplayable,
   yarnRoom,
@@ -64,7 +68,7 @@ describe("words", () => {
 describe("rivalActionText", () => {
   it("names what was taken when the event says", () => {
     expect(rivalActionText("alley-tom", "raid", ["flame", "wild"], 2)).toBe(
-      "Raided 2 dice: Flame and Wild",
+      "Raided 2 dice: Beef and Treat",
     );
     expect(rivalActionText("alley-tom", "burn", ["bramblepaw"], 2)).toBe(
       "Burned Bramblepaw",
@@ -98,14 +102,14 @@ describe("describeAction", () => {
         cats: [0, 1],
         essence: ["flame"],
       }),
-    ).toBe("You kept 2 cats and 1 essence.");
+    ).toBe("You kept 2 cats and 1 food.");
   });
 
   it("names the dice a hunt took", () => {
     const view = kept.after;
     const text = describeAction(view, { type: "hunt", dice: [0] });
     expect(text).toMatch(
-      /^You hunted and took (Flame|Mist|Volt|Thorn|Shade|Wild)\.$/,
+      /^You hunted and took (Beef|Fish|Chicken|Dry food|Pork|Treat)\.$/,
     );
   });
 
@@ -123,6 +127,24 @@ describe("describeAction", () => {
     const view = { ...kept.after, hand: ["voltwhisk"] };
     expect(describeAction(view, { type: "play", hand: 0, row: "prowl" })).toBe(
       "You played Voltwhisk into the Prowl.",
+    );
+  });
+
+  it("says what a short play gave up, and for what", () => {
+    const view = {
+      ...kept.after,
+      hand: ["flameclaw"],
+      essence: { flame: 0, mist: 1, volt: 1, thorn: 0, shade: 0, wild: 0 },
+    };
+    expect(
+      describeAction(view, {
+        type: "play",
+        hand: 0,
+        row: "hunt",
+        swap: ["mist", "volt"],
+      }),
+    ).toBe(
+      "You played Flameclaw into the Hunt, giving up Fish and Chicken in place of Beef.",
     );
   });
 
@@ -223,10 +245,10 @@ describe("turn helpers", () => {
     };
     expect(
       whyUnplayable(
-        { ...base, essence: { ...view.essence, flame: 0, wild: 0 } },
+        { ...base, essence: { ...view.essence, flame: 0, mist: 0, wild: 0 } },
         1,
       ),
-    ).toBe("Not enough essence for Flameclaw.");
+    ).toBe("Not enough food for Flameclaw.");
     expect(
       whyUnplayable(
         { ...base, yarnCosts: { hunt: null, den: 0, prowl: 0 } },
@@ -237,6 +259,26 @@ describe("turn helpers", () => {
       whyUnplayable({ ...base, yarnCosts: { hunt: 1, den: 0, prowl: 0 } }, 1),
     ).toBe("Not enough yarn: the next slot costs 1 and your cats hold 0.");
     expect(whyUnplayable({ ...base, playable: [[], ["hunt"]] }, 1)).toBeNull();
+  });
+
+  it("works out what a short play has to give up", () => {
+    const essence = { flame: 0, mist: 1, volt: 2, thorn: 0, shade: 0, wild: 0 };
+    const view = { ...kept.after, hand: ["flameclaw", "mistpaw"], essence };
+    expect(handSwap(view, 0)?.short).toEqual(["flame"]);
+    expect(swapOwed(view, 0)).toBe(2);
+    expect(swapOwed(view, 1)).toBe(0);
+    expect(shortWords(["flame"])).toBe("1 Beef");
+    expect(shortWords(["shade", "flame", "flame"])).toBe("2 Beef and 1 Pork");
+    // Volt can go in twice, Mist once, and nothing once two are chosen.
+    expect(canSwapMore(view, 0, [], "volt")).toBe(true);
+    expect(canSwapMore(view, 0, ["volt"], "volt")).toBe(true);
+    expect(canSwapMore(view, 0, ["mist"], "mist")).toBe(false);
+    expect(canSwapMore(view, 0, [], "flame")).toBe(false);
+    expect(canSwapMore(view, 0, ["volt", "volt"], "mist")).toBe(false);
+    // Until the swap is whole there is nothing to spend.
+    expect(essenceSpent(view, 0)).toBeNull();
+    expect(essenceSpent(view, 0, ["volt"])).toBeNull();
+    expect(essenceSpent(view, 0, ["mist", "volt"])).toEqual(["mist", "volt"]);
   });
 
   it("says which essence a play spends, as the engine will pay it", () => {

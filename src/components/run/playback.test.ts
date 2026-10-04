@@ -121,6 +121,48 @@ describe("buildSteps", () => {
     expect(paid).toBe(18 - getCat(catId ?? "").cost.length);
   });
 
+  it("pays a short play with the swap it was sent with", () => {
+    const state: MatchState = {
+      ...dealt(),
+      hand: ["flameclaw"],
+      essence: { flame: 0, mist: 1, volt: 2, thorn: 0, shade: 0, wild: 0 },
+    };
+    const { frames } = play(state, {
+      type: "play",
+      hand: 0,
+      row: "hunt",
+      swap: ["volt", "volt"],
+    });
+    expect(frames[0]?.view.essence).toMatchObject({ mist: 1, volt: 0 });
+    expect(frames[0]?.view.board.hunt.at(-1)).toMatchObject({
+      catId: "flameclaw",
+      under: [],
+    });
+  });
+
+  it("shows which cat went under, from the deck and from the hand", () => {
+    const deck = play(dealt({ prowl: ["duskmew"] }), {
+      type: "prowl",
+      picks: ["deck"],
+    });
+    const under = deck.after.board.prowl[0]?.under ?? [];
+    expect(under).toHaveLength(1);
+    const fired = deck.frames.find((frame) => frame.firing !== null);
+    expect(fired?.view.board.prowl[0]?.under).toEqual(under);
+    expect(fired?.text).toBe(
+      `Duskmew tucked ${getCat(under[0] ?? "").name} from the deck.`,
+    );
+
+    const paused = play(dealt({ prowl: ["voltwhisk"] }), {
+      type: "prowl",
+      picks: ["deck"],
+    });
+    expect(paused.after.pending?.kind).toBe("tuckHand");
+    const chosen = paused.after.hand[0];
+    const answered = play(paused.next, { type: "resolve", choice: 0 });
+    expect(answered.frames[0]?.view.board.prowl[0]?.under).toEqual([chosen]);
+  });
+
   it("fires an activated row from right to left, one frame a power", () => {
     expect(ACTIVATED.length).toBeGreaterThan(0);
     const row = ["hunt", "den", "prowl"] as const;

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { EssencePip } from "~/components/cats/CatCard";
+import { ElementMark } from "~/components/cats/CatCard";
 import { countUnlocked } from "~/components/codex/entries";
 import { PixelSprite } from "~/components/PixelSprite";
 import { Button, ButtonLink, Panel, Skeleton } from "~/components/ui";
@@ -266,7 +266,7 @@ function PastRunRow({ run, now }: { run: PastRun; now: number }) {
   return (
     <li className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-2">
-        {clan ? <EssencePip kind={clan.id} size={14} /> : null}
+        {clan ? <ElementMark element={clan.id} /> : null}
         <p className="text-ink min-w-0 font-bold break-words">
           {clan?.name ?? run.clanId}
           <span className="text-ink-soft font-normal">

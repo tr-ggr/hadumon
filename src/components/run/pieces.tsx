@@ -50,7 +50,7 @@ export function Die({
 }: DieProps) {
   const body = (
     <>
-      <EssencePip kind={face} size={22} />
+      <EssencePip kind={face} size={24} />
       <span className="text-[10px] leading-none font-bold">
         {essenceLabel(face)}
       </span>
@@ -156,36 +156,61 @@ export function KeyHint({
   );
 }
 
-/** One kind of essence as a token with its count. Empty is a printed space. */
+/**
+ * One kind of essence as a token with its count. Empty is a printed space.
+ * While a swap is being chosen the token is a button: tapping it gives one
+ * up, and the count shows what would be left.
+ */
 export function EssenceToken({
   kind,
   count,
+  given = 0,
+  onPick,
+  disabled,
 }: {
   kind: Essence;
   count: number;
+  /** How many of this kind the swap being chosen gives up. */
+  given?: number;
+  /** Present while a swap is being chosen and this kind can still change. */
+  onPick?: () => void;
+  disabled?: boolean;
 }) {
-  return (
-    <li
-      data-essence={kind}
-      className="text-ink flex items-center gap-1 tabular-nums"
-    >
-      {count > 0 ? (
-        <EssencePip kind={kind} size={22} />
-      ) : (
-        <span
-          aria-hidden
-          className="border-ink/35 block h-[22px] w-[22px] border-2 border-dashed"
-        />
-      )}
+  const left = count - given;
+  const body = (
+    <>
+      {/* A food the player holds none of stays in its place, faded. */}
+      <span className={count > 0 ? "flex" : "flex opacity-35"}>
+        <EssencePip kind={kind} size={24} />
+      </span>
       <span
         aria-hidden
-        className={`text-pixel w-3.5 text-sm leading-none ${count === 0 ? "text-ink-soft" : ""}`}
+        className={`text-pixel min-w-3 text-sm leading-none ${left === 0 ? "text-ink-soft" : ""}`}
       >
-        {count}
+        {left}
       </span>
-      <span className="sr-only">
-        {count} {essenceLabel(kind)}
-      </span>
+    </>
+  );
+  const said = `${count} ${essenceLabel(kind)}${given > 0 ? `, ${given} given up` : ""}`;
+  const box = `text-ink relative flex items-center gap-0.5 border-2 py-0.5 tabular-nums ${given > 0 ? "piece border-ink bg-lime is-chosen" : onPick ? "piece border-ink is-open bg-white" : "border-transparent"}`;
+  return (
+    <li data-essence={kind}>
+      {onPick ? (
+        <button
+          type="button"
+          onClick={onPick}
+          disabled={disabled}
+          aria-label={`Give up 1 ${essenceLabel(kind)}: ${said}`}
+          className={`${box} hover:bg-sky-soft before:absolute before:-inset-x-0.5 before:-inset-y-2 before:content-[''] disabled:cursor-not-allowed`}
+        >
+          {body}
+        </button>
+      ) : (
+        <div className={box}>
+          {body}
+          <span className="sr-only">{said}</span>
+        </div>
+      )}
     </li>
   );
 }

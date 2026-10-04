@@ -90,10 +90,11 @@ function applyOwnAction(
       if (!catId) break;
       const line = view.board[action.row];
       view.essence =
-        playPayment(view.essence, view.hand, action.hand) ?? view.essence;
+        playPayment(view.essence, view.hand, action.hand, action.swap) ??
+        view.essence;
       spendYarn(view, columnYarnCost(view.mods, line.length));
       view.hand.splice(action.hand, 1);
-      line.push({ catId, yarn: 0, cached: 0, tucked: 0 });
+      line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
       break;
     }
     case "hunt":
@@ -121,8 +122,9 @@ function applyOwnAction(
         : undefined;
       if (!pending || !placed || action.choice === null) break;
       if (pending.kind === "tuckHand") {
-        view.hand.splice(action.choice, 1);
+        const [card] = view.hand.splice(action.choice, 1);
         placed.tucked += 1;
+        if (card) (placed.under ??= []).push(card);
         growHand(view, after, pending.draw);
       } else if (placed.yarn > 0) {
         placed.yarn -= 1;
@@ -165,8 +167,11 @@ function applyPower(
     case "tuckDeck":
     case "pounce":
       // What the deck gave up is the server's to know; a cat fires once an
-      // action, so its settled count is this power's doing.
-      if (settled) placed.tucked = settled.tucked;
+      // action, so what is settled under it is this power's doing.
+      if (settled) {
+        placed.tucked = settled.tucked;
+        if (settled.under) placed.under = [...settled.under];
+      }
       break;
     case "tuckHand":
     case "trade":
@@ -189,6 +194,12 @@ function applyRival(
   };
   if (event.action === "raid") {
     for (const face of event.removed) removeFirst(view.feeder, face);
+    // The event names the faces taken, not which dice; when the same faces
+    // are left, the finished feeder says what order they sit in.
+    const left = [...view.feeder].sort().join();
+    if (left === [...after.feeder].sort().join()) {
+      view.feeder = [...after.feeder];
+    }
   }
   view.tray = [...after.tray];
   view.deckCount = after.deckCount;

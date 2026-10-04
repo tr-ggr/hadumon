@@ -3,14 +3,24 @@
 import { useState, type ReactNode } from "react";
 
 import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
-import { ESSENCES } from "~/server/game/match";
+import { ESSENCES, type Essence } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
 import { yarnCostLabel } from "./BoardRow";
 import { CatPick } from "./CatPick";
 import { essenceLabel, listWords, plural } from "./describe";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
-import { boardYarnRoom, essenceSpent, whyUnplayable, type Mode } from "./turn";
+import {
+  boardYarnRoom,
+  canSwapMore,
+  essenceSpent,
+  handSwap,
+  shortWords,
+  swapOwed,
+  swapTaken,
+  whyUnplayable,
+  type Mode,
+} from "./turn";
 
 export interface TurnControls {
   mode: Mode;
@@ -18,6 +28,9 @@ export interface TurnControls {
   /** Dice a Hunt takes now. */
   take: number;
   playInto: (row: Row) => void;
+  /** Adds one essence to the swap a short play is choosing, or takes it back. */
+  swapEssence: (kind: Essence) => void;
+  undoSwap: () => void;
   cancel: () => void;
   confirm: () => void;
   fillDen: () => void;
@@ -62,6 +75,11 @@ export function PlayerEdge({
   const shown = fold.open;
   const setOpen = (open: boolean) => setFold({ open, tucking });
   const selected = mode.kind === "play" || tucking ? mode.hand : null;
+  // A play that is short turns the essence held into the thing to choose from.
+  const swapping =
+    mode.kind === "play" && playing === null && swapOwed(match, mode.hand) > 0
+      ? mode
+      : null;
 
   return (
     <section
@@ -80,18 +98,33 @@ export function PlayerEdge({
             </Row2>
           )}
           <div className="mt-auto flex items-center justify-between gap-3">
-            <ul
-              aria-label="Your essence"
-              className="flex flex-wrap items-center gap-x-2.5 gap-y-2"
-            >
-              {ESSENCES.map((kind) => (
-                <EssenceToken
-                  key={kind}
-                  kind={kind}
-                  count={match.essence[kind]}
-                />
-              ))}
-            </ul>
+            <div className="flex min-w-0 flex-col gap-1">
+              <ul
+                aria-label="Your food"
+                className="flex flex-wrap items-center gap-x-1 gap-y-2"
+              >
+                {ESSENCES.map((kind) => {
+                  const given = swapping ? swapTaken(swapping.swap, kind) : 0;
+                  const open =
+                    swapping !== null &&
+                    (given > 0 ||
+                      canSwapMore(match, swapping.hand, swapping.swap, kind));
+                  return (
+                    <EssenceToken
+                      key={kind}
+                      kind={kind}
+                      count={match.essence[kind]}
+                      given={given}
+                      onPick={open ? () => turn.swapEssence(kind) : undefined}
+                      disabled={busy}
+                    />
+                  );
+                })}
+              </ul>
+              <p className="text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
+                Any 2 food pay for 1 you lack.
+              </p>
+            </div>
             <p
               className="piece border-ink bg-lime text-ink flex shrink-0 flex-col items-center border-2 px-2 py-0.5"
               aria-label={`Your score ${match.score.total}`}
@@ -218,7 +251,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
     const host = placed ? getCat(placed.catId).name : "A cat";
     if (match.pending.kind === "trade") {
       return (
-        <Row2 text={`${host}: spend 1 yarn for 1 wild essence?`}>
+        <Row2 text={`${host}: spend 1 yarn for 1 Treat?`}>
           <TableButton
             variant="secondary"
             disabled={busy}
@@ -263,12 +296,30 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       const name = catId ? getCat(catId).name : "this cat";
       const rows = match.playable[mode.hand] ?? [];
       const reason = whyUnplayable(match, mode.hand);
-      const spent = essenceSpent(match, mode.hand) ?? [];
+      const owed = swapOwed(match, mode.hand);
+      const short = handSwap(match, mode.hand)?.short ?? [];
+      if (reason === null && mode.swap.length < owed) {
+        return (
+          <Row2
+            text={`${name} is ${shortWords(short)} short. Give up any ${owed} of your food in its place: ${mode.swap.length} of ${owed} chosen.`}
+          >
+            <TableButton
+              variant="secondary"
+              disabled={busy || mode.swap.length === 0}
+              onClick={turn.undoSwap}
+            >
+              Undo
+            </TableButton>
+            {cancel}
+          </Row2>
+        );
+      }
+      const spent = essenceSpent(match, mode.hand, mode.swap) ?? [];
       return (
         <Row2
           text={
             reason ??
-            `Play ${name} into a lane. It spends ${listWords(spent.map(essenceLabel))} essence.`
+            `Play ${name} into a lane. It spends ${listWords(spent.map(essenceLabel))}.`
           }
         >
           {rows.map((row) => (

@@ -5,7 +5,7 @@
  * match engine in `match.ts` is the only thing that interprets it.
  */
 
-import { ELEMENT_LABELS, type Element } from "./elements";
+import { FOOD_LABELS, TREAT_LABEL, type Element } from "./elements";
 
 export const RARITIES = [
   "common",
@@ -53,7 +53,7 @@ export const ROW_LABELS: Record<Row, string> = {
   prowl: "Prowl",
 };
 
-/** One pip of a cat's essence cost. `any` is paid with any essence. */
+/** One pip of a cat's food cost. `any` is paid with any food. */
 export type CostPip = Element | "any";
 
 /** What the rival just did; "between turns" powers react to these. */
@@ -588,9 +588,9 @@ function plural(n: number, word: string): string {
 export function describeEffect(effect: Effect): string {
   switch (effect.kind) {
     case "essence":
-      return `gain ${effect.n} ${ELEMENT_LABELS[effect.element]} essence`;
+      return `gain ${effect.n} ${FOOD_LABELS[effect.element]}`;
     case "wild":
-      return `gain ${effect.n} wild essence`;
+      return `gain ${plural(effect.n, TREAT_LABEL)}`;
     case "yarnSelf":
       return `lay ${effect.n} yarn on this cat`;
     case "yarnRow":
@@ -598,7 +598,7 @@ export function describeEffect(effect: Effect): string {
     case "draw":
       return `draw ${plural(effect.n, "cat")}`;
     case "cache":
-      return `cache ${effect.n} essence on this cat`;
+      return `cache ${effect.n} food on this cat`;
     case "tuckDeck":
       return `tuck ${plural(effect.n, "cat")} from the deck under this cat`;
     case "pounce":
@@ -606,7 +606,7 @@ export function describeEffect(effect: Effect): string {
     case "tuckHand":
       return `you may tuck a cat from your hand to draw ${plural(effect.draw, "cat")}`;
     case "trade":
-      return "you may spend 1 yarn from this cat to gain 1 wild essence";
+      return `you may spend 1 yarn from this cat to gain 1 ${TREAT_LABEL}`;
   }
 }
 

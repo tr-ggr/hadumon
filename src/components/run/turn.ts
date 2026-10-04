@@ -7,20 +7,22 @@
 import { getCat, ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
 import {
   ESSENCES,
-  payCost,
   playPayment,
+  swapOffer,
   type Board,
   type Essence,
   type SlotRef,
+  type SwapOffer,
 } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
-import { listWords } from "./describe";
+import { essenceLabel, listWords } from "./describe";
 
 /** What the player is in the middle of choosing. */
 export type Mode =
   | { kind: "idle" }
-  | { kind: "play"; hand: number }
+  /** `swap` is the essence chosen so far to give up for pips the cat is short. */
+  | { kind: "play"; hand: number; swap: Essence[] }
   | { kind: "hunt"; dice: number[] }
   | { kind: "den"; targets: SlotRef[] }
   | { kind: "prowl"; picks: ("deck" | number)[] }
@@ -87,8 +89,8 @@ export function whyUnplayable(view: MatchView, hand: number): string | null {
   const catId = view.hand[hand];
   if (!catId) return null;
   const cat = getCat(catId);
-  if (payCost(view.essence, cat.cost) === null) {
-    return `Not enough essence for ${cat.name}.`;
+  if (swapOffer(view.essence, cat.cost) === null) {
+    return `Not enough food for ${cat.name}.`;
   }
   const open = cat.rows.filter((row) => view.yarnCosts[row] !== null);
   if (open.length === 0) {
@@ -99,15 +101,61 @@ export function whyUnplayable(view: MatchView, hand: number): string | null {
 }
 
 /**
- * The essence playing a hand card would spend, one entry per pip, or `null`
- * if it cannot be paid. The engine pays automatically (an "any" pip avoids
- * essence the rest of the hand needs), so the player is told before confirming.
+ * The essence playing a hand card would spend, one entry each, or `null` if
+ * it cannot be paid with this swap. The engine pays automatically (an "any"
+ * pip avoids essence the rest of the hand needs), so the player is told
+ * before confirming.
  */
-export function essenceSpent(view: MatchView, hand: number): Essence[] | null {
-  const left = playPayment(view.essence, view.hand, hand);
+export function essenceSpent(
+  view: MatchView,
+  hand: number,
+  swap: readonly Essence[] = [],
+): Essence[] | null {
+  const left = playPayment(view.essence, view.hand, hand, swap);
   if (!left) return null;
   return ESSENCES.flatMap((kind) =>
     Array.from({ length: view.essence[kind] - left[kind] }, () => kind),
+  );
+}
+
+/** How a hand card's cost stands against the essence held. */
+export function handSwap(view: MatchView, hand: number): SwapOffer | null {
+  const catId = view.hand[hand];
+  return catId ? swapOffer(view.essence, getCat(catId).cost) : null;
+}
+
+/** How many essence a play has to give up before it can be sent. */
+export function swapOwed(view: MatchView, hand: number): number {
+  return 2 * (handSwap(view, hand)?.short.length ?? 0);
+}
+
+/** How many of one kind a swap has taken so far. */
+export function swapTaken(swap: readonly Essence[], kind: Essence): number {
+  return swap.filter((taken) => taken === kind).length;
+}
+
+/** True if one more of `kind` can go into the swap being chosen. */
+export function canSwapMore(
+  view: MatchView,
+  hand: number,
+  swap: readonly Essence[],
+  kind: Essence,
+): boolean {
+  const offer = handSwap(view, hand);
+  return (
+    offer !== null &&
+    swap.length < 2 * offer.short.length &&
+    offer.spare[kind] > swapTaken(swap, kind)
+  );
+}
+
+/** "1 Mist", "2 Mist", "1 Mist and 1 Volt": what a cost is short of. */
+export function shortWords(short: readonly Essence[]): string {
+  return listWords(
+    ESSENCES.flatMap((kind) => {
+      const n = swapTaken(short, kind);
+      return n > 0 ? [`${n} ${essenceLabel(kind)}`] : [];
+    }),
   );
 }
 
