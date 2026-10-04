@@ -8,9 +8,9 @@ import { env } from "~/env";
 import { getCurrentUser } from "~/server/auth/session";
 import { TRPCReactProvider } from "~/trpc/react";
 
-const TITLE = "HaduMon — Idle Feline Collector";
+const TITLE = "HaduMon — a roguelike engine-builder about cats";
 const DESCRIPTION =
-  "Summon feline Fakemon, send them on idle adventures, climb the ladder and trade on the market.";
+  "Play feline Fakemon into three rows and chain their powers. Six rivals, twelve turns each, and nothing for sale.";
 
 /** Where absolute share URLs are resolved against; the deploy sets the rest. */
 const SITE_URL = env.NEXT_PUBLIC_SITE_URL ?? "https://hadumon.vercel.app";

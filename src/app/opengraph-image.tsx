@@ -1,18 +1,27 @@
 import { ImageResponse } from "next/og";
 
-import { MASCOT_ART } from "~/components/CreatureArt";
+import { buildRuns } from "~/components/PixelSprite";
+import { SPRITE_SIZE, catSprite } from "~/components/sprites/cats";
+import { spriteColors } from "~/components/sprites/palettes";
+import { CAT_LIST, getCat } from "~/server/game/cats";
 
 export const runtime = "edge";
 export const alt =
-  "HaduMon — summon cats, send them to work, come back to the loot.";
+  "HaduMon — a roguelike engine-builder about cats. Six rivals. Twelve turns each.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// ImageResponse cannot decode WebP, so use the PNG rendition of the shared art.
-const OPEN_GRAPH_MASCOT_ART = MASCOT_ART.replace(/\.webp$/, "-og.png");
+const MASCOT_ID = "flameclaw";
+/** Edge length of one sprite pixel in the rendered image. */
+const PIXEL = 26;
 
 export default async function Image() {
-  const site = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hadumon.vercel.app";
+  const mascot = getCat(MASCOT_ID);
+  const runs = buildRuns(
+    catSprite(MASCOT_ID),
+    spriteColors(mascot.element, mascot.rarity),
+  );
+
   return new ImageResponse(
     <div
       style={{
@@ -47,7 +56,7 @@ export default async function Image() {
             fontWeight: 700,
           }}
         >
-          Summon cats. Send them to work. Come back to the loot.
+          A roguelike engine-builder about cats. Six rivals. Twelve turns each.
         </div>
         <div style={{ display: "flex", marginTop: 42, gap: 14 }}>
           <span
@@ -61,7 +70,7 @@ export default async function Image() {
               fontWeight: 800,
             }}
           >
-            25 elemental cats
+            {CAT_LIST.length} elemental cats
           </span>
           <span
             style={{
@@ -73,7 +82,7 @@ export default async function Image() {
               fontWeight: 800,
             }}
           >
-            Nothing to buy
+            Nothing for sale
           </span>
         </div>
       </div>
@@ -84,18 +93,33 @@ export default async function Image() {
           height: 500,
           borderRadius: 32,
           background: "#a9ddf5",
-          alignItems: "flex-end",
+          alignItems: "center",
           justifyContent: "center",
-          overflow: "hidden",
         }}
       >
-        <img
-          src={`${site}${OPEN_GRAPH_MASCOT_ART}`}
-          alt="HaduMon mascot"
-          width="460"
-          height="460"
-          style={{ objectFit: "contain" }}
-        />
+        {/* The sprite, one absolutely placed box per run of same-colour pixels. */}
+        <div
+          style={{
+            display: "flex",
+            position: "relative",
+            width: SPRITE_SIZE * PIXEL,
+            height: SPRITE_SIZE * PIXEL,
+          }}
+        >
+          {runs.map((run) => (
+            <div
+              key={`${run.y}-${run.x}`}
+              style={{
+                position: "absolute",
+                left: run.x * PIXEL,
+                top: run.y * PIXEL,
+                width: run.width * PIXEL,
+                height: PIXEL,
+                background: run.fill,
+              }}
+            />
+          ))}
+        </div>
       </div>
     </div>,
     { ...size },

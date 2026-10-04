@@ -1,14 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
-import { MASCOT_ART } from "~/components/CreatureArt";
+import { PixelSprite } from "~/components/PixelSprite";
 import { Button } from "~/components/ui";
-import { STARTING_GEMS, STARTING_GOLD } from "~/server/game/economy";
-import { STARTER_SPECIES_IDS } from "~/server/game/species";
 import { api } from "~/trpc/react";
 
 export interface AuthFormProps {
@@ -26,11 +23,11 @@ const COPY = {
     switchLabel: "Create one",
   },
   signup: {
-    heading: "Start a collection",
-    intro: "Three cats are waiting. None of them have read the instructions.",
+    heading: "Start a run",
+    intro: "Six rivals are waiting. None of them have read the rules either.",
     submit: "Create account",
     pending: "Creating account…",
-    switchText: "Already a trainer?",
+    switchText: "Already have an account?",
     switchHref: "/login",
     switchLabel: "Sign in",
   },
@@ -57,7 +54,7 @@ export function AuthForm({ mode }: AuthFormProps) {
     onError: (e) => setError(e.message),
   });
   const signup = api.auth.signup.useMutation({
-    onSuccess: () => onSuccess("/summon"),
+    onSuccess: () => onSuccess("/run"),
     onError: (e) => setError(e.message),
   });
   const pending = login.isPending || signup.isPending;
@@ -82,19 +79,17 @@ export function AuthForm({ mode }: AuthFormProps) {
         <div className="order-2 m-3 mt-0 flex min-h-36 flex-col justify-between overflow-hidden rounded-2xl bg-white px-5 pt-4 sm:min-h-52 lg:order-1 lg:m-5 lg:min-h-[600px] lg:px-8 lg:pt-8">
           <div className="hidden lg:block">
             <p className="text-cobalt text-sm font-extrabold tracking-[0.14em] uppercase">
-              The counter is open
+              A roguelike about cats
             </p>
             <p className="text-ink mt-3 max-w-[12ch] text-3xl leading-tight font-extrabold">
-              Small toys. Long adventures.
+              Six rivals. Twelve turns each.
             </p>
           </div>
-          <Image
-            src={MASCOT_ART}
-            alt="A mildly unimpressed tuxedo cat mascot"
-            width={520}
-            height={520}
-            priority
-            className="auth-mascot mx-auto mt-auto w-full max-w-[300px] object-contain lg:max-w-[390px]"
+          <PixelSprite
+            catId="flameclaw"
+            size={320}
+            label="Flameclaw"
+            className="auth-mascot mx-auto mt-auto h-auto w-full max-w-[160px] pb-4 lg:max-w-[320px] lg:pb-8"
           />
         </div>
 
@@ -199,11 +194,10 @@ export function AuthForm({ mode }: AuthFormProps) {
               ) : (
                 <div className="bg-sky-soft rounded-xl p-4">
                   <p className="text-ink text-sm font-extrabold">
-                    Your starter pack
+                    Nothing is for sale
                   </p>
                   <p className="text-ink-soft mt-1 text-sm">
-                    {STARTING_GEMS} gems · {STARTING_GOLD} gold ·{" "}
-                    {STARTER_SPECIES_IDS.length} starter cats
+                    No currency, no shop. An account only saves your run.
                   </p>
                 </div>
               )}

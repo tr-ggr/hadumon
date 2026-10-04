@@ -4,10 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
+import { Button, Modal } from "~/components/ui";
 import { api } from "~/trpc/react";
 
-type IconName =
-  "home" | "summon" | "adventure" | "battle" | "market" | "collection" | "more";
+type IconName = "home" | "play" | "codex";
+
 export interface NavItem {
   href: string;
   label: string;
@@ -16,11 +17,8 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home", icon: "home" },
-  { href: "/summon", label: "Summon", icon: "summon" },
-  { href: "/adventure", label: "Adventure", icon: "adventure" },
-  { href: "/battle", label: "Battle", icon: "battle" },
-  { href: "/market", label: "Market", icon: "market" },
-  { href: "/collection", label: "Collection", icon: "collection" },
+  { href: "/run", label: "Play", icon: "play" },
+  { href: "/codex", label: "Codex", icon: "codex" },
 ];
 const BARE_ROUTES = ["/login", "/signup"];
 
@@ -53,70 +51,85 @@ export function AppShell({
   );
 }
 
+/**
+ * Sticky account bar, shown at every width: the wordmark on mobile (the rail
+ * carries it on desktop), who is signed in, and Log out behind a confirm.
+ */
 function TopBar() {
   const router = useRouter();
   const utils = api.useUtils();
+  const [confirming, setConfirming] = useState(false);
   const me = api.auth.me.useQuery(undefined, { retry: false });
   const logout = api.auth.logout.useMutation({
     onSuccess: async () => {
+      setConfirming(false);
       await utils.invalidate();
       router.push("/login");
       router.refresh();
     },
   });
+  const displayName = me.data?.user.displayName;
+
   return (
     <header className="bg-cream/95 sticky top-0 z-30 border-b border-black/5 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-center gap-3 px-3 py-3 sm:px-5 lg:px-6">
+      <div className="mx-auto flex w-full max-w-[1180px] items-center gap-3 px-3 py-2 sm:px-5 lg:px-6">
         <Link
           href="/"
           className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
         >
           Hadu<span className="text-coral">Mon</span>
         </Link>
-        <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2">
-          <WalletChip
-            label="Gold"
-            value={me.data?.wallet.gold}
-            tone="text-volt"
-          />
-          <WalletChip
-            label="Gems"
-            value={me.data?.wallet.gems}
-            tone="text-cobalt"
-          />
+        <div className="ml-auto flex min-w-0 items-center gap-1">
+          {displayName ? (
+            <span className="text-ink min-w-0 truncate px-2 text-sm font-bold">
+              {displayName}
+            </span>
+          ) : null}
           <button
             type="button"
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-            className="touch-target text-ink-soft hover:bg-sky-soft max-w-40 truncate rounded-full px-3 text-xs font-bold disabled:opacity-50"
+            onClick={() => setConfirming(true)}
+            className="touch-target text-ink-soft hover:bg-sky-soft hover:text-ink shrink-0 rounded-full px-3 text-sm font-bold"
           >
-            {me.data?.user.displayName ?? "Logout"}
+            Log out
           </button>
         </div>
       </div>
-    </header>
-  );
-}
 
-function WalletChip({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: number | undefined;
-  tone: string;
-}) {
-  return (
-    <span
-      className={`pill flex min-h-10 items-center gap-1.5 border border-black/5 bg-white px-3 text-sm font-bold tabular-nums shadow-sm ${tone}`}
-      aria-label={label}
-    >
-      <span className="text-ink-soft text-[10px] tracking-wide uppercase">
-        {label}
-      </span>
-      {value?.toLocaleString() ?? "—"}
-    </span>
+      <Modal
+        open={confirming}
+        onClose={() => setConfirming(false)}
+        title="Log out?"
+        footer={
+          <>
+            <Button
+              variant="secondary"
+              data-autofocus
+              disabled={logout.isPending}
+              onClick={() => setConfirming(false)}
+            >
+              Stay
+            </Button>
+            <Button
+              variant="danger"
+              disabled={logout.isPending}
+              onClick={() => logout.mutate()}
+            >
+              {logout.isPending ? "Logging out…" : "Log out"}
+            </Button>
+          </>
+        }
+      >
+        <p>
+          A run in progress is saved. It will be where you left it when you log
+          back in.
+        </p>
+        {logout.error ? (
+          <p role="alert" className="text-coral mt-2 font-semibold">
+            That did not work. Try again.
+          </p>
+        ) : null}
+      </Modal>
+    </header>
   );
 }
 
@@ -129,9 +142,6 @@ function SideNav({ pathname }: { pathname: string }) {
       <Link href="/" className="text-pixel text-ink mb-8 px-3 text-2xl">
         Hadu<span className="text-coral">Mon</span>
       </Link>
-      <p className="text-ink-soft mb-3 px-3 text-xs font-bold tracking-[0.16em] uppercase">
-        Trainer menu
-      </p>
       {NAV_ITEMS.map((item) => (
         <NavLink
           key={item.href}
@@ -150,156 +160,55 @@ function NavLink({ item, active }: { item: NavItem; active: boolean }) {
       aria-current={active ? "page" : undefined}
       className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${active ? "bg-cobalt text-white shadow-sm" : "text-ink-soft hover:bg-sky-soft hover:text-ink"}`}
     >
-      <Icon name={item.icon} active={active} />
+      <Icon name={item.icon} />
       <span>{item.label}</span>
     </Link>
   );
 }
 
 function BottomNav({ pathname }: { pathname: string }) {
-  const [moreOpen, setMoreOpen] = useState(false);
-  const router = useRouter();
-  const utils = api.useUtils();
-  const logout = api.auth.logout.useMutation({
-    onSuccess: async () => {
-      await utils.invalidate();
-      router.push("/login");
-      router.refresh();
-    },
-  });
-  const visible: NavItem[] = [
-    NAV_ITEMS[0],
-    NAV_ITEMS[2],
-    NAV_ITEMS[1],
-    NAV_ITEMS[3],
-  ].filter(Boolean) as NavItem[];
   return (
-    <>
-      <nav className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-5 items-end gap-1 rounded-2xl border border-black/5 bg-white/95 p-2 shadow-[0_12px_36px_rgba(23,33,43,0.18)] backdrop-blur md:hidden">
-        {visible.slice(0, 2).map((item) => (
-          <MobileNavLink
-            key={item.href}
-            item={item}
-            active={isActive(pathname, item.href)}
-          />
-        ))}
-        <Link
-          href="/summon"
-          className="bg-cobalt -mt-7 flex min-h-16 flex-col items-center justify-center gap-1 rounded-full px-4 text-[11px] font-extrabold text-white shadow-lg"
-        >
-          <Icon name="summon" active />
-          <span>Summon</span>
-        </Link>
-        {visible.slice(3).map((item) => (
-          <MobileNavLink
-            key={item.href}
-            item={item}
-            active={isActive(pathname, item.href)}
-          />
-        ))}
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          className="text-ink-soft flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold"
-        >
-          <Icon name="more" />
-          <span>More</span>
-        </button>
-      </nav>
-      {moreOpen ? (
-        <div
-          className="bg-ink/20 fixed inset-0 z-40"
-          role="presentation"
-          onClick={() => setMoreOpen(false)}
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-label="More destinations"
-            className="absolute inset-x-0 bottom-0 rounded-t-3xl bg-white p-5 shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="bg-sky-surface mx-auto mb-5 h-1.5 w-12 rounded-full" />
-            <div className="grid grid-cols-2 gap-3">
-              {NAV_ITEMS.slice(4).map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMoreOpen(false)}
-                  className="bg-sky-soft flex min-h-14 items-center gap-3 rounded-xl px-4 font-bold"
-                >
-                  <Icon name={item.icon} />
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                href="/"
-                onClick={() => setMoreOpen(false)}
-                className="bg-sky-soft flex min-h-14 items-center gap-3 rounded-xl px-4 font-bold"
-              >
-                <Icon name="home" />
-                Account
-              </Link>
-              <button
-                type="button"
-                onClick={() => logout.mutate()}
-                disabled={logout.isPending}
-                className="bg-cream text-ink flex min-h-14 items-center gap-3 rounded-xl px-4 text-left font-bold disabled:opacity-50"
-              >
-                <Icon name="more" />
-                {logout.isPending ? "Signing out…" : "Log out"}
-              </button>
-            </div>
-            <button
-              type="button"
-              autoFocus
-              onClick={() => setMoreOpen(false)}
-              className="bg-cream text-ink mt-5 min-h-12 w-full rounded-full font-bold"
-            >
-              Close
-            </button>
-          </section>
-        </div>
-      ) : null}
-    </>
-  );
-}
-
-function MobileNavLink({ item, active }: { item: NavItem; active: boolean }) {
-  return (
-    <Link
-      href={item.href}
-      className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-bold ${active ? "text-cobalt" : "text-ink-soft"}`}
+    <nav
+      aria-label="Primary navigation"
+      className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-3 gap-1 rounded-2xl border border-black/5 bg-white/95 p-2 shadow-[0_12px_36px_rgba(23,33,43,0.18)] backdrop-blur md:hidden"
     >
-      <Icon name={item.icon} active={active} />
-      <span>{item.label}</span>
-    </Link>
+      {NAV_ITEMS.map((item) => {
+        const active = isActive(pathname, item.href);
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={active ? "page" : undefined}
+            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-bold ${active ? "bg-sky-soft text-cobalt" : "text-ink-soft"}`}
+          >
+            <Icon name={item.icon} />
+            <span>{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 }
 
-function Icon({ name, active = false }: { name: IconName; active?: boolean }) {
-  const stroke = active ? "currentColor" : "currentColor";
-  const path = {
-    home: "M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H11v6H7a1 1 0 0 1-1-1z",
-    summon: "M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4",
-    adventure: "m4 5 6-2 4 2 6-2v16l-6 2-4-2-6 2zM10 3v16M14 5v16",
-    battle: "m5 5 14 14M19 5 5 19M7 3l4 4M17 3l-4 4M3 7l4 4M21 17l-4-4",
-    market: "M4 10h16l-1 10H5L4 10Zm2 0 2-6h8l2 6M9 14v3m6-3v3",
-    collection: "M5 5h14v14H5zM9 9h6m-6 4h6m-6 4h4",
-    more: "M5 12h.01M12 12h.01M19 12h.01",
-  }[name];
+const ICON_PATHS: Record<IconName, string> = {
+  home: "M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H11v6H7a1 1 0 0 1-1-1z",
+  play: "M8 5v14l11-7z",
+  codex: "M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4zM9 4v16M13 9h2",
+};
+
+function Icon({ name }: { name: IconName }) {
   return (
     <svg
       aria-hidden="true"
       className="h-5 w-5"
       viewBox="0 0 24 24"
       fill="none"
-      stroke={stroke}
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
-      <path d={path} />
+      <path d={ICON_PATHS[name]} />
     </svg>
   );
 }

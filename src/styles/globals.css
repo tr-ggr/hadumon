@@ -118,29 +118,6 @@
 .surface-sky {
   background: var(--color-sky-surface);
 }
-.reward-console {
-  background: var(--color-cobalt);
-  color: var(--color-white);
-  border-radius: 24px;
-  box-shadow: 0 18px 36px rgb(21 87 216 / 0.22);
-}
-.reward-console button {
-  background: var(--color-lime);
-  color: var(--color-ink);
-  border-radius: 999px;
-  box-shadow: 0 8px 18px rgb(216 255 79 / 0.24);
-}
-.mode-tile {
-  min-height: 116px;
-  border-radius: 20px;
-  transition:
-    transform 160ms ease,
-    filter 160ms ease;
-}
-.mode-tile:hover {
-  transform: translateY(-3px);
-  filter: saturate(1.08);
-}
 .touch-target {
   min-height: 48px;
   min-width: 48px;
@@ -155,59 +132,6 @@
   padding: 24px 16px 64px;
 }
 
-.element-surface-flame {
-  background: #ffe6d8;
-}
-.element-surface-mist {
-  background: #dff4fc;
-}
-.element-surface-volt {
-  background: #fff3bd;
-}
-.element-surface-thorn {
-  background: #e2f3d2;
-}
-.element-surface-shade {
-  background: #e7e1fa;
-}
-
-@keyframes land-hero-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-@keyframes land-featured-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-@keyframes land-console-recoil {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-  45% {
-    transform: translateY(3px) scale(0.995);
-  }
-}
-@keyframes land-slot-waiting {
-  0%,
-  100% {
-    opacity: 0.55;
-  }
-  50% {
-    opacity: 1;
-  }
-}
 @keyframes auth-enter {
   from {
     opacity: 0;
@@ -218,57 +142,8 @@
     transform: translateY(0);
   }
 }
-.land-hero-copy {
-  animation: land-hero-in 360ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.land-hero-console {
-  animation: land-hero-in 420ms 90ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.land-featured-float {
-  animation: land-featured-float 3.2s ease-in-out infinite;
-}
-.land-console-recoil {
-  animation: land-console-recoil 340ms ease-out;
-}
-.land-slot-waiting {
-  animation: land-slot-waiting 500ms ease-in-out infinite;
-}
-.land-reveal {
-  opacity: 0;
-  transform: translateY(14px);
-}
-.land-revealed {
-  opacity: 1;
-  transform: translateY(0);
-  transition:
-    opacity 360ms ease-out,
-    transform 360ms ease-out;
-}
-.landing-lift {
-  transition:
-    transform 180ms ease-out,
-    box-shadow 180ms ease-out;
-}
-.landing-lift:hover,
-.landing-lift:focus-within {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 38px rgb(23 33 43 / 0.12);
-}
 .auth-shell {
   animation: auth-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-@keyframes capsule-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-.capsule-float {
-  animation: capsule-float 2.4s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -276,11 +151,6 @@
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
-  }
-  .land-reveal,
-  .land-revealed {
-    opacity: 1;
-    transform: none;
   }
 }
 @media (max-width: 767px) {
