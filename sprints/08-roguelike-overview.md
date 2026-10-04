@@ -18,7 +18,7 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 | 12 | `12-art-codex-home.md` | parallel | 09, 10 |
 | 13 | `13-landing-docs.md` | sequential | 11, 12 |
 
-09 and 10 run at the same time in the same working tree and own disjoint files. An agent must not edit files owned by another sprint.
+09 and 10 ran at the same time, as 11 and 12 do, in the same working tree with disjoint files. An agent must not edit files owned by another sprint.
 
 ## Domain rules
 
@@ -47,7 +47,8 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 ### Run
 
 - Pick a clan, then 6 matches. Matches 3 and 6 are bosses.
-- After a win: add 1 of 3 offered cats (or skip), and optionally trim one card from the deck. After the first boss: also choose 1 of 3 relics.
+- After a win: add 1 of 3 offered cats (or skip), and optionally trim one card from the deck (never below 12). After matches 1, 3 and 5: also choose 1 of 3 relics.
+- Every clan starts with its own relic.
 - Losing a match ends the run. One active run per account.
 - Between runs only unlocks persist (cats, relics, clans).
 
@@ -62,9 +63,9 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 | Sprint | Owns |
 |--------|------|
 | 09 | Deleting the old game; `src/server/db/**`; `drizzle/**`; `src/server/api/root.ts`; `src/server/api/routers/auth.ts`; stub `routers/{run,codex}.ts`; `src/server/game/elements.ts` (+test); `src/app/**` (stubs for `/run` and `/codex`); `src/components/AppShell.tsx`; `src/components/ui/**`; `src/components/PixelSprite.tsx`; `src/components/sprites/**`; `src/components/landing/**` (minimal placeholder); `package.json` scripts |
-| 10 | `src/server/game/{cats,match,rival,goals,relics,run,unlocks,view,sim}.ts` (+tests); `sprints/**`; `PRODUCT.md` |
-| 11 | `src/server/api/routers/run.ts`; `src/app/run/**`; `src/components/run/**` |
-| 12 | `src/components/sprites/**`; `src/server/api/routers/codex.ts`; `src/app/codex/**`; `src/components/codex/**`; `src/app/HomeDashboard.tsx` |
+| 10 | `src/server/game/{cats,match,rival,goals,relics,run,unlocks,view,sim}.ts` (+tests); `src/server/api/routers/{run,codex}.ts`; `src/components/cats/**`; `sprints/**`; `PRODUCT.md` |
+| 11 | `src/app/run/**`; `src/components/run/**` |
+| 12 | `src/components/sprites/**`; `src/app/codex/**`; `src/components/codex/**`; `src/app/HomeDashboard.tsx` |
 | 13 | `src/components/landing/**`; `src/app/login/**`; `src/app/opengraph-image.tsx`; `DESIGN.md`; `README.md`; `AGENTS.md` |
 
 ## Conventions

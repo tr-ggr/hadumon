@@ -10,6 +10,7 @@ import {
   canPlay,
   canReroll,
   columnYarnCost,
+  goalStanding,
   playerScore,
   prowlPickCount,
   rivalBankValue,
@@ -71,6 +72,8 @@ export interface MatchView {
   discardCount: number;
   rival: RivalView;
   score: ScoreBreakdown;
+  /** This round's goal as it would score if the round ended now. */
+  standing: GoalResult | null;
   /** What activating each row gives right now. */
   rewards: Record<Row, number>;
   /** Yarn the next cat played into each row costs; `null` if the row is full. */
@@ -133,6 +136,7 @@ export function toMatchView(state: MatchState): MatchView {
       deckCount: state.rival.deck.length,
     },
     score: playerScore(state),
+    standing: goalStanding(state),
     rewards: byRow((row) => rowReward(state, row)),
     yarnCosts: byRow((row) =>
       state.board[row].length >= SLOTS

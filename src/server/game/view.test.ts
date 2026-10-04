@@ -64,6 +64,7 @@ describe("player view", () => {
     expect(view.rewards).toEqual({ hunt: 1, den: 2, prowl: 1 });
     expect(view.yarnCosts).toEqual({ hunt: 0, den: 0, prowl: 0 });
     expect(view.prowlPicks).toBe(1);
+    expect(view.standing).toMatchObject({ goalId: state.goals[0], player: 0 });
     expect(view.score.total).toBe(0);
     expect(view.rival.bankValue).toBe(2);
   });
