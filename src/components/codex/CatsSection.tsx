@@ -1,0 +1,123 @@
+"use client";
+
+import { useState } from "react";
+
+import { CatCard, EssencePip } from "~/components/cats/CatCard";
+import { Button, Modal } from "~/components/ui";
+import {
+  getCat,
+  RARITIES,
+  RARITY_LABELS,
+  type Rarity,
+} from "~/server/game/cats";
+import { ELEMENT_LABELS, ELEMENTS, type Element } from "~/server/game/elements";
+import { FilterChips, type FilterOption } from "./FilterChips";
+import { lockedText, type CodexEntry } from "./entries";
+
+const ELEMENT_OPTIONS: FilterOption<Element>[] = ELEMENTS.map((element) => ({
+  value: element,
+  label: ELEMENT_LABELS[element],
+  mark: <EssencePip kind={element} />,
+}));
+
+const RARITY_OPTIONS: FilterOption<Rarity>[] = RARITIES.map((rarity) => ({
+  value: rarity,
+  label: RARITY_LABELS[rarity],
+}));
+
+/** The cat grid: element and rarity filters, and the full card in a dialog. */
+export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
+  const [element, setElement] = useState<Element | null>(null);
+  const [rarity, setRarity] = useState<Rarity | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
+
+  const shown = entries.filter((entry) => {
+    const cat = getCat(entry.id);
+    return (
+      (element === null || cat.element === element) &&
+      (rarity === null || cat.rarity === rarity)
+    );
+  });
+  const filtered = element !== null || rarity !== null;
+  const clearFilters = () => {
+    setElement(null);
+    setRarity(null);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-2">
+        <FilterChips
+          label="Element"
+          options={ELEMENT_OPTIONS}
+          value={element}
+          onChange={setElement}
+        />
+        <FilterChips
+          label="Rarity"
+          options={RARITY_OPTIONS}
+          value={rarity}
+          onChange={setRarity}
+        />
+      </div>
+
+      <p aria-live="polite" className="text-ink-soft text-sm">
+        {filtered
+          ? `${shown.length} of ${entries.length} cats match.`
+          : "Tap a cat you have unlocked to read its whole card."}
+      </p>
+
+      {shown.length === 0 ? (
+        <div className="border-ink/20 flex flex-col items-start gap-3 border-2 border-dashed p-4">
+          <p className="text-ink">
+            No cat is both of those things. Several have tried.
+          </p>
+          <Button variant="secondary" size="sm" onClick={clearFilters}>
+            Clear filters
+          </Button>
+        </div>
+      ) : (
+        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {shown.map((entry) => (
+            <li key={entry.id} className="flex">
+              {entry.unlocked ? (
+                <button
+                  type="button"
+                  aria-haspopup="dialog"
+                  aria-label={`${getCat(entry.id).name}: read the whole card`}
+                  onClick={() => setOpenId(entry.id)}
+                  className="pixel-press flex w-full cursor-pointer hover:-translate-y-0.5"
+                >
+                  <CatCard catId={entry.id} className="w-full" />
+                </button>
+              ) : (
+                <CatCard
+                  catId={entry.id}
+                  lockedHint={lockedText(entry)}
+                  className="w-full"
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <Modal
+        open={openId !== null}
+        onClose={() => setOpenId(null)}
+        title={openId ? getCat(openId).name : ""}
+        footer={
+          <Button
+            variant="secondary"
+            data-autofocus
+            onClick={() => setOpenId(null)}
+          >
+            Close
+          </Button>
+        }
+      >
+        {openId ? <CatCard catId={openId} variant="full" /> : null}
+      </Modal>
+    </div>
+  );
+}
