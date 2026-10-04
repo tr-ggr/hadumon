@@ -1,39 +1,33 @@
-import { featuredSpeciesFor, getBanner, getBanners } from "~/server/game/gacha";
-import { FairPlayPanel } from "./FairPlayPanel";
-import { FinalCall } from "./FinalCall";
-import { ElementCollection, IdleLoop, ProofStrip } from "./LandingHighlights";
-import { LandingFooter } from "./LandingFooter";
-import { LandingHeader } from "./LandingHeader";
-import { SummonAltar } from "./SummonAltar";
-
-export interface LandingPageProps {
-  /** Decides which cat is on rate-up this week. Passed in so it is testable. */
-  now: Date;
-}
+import { PixelSprite } from "~/components/PixelSprite";
+import { ButtonLink } from "~/components/ui";
 
 /**
- * The public landing page at `/`. A server component: it resolves this week's
- * banners once and hands plain data to the sections, so nothing below has to
- * reach for the server.
+ * The public page at `/` for signed-out visitors. A placeholder: one section
+ * with the wordmark, the mascot, one line, and the two account actions.
  */
-export function LandingPage({ now }: LandingPageProps) {
-  const banner = getBanner("featured", now);
-  const banners = getBanners(now);
-  // The Weekly Spotlight always names a rate-up cat.
-  const featured = featuredSpeciesFor(now);
-
+export function LandingPage() {
   return (
-    <div className="landing-root bg-cream flex min-h-dvh flex-col overflow-hidden">
-      <LandingHeader />
-      <main className="flex-1">
-        <SummonAltar banner={banner} featured={featured} />
-        <ProofStrip />
-        <IdleLoop />
-        <ElementCollection />
-        <FairPlayPanel banners={banners} />
-        <FinalCall />
-      </main>
-      <LandingFooter />
-    </div>
+    <main className="bg-cream flex min-h-dvh items-center justify-center px-4 py-10">
+      <section className="flex w-full max-w-md flex-col items-center text-center">
+        <PixelSprite catId="flameclaw" size={144} label="Flameclaw" />
+        <h1 className="text-pixel text-ink mt-6 text-5xl sm:text-6xl">
+          Hadu<span className="text-coral">Mon</span>
+        </h1>
+        <p className="text-ink-soft mt-4 text-lg">
+          A roguelike engine-builder about cats. Six rivals. Twelve turns each.
+        </p>
+        <nav
+          aria-label="Account"
+          className="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center"
+        >
+          <ButtonLink href="/signup" size="lg">
+            Sign up
+          </ButtonLink>
+          <ButtonLink href="/login" variant="secondary" size="lg">
+            Log in
+          </ButtonLink>
+        </nav>
+      </section>
+    </main>
   );
 }
