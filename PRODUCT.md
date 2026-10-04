@@ -8,60 +8,58 @@ web
 
 ## Users
 
-Primary: players of idle and gacha games who arrive at HaduMon from a shared link. They already know what a banner, a pity counter, and an idle loop are; they want to know what is different here and to start pulling within a minute. They play in a desktop browser during downtime and check back in on a phone between other things.
+Primary: players of roguelike deckbuilders and engine-building board games who arrive at HaduMon from a shared link. They already know what a run, a relic, and a boss are, and many have played Wingspan or something like it. They want to be in a match within a minute and learn the rest by playing. A run takes one sitting on a desktop browser or a few short sessions on a phone.
 
 Secondary (unconfirmed, do not design for): friends and testers of the project.
 
 ## Product Purpose
 
-HaduMon is a web-based idle creature-collector RPG about feline "Fakemon". Players pull cats from a Gacha Summoning Hub, assign a squad to Idle Adventure zones that resolve server-side auto-battles over time, climb an asynchronous PvP ladder, and trade cats on a marketplace. Success for a new visitor is a created account and a first ten-pull on the Summoning Hub; success for a player is a growing collection and a squad that keeps earning while they are away.
+HaduMon is a web-based roguelike engine-builder about feline "Fakemon". A run is a gauntlet of six short matches against scripted rivals. In a match the player plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to collect its reward and fire every cat's power in it, across three rounds of five, four, and three turns. Winning a match adds a cat or a relic to the run; losing one ends the run. Success for a new visitor is a created account and a finished first match; success for a player is a run that goes one rival further than the last and a codex that fills in.
 
 ## Positioning
 
-Four claims the product can truthfully make and a neighbouring idle-gacha could not copy as a set:
+Four claims the product can truthfully make and a neighbouring roguelike could not copy as a set:
 
-1. The cast is feline Fakemon with elemental typing: 25 named species (Flameclaw, Mistpaw, Voltwhisk, Nyxaroth, ...) across Flame, Mist, Volt, Thorn, and Shade, each with hand-written flavor text.
-2. Progression is genuinely low-touch: encounters are simulated on the server one per minute, with up to 8 hours of progress banked while the player is away.
-3. There is no real-money gacha. Every gem is earned in-game. There is nothing to buy.
-4. It runs in the browser on any device. No install, no app store.
+1. The cast is feline Fakemon with elemental typing: 25 named cats (Flameclaw, Mistpaw, Voltwhisk, Nyxaroth, ...) across Flame, Mist, Volt, Thorn, and Shade, each with hand-written flavor text.
+2. The match is an engine-builder, not a combat game: three rows, one action a turn, and powers that chain from right to left. Nothing attacks anything.
+3. Matches are short: twelve turns each, with a rival that takes one visible, scripted action after every turn.
+4. It runs in the browser on any device, and nothing is for sale. No install, no currency, no shop.
 
 ## Operating Context
 
 - Played in a browser; mobile-first UI that must work at 375px wide.
-- Session cadence: a summon or squad change, then hours away; return to claim loot.
-- New accounts start with 1000 gems, 500 gold, and the three common starter cats (Flameclaw, Mistpaw, Voltwhisk).
-- Currencies: gold (upgrades, market), gems (gacha; 100 per pull, 900 per ten), per-element shards (upgrades).
+- Session cadence: one match is a few minutes; a full run is six matches. A run in progress is saved after every action and resumes where it stopped.
+- New accounts start with one clan and the 15 common and uncommon cats unlocked. There is no currency of any kind.
+- One run at a time per account.
 
 ## Capabilities and Constraints
 
-- 25 species: 10 common, 5 uncommon, 5 rare, 3 epic, 2 legendary. Rarity multipliers 1 / 1.15 / 1.35 / 1.6 / 2.
-- Five elements on an advantage wheel: flame → thorn → volt → mist → flame at +25% (reverse −25%); Shade sits outside the wheel at +10% dealt and taken against everything else.
-- Two banners: "Wandering Strays" (standard) and "Weekly Spotlight" (a rotating epic/legendary at double odds). Pity guarantees epic+ at 50 misses (25% of those legendary); every ten-pull guarantees at least one rare+.
-- Five idle zones, Whisker Meadows (T1) through Moonlit Catacombs (T5); one encounter per minute; 8h offline cap; 20 wins unlock the next zone.
-- Ladder tiers Kitten → Stray → Hunter → Prowler → Apex; 10 attacks per day; teams of up to 4.
-- Marketplace listings and direct trades between players.
+- 25 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 2 legendary. Rarity is a power tier: it weights reward offers and gates unlocks.
+- Five elements, which are also the five kinds of essence cats cost. There is no advantage wheel.
+- A match: 3 rows of 4 slots; 3 rounds of 5 / 4 / 3 turns; a five-dice feeder; a three-card tray; one goal per round contested with the rival.
+- A run: pick a clan (a starter deck built around one element), six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
+- Between runs only unlocks persist: cats, relics, and clans. No permanent power upgrades.
+- Rivals are scripted (an action deck), not other players. There is no multiplayer.
 - Stack: Next.js 15 App Router, TypeScript strict, tRPC v11, Drizzle + Postgres, Tailwind v4. Game rules live as pure functions in `src/server/game/*` and are importable client-side.
 - Undecided: no guest/anonymous play exists; not planned.
 
 ## Brand Commitments
 
 - Name: HaduMon. The wordmark is bold rounded type with Hadu in near-black and Mon in coral.
-- The visual world is the Gachapon Counter system: warm cream canvas, sky-blue structural surfaces, cobalt primary actions, acid-lime rewards, coral notifications, near-black text, rounded toy-like cards, and controlled soft shadows.
-- Every species resolves to transparent soft 3D collectible art through `src/components/CreatureArt.tsx` and `public/creatures/`. The tuxedo-cat identity stays consistent across forms.
-- Voice: dry and wry, in the register of the species flavor text ("Moss grows along its shoulders. It has not moved since Tuesday."). No hype.
+- The cats are pixel art: 16x16 chibi, front-facing, near-black outline, three fur tones per element, rarity-tinted eyes. Every cat renders through `src/components/PixelSprite.tsx` as inline SVG.
+- The colour palette carries over (warm cream canvas, sky-blue surfaces, cobalt actions, acid-lime rewards, coral notifications, near-black text). `DESIGN.md` is the source for everything visual.
+- Voice: dry and wry, in the register of the flavor text ("Moss grows along its shoulders. It has not moved since Tuesday."). No hype.
 
 ## Evidence on Hand
 
-- Seed data and game rules in `src/server/game/*` (species, elements, banners, rates, zones, ladder tiers): the only source for any number shown to visitors.
-- Real app screenshots from the seeded `demo` account in `public/screenshots/` (desktop dashboard; mobile login, home, summon, adventure, battle, market).
-- Approved Gachapon Counter desktop/mobile comps in `.impeccable/mocks/approved/` and the creature-art provenance brief in `public/creatures/GENERATION_PROMPTS.md`.
-- `README.md` feature descriptions.
+- Game rules and content in `src/server/game/*` (cats, powers, rivals, goals, relics, unlocks): the only source for any number shown to visitors.
+- The approved pixel treatment (ink outline) and five sample sprites.
 - Absent, and must not be fabricated: testimonials, player counts, press mentions, ratings, awards, download or revenue figures.
 
 ## Product Principles
 
-1. Prove with the game itself: real components, real rates, real cats; never a mock-up of something the product does not do.
-2. Every number on a public surface is derivable from the game code or the seed.
-3. Get a genre-literate visitor to a real pull as fast as possible; explain after they have played.
-4. Idle means idle: never imply the game needs constant attention.
+1. Prove with the game itself: real components, the real engine, real cats; never a mock-up of something the product does not do.
+2. Every number on a public surface is derivable from the game code.
+3. Get a genre-literate visitor into a real match as fast as possible; explain after they have played.
+4. Every rule the player needs is on the card or the board. No rule lives only in a help page.
 5. Free means free: state plainly that nothing is for sale.
