@@ -24,6 +24,11 @@ export interface Mods {
   extraTurns: number;
   /** Yarn the rival holds when a match starts, a point each. */
   rivalStartYarn: number;
+  /**
+   * Treats gained whenever the feeder is rolled again. Only the two-seat
+   * game reads it; against the scripted rival it does nothing.
+   */
+  refillTreat: number;
 }
 
 export const NO_MODS: Mods = {
@@ -36,6 +41,7 @@ export const NO_MODS: Mods = {
   goalBonus: 0,
   extraTurns: 0,
   rivalStartYarn: 0,
+  refillTreat: 0,
 };
 
 export type ScoreRule =
@@ -114,7 +120,8 @@ export const RELICS: Record<string, Relic> = Object.fromEntries(
         id: "loud-bell",
         name: "Loud Bell",
         text: "Each cat the rival banks is worth 1 less.",
-        mods: { rivalBankDelta: -1 },
+        // The second is its effect at a table with two seats.
+        mods: { rivalBankDelta: -1, refillTreat: 1 },
       },
       {
         id: "hoarders-basket",

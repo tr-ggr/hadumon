@@ -120,6 +120,13 @@ export interface RivalState {
 
 export type MatchPhase = "setup" | "turn" | "pending" | "over";
 
+export const SIDES = ["player", "rival"] as const;
+export type SideId = (typeof SIDES)[number];
+
+export function otherSide(who: SideId): SideId {
+  return who === "player" ? "rival" : "player";
+}
+
 /** Everything one seat at the table owns. */
 export interface Side {
   relics: string[];
@@ -237,6 +244,8 @@ interface Ctx {
   side: Side;
   rng: Rng;
   emit: (event: TurnEvent) => void;
+  /** Called after the feeder has been rolled again. */
+  onRoll?: () => void;
 }
 
 export interface MatchConfig {
@@ -632,19 +641,24 @@ export function rivalBankValue(state: MatchState): number {
 
 /**
  * What a board scores. It takes the three things a score is made of and not
- * the whole state, so the client can score a board it has rebuilt.
+ * the whole state, so the client can score a board it has rebuilt. `who` says
+ * whose share of the goal points to count.
  */
 export function scoreBoard(
   board: Board,
   goalResults: readonly GoalResult[],
   relicIds: readonly string[],
+  who: SideId = "player",
 ): ScoreBreakdown {
   const placed = placedCats(board);
   const cats = placed.reduce((sum, p) => sum + getCat(p.catId).points, 0);
   const yarn = placed.reduce((sum, p) => sum + p.yarn, 0);
   const cached = placed.reduce((sum, p) => sum + p.cached, 0);
   const tucked = placed.reduce((sum, p) => sum + p.tucked, 0);
-  const goals = goalResults.reduce((sum, g) => sum + g.playerPoints, 0);
+  const goals = goalResults.reduce(
+    (sum, g) => sum + (who === "player" ? g.playerPoints : g.rivalPoints),
+    0,
+  );
   const relics = relicIds.reduce((sum, id) => sum + relicScore(id, board), 0);
   return {
     cats,
@@ -724,6 +738,7 @@ function refillTray(ctx: Ctx): void {
 function rollFeeder(ctx: Ctx): void {
   ctx.t.feeder = rollDice(ctx.rng);
   ctx.emit({ type: "feeder", faces: [...ctx.t.feeder] });
+  ctx.onRoll?.();
 }
 
 function spendYarn(board: Board, n: number): void {
@@ -1380,4 +1395,381 @@ export function seatActions(
 /** The actions available now in a match against the scripted rival. */
 export function legalActions(state: MatchState): Action[] {
   return seatActions(state, state);
+}
+
+/* ------------------------------------------------------ the two seats */
+
+/*
+ * The same game with a second seat in place of the scripted rival. Both
+ * sides own a board, a hand, a deck, a tray and food, share the feeder and
+ * the round goals, and take the same actions under the same rules. The
+ * reducer applies one action for whoever is to act and knows nothing of what
+ * decides it: a person, a bot or a test.
+ *
+ *   setup    the rival keeps its opening hand, then the player keeps theirs
+ *   turn     the seats alternate, the round's leader first; each takes 5, 4
+ *            and 3 turns in the three rounds, and the lead changes hands
+ *            every round, the player leading the first
+ *   pending  a power of the acting seat is waiting on its choice
+ *   over     the result is final
+ *
+ * After a seat's turn the other seat's "between turns" powers react to what
+ * it did. After the last turn of a round, end-of-round powers fire on both
+ * boards and the goal is scored on both sides' real counts.
+ */
+
+/**
+ * What a seat did, as far as the other seat may see: the cats it drew from
+ * its deck and the cat it tucked from its hand stay face down.
+ */
+export type Move =
+  | { type: "play"; catId: string; row: Row; col: number }
+  | { type: "hunt"; faces: Essence[]; discarded: string | null }
+  | { type: "den"; targets: SlotRef[]; spent: Essence | null }
+  | { type: "prowl"; tray: string[]; deck: number; payer: SlotRef | null }
+  | { type: "reroll" }
+  | { type: "resolve"; kind: Pending["kind"]; slot: SlotRef; took: boolean };
+
+/** A move that is a seat's whole turn. */
+export type TurnMove = Exclude<Move, { type: "reroll" | "resolve" }>;
+
+export type DuelEvent =
+  | (Exclude<TurnEvent, { type: "feeder" }> & { side: SideId })
+  | { type: "move"; side: SideId; move: Move }
+  | { type: "feeder"; faces: Essence[] }
+  /** A relic paying out Treats because the feeder was rolled again. */
+  | { type: "refill"; side: SideId; treats: number }
+  | ({ type: "goal"; round: number } & GoalResult)
+  | { type: "over"; won: boolean; player: number; rival: number };
+
+export interface DuelResult {
+  player: ScoreBreakdown;
+  rival: ScoreBreakdown;
+  won: boolean;
+}
+
+export interface DuelState extends Table {
+  v: 2;
+  seed: string;
+  step: number;
+  rivalId: string;
+  /** How well the rival plays, 0 the least. The reducer never reads it. */
+  level: number;
+  sides: Record<SideId, Side>;
+  /** Whose action is awaited. */
+  active: SideId;
+  /** Who takes the first turn of the current round. */
+  lead: SideId;
+  /** The last whole turn each seat took. */
+  last: Record<SideId, TurnMove | null>;
+  result: DuelResult | null;
+}
+
+export interface SeatConfig {
+  /** Cat ids; shuffled here. Needs at least 8 cards. */
+  deck: readonly string[];
+  relics: readonly string[];
+}
+
+export interface DuelConfig {
+  seed: string;
+  rivalId: string;
+  level: number;
+  player: SeatConfig;
+  rival: SeatConfig;
+}
+
+export interface DuelActionResult {
+  state: DuelState;
+  events: DuelEvent[];
+}
+
+function dealSeat(config: SeatConfig, rng: Rng): Side {
+  const deck = rng.shuffle(config.deck);
+  const setup = deck.splice(0, SETUP_CATS);
+  const tray = deck.splice(0, TRAY_SIZE);
+  return {
+    relics: [...config.relics],
+    mods: combineMods(config.relics),
+    turnsLeft: 0,
+    board: { hunt: [], den: [], prowl: [] },
+    hand: [],
+    deck,
+    discard: [],
+    tray,
+    setup,
+    essence: emptyPool(),
+  };
+}
+
+export function createDuel(config: DuelConfig): DuelState {
+  const rng = createRng(`${config.seed}:0`);
+  return {
+    v: 2,
+    seed: config.seed,
+    step: 0,
+    rivalId: config.rivalId,
+    level: config.level,
+    phase: "setup",
+    round: 0,
+    feeder: rollDice(rng),
+    goals: rng.shuffle(GOAL_IDS).slice(0, ROUND_TURNS.length),
+    goalResults: [],
+    // Each seat is dealt from its own stream, so one deck never moves the other.
+    sides: {
+      player: dealSeat(config.player, createRng(`${config.seed}:deal:player`)),
+      rival: dealSeat(config.rival, createRng(`${config.seed}:deal:rival`)),
+    },
+    // The rival keeps first, so it cannot answer what the player keeps.
+    active: "rival",
+    lead: "player",
+    last: { player: null, rival: null },
+    queue: [],
+    pending: null,
+    result: null,
+  };
+}
+
+/** The seat whose action is awaited. */
+export function activeSide(state: DuelState): Side {
+  return state.sides[state.active];
+}
+
+export function duelScore(state: DuelState, who: SideId): ScoreBreakdown {
+  const side = state.sides[who];
+  return scoreBoard(side.board, state.goalResults, side.relics, who);
+}
+
+/** A seat's count towards a goal: nothing, or what it has plus its relics'. */
+function goalCount(side: Side, goalId: string): number {
+  const base = getGoal(goalId).count(side);
+  return base > 0 ? base + side.mods.goalBonus : 0;
+}
+
+/**
+ * The current round's goal as it would score right now, each side's real
+ * count against the other's. A side with nothing towards it scores nothing.
+ */
+export function duelStanding(state: DuelState): GoalResult | null {
+  const goalId = state.goals[state.round];
+  if (!goalId || state.phase === "over") return null;
+  const player = goalCount(state.sides.player, goalId);
+  const rival = goalCount(state.sides.rival, goalId);
+  const win = GOAL_WIN_POINTS[state.round] ?? 0;
+  const lose = GOAL_LOSE_POINTS[state.round] ?? 0;
+  const split = Math.floor((win + lose) / 2);
+  const points = (mine: number, theirs: number) =>
+    mine === 0 ? 0 : mine > theirs ? win : mine < theirs ? lose : split;
+  return {
+    goalId,
+    player,
+    rival,
+    playerPoints: points(player, rival),
+    rivalPoints: points(rival, player),
+  };
+}
+
+/** The rows a "between turns" power answers to, by what the old cards said. */
+const REACTS_TO: Partial<Record<RivalAction | "any", TurnMove["type"]>> = {
+  raid: "hunt",
+  bank: "den",
+  burn: "prowl",
+};
+
+/** True if a "between turns" power fires when the other seat makes `move`. */
+export function reactsTo(on: RivalAction | "any", move: TurnMove["type"]) {
+  return on === "any" || REACTS_TO[on] === move;
+}
+
+/** The public face of an action, read before it is applied. */
+function moveOf(t: Table, side: Side, action: Action): Move | null {
+  switch (action.type) {
+    case "keep":
+      return null;
+    case "play":
+      return {
+        type: "play",
+        catId: side.hand[action.hand] ?? "",
+        row: action.row,
+        col: side.board[action.row]?.length ?? 0,
+      };
+    case "hunt":
+      return {
+        type: "hunt",
+        faces: action.dice.flatMap((die) => t.feeder[die] ?? []),
+        discarded:
+          action.trade === undefined ? null : (side.hand[action.trade] ?? null),
+      };
+    case "den":
+      return {
+        type: "den",
+        targets: action.targets.map(({ row, col }) => ({ row, col })),
+        spent: action.trade ?? null,
+      };
+    case "prowl":
+      return {
+        type: "prowl",
+        tray: action.picks.flatMap((pick) =>
+          pick === "deck" ? [] : (side.tray[pick] ?? []),
+        ),
+        deck: action.picks.filter((pick) => pick === "deck").length,
+        payer: action.trade
+          ? { row: action.trade.row, col: action.trade.col }
+          : null,
+      };
+    case "reroll":
+      return { type: "reroll" };
+    case "resolve":
+      return t.pending
+        ? {
+            type: "resolve",
+            kind: t.pending.kind,
+            slot: { ...t.pending.slot },
+            took: action.choice !== null,
+          }
+        : null;
+  }
+}
+
+/** A context for one seat of a duel; its events carry the seat's name. */
+function seatCtx(
+  s: DuelState,
+  who: SideId,
+  rng: Rng,
+  events: DuelEvent[] | null,
+): Ctx {
+  return {
+    t: s,
+    side: s.sides[who],
+    rng,
+    emit: (event) => {
+      if (!events) return;
+      events.push(event.type === "feeder" ? event : { ...event, side: who });
+    },
+    // The seat that emptied the feeder is paid first.
+    onRoll: () => {
+      for (const id of [who, otherSide(who)]) {
+        const treats = s.sides[id].mods.refillTreat;
+        if (treats <= 0) continue;
+        s.sides[id].essence.wild += treats;
+        events?.push({ type: "refill", side: id, treats });
+      }
+    },
+  };
+}
+
+function startRound(s: DuelState): void {
+  for (const who of SIDES) {
+    const side = s.sides[who];
+    side.turnsLeft =
+      (ROUND_TURNS[s.round] ?? 0) + (s.round === 0 ? side.mods.extraTurns : 0);
+  }
+  s.phase = "turn";
+  s.active = s.sides[s.lead].turnsLeft > 0 ? s.lead : otherSide(s.lead);
+}
+
+function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
+  // End-of-round powers, the round's leader first.
+  for (const who of [s.lead, otherSide(s.lead)]) {
+    fireTimed(
+      seatCtx(s, who, rng, events),
+      (cat) => cat.power?.timing === "roundEnd",
+    );
+  }
+  const result = duelStanding(s);
+  if (result) {
+    s.goalResults.push(result);
+    events?.push({ type: "goal", round: s.round, ...result });
+  }
+
+  s.round += 1;
+  if (ROUND_TURNS[s.round] !== undefined) {
+    s.lead = otherSide(s.lead);
+    startRound(s);
+    return;
+  }
+  const player = duelScore(s, "player");
+  const rival = duelScore(s, "rival");
+  s.phase = "over";
+  s.result = { player, rival, won: player.total > rival.total };
+  events?.push({
+    type: "over",
+    won: s.result.won,
+    player: player.total,
+    rival: rival.total,
+  });
+}
+
+/**
+ * Applies one action for the acting seat, in place. `applyDuel` is the safe
+ * way in; this is for callers that own the state they pass, such as a bot
+ * playing a position out. An illegal action throws and leaves the state
+ * half changed. Pass `null` for `events` to skip collecting them.
+ */
+export function stepDuel(
+  s: DuelState,
+  action: Action,
+  events: DuelEvent[] | null = null,
+): void {
+  if (s.phase === "over") fail("The match is over.");
+  s.step += 1;
+  const who = s.active;
+  const rng = createRng(`${s.seed}:${s.step}`);
+  const ctx = seatCtx(s, who, rng, events);
+
+  if (s.phase === "setup") {
+    if (action.type !== "keep") fail("Choose what to keep first.");
+    keep(ctx, action);
+    const other = otherSide(who);
+    if (s.sides[other].setup.length > 0) s.active = other;
+    else startRound(s);
+    return;
+  }
+
+  const move = moveOf(s, ctx.side, action);
+  if (s.phase === "pending") {
+    if (action.type !== "resolve") fail("Answer the pending choice first.");
+    if (move) events?.push({ type: "move", side: who, move });
+    resolve(ctx, action.choice);
+    drain(ctx);
+  } else {
+    if (action.type === "keep" || action.type === "resolve")
+      fail("That action is not available right now.");
+    if (move) events?.push({ type: "move", side: who, move });
+    if (!takeTurn(ctx, action)) return;
+    if (move && move.type !== "reroll" && move.type !== "resolve") {
+      s.last[who] = move;
+    }
+  }
+  if (s.pending) {
+    s.phase = "pending";
+    return;
+  }
+  s.phase = "turn";
+  endTurn(ctx);
+
+  // The other seat's cats that were watching for this.
+  const other = otherSide(who);
+  const done = s.last[who]?.type;
+  if (done) {
+    fireTimed(
+      seatCtx(s, other, rng, events),
+      (cat) => cat.power?.timing === "between" && reactsTo(cat.power.on, done),
+    );
+  }
+
+  if (s.sides[other].turnsLeft > 0) s.active = other;
+  else if (s.sides[who].turnsLeft <= 0) endDuelRound(s, rng, events);
+}
+
+export function applyDuel(state: DuelState, action: Action): DuelActionResult {
+  const s = structuredClone(state);
+  const events: DuelEvent[] = [];
+  stepDuel(s, action, events);
+  return { state: s, events };
+}
+
+/** The actions the acting seat has now. */
+export function duelActions(state: DuelState): Action[] {
+  return seatActions(state, activeSide(state));
 }

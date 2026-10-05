@@ -1,0 +1,101 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  applyDuel,
+  createDuel,
+  duelActions,
+  otherSide,
+  type DuelEvent,
+  type DuelState,
+} from "./match";
+import { createRng } from "./rng";
+import { starterDeck } from "./run";
+
+/** The same table seen from the other chair. */
+function mirror(state: DuelState): DuelState {
+  return {
+    ...state,
+    sides: { player: state.sides.rival, rival: state.sides.player },
+    active: otherSide(state.active),
+    lead: otherSide(state.lead),
+    last: { player: state.last.rival, rival: state.last.player },
+    goalResults: state.goalResults.map((goal) => ({
+      goalId: goal.goalId,
+      player: goal.rival,
+      rival: goal.player,
+      playerPoints: goal.rivalPoints,
+      rivalPoints: goal.playerPoints,
+    })),
+    result: state.result && {
+      player: state.result.rival,
+      rival: state.result.player,
+      won: state.result.rival.total > state.result.player.total,
+    },
+  };
+}
+
+function mirrorEvent(event: DuelEvent): DuelEvent {
+  switch (event.type) {
+    case "feeder":
+      return event;
+    case "goal":
+      return {
+        ...event,
+        player: event.rival,
+        rival: event.player,
+        playerPoints: event.rivalPoints,
+        rivalPoints: event.playerPoints,
+      };
+    case "over":
+      return {
+        type: "over",
+        won: event.rival > event.player,
+        player: event.rival,
+        rival: event.player,
+      };
+    default:
+      return { ...event, side: otherSide(event.side) };
+  }
+}
+
+const RELICS = ["loud-bell", "early-riser", "lucky-collar", "ball-of-twine"];
+
+function deal(seed: string): DuelState {
+  return createDuel({
+    seed,
+    rivalId: "alley-tom",
+    level: 0,
+    player: { deck: starterDeck("flame"), relics: RELICS },
+    rival: { deck: [...starterDeck("shade"), "hadu", "nyxaroth"], relics: [] },
+  });
+}
+
+describe("the two seats", () => {
+  it("are ruled alike: swapping them mirrors every state and event", () => {
+    let steps = 0;
+    for (let game = 0; game < 30; game++) {
+      const rng = createRng(`mirror-${game}`);
+      let state = deal(`symmetry-${game}`);
+      for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
+        const action = rng.pick(duelActions(state));
+        const straight = applyDuel(state, action);
+        const swapped = applyDuel(mirror(state), action);
+        expect(swapped.state).toEqual(mirror(straight.state));
+        expect(swapped.events).toEqual(straight.events.map(mirrorEvent));
+        state = straight.state;
+        steps += 1;
+      }
+      expect(state.phase).toBe("over");
+    }
+    expect(steps).toBeGreaterThan(30 * 24);
+  });
+
+  it("list the same actions from either chair", () => {
+    const rng = createRng("mirror-actions");
+    let state = deal("symmetry-actions");
+    for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
+      expect(duelActions(mirror(state))).toEqual(duelActions(state));
+      state = applyDuel(state, rng.pick(duelActions(state))).state;
+    }
+  });
+});
