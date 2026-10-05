@@ -65,10 +65,7 @@ export default async function RootLayout({
       {/* The whole app is one tabletop: every page is laid on the cloth, and a
           dialog drawn on the body is cardboard like the rest. The skin's
           colours are set here, on the body, so they reach both. */}
-      <body
-        className={`tabletop ${pixelFont.variable}`}
-        style={skinVars(look) as React.CSSProperties}
-      >
+      <body className={`tabletop ${pixelFont.variable}`} style={skinVars(look)}>
         <SoundRig />
         <TRPCReactProvider>
           <ToastProvider>

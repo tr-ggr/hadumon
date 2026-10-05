@@ -204,7 +204,10 @@ function Lid({ pathname }: { pathname: string }) {
   return (
     <header className="lid bg-ink text-cream sticky top-0 z-30">
       <div className="mx-auto flex w-full max-w-[1400px] items-center gap-3 px-3 pt-1 pb-2 sm:px-5">
-        <Link href="/" className="text-pixel shrink-0 text-xl sm:text-2xl md:max-lg:hidden">
+        <Link
+          href="/"
+          className="text-pixel shrink-0 text-xl sm:text-2xl md:max-lg:hidden"
+        >
           Hadu<span className="text-coral">Mon</span>
         </Link>
         <nav
