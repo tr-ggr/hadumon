@@ -1,7 +1,7 @@
 /**
- * Builds `public/favicon.ico`: Hadu's face on a sky tile, at 16, 32 and 48
- * pixels. The face is read from his sprite, so the icon follows any change to
- * it. Run with `pnpm favicon`.
+ * Builds `public/favicon.ico`: Hadu's face on a clear ground, at 16, 32 and
+ * 48 pixels. The face is read from his sprite, so the icon follows any change
+ * to it. Run with `pnpm favicon`.
  */
 import { writeFileSync } from "node:fs";
 
@@ -9,9 +9,6 @@ import { SPRITE_SIZE, catSprite } from "~/components/sprites/cats";
 import { spriteColors } from "~/components/sprites/palettes";
 
 const OUT_FILE = "public/favicon.ico";
-
-/** The table's `--color-sky-surface`. */
-const SKY_COLOR = "#a9ddf5";
 
 /** Rows of Hadu's sprite that hold his head, ears to chin. */
 const HEAD_TOP = 1;
@@ -35,15 +32,10 @@ function headRows(): string[] {
   return rows.map((row, y) => (y === chin ? row.replace(/[^.]/g, "o") : row));
 }
 
-/** The icon at sprite size: a sky tile with its corners cut, the head on it. */
+/** The icon at sprite size: the head alone, centred on a clear ground. */
 function paint(): Rgba[][] {
-  const last = SPRITE_SIZE - 1;
-  const sky = rgba(SKY_COLOR);
-  const grid = Array.from({ length: SPRITE_SIZE }, (_, y) =>
-    Array.from({ length: SPRITE_SIZE }, (_, x): Rgba => {
-      const corner = (x === 0 || x === last) && (y === 0 || y === last);
-      return corner ? TRANSPARENT : sky;
-    }),
+  const grid = Array.from({ length: SPRITE_SIZE }, () =>
+    Array<Rgba>(SPRITE_SIZE).fill(TRANSPARENT),
   );
 
   const colors = spriteColors("shade", "legendary", "hadu");
