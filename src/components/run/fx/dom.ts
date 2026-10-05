@@ -52,6 +52,37 @@ export function fxLayer(root: HTMLElement | null): HTMLElement | null {
   return root?.querySelector<HTMLElement>("[data-fx-layer]") ?? root;
 }
 
+/**
+ * How far the table `el` is on has been magnified (`--fit`): 1 on the match
+ * and on any window too small to fit. Measured, not read from the style, so
+ * it is right in a browser that reports a zoomed box either way; snapped to
+ * a quarter, since the box it is measured from is in whole pixels.
+ */
+export function zoomOf(el: Element | null): number {
+  const table = el?.closest<HTMLElement>(".tabletop");
+  if (!table || table.offsetWidth === 0) return 1;
+  const ratio = table.getBoundingClientRect().width / table.offsetWidth;
+  return Math.max(1, Math.round(ratio * 4) / 4);
+}
+
+/**
+ * Where `el` is on the screen, in the lengths of its own table. An effect
+ * is a fixed node inside the table, so on a magnified one its `left` and
+ * `top` are magnified again; this is the box to place it by.
+ */
+export function placed(el: Element): DOMRect {
+  const rect = el.getBoundingClientRect();
+  const zoom = zoomOf(el);
+  return zoom === 1
+    ? rect
+    : new DOMRect(
+        rect.x / zoom,
+        rect.y / zoom,
+        rect.width / zoom,
+        rect.height / zoom,
+      );
+}
+
 /** The pieces a shake moves: the mat and the supply, never the table. */
 export function shakeable(root: HTMLElement | null): HTMLElement[] {
   return [...(root?.querySelectorAll<HTMLElement>("[data-shake]") ?? [])];

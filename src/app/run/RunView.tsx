@@ -101,7 +101,7 @@ export function RunView() {
 
   if (run.final && !landing) {
     return (
-      <TableSurface>
+      <TableSurface fit>
         <RunSummary
           key={run.final.id}
           view={run.final.view}
@@ -114,7 +114,7 @@ export function RunView() {
 
   if (run.loading) {
     return (
-      <TableSurface>
+      <TableSurface fit>
         <TableArea>
           <div
             className="tray-well space-y-2 p-4"
@@ -133,7 +133,7 @@ export function RunView() {
 
   if (run.error) {
     return (
-      <TableSurface>
+      <TableSurface fit>
         <TableArea>
           <Sheet title="Play">
             <p role="alert">The run could not be loaded: {run.error.message}</p>
@@ -148,7 +148,7 @@ export function RunView() {
 
   if (!view) {
     return (
-      <TableSurface>
+      <TableSurface fit>
         <ClanPick busy={run.busy} onStart={run.start} />
       </TableSurface>
     );
@@ -162,11 +162,14 @@ export function RunView() {
     onAbandon: () => setAbandoning(true),
   };
   const strip = <RunStrip {...stripProps} />;
+  // The match lays itself out to the window; every other screen is a column.
+  const onBoard =
+    landing ||
+    (match !== null && match.phase !== "setup" && view.phase === "match");
 
   return (
-    <TableSurface>
-      {landing ||
-      (match && match.phase !== "setup" && view.phase === "match") ? (
+    <TableSurface fit={!onBoard}>
+      {onBoard ? (
         match ? (
           <MatchBoard
             key={matchKey}
@@ -253,7 +256,7 @@ export function RunView() {
 /** A plain sheet on the cloth, for the states that have no table to show. */
 function Sheet({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="piece piece-card border-ink text-ink space-y-3 border-2 bg-white p-4">
+    <section className="piece piece-card border-ink text-ink fitted:my-auto space-y-3 border-2 bg-white p-4">
       <h1 className="text-print text-3xl">{title}</h1>
       {children}
     </section>

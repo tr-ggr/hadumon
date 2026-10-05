@@ -5,7 +5,7 @@
  * animation is followed by the registry so a skip can end it.
  */
 
-import { anchored, fxLayer, shakeable } from "./dom";
+import { anchored, fxLayer, placed, shakeable } from "./dom";
 import type { Intent, Tone } from "./plan";
 import { track } from "./registry";
 import {
@@ -245,24 +245,12 @@ export function runFx(
         break;
       case "float":
         if (layer) {
-          float(
-            layer,
-            el.getBoundingClientRect(),
-            intent.text,
-            intent.tone,
-            intent.delay,
-          );
+          float(layer, placed(el), intent.text, intent.tone, intent.delay);
         }
         break;
       case "sparks":
         if (layer) {
-          sparks(
-            layer,
-            el.getBoundingClientRect(),
-            intent.count,
-            intent.tone,
-            intent.delay,
-          );
+          sparks(layer, placed(el), intent.count, intent.tone, intent.delay);
         }
         break;
     }

@@ -10,10 +10,9 @@ import type { MatchView } from "~/server/game/view";
 
 import { InfoButton } from "./CatPick";
 import { plural } from "./describe";
-import { hasFinePointer, prefersCalm } from "./fx/dom";
+import { prefersCalm } from "./fx/dom";
 import { fanLayout } from "./hand";
 import { KeyHint } from "./pieces";
-import { playSound } from "./sfx/engine";
 import { PLAY_BLOCK_LABELS, playBlock, type Mode } from "./turn";
 
 /** How far a raised card leans toward the pointer, in degrees. */
@@ -38,11 +37,6 @@ function lean(event: PointerEvent<HTMLLIElement>): void {
 function settle(event: PointerEvent<HTMLLIElement>): void {
   event.currentTarget.style.removeProperty("--lean-x");
   event.currentTarget.style.removeProperty("--lean-y");
-}
-
-/** A card turning up under the pointer as it sweeps the fan. */
-function turnUp(event: PointerEvent<HTMLLIElement>): void {
-  if (event.pointerType === "mouse" && hasFinePointer()) playSound("hover");
 }
 
 export interface HandProps {
@@ -109,7 +103,6 @@ export function Hand({
             key={`${index}-${catId}`}
             data-hand={index}
             className={selected ? "is-raised" : undefined}
-            onPointerEnter={busy ? undefined : turnUp}
             onPointerMove={lean}
             onPointerLeave={settle}
             style={

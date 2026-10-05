@@ -85,6 +85,13 @@ describe("recipes", () => {
     expect(voiceSeconds(recipe("tick"))).toBeLessThan(0.05);
   });
 
+  it("knocks on the cloth shorter and quieter than a press on a button", () => {
+    const loudest = (name: "tap" | "click") =>
+      Math.max(...recipe(name).map((note) => note.gain));
+    expect(voiceSeconds(recipe("tap"))).toBeLessThan(0.08);
+    expect(loudest("tap")).toBeLessThan(loudest("click"));
+  });
+
   it("lands a played card's thud when its flight ends", () => {
     const thud = recipe("play").find((note) => note.wave === "sine");
     expect(thud?.at).toBeCloseTo(0.3, 2);

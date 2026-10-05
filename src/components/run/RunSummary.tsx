@@ -110,11 +110,15 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
         {step === "summary" ? null : <h1 className="sr-only">{title}</h1>}
 
         {step === "result" && lastMatch ? (
-          <MatchResult match={lastMatch} headingRef={heading} />
+          <MatchResult
+            match={lastMatch}
+            headingRef={heading}
+            className="fitted:my-auto"
+          />
         ) : null}
 
         {step === "unlocks" ? (
-          <section className="space-y-3 pt-2">
+          <section className="fitted:my-auto space-y-3 pt-2">
             <div className="max-w-[65ch]">
               <h2
                 ref={heading}
@@ -141,7 +145,7 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
 
         {step === "summary" ? (
           <>
-            <header className="space-y-3 pt-2">
+            <header className="fitted:mt-auto space-y-3 pt-2">
               <h1
                 ref={heading}
                 tabIndex={-1}
@@ -232,7 +236,7 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
               <p className="text-ink text-sm">Nothing new this time.</p>
             ) : null}
 
-            <div className="pt-1 pb-2">
+            <div className="fitted:mb-auto pt-1 pb-2">
               <TableLink href="/codex">Open the codex</TableLink>
             </div>
           </>

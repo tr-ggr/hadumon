@@ -100,7 +100,7 @@ export function SetupKeep({
         </h1>
 
         {step === "rival" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title="Meet the rival" headingRef={heading}>
               Three rounds of {listWords(turns.map(String))} turns. The rival
               flips one card after each of your turns. Score more than the rival
@@ -124,7 +124,7 @@ export function SetupKeep({
         ) : null}
 
         {step === "table" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title="On the table" headingRef={heading}>
               What the match starts with: the dice in the feeder, your deck, the
               three cats in the tray, and your relics.
@@ -170,7 +170,7 @@ export function SetupKeep({
         ) : null}
 
         {step === "keep" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title={`Keep ${SETUP_KEEP}`} headingRef={heading}>
               You were dealt five cats and one of each cat food. Keep any{" "}
               {SETUP_KEEP} in total. Cats cost food to play, so a hand of five
@@ -229,7 +229,7 @@ export function SetupKeep({
         ) : null}
 
         {step === "recap" ? (
-          <section className="space-y-4">
+          <section className="fitted:my-auto space-y-4">
             <StepHeading title="Your opening hand" headingRef={heading}>
               This is what you take into match {matchNumber}. Nothing is settled
               until you start.

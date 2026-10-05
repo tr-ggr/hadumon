@@ -4,6 +4,7 @@ import { pixelFont } from "~/styles/fonts";
 
 import { Label, TableButton } from "./pieces";
 import { ClickSound } from "./sfx/ClickSound";
+import { HoverSound } from "./sfx/HoverSound";
 import { TableNav } from "./TableNav";
 
 /**
@@ -12,24 +13,32 @@ import { TableNav } from "./TableNav";
  * face is available for print. The ways off the table sit in its top right
  * corner on every screen but the climb, which has the whole screen to
  * itself; a slow light drifts on the cloth under it all, and every press on
- * it is heard.
+ * it is heard, as is a mouse coming onto anything that can be pressed.
+ *
+ * A screen laid in one column is `fit`: on a window with room to spare it is
+ * magnified whole, to the largest step of the `--fit` ladder the window
+ * holds. The match and the climb size themselves and are never fitted.
  */
 export function TableSurface({
   children,
   nav = true,
+  fit = false,
   className = "",
 }: {
   children: ReactNode;
   /** False leaves the corner out, for a screen that fills the window. */
   nav?: boolean;
+  /** Magnifies a column screen to fill a large window. */
+  fit?: boolean;
   className?: string;
 }) {
   return (
     <div
-      className={`tabletop ${pixelFont.variable} relative isolate flex min-w-0 flex-1 flex-col ${className}`}
+      className={`tabletop ${fit ? "table-fit" : ""} ${pixelFont.variable} relative isolate flex min-w-0 flex-1 flex-col ${className}`}
     >
       <span aria-hidden className="cloth-light" />
       <ClickSound />
+      <HoverSound />
       {nav ? (
         <TableNav className="absolute top-2 right-2 z-30 sm:right-3" />
       ) : null}
@@ -38,7 +47,11 @@ export function TableSurface({
   );
 }
 
-/** The part of the cloth a screen lays its pieces on, clear of the corner. */
+/**
+ * The part of the cloth a screen lays its pieces on, clear of the corner.
+ * On a fitted window it is a column, so a short step can sit in the middle
+ * of it with auto margins.
+ */
 export function TableArea({
   children,
   className = "",
@@ -48,7 +61,7 @@ export function TableArea({
 }) {
   return (
     <div
-      className={`mx-auto w-full max-w-[1120px] flex-1 px-3 pt-14 pb-8 sm:px-5 ${className}`}
+      className={`fitted:flex fitted:flex-col mx-auto w-full max-w-[1120px] flex-1 px-3 pt-14 pb-8 sm:px-5 ${className}`}
     >
       {children}
     </div>

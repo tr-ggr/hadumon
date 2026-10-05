@@ -138,6 +138,13 @@
     @slot;
   }
 }
+/* A window with room to show a column screen of a run larger than life: the
+   first step of the `--fit` ladder. Centring a short step waits for it too. */
+@custom-variant fitted {
+  @media (min-width: 1680px) and (min-height: 930px) {
+    @slot;
+  }
+}
 /* The player's edge of the table, docked under it: white card, ink line. */
 @utility rail {
   --cast: color-mix(in srgb, var(--color-chipboard) 34%, var(--color-white));
@@ -214,6 +221,45 @@
   background-color: var(--color-cream);
   background-image: var(--weave);
   background-size: 16px 8px;
+}
+/*
+ * The fit. A screen of a run that is one column (the opening hand, the
+ * reward, the clan pick, the summary) is 1120px wide however big the window
+ * is, so on a large one it is magnified whole: cards, print, borders and
+ * shadows together, as one piece. `--fit` is the largest step the window has
+ * room for, where a step needs the column's 1120px across and 620px of
+ * height, both times itself. It goes in halves, so a 2px line and a 16px
+ * icon still land on whole pixels; a quarter step would not. It lives on the
+ * root because a dialog is drawn on the body, outside the table, and has to
+ * match the screen that opened it. The match and the climb fill the window
+ * their own way and take no fit.
+ */
+@media (min-width: 1680px) and (min-height: 930px) {
+  :root {
+    --fit: 1.5;
+  }
+}
+@media (min-width: 2240px) and (min-height: 1240px) {
+  :root {
+    --fit: 2;
+  }
+}
+@media (min-width: 2800px) and (min-height: 1550px) {
+  :root {
+    --fit: 2.5;
+  }
+}
+@media (min-width: 3360px) and (min-height: 1860px) {
+  :root {
+    --fit: 3;
+  }
+}
+.tabletop.table-fit {
+  zoom: var(--fit, 1);
+}
+body:has(.table-fit) [role="dialog"] {
+  zoom: var(--fit, 1);
+  max-height: calc((100dvh - 1.5rem) / var(--fit, 1));
 }
 /* A size utility brings its own line height; print is always set solid. */
 .tabletop .text-print {

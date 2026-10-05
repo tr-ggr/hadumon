@@ -36,6 +36,7 @@ export const SFX_NAMES = [
   "hover",
   "pick",
   "click",
+  "tap",
   "confirm",
   "illegal",
   "play",
@@ -150,6 +151,12 @@ export function recipe(name: SfxName, step = 0): Voice {
       return [tone("triangle", 620, 880, 0.2, 0.07)];
     case "click":
       return [tone("sine", 760, 560, 0.14, 0.045)];
+    case "tap":
+      // A press on nothing: a knuckle on the cloth, duller and quieter than a click.
+      return [
+        noise("lowpass", 500, 260, 0.07, 0.03),
+        tone("sine", 210, 160, 0.06, 0.03),
+      ];
     case "confirm":
       // The one way forward, pressed: two notes going up, brighter than a pick.
       return [

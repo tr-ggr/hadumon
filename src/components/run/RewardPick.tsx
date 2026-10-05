@@ -95,11 +95,15 @@ export function RewardPick({
         {runStrip}
 
         {step === "result" && match ? (
-          <MatchResult match={match} headingRef={heading} />
+          <MatchResult
+            match={match}
+            headingRef={heading}
+            className="fitted:my-auto"
+          />
         ) : null}
 
         {step === "cat" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title="Add a cat" headingRef={heading}>
               One of these joins your deck for the rest of the run. Or none: a
               smaller deck finds its best cats more often.
@@ -129,7 +133,7 @@ export function RewardPick({
         ) : null}
 
         {step === "relic" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title="Take a relic" headingRef={heading}>
               A relic lasts the whole run. You hold{" "}
               {run.relics.map((id) => getRelic(id).name).join(", ")}.
@@ -162,7 +166,7 @@ export function RewardPick({
         ) : null}
 
         {step === "trim" ? (
-          <section className="space-y-3">
+          <section className="fitted:my-auto space-y-3">
             <StepHeading title="Trim a card" headingRef={heading}>
               Your deck, spread out. Remove one card for good, if you like. It
               has {run.deck.length} cards and cannot go below {MIN_DECK}.
@@ -201,7 +205,7 @@ export function RewardPick({
         ) : null}
 
         {step === "recap" ? (
-          <section className="space-y-4">
+          <section className="fitted:my-auto space-y-4">
             <StepHeading
               title={
                 nextRival
