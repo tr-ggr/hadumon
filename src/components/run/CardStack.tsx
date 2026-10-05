@@ -19,6 +19,8 @@ export interface CardStackProps {
   copies: number;
   /** The stack was pressed: show this cat's card. */
   onShow: () => void;
+  /** What a press does, if not showing the card: "Take one out". */
+  action?: string;
 }
 
 /**
@@ -28,14 +30,19 @@ export interface CardStackProps {
  * side and a hand card needs more room than that to open up. It carries what
  * tells one cat from another at a glance: sprite, name, element, points.
  */
-export function CardStack({ catId, copies, onShow }: CardStackProps) {
+export function CardStack({
+  catId,
+  copies,
+  onShow,
+  action = "Show card",
+}: CardStackProps) {
   const cat = getCat(catId);
   const under = Math.min(MAX_UNDER, Math.max(0, copies - 1));
   return (
     <button
       type="button"
       onClick={onShow}
-      aria-label={`${cat.name}, ${copies} ${copies === 1 ? "copy" : "copies"}. Show card.`}
+      aria-label={`${cat.name}, ${copies} ${copies === 1 ? "copy" : "copies"}. ${action}.`}
       className="card-stack liftable text-ink"
       style={
         {
