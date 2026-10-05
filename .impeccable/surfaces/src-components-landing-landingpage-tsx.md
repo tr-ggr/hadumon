@@ -31,7 +31,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 ## Memorable moment
 
-The Hunt row firing: each cat lights lime and presses in turn from right to left, its line lands in the log, and the crowd hops with the chain, right cluster first, then the plaque, then the left. The demo runs the real engine (`createMatch`, `applyAction`) in the browser for one round of five turns; nothing is saved.
+The Hunt row firing: each cat lights lime and presses in turn from right to left, its line lands in the log, and the crowd hops with the chain, right cluster first, then the plaque, then the left. The demo runs the real engine (`createMatch`, `applyAction`) in the browser for one round of five turns; nothing is saved. Its placed cats are the match's tiles: the element's 4px edge down the left, and the element mark hung off the sprite's top left corner with a cream rim, since the firing tag has the tile's corner.
 
 ## Unresolved
 

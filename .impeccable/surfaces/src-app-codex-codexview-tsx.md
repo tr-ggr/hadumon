@@ -36,8 +36,8 @@ FINISH: documented from the build in DESIGN.md on 2026-10-05. The finish review 
 - Heading board: the page's one h1, in print at 30px and 40px from 640px.
 - Section board: a `Board` with its count in print at 20px.
 - Filter token: white, 44px, 2px ink border, 14px bold; lime with the cobalt chosen frame when set. "All" leads each row. The group label is 12px bold soft ink, sentence case.
-- Cat card: the card as everywhere, at card height. Unlocked, it is a button that lifts under a mouse and opens the full card in a dialog (a board with a print title and a cream "Close"). Locked, it is at 60% with its unlock hint and is not a button.
-- Relic and clan tile: white, the name in print at 20px (a clan's led by its element mark), the text in 12px; 60% and the unlock hint when locked.
+- Cat card: the card as everywhere, at card height, with its element's 4px edge down the left and the element mark leading the name; a locked card keeps both. Unlocked, it is a button that lifts under a mouse and opens the full card in a dialog (a board with a print title and a cream "Close"). Locked, it is at 60% with its unlock hint and is not a button.
+- Relic and clan tile: white, the name in print at 20px (a clan's led by its element mark, a relic's by its own 32px drawing), the text in 12px; 60% and the unlock hint when locked, a relic's drawing greyed as a locked cat's sprite is.
 - Rival card: white, card height: the 48px sprite, "Match N", the name in print at 20px on a coral plate with the ink Boss tag for a boss, the flavor line, the trait, the deck as a table ruled in 2px dashed lines, and a line on its head start.
 
 ## Signature interaction
