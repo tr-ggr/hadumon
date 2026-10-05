@@ -59,7 +59,7 @@ export function LogoutDialog({
         back in.
       </p>
       {logout.error ? (
-        <p role="alert" className="text-coral mt-2 font-semibold">
+        <p role="alert" className="mt-2 font-bold">
           That did not work. Try again.
         </p>
       ) : null}
