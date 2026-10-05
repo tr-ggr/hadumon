@@ -18,7 +18,9 @@
 
 import {
   getCat,
+  playCost,
   ROWS,
+  type Aura,
   type CostPip,
   type Effect,
   type RivalAction,
@@ -170,6 +172,8 @@ export type MatchEvent =
       col: number;
       effect: Effect["kind"];
     }
+  /** A cat's essence handing over its treats at the end of a turn. */
+  | { type: "aura"; catId: string; row: Row; col: number }
   | { type: "feeder"; faces: Essence[] }
   | { type: "rival"; action: RivalAction; removed: string[] }
   | ({ type: "goal"; round: number } & GoalResult)
@@ -262,6 +266,14 @@ export function totalYarn(board: Board): number {
   return placedCats(board).reduce((sum, placed) => sum + placed.yarn, 0);
 }
 
+/** One kind of essence, summed over the cats on the board. */
+export function auraTotal(board: Board, kind: Aura["kind"]): number {
+  return placedCats(board).reduce((sum, placed) => {
+    const aura = getCat(placed.catId).aura;
+    return aura?.kind === kind ? sum + aura.n : sum;
+  }, 0);
+}
+
 /** How many dice, yarn or cats activating `row` gives right now. */
 export function rowReward(state: MatchState, row: Row): number {
   const base = ROW_REWARD[row][state.board[row].length] ?? 0;
@@ -270,7 +282,7 @@ export function rowReward(state: MatchState, row: Row): number {
     den: state.mods.denBonus,
     prowl: state.mods.prowlBonus,
   }[row];
-  return base + bonus;
+  return base + bonus + auraTotal(state.board, "reward");
 }
 
 export function columnYarnCost(mods: Mods, col: number): number {
@@ -347,11 +359,12 @@ export function swapOffer(
 function handReserve(
   hand: readonly string[],
   index: number,
+  discount: number,
 ): Partial<Record<Element, number>> {
   const reserve: Partial<Record<Element, number>> = {};
   hand.forEach((other, i) => {
     if (i === index) return;
-    for (const pip of getCat(other).cost) {
+    for (const pip of playCost(other, discount)) {
       if (pip !== "any") reserve[pip] = (reserve[pip] ?? 0) + 1;
     }
   });
@@ -362,17 +375,18 @@ function handReserve(
  * What playing `hand[index]` leaves in the pool, or `null` if it cannot be
  * paid. `any` pips avoid essence the rest of the hand needs by element, so
  * paying for one cat does not strand another. `swap` must be exactly two
- * spare essence for each pip short.
+ * spare essence for each pip short. `discount` is the board's, see `auraTotal`.
  */
 export function playPayment(
   pool: EssencePool,
   hand: readonly string[],
   index: number,
   swap: readonly Essence[] = [],
+  discount = 0,
 ): EssencePool | null {
   const catId = hand[index];
   if (!catId) return null;
-  const cost = getCat(catId).cost;
+  const cost = playCost(catId, discount);
   const offer = swapOffer(pool, cost);
   if (!offer || swap.length !== 2 * offer.short.length) return null;
   const next = { ...pool };
@@ -384,7 +398,7 @@ export function playPayment(
   }
   // Each pair given up stands in for one pip, the way wild would.
   next.wild += offer.short.length;
-  return payCost(next, cost, handReserve(hand, index));
+  return payCost(next, cost, handReserve(hand, index, discount));
 }
 
 /**
@@ -395,11 +409,16 @@ export function defaultSwap(
   pool: EssencePool,
   hand: readonly string[],
   index: number,
+  discount = 0,
 ): Essence[] {
   const catId = hand[index];
-  const offer = catId ? swapOffer(pool, getCat(catId).cost) : null;
+  const offer = catId ? swapOffer(pool, playCost(catId, discount)) : null;
   if (!offer) return [];
-  const reserve: Partial<Record<Essence, number>> = handReserve(hand, index);
+  const reserve: Partial<Record<Essence, number>> = handReserve(
+    hand,
+    index,
+    discount,
+  );
   const spare = { ...offer.spare };
   const free = (kind: Essence) => spare[kind] - (reserve[kind] ?? 0);
   const swap: Essence[] = [];
@@ -425,7 +444,10 @@ export function canPlay(state: MatchState, hand: number, row: Row): boolean {
   return (
     cat.rows.includes(row) &&
     line.length < SLOTS &&
-    swapOffer(state.essence, cat.cost) !== null &&
+    swapOffer(
+      state.essence,
+      playCost(catId, auraTotal(state.board, "discount")),
+    ) !== null &&
     totalYarn(state.board) >= columnYarnCost(state.mods, line.length)
   );
 }
@@ -741,7 +763,8 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
   if (!cat.rows.includes(action.row))
     fail(`${cat.name} cannot live in that row.`);
   if (line.length >= SLOTS) fail("That row is full.");
-  const offer = swapOffer(s.essence, cat.cost);
+  const discount = auraTotal(s.board, "discount");
+  const offer = swapOffer(s.essence, playCost(catId, discount));
   if (!offer) fail(`Not enough food for ${cat.name}.`);
   const swap = action.swap ?? [];
   const owed = 2 * offer.short.length;
@@ -752,7 +775,7 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
         : `${cat.name} is ${offer.short.length} food short: give up ${owed} food in its place.`,
     );
   }
-  const paid = playPayment(s.essence, s.hand, action.hand, swap);
+  const paid = playPayment(s.essence, s.hand, action.hand, swap, discount);
   if (!paid) fail(`Give up only food ${cat.name} does not need.`);
   const col = line.length;
   const yarn = columnYarnCost(s.mods, col);
@@ -940,6 +963,19 @@ function endRound(ctx: Ctx): void {
   });
 }
 
+/** The essences that pay out at the end of each of the player's turns. */
+function fireAuras(ctx: Ctx): void {
+  const { s } = ctx;
+  for (const row of ROWS) {
+    s.board[row].forEach((placed, col) => {
+      const aura = getCat(placed.catId).aura;
+      if (aura?.kind !== "treat") return;
+      s.essence.wild += aura.n;
+      ctx.events.push({ type: "aura", catId: placed.catId, row, col });
+    });
+  }
+}
+
 /** Finishes the action: fire queued powers, then hand the turn to the rival. */
 function settle(ctx: Ctx): void {
   const { s } = ctx;
@@ -949,6 +985,7 @@ function settle(ctx: Ctx): void {
     return;
   }
   s.phase = "turn";
+  fireAuras(ctx);
   refillTray(ctx);
   s.turnsLeft -= 1;
   rivalTurn(ctx);
@@ -1052,7 +1089,12 @@ export function legalActions(state: MatchState): Action[] {
   state.hand.forEach((catId, hand) => {
     if (seen.has(catId)) return;
     seen.add(catId);
-    const swap = defaultSwap(state.essence, state.hand, hand);
+    const swap = defaultSwap(
+      state.essence,
+      state.hand,
+      hand,
+      auraTotal(state.board, "discount"),
+    );
     for (const row of ROWS) {
       if (!canPlay(state, hand, row)) continue;
       actions.push(

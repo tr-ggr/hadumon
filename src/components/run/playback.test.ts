@@ -191,7 +191,11 @@ describe("buildSteps", () => {
       picks: ["deck", "deck", "deck"],
     });
     const fired = frames.flatMap((f) => (f.firing ? [f.firing.col] : []));
-    expect(fired).toEqual([3, 2, 1, 0, 3, 1, 0]);
+    // The last is Hadu's essence, bringing its treat as the turn ends.
+    expect(fired).toEqual([3, 2, 1, 0, 3, 1, 0, 2]);
+    const treat = frames.filter((f) => f.firing).at(-1);
+    expect(treat?.text).toBe("Hadu's essence brought 1 Treat.");
+    expect(treat?.view.essence.wild).toBe(before.essence.wild + 1);
 
     const settled = frames[frames.length - 2]?.view;
     expect(settled?.board).toEqual(after.board);
@@ -213,6 +217,21 @@ describe("buildSteps", () => {
     expect(lines.filter((text) => text.startsWith("Duskmew tucked"))).toEqual(
       under.map((name) => `Duskmew tucked ${name} from the deck.`),
     );
+  });
+
+  it("pays a discounted cost on the first frame", () => {
+    const state: MatchState = {
+      ...dealt({ den: ["nyxaroth"] }),
+      hand: ["pyrelynx"],
+      essence: { flame: 2, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 },
+    };
+    const { after, frames } = play(state, {
+      type: "play",
+      hand: 0,
+      row: "prowl",
+    });
+    expect(frames[0]?.view.essence.flame).toBe(0);
+    expect(after.essence.flame).toBe(0);
   });
 
   it("flips the rival's card once, after the player's powers", () => {

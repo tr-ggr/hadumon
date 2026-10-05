@@ -8,9 +8,9 @@ Everything is pure, deterministic, and safe to import in client components.
 
 | File | What it gives you |
 |------|-------------------|
-| `cats.ts` | `CATS`, `CAT_LIST`, `getCat(id)`, `Cat`, `Row`, `ROWS`, `ROW_LABELS`, `CostPip`, `RARITY_LABELS`, `describePower(power)` (the rules text for a card) |
+| `cats.ts` | `CATS`, `CAT_LIST`, `getCat(id)`, `Cat`, `Row`, `ROWS`, `ROW_LABELS`, `CostPip`, `RARITY_LABELS`, `describePower(power)` (the rules text for a card), `Aura` and `describeAura(aura)` (a legendary's essence), `playCost(catId, discount)` (the cost with an essence's discount taken off) |
 | `elements.ts` | `ELEMENTS`, `Element`, `ELEMENT_LABELS`, `FOOD_LABELS` (the cat food each element eats; the player-facing name for essence), `TREAT_LABEL` (wild) |
-| `match.ts` | `Action`, `MatchEvent`, `Essence`, `PlacedCat`, `swapOffer(pool, cost)`, `playPayment(pool, hand, index, swap)`, `defaultSwap(pool, hand, index)`, `SlotRef`, `Pending`, `GoalResult`, `ScoreBreakdown`; constants `SLOTS` (4), `ROUND_TURNS` ([5,4,3]), `SETUP_KEEP` (5), `COLUMN_YARN_COST`, `GOAL_WIN_POINTS`, `GOAL_LOSE_POINTS` |
+| `match.ts` | `Action`, `MatchEvent`, `Essence`, `PlacedCat`, `swapOffer(pool, cost)`, `playPayment(pool, hand, index, swap, discount)`, `defaultSwap(pool, hand, index, discount)`, `auraTotal(board, kind)` (one kind of essence summed over the board; the `discount` the two before it take), `SlotRef`, `Pending`, `GoalResult`, `ScoreBreakdown`; constants `SLOTS` (4), `ROUND_TURNS` ([5,4,3]), `SETUP_KEEP` (5), `COLUMN_YARN_COST`, `GOAL_WIN_POINTS`, `GOAL_LOSE_POINTS` |
 | `goals.ts` | `getGoal(id)` → `{ name, text, par }` |
 | `relics.ts` | `getRelic(id)` → `{ name, text }`, `RELIC_LIST` |
 | `rival.ts` | `getRival(id)` → `{ name, boss, trait, flavor, bankPoints, stashYarn, raidDice, burnCards, deck }`, `GAUNTLET` |
@@ -34,7 +34,7 @@ Every player turn is followed by one rival action and, after the last turn of a 
 
 ### Events (`MatchEvent`)
 
-`kept`, `played { catId, row, col }`, `activated { row, reward }`, `power { catId, row, col, effect }`, `feeder { faces }` (rerolled), `rival { action, removed }` (`removed` lists raided dice faces or burned cat ids), `goal { round, goalId, player, rival, playerPoints, rivalPoints }`, `over { won, player, rival }`. A cat set off again by an encore (Hadu) sends a second `power` event for the same slot in the same action.
+`kept`, `played { catId, row, col }`, `activated { row, reward }`, `power { catId, row, col, effect }`, `aura { catId, row, col }` (a cat's essence handing over its treats as the turn ends), `feeder { faces }` (rerolled), `rival { action, removed }` (`removed` lists raided dice faces or burned cat ids), `goal { round, goalId, player, rival, playerPoints, rivalPoints }`, `over { won, player, rival }`. A cat set off again by an encore (Hadu) sends a second `power` event for the same slot in the same action.
 
 ### `MatchView` fields worth knowing
 

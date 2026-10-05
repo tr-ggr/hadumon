@@ -40,6 +40,7 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 - 3 rounds of 5 / 4 / 3 turns. A turn is exactly one of: play a cat, activate Hunt, activate Den, activate Prowl.
 - Activating a row gives its base reward by the number of cats in it (Hunt 1/1/2/2/3 dice, Den 2/2/3/3/4 yarn, Prowl 1/1/2/2/3 cats), then fires each "when activated" power in that row from right to left. Hadu, the one cat with the encore power, then fires every other "when activated" cat in his row a second time, right to left; two Hadus do not set each other off.
 - Power timings: when played, when activated, between turns (reacts to a rival action), end of round.
+- Essence: each legendary also has a lasting effect for as long as it is on the board, printed on its card as "Essence: from now on, ...". Hadu brings 1 Treat at the end of each of the player's turns, starting with the turn that plays him. Nyxaroth takes 1 food off the cost of every cat played after it (the last pip of the cost; a 1-food cat is free). Aurelynx adds 1 to every lane's reward. Two of the same stack. The code calls this `aura`, because `essence` there already means food.
 - Setup: the player is dealt 5 cats and one of each food and keeps any 5 in total.
 - One goal per round. The higher count takes 4 / 5 / 6 points, the lower 1 / 2 / 3.
 - Final score: cat points + yarn + cached food + tucked cats + goal points + relic bonuses. The player wins by scoring strictly more than the rival.

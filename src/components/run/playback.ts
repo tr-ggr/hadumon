@@ -11,6 +11,7 @@
 
 import { getCat, ROWS } from "~/server/game/cats";
 import {
+  auraTotal,
   columnYarnCost,
   playPayment,
   type Action,
@@ -90,8 +91,13 @@ function applyOwnAction(
       if (!catId) break;
       const line = view.board[action.row];
       view.essence =
-        playPayment(view.essence, view.hand, action.hand, action.swap) ??
-        view.essence;
+        playPayment(
+          view.essence,
+          view.hand,
+          action.hand,
+          action.swap,
+          auraTotal(view.board, "discount"),
+        ) ?? view.essence;
       spendYarn(view, columnYarnCost(view.mods, line.length));
       view.hand.splice(action.hand, 1);
       line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
@@ -265,6 +271,10 @@ export function buildSteps(
     const described = lines[line++];
     view = structuredClone(view);
     if (event.type === "power") applyPower(view, after, event);
+    if (event.type === "aura") {
+      const aura = getCat(event.catId).aura;
+      if (aura?.kind === "treat") view.essence.wild += aura.n;
+    }
     if (event.type === "feeder") view.feeder = [...event.faces];
     if (event.type === "rival") {
       applyRival(view, after, event);
@@ -273,7 +283,9 @@ export function buildSteps(
     frames.push({
       view,
       firing:
-        event.type === "power" ? { row: event.row, col: event.col } : null,
+        event.type === "power" || event.type === "aura"
+          ? { row: event.row, col: event.col }
+          : null,
       flipping: event.type === "rival",
       flipped,
       rolling: event.type === "feeder",

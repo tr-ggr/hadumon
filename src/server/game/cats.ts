@@ -90,6 +90,18 @@ export type Power =
 
 export type Timing = Power["timing"];
 
+/**
+ * A legendary's essence: a lasting change it makes for as long as it is on
+ * the board. `aura` in the code, since essence there already means food.
+ */
+export type Aura =
+  /** Gain wild essence after each of the player's turns. */
+  | { kind: "treat"; n: number }
+  /** Every cat costs fewer pips to play. */
+  | { kind: "discount"; n: number }
+  /** Every row gives more when it is activated. */
+  | { kind: "reward"; n: number };
+
 export interface Cat {
   id: string;
   name: string;
@@ -103,6 +115,8 @@ export interface Cat {
   /** Most yarn this cat can hold. */
   yarnCap: number;
   power: Power | null;
+  /** Legendaries only. */
+  aura: Aura | null;
   flavor: string;
 }
 
@@ -112,6 +126,7 @@ interface CatRules {
   points: number;
   yarnCap: number;
   power: Power | null;
+  aura?: Aura;
 }
 
 function c(
@@ -123,7 +138,7 @@ function c(
   rules: CatRules,
   flavor: string,
 ): Cat {
-  return { id, name, element, rarity, archetype, ...rules, flavor };
+  return { id, name, element, rarity, archetype, aura: null, ...rules, flavor };
 }
 
 /** The complete HaduMon catalogue. Ids are stable and stored in run state. */
@@ -530,6 +545,7 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
           on: "any",
           effect: { kind: "yarnSelf", n: 1 },
         },
+        aura: { kind: "discount", n: 1 },
       },
       "Nine tails, one of which is always somewhere else.",
     ),
@@ -545,6 +561,7 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
         points: 9,
         yarnCap: 6,
         power: { timing: "played", effect: { kind: "yarnSelf", n: 3 } },
+        aura: { kind: "reward", n: 1 },
       },
       "A living lightning rod in gilded plate. Storms ask permission.",
     ),
@@ -556,10 +573,11 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
       "familiar",
       {
         rows: ["hunt", "den", "prowl"],
-        cost: ["any"],
+        cost: ["any", "any", "any"],
         points: 10,
         yarnCap: 9,
         power: { timing: "activated", effect: { kind: "encore" } },
+        aura: { kind: "treat", n: 1 },
       },
       "Loafs on the warm laptop with his paws crossed. The game is named after him, and he knows it.",
     ),
@@ -572,6 +590,14 @@ export function getCat(catId: string): Cat {
   const cat = CATS[catId];
   if (!cat) throw new Error(`Unknown cat: ${catId}`);
   return cat;
+}
+
+/** What a cat costs to play with `discount` pips taken off, the last first. */
+export function playCost(catId: string, discount = 0): readonly CostPip[] {
+  const cost = getCat(catId).cost;
+  return discount > 0
+    ? cost.slice(0, Math.max(0, cost.length - discount))
+    : cost;
 }
 
 export function catsByRarity(rarity: Rarity): Cat[] {
@@ -636,4 +662,14 @@ export function describePower(power: Power): string {
     return `${TIMING_PREFIX.between}: ${RIVAL_ACTION_TEXT[power.on]}, ${effect}.`;
   }
   return `${TIMING_PREFIX[power.timing]}: ${effect}.`;
+}
+
+/** A legendary's essence as printed on its card. */
+export function describeAura(aura: Aura): string {
+  const text = {
+    treat: `gain ${plural(aura.n, TREAT_LABEL)} after each of your turns`,
+    discount: `your cats cost ${aura.n} less food to play`,
+    reward: `every lane gives ${aura.n} more`,
+  }[aura.kind];
+  return `Essence: from now on, ${text}.`;
 }

@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import type { RivalAction } from "./cats";
+import { getCat, type RivalAction } from "./cats";
 import {
   applyAction,
+  auraTotal,
+  canPlay,
   canReroll,
   createMatch,
   emptyPool,
@@ -14,6 +16,7 @@ import {
   playPayment,
   playerScore,
   rivalScore,
+  rowReward,
   swapOffer,
   type Essence,
   type MatchEvent,
@@ -149,6 +152,16 @@ describe("payCost", () => {
     );
     expect(payCost(pool({ wild: 1 }), ["any"])).toEqual(pool({}));
     expect(payCost(pool({ flame: 1 }), ["flame", "any"])).toBeNull();
+  });
+
+  it("pays Hadu's cost with any three food, alike or not", () => {
+    const { cost } = getCat("hadu");
+    expect(cost).toEqual(["any", "any", "any"]);
+    expect(payCost(pool({ shade: 1, mist: 1, volt: 1 }), cost)).toEqual(
+      pool({}),
+    );
+    expect(payCost(pool({ flame: 3 }), cost)).toEqual(pool({}));
+    expect(payCost(pool({ flame: 1, wild: 1 }), cost)).toBeNull();
   });
 });
 
@@ -541,7 +554,10 @@ describe("encore", () => {
       "burrfang",
       "flameclaw",
     ]);
-    expect(next.essence).toEqual(pool({ flame: 3, mist: 1, thorn: 2 }));
+    // The treat is Hadu's essence, at the end of the turn.
+    expect(next.essence).toEqual(
+      pool({ flame: 3, mist: 1, thorn: 2, wild: 1 }),
+    );
   });
 
   it("ends when two share a row, and neither sets the other off", () => {
@@ -563,7 +579,7 @@ describe("encore", () => {
       "flameclaw",
       "flameclaw",
     ]);
-    expect(next.essence).toEqual(pool({ flame: 4, mist: 1 }));
+    expect(next.essence).toEqual(pool({ flame: 4, mist: 1, wild: 2 }));
     expect(next.queue).toEqual([]);
   });
 
@@ -600,13 +616,86 @@ describe("encore", () => {
     const second = applyAction(first, { type: "resolve", choice: 0 }).state;
     expect(second.phase).toBe("pending");
     expect(second.pending?.slot).toEqual({ row: "prowl", col: 0 });
-    // The rival still waits.
+    // The rival still waits, and so does Hadu's treat.
     expect(second.rival.banked).toBe(0);
+    expect(second.essence.wild).toBe(0);
 
     const done = applyAction(second, { type: "resolve", choice: 0 }).state;
     expect(done.phase).toBe("turn");
     expect(done.board.prowl[0]?.under).toEqual(["flameclaw", "burrfang"]);
     expect(done.rival.banked).toBe(1);
+    expect(done.essence.wild).toBe(1);
+  });
+});
+
+describe("essence", () => {
+  it("brings Hadu's treat at the end of every turn he is on the board", () => {
+    const state = turnState({
+      board: { hunt: [], den: [placed("hadu")], prowl: [] },
+    });
+    const first = applyAction(state, { type: "hunt", dice: [0] });
+    expect(first.events).toContainEqual({
+      type: "aura",
+      catId: "hadu",
+      row: "den",
+      col: 0,
+    });
+    expect(first.state.essence).toEqual(pool({ flame: 1, wild: 1 }));
+    const second = applyAction(first.state, { type: "den", targets: [] });
+    expect(second.state.essence.wild).toBe(2);
+  });
+
+  it("starts with the turn that plays him", () => {
+    const state = turnState({ hand: ["hadu"], essence: pool({ flame: 3 }) });
+    const { state: next } = applyAction(state, {
+      type: "play",
+      hand: 0,
+      row: "hunt",
+    });
+    expect(next.essence).toEqual(pool({ wild: 1 }));
+  });
+
+  it("takes a food off every cat's cost while Nyxaroth is out", () => {
+    const hand = ["flameclaw", "pyrelynx"];
+    const without = turnState({ hand });
+    expect(canPlay(without, 0, "hunt")).toBe(false);
+
+    const state = turnState({
+      hand,
+      essence: pool({ flame: 2 }),
+      board: { hunt: [], den: [placed("nyxaroth")], prowl: [] },
+    });
+    expect(auraTotal(state.board, "discount")).toBe(1);
+    // Flameclaw costs one Beef: free. Pyrelynx loses its last pip, the "any".
+    const free = applyAction(state, { type: "play", hand: 0, row: "hunt" });
+    expect(free.state.essence).toEqual(pool({ flame: 2 }));
+    const cheaper = applyAction(free.state, {
+      type: "play",
+      hand: 0,
+      row: "prowl",
+    });
+    expect(cheaper.state.essence).toEqual(pool({}));
+    expect(cheaper.state.board.prowl[0]?.catId).toBe("pyrelynx");
+  });
+
+  it("does not discount the cat that brings the discount", () => {
+    const state = turnState({
+      hand: ["nyxaroth"],
+      essence: pool({ shade: 2, flame: 1 }),
+    });
+    expect(canPlay(state, 0, "den")).toBe(false);
+  });
+
+  it("adds one to every lane's reward while Aurelynx is out", () => {
+    const state = turnState({
+      board: { hunt: [], den: [placed("aurelynx")], prowl: [] },
+    });
+    expect(rowReward(turnState(), "hunt")).toBe(1);
+    expect(rowReward(state, "hunt")).toBe(2);
+    expect(rowReward(state, "den")).toBe(3);
+    expect(rowReward(state, "prowl")).toBe(2);
+    const { state: next } = applyAction(state, { type: "hunt", dice: [0, 1] });
+    expect(next.essence).toEqual(pool({ flame: 1, mist: 1 }));
   });
 });
 

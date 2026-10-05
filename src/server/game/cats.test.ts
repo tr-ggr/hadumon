@@ -4,6 +4,7 @@ import {
   CAT_LIST,
   catsByElement,
   catsByRarity,
+  describeAura,
   describePower,
   getCat,
   ROWS,
@@ -38,6 +39,18 @@ describe("cat catalogue", () => {
       expect(cat.points).toBeGreaterThan(0);
       expect(cat.yarnCap).toBeGreaterThan(0);
     }
+  });
+
+  it("gives every legendary an essence, and no other cat", () => {
+    for (const cat of CAT_LIST) {
+      expect(cat.aura !== null, cat.id).toBe(cat.rarity === "legendary");
+      if (cat.aura) {
+        expect(describeAura(cat.aura)).toMatch(/^Essence: from now on, .*\.$/);
+      }
+    }
+    expect(describeAura({ kind: "treat", n: 1 })).toBe(
+      "Essence: from now on, gain 1 Treat after each of your turns.",
+    );
   });
 
   it("only offers a player choice on the player's own turn", () => {

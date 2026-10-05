@@ -6,6 +6,7 @@
 
 import {
   getCat,
+  playCost,
   ROW_LABELS,
   type RivalAction,
   type Row,
@@ -13,6 +14,7 @@ import {
 import { FOOD_LABELS, TREAT_LABEL } from "~/server/game/elements";
 import { getGoal } from "~/server/game/goals";
 import {
+  auraTotal,
   swapOffer,
   type Action,
   type Essence,
@@ -119,7 +121,10 @@ export function describeAction(before: MatchView, action: Action): string {
       const name = catId ? getCat(catId).name : "a cat";
       const swap = action.swap ?? [];
       const short = catId
-        ? (swapOffer(before.essence, getCat(catId).cost)?.short ?? [])
+        ? (swapOffer(
+            before.essence,
+            playCost(catId, auraTotal(before.board, "discount")),
+          )?.short ?? [])
         : [];
       return swap.length > 0 && short.length > 0
         ? `You played ${name} into ${rowName(action.row)}, giving up ${listWords(swap.map(essenceLabel))} in place of ${listWords(short.map(essenceLabel))}.`
@@ -252,6 +257,15 @@ export function describeEvents(
         lines.push({
           tone: "power",
           text: describePower(event, before, after, nth),
+        });
+        break;
+      }
+      case "aura": {
+        const cat = getCat(event.catId);
+        const n = cat.aura?.kind === "treat" ? cat.aura.n : 0;
+        lines.push({
+          tone: "power",
+          text: `${cat.name}'s essence brought ${plural(n, TREAT_LABEL)}.`,
         });
         break;
       }
