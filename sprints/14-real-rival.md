@@ -53,3 +53,22 @@ A refactor of `match.ts` with no change in behaviour: the same seeds play the sa
 - The match against the scripted rival is still one flat object. `MatchState extends Side, Table`, so it is its own seat and its own table, and every stored run reads as before.
 - The turn pieces (`keep`, `play`, `hunt`, `den`, `prowl`, `resolve`, `firePower`, `drain`, `fireAuras`, `drawCard`, `refillTray`) take a context of one table and one seat and send their events through it. None of them knows who else is sitting at the table.
 - The queries take a seat: `rowReward(side, row)`, `canPlay(side, hand, row)`, `prowlPickCount(side)`, `autoYarnTargets(side, n)`, `spareFood(side)`, and a goal's `count(side)`. `tradeOffered(side, feeder, row)` is the trade test without the phase; `canTrade(state, row)` adds it. `seatActions(table, side)` lists a seat's actions and `legalActions(state)` calls it.
+
+## Phase 3 — Two seats (done)
+
+The two-seat game is built beside the scripted rival and nothing plays it yet but tests. Its names carry `Duel` until phase 7, when it takes over `MatchState`, `createMatch` and `applyAction`.
+
+- `DuelState` is a `Table` plus `v: 2`, `seed`, `step`, `rivalId`, `level`, `sides: { player, rival }`, `active` (whose action is awaited), `lead` (who opens the round) and `last` (each seat's last whole turn). `createDuel(config)` deals each seat from its own RNG stream, so one deck never moves the other's deal.
+- `applyDuel(state, action)` applies one action for `state.active` and knows nothing of who chose it. `stepDuel(state, action, events)` is the same thing in place, for a caller that owns the state. `duelActions(state)`, `duelStanding(state)` and `duelScore(state, who)` are the queries.
+- Setup: the rival keeps first, then the player, so it cannot answer what the player keeps.
+- Turns: the seats alternate, the round's leader first, 5, 4 and 3 turns each, 24 in a match. The lead changes hands every round and the player leads the first. A seat with a turn to spare (Early Riser) takes it once the other is done. A free reroll and a pending choice do not pass the turn.
+- The feeder and the goals are shared. Each seat has its own deck, tray, hand, food and board.
+- Reactions: once a seat's turn is finished, the other seat's "between turns" cats answer the kind of turn it was. Brumefang answers a Hunt, Gloomtail the Den, Shadewhisker a Prowl, Nyxaroth any turn, a played cat included. The cards still say raid, bank and burn; `reactsTo` maps them until phase 7 rewrites the cards.
+- Goals compare both sides' real counts. A side with nothing towards a goal scores nothing, whichever side it is; a tie splits. The Lucky Collar counts for its holder.
+- End of round: end-of-round powers fire on both boards, the leader's first.
+- Score: both boards are scored by `scoreBoard`, which now takes whose share of the goal points to count. For now the player wins on strictly more; the tie rule is decided at Gate A.
+- Relics belong to a seat. Hadu's treat follows his own seat's turns. The Loud Bell's new effect is the mod `refillTreat`: 1 Treat whenever the feeder is rolled again, whoever emptied it. Against the scripted rival the bell still does what it did.
+- Events carry `side`. A new `move` event says what a seat did as far as the other may see: cats drawn from the deck and a cat tucked from hand stay face down. `refill` is the bell paying out.
+- `duel.ts` is the driver: `openMatch(config, policy)` deals and has the rival keep; `advance(state, action, policy)` applies the player's action and then every rival action until the player is to act, so one request is still one list of events.
+
+Tests: `symmetry.test.ts` plays 30 random matches and checks at every step that swapping the seats mirrors the next state and its events; `duel.test.ts` covers the rules above and finishes 72 random matches across the six rivals, every listed action accepted.
