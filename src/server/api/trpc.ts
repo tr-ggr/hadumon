@@ -10,25 +10,23 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
-import { getCurrentUser, getSessionToken } from "~/server/auth/session";
+import { getCurrentUser } from "~/server/auth/session";
 import { db } from "~/server/db";
 
 /**
  * 1. CONTEXT
  *
- * Every request gets the database handle, the signed-in trainer (or `null`)
- * and the raw session token (so `auth.logout` can delete the row).
+ * Every request gets the database handle and the signed-in player (or
+ * `null`).
  *
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const sessionToken = await getSessionToken();
   const user = await getCurrentUser();
 
   return {
     db,
     user,
-    sessionToken,
     ...opts,
   };
 };

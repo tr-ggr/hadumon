@@ -1,7 +1,8 @@
+import { getSessionCookie } from "better-auth/cookies";
 import { NextResponse, type NextRequest } from "next/server";
 
-const SESSION_COOKIE = "hadumon_session";
-const AUTH_ROUTES = ["/login", "/signup"];
+import { AUTH_COOKIE_PREFIX, AUTH_ROUTES } from "~/lib/auth/constants";
+
 /** Routes a signed-out visitor may see: the landing page and its OG image. */
 const PUBLIC_ROUTES = ["/", "/opengraph-image"];
 
@@ -12,7 +13,9 @@ const PUBLIC_ROUTES = ["/", "/opengraph-image"];
  */
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const hasSession = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
+  const hasSession = Boolean(
+    getSessionCookie(request, { cookiePrefix: AUTH_COOKIE_PREFIX }),
+  );
   const isAuthRoute = AUTH_ROUTES.includes(pathname);
   const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
 

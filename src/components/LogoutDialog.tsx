@@ -1,8 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Modal, TableButton } from "~/components/ui";
+import { authClient } from "~/lib/auth-client";
 import { api } from "~/trpc/react";
 
 /**
@@ -18,14 +20,26 @@ export function LogoutDialog({
 }) {
   const router = useRouter();
   const utils = api.useUtils();
-  const logout = api.auth.logout.useMutation({
-    onSuccess: async () => {
-      onClose();
-      await utils.invalidate();
-      router.push("/login");
-      router.refresh();
-    },
-  });
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const logOut = async () => {
+    setFailed(false);
+    setPending(true);
+    try {
+      const result = await authClient.signOut();
+      if (result.error) throw new Error(result.error.message);
+    } catch {
+      setFailed(true);
+      setPending(false);
+      return;
+    }
+    onClose();
+    await utils.invalidate();
+    router.push("/login");
+    router.refresh();
+    setPending(false);
+  };
 
   return (
     <Modal
@@ -38,7 +52,7 @@ export function LogoutDialog({
             size="md"
             variant="secondary"
             data-autofocus
-            disabled={logout.isPending}
+            disabled={pending}
             onClick={onClose}
           >
             Stay
@@ -46,10 +60,10 @@ export function LogoutDialog({
           <TableButton
             size="md"
             variant="danger"
-            disabled={logout.isPending}
-            onClick={() => logout.mutate()}
+            disabled={pending}
+            onClick={() => void logOut()}
           >
-            {logout.isPending ? "Logging out…" : "Log out"}
+            {pending ? "Logging out…" : "Log out"}
           </TableButton>
         </>
       }
@@ -58,7 +72,7 @@ export function LogoutDialog({
         A run in progress is saved. It will be where you left it when you log
         back in.
       </p>
-      {logout.error ? (
+      {failed ? (
         <p role="alert" className="mt-2 font-bold">
           That did not work. Try again.
         </p>

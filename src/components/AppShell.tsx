@@ -22,6 +22,7 @@ import { moveMs, placeFor } from "~/components/tower/places";
 import { TowerBackdrop } from "~/components/tower/TowerBackdrop";
 import type { IconName } from "~/components/sprites/icons";
 import { tableButtonClass, type TableButtonSize } from "~/components/ui";
+import { AUTH_ROUTES } from "~/lib/auth/constants";
 import { api } from "~/trpc/react";
 
 export interface NavItem {
@@ -35,7 +36,8 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/run", label: "Play", icon: "play" },
   { href: "/codex", label: "Codex", icon: "book" },
 ];
-const BARE_ROUTES = ["/login", "/signup"];
+/** The signed-out forms bring their own lid, signed in or not. */
+const BARE_ROUTES = AUTH_ROUTES;
 /** The table takes the whole screen: no lid, no dock. See `TableNav`. */
 const TABLE_ROUTE = "/run";
 

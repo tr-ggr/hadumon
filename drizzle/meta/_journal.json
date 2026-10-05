@@ -29,6 +29,20 @@
       "when": 1791178977081,
       "tag": "0003_add_run_difficulty",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791222793945,
+      "tag": "0004_auth_clean_break",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791222817774,
+      "tag": "0005_better_auth",
+      "breakpoints": true
     }
   ]
 }

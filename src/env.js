@@ -11,6 +11,32 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    /**
+     * Signs session cookies. Required in production; outside it Better Auth
+     * falls back to a built-in development secret.
+     *
+     * Also required anywhere on Vercel, whatever `NODE_ENV` is: the build
+     * migrates the database before it builds, and a migration must not run
+     * for a deploy that is then going to fail for want of this.
+     */
+    BETTER_AUTH_SECRET:
+      process.env.NODE_ENV === "production" || process.env.VERCEL
+        ? z.string().min(32)
+        : z.string().min(32).optional(),
+    /**
+     * The one origin the app is served from, such as a custom domain. Leave it
+     * unset on Vercel and locally: the origin is then worked out per request
+     * from the `VERCEL_*` hosts below, or from localhost.
+     */
+    BETTER_AUTH_URL: z.string().url().optional(),
+    /** Sends the password reset email. Without it the link is only logged. */
+    RESEND_API_KEY: z.string().optional(),
+    /** The reset email's sender, on a domain verified with Resend. */
+    EMAIL_FROM: z.string().optional(),
+    /** Set by Vercel: the hosts this deployment answers on, without scheme. */
+    VERCEL_URL: z.string().optional(),
+    VERCEL_BRANCH_URL: z.string().optional(),
+    VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
   },
 
   /**
@@ -34,6 +60,13 @@ export const env = createEnv({
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    BETTER_AUTH_URL: process.env.BETTER_AUTH_URL,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    EMAIL_FROM: process.env.EMAIL_FROM,
+    VERCEL_URL: process.env.VERCEL_URL,
+    VERCEL_BRANCH_URL: process.env.VERCEL_BRANCH_URL,
+    VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
   },
   /**
