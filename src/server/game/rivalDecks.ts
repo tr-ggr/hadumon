@@ -3,7 +3,8 @@
  * same match: 16 cards, and one more for each match already played. It is
  * drawn to the rarity mix of the deck the player built, so a player who
  * brings rares meets rares, and from the cats the player owns, so an account
- * never meets a cat it could not have. A rival holds one relic, its clan's
+ * never meets a cat it could not have. Half of it is its clan's element and
+ * half is not, as a clan's starter was. A rival holds one relic, its clan's
  * charm.
  */
 
@@ -54,29 +55,42 @@ export function rarityMix(
 }
 
 /**
+ * How much of a rival's deck may be its own element: half, as a clan's
+ * starter is. Measured, a rival whose whole deck is its clan's element is
+ * paid by its charm for every cat it plays, which a player's deck with
+ * eight cards stolen seldom is.
+ */
+export function themeShare(size: number): number {
+  return Math.ceil(size / 2);
+}
+
+/**
  * `n` cards of one rarity for a rival of `theme`: its own element's cats
- * first, a copy of each in turn up to the cap, the one worth most first;
- * then the other elements' the same way. Fewer than `n` if the pool runs
- * out.
+ * first, no more than `own` of them, a copy of each in turn up to the cap
+ * and the one worth most first; then the other elements' the same way.
+ * Fewer than `n` if the pool runs out.
  */
 function draw(
   pool: readonly string[],
   rarity: Rarity,
   theme: Element,
   n: number,
+  own: number,
 ): string[] {
   const cats = [...new Set(pool)]
     .filter((catId) => getCat(catId).rarity === rarity)
     .sort((a, b) => getCat(b).points - getCat(a).points || a.localeCompare(b));
   const out: string[] = [];
-  for (const own of [true, false]) {
+  for (const themed of [true, false]) {
     const group = cats.filter(
-      (catId) => (getCat(catId).element === theme) === own,
+      (catId) => (getCat(catId).element === theme) === themed,
     );
-    for (let copy = 1; out.length < n; copy++) {
+    // Its own element stops at its share; the others fill what is left.
+    const most = themed ? Math.min(n, own) : n;
+    for (let copy = 1; out.length < most; copy++) {
       const round = group.filter((catId) => copyCap(catId) >= copy);
       if (round.length === 0) break;
-      out.push(...round.slice(0, n - out.length));
+      out.push(...round.slice(0, most - out.length));
     }
   }
   return out;
@@ -94,12 +108,17 @@ export function rivalDeck(
   built: readonly string[],
 ): string[] {
   const theme = themeOf(rivalId);
-  const mix = rarityMix(built, RIVAL_DECK + matchIndex);
+  const size = RIVAL_DECK + matchIndex;
+  const mix = rarityMix(built, size);
   const deck: string[] = [];
+  const themed = () =>
+    deck.filter((catId) => getCat(catId).element === theme).length;
   let short = 0;
+  // The rarest first, so its own element's share goes to its best cats.
   for (const rarity of [...RARITIES].reverse()) {
     const want = mix[rarity] + short;
-    const drawn = draw(pool, rarity, theme, want);
+    const own = Math.max(0, themeShare(size) - themed());
+    const drawn = draw(pool, rarity, theme, want, own);
     deck.push(...drawn);
     short = want - drawn.length;
   }

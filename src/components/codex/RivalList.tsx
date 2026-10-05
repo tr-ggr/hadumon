@@ -75,8 +75,8 @@ export function RivalCard({
       </table>
 
       <p className="text-xs leading-snug">
-        A {CLANS[rival.theme].name} deck of {RIVAL_DECK - 1 + match} cards,{" "}
-        {ELEMENT_LABELS[rival.theme]} cats first, drawn from the cats you own
+        A {CLANS[rival.theme].name} deck of {RIVAL_DECK - 1 + match} cards, half
+        of them {ELEMENT_LABELS[rival.theme]} cats, drawn from the cats you own
         and as rare as the deck you built. Holds the{" "}
         {rivalRelics(rivalId)
           .map((id) => getRelic(id).name)

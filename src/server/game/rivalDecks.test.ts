@@ -13,6 +13,7 @@ import {
   rivalDeck,
   rivalRelics,
   themeOf,
+  themeShare,
 } from "./rivalDecks";
 import { startingPool } from "./unlocks";
 
@@ -99,16 +100,26 @@ describe("rival decks", () => {
     }
   });
 
-  it("take their own clan's cats first, and keep to the copy caps", () => {
+  it("take their own clan's cats first, for half the deck, and keep to the copy caps", () => {
     for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
       const theme = themeOf(rivalId);
+      const size = RIVAL_DECK + matchIndex;
       const deck = rivalDeck(rivalId, matchIndex, EVERY_CAT, richDeck());
       for (const [catId, copies] of Object.entries(countCards(deck))) {
         expect(copies, catId).toBeLessThanOrEqual(copyCap(catId));
       }
-      // With the whole catalogue to draw on, it is all the rival's element.
-      expect(deck.every((id) => getCat(id).element === theme)).toBe(true);
+      // With the whole catalogue to draw on, half is the rival's element,
+      // and that half is its rarest cards.
+      const own = deck.filter((id) => getCat(id).element === theme);
+      expect(own).toHaveLength(themeShare(size));
+      const rank = (id: string) => RARITIES.indexOf(getCat(id).rarity);
+      const others = deck.filter((id) => getCat(id).element !== theme);
+      expect(Math.min(...own.map(rank))).toBeGreaterThanOrEqual(
+        Math.max(...others.map(rank)) - 1,
+      );
     }
+    expect(themeShare(16)).toBe(8);
+    expect(themeShare(21)).toBe(11);
   });
 
   it("never show an account a cat it could not own", () => {

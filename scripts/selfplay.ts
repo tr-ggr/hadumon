@@ -7,6 +7,7 @@
  *
  *   pnpm tsx --conditions=react-server scripts/selfplay.ts
  *   pnpm tsx --conditions=react-server scripts/selfplay.ts --only=ladder --games=100
+ *   pnpm tsx --conditions=react-server scripts/selfplay.ts --only=gauntlet --pool=everything
  *
  * Every number comes from fixed seeds, so a run can be repeated. A section
  * that is not run keeps the numbers it had.
@@ -355,17 +356,21 @@ function climbTower(
  * won, and how often its best match reaches the scores two unlocks ask for.
  */
 function gauntlet() {
-  const rows = [];
+  // `--pool=everything` measures one account again and keeps the other's rows.
+  const one = args.get("pool");
+  const kept = Array.isArray(data.gauntlet)
+    ? (data.gauntlet as { pool?: string }[]).filter(
+        (row) => one !== undefined && row.pool !== one,
+      )
+    : [];
+  const rows: unknown[] = [...kept];
   for (const poolName of ["newAccount", "everything"] as const) {
+    if (one !== undefined && poolName !== one) continue;
     for (const tier of DIFFICULTIES) {
-      for (let level = 0; level < LEVELS.length; level++) {
-        // A new account is measured at the levels a new player might play at.
-        if (poolName === "newAccount" && ![0, 3, 5, 6].includes(level))
-          continue;
-        const runs = Math.max(
-          30,
-          Math.round(scale / [2, 2, 2, 2, 2, 2, 3, 8][level]!),
-        );
+      // The fixed list, the list led by points, the full evaluation and
+      // the first of the playouts: the range a player might play at.
+      for (const level of [0, 3, 5, 6]) {
+        const runs = Math.max(30, Math.round(scale / (level === 6 ? 3 : 2)));
         rows.push(climbTower(poolName, tier, level, runs));
       }
     }
