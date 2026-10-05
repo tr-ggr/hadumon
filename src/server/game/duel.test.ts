@@ -540,6 +540,7 @@ describe("the end of a match", () => {
       won: false,
       player: 9,
       rival: 12,
+      tiebreak: null,
     });
     expect(() => applyDuel(over, { type: "den", targets: [] })).toThrow(
       IllegalAction,
@@ -547,11 +548,31 @@ describe("the end of a match", () => {
     expect(duelActions(over)).toEqual([]);
   });
 
-  it("goes to the player only on strictly more", () => {
-    const even = closing({});
-    const { state } = applyDuel(even, { type: "den", targets: [] });
-    expect(state.result?.player.total).toBe(state.result?.rival.total);
-    expect(state.result?.won).toBe(false);
+  it("breaks a tie on food left, then on cats, then for the player", () => {
+    const end = (sides: Partial<Record<SideId, Partial<Side>>>) =>
+      applyDuel(closing(sides), { type: "den", targets: [] }).state.result;
+    const cat = board({ den: [placed("sparkmew")] });
+    // Two bare boards: level on points, on food and on cats.
+    expect(end({})).toMatchObject({ won: true, tiebreak: "seat" });
+    expect(
+      end({ rival: { essence: { ...emptyPool(), mist: 1 } } }),
+    ).toMatchObject({ won: false, tiebreak: "food" });
+    expect(
+      end({ player: { essence: { ...emptyPool(), wild: 2 } } }),
+    ).toMatchObject({ won: true, tiebreak: "food" });
+    // Sparkmew's 2 points against two Dewhiskers' 1 each: level on points
+    // and on food, so the board with more cats takes it.
+    const level = end({
+      player: { board: cat },
+      rival: {
+        board: board({
+          den: [placed("dewhisker")],
+          prowl: [placed("dewhisker")],
+        }),
+      },
+    });
+    expect(level?.player.total).toBe(level?.rival.total);
+    expect(level).toMatchObject({ won: false, tiebreak: "cats" });
   });
 });
 

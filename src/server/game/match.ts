@@ -1440,12 +1440,26 @@ export type DuelEvent =
   /** A relic paying out Treats because the feeder was rolled again. */
   | { type: "refill"; side: SideId; treats: number }
   | ({ type: "goal"; round: number } & GoalResult)
-  | { type: "over"; won: boolean; player: number; rival: number };
+  | {
+      type: "over";
+      won: boolean;
+      player: number;
+      rival: number;
+      tiebreak: Tiebreak | null;
+    };
+
+/**
+ * What settled a match that ended level on points: the most food left in
+ * hand, then the most cats on the board, and after both the player's seat.
+ */
+export type Tiebreak = "food" | "cats" | "seat";
 
 export interface DuelResult {
   player: ScoreBreakdown;
   rival: ScoreBreakdown;
   won: boolean;
+  /** Set only when the scores were level. */
+  tiebreak: Tiebreak | null;
 }
 
 export interface DuelState extends Table {
@@ -1658,6 +1672,30 @@ function seatCtx(
   };
 }
 
+/** Food a seat is left holding, of every kind. */
+export function foodLeft(side: Pick<Side, "essence">): number {
+  return ESSENCES.reduce((sum, kind) => sum + side.essence[kind], 0);
+}
+
+/**
+ * Who a finished match goes to. More points win it. Level on points, it goes
+ * to the seat with more food left in hand, then to the one with more cats on
+ * its board; a match level on all three goes to the player.
+ */
+function verdict(
+  s: DuelState,
+  player: number,
+  rival: number,
+): Pick<DuelResult, "won" | "tiebreak"> {
+  if (player !== rival) return { won: player > rival, tiebreak: null };
+  const { player: mine, rival: theirs } = s.sides;
+  const food = foodLeft(mine) - foodLeft(theirs);
+  if (food !== 0) return { won: food > 0, tiebreak: "food" };
+  const cats = placedCats(mine.board).length - placedCats(theirs.board).length;
+  if (cats !== 0) return { won: cats > 0, tiebreak: "cats" };
+  return { won: true, tiebreak: "seat" };
+}
+
 function startRound(s: DuelState): void {
   for (const who of SIDES) {
     const side = s.sides[who];
@@ -1691,12 +1729,13 @@ function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
   const player = duelScore(s, "player");
   const rival = duelScore(s, "rival");
   s.phase = "over";
-  s.result = { player, rival, won: player.total > rival.total };
+  s.result = { player, rival, ...verdict(s, player.total, rival.total) };
   events?.push({
     type: "over",
     won: s.result.won,
     player: player.total,
     rival: rival.total,
+    tiebreak: s.result.tiebreak,
   });
 }
 

@@ -26,10 +26,12 @@ function mirror(state: DuelState): DuelState {
       playerPoints: goal.rivalPoints,
       rivalPoints: goal.playerPoints,
     })),
+    // Only the last tiebreak names a seat: it goes to the player's.
     result: state.result && {
       player: state.result.rival,
       rival: state.result.player,
-      won: state.result.rival.total > state.result.player.total,
+      won: state.result.tiebreak === "seat" ? true : !state.result.won,
+      tiebreak: state.result.tiebreak,
     },
   };
 }
@@ -49,9 +51,10 @@ function mirrorEvent(event: DuelEvent): DuelEvent {
     case "over":
       return {
         type: "over",
-        won: event.rival > event.player,
+        won: event.tiebreak === "seat" ? true : !event.won,
         player: event.rival,
         rival: event.player,
+        tiebreak: event.tiebreak,
       };
     default:
       return { ...event, side: otherSide(event.side) };
