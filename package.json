@@ -14,6 +14,7 @@
     "db:seed:prod": "tsx --env-file=.env.production.local src/server/db/seed.ts",
     "db:studio": "drizzle-kit studio",
     "dev": "next dev --turbo",
+    "favicon": "tsx scripts/favicon.ts",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "format:write": "prettier --write \"**/*.{ts,tsx,js,jsx,mdx}\" --cache",
     "lint": "next lint",
