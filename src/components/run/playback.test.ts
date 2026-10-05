@@ -402,7 +402,7 @@ describe("the score through a turn", () => {
       },
     );
     expect(ended).toBe(6);
-  });
+  }, 30_000);
 
   it("never jumps: every frame's totals differ by what its cue says", () => {
     eachTurn(["dusk-charm"], ({ before, frames }, where) => {
@@ -472,8 +472,9 @@ describe("the score through a turn", () => {
         frame.view.rival.score.goals - event.rivalPoints,
       );
     });
-    expect(goals).toBe(18);
-  });
+    // Six matches, a goal a round.
+    expect(goals).toBe(6 * 4);
+  }, 30_000);
 });
 
 describe("cues", () => {

@@ -33,19 +33,29 @@ export interface Weights {
   afford: number;
   /** Each cat on the board, for every turn it still has to work. */
   engine: number;
-  /** Each yarn on the board, on top of the point it already is. */
+  /**
+   * Each yarn on the board, on top of the point it already is, while there
+   * are turns to come. Under zero, yarn is better laid late: a turn spent on
+   * it early is one not spent on a cat that would work for the rest of the
+   * match.
+   */
   yarn: number;
   /** How much of the other seat's prospects count against the position. */
   deny: number;
 }
 
+/**
+ * Measured over four rounds (`sprints/15-coins-packs-decks.md`): with 26
+ * turns a seat, the cat it can play next and the turns a cat has left to
+ * work count for more than they did over twelve, and early yarn for less.
+ */
 export const NEUTRAL: Weights = {
   goal: 0.7,
   food: 0.5,
   hand: 0.4,
-  afford: 0.3,
-  engine: 0.25,
-  yarn: 0,
+  afford: 0.5,
+  engine: 0.4,
+  yarn: -0.25,
   deny: 1,
 };
 
@@ -60,18 +70,29 @@ export function tilted(tilt: Partial<Weights>): Weights {
     hand: NEUTRAL.hand * (tilt.hand ?? 1),
     afford: NEUTRAL.afford * (tilt.afford ?? 1),
     engine: NEUTRAL.engine * (tilt.engine ?? 1),
-    yarn: tilt.yarn ?? 0,
+    yarn: NEUTRAL.yarn + (tilt.yarn ?? 0),
     deny: NEUTRAL.deny * (tilt.deny ?? 1),
   };
+}
+
+/** Turns a seat takes in a whole match. */
+export const MATCH_TURNS = ROUND_TURNS.reduce<number>(
+  (sum, turns) => sum + turns,
+  0,
+);
+
+/** Turns to come for a seat with `turnsLeft` in `round`, this round's included. */
+export function turnsToCome(round: number, turnsLeft: number): number {
+  return ROUND_TURNS.slice(round + 1).reduce<number>(
+    (sum, turns) => sum + turns,
+    turnsLeft,
+  );
 }
 
 /** Turns a seat still has in the match, this round's included. */
 export function turnsAhead(state: MatchState, who: SideId): number {
   if (state.phase === "over") return 0;
-  return ROUND_TURNS.slice(state.round + 1).reduce<number>(
-    (sum, turns) => sum + turns,
-    state.sides[who].turnsLeft,
-  );
+  return turnsToCome(state.round, state.sides[who].turnsLeft);
 }
 
 /**
@@ -99,7 +120,7 @@ function foodWorth(side: Pick<Side, "hand" | "essence">): number {
 function prospects(side: Side, ahead: number, w: Weights): number {
   const cats = placedCats(side.board);
   const yarn = cats.reduce((sum, placed) => sum + placed.yarn, 0);
-  if (ahead <= 0) return w.yarn * yarn;
+  if (ahead <= 0) return 0;
   // Late in a match there is less time to turn food and cards into points.
   const time = Math.min(1, ahead / 3);
   const food = foodWorth(side);
@@ -114,7 +135,7 @@ function prospects(side: Side, ahead: number, w: Weights): number {
     w.hand * Math.min(side.hand.length, 3) * time +
     w.afford * best +
     w.engine * cats.length * ahead +
-    w.yarn * yarn
+    w.yarn * yarn * time
   );
 }
 

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { rivalPolicy } from "~/server/game/bot";
 import { advance } from "~/server/game/duel";
-import type { Action, MatchState } from "~/server/game/match";
+import { ROUND_TURNS, type Action, type MatchState } from "~/server/game/match";
 import { startRun } from "~/server/game/run";
 import { poolFromUnlocks, STARTING_UNLOCKS } from "~/server/game/unlocks";
 import { toMatchView } from "~/server/game/view";
@@ -276,7 +276,7 @@ describe("describeEvents", () => {
   it("reports a scored goal at the end of a round", () => {
     let state = kept.state;
     let last = step(state, { type: "den", targets: [] });
-    for (let turn = 1; turn < 5; turn++) {
+    for (let turn = 1; turn < ROUND_TURNS[0]; turn++) {
       state = last.state;
       last = step(state, { type: "den", targets: [] });
     }

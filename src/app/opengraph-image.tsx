@@ -7,7 +7,7 @@ import { CAT_LIST, getCat } from "~/server/game/cats";
 
 export const runtime = "edge";
 export const alt =
-  "HaduMon — a roguelike engine-builder about cats. Six rivals. Twelve turns each.";
+  "HaduMon — a roguelike engine-builder about cats. Six rivals. Twenty-six turns each.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -56,7 +56,8 @@ export default async function Image() {
             fontWeight: 700,
           }}
         >
-          A roguelike engine-builder about cats. Six rivals. Twelve turns each.
+          A roguelike engine-builder about cats. Six rivals. Twenty-six turns
+          each.
         </div>
         <div style={{ display: "flex", marginTop: 42, gap: 14 }}>
           <span

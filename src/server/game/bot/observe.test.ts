@@ -169,7 +169,7 @@ describe("observe", () => {
 
 describe("a bot", () => {
   it("chooses the same move however the hidden cats are dealt", () => {
-    const sample = positions("hidden").filter((_, index) => index % 5 === 0);
+    const sample = positions("hidden").filter((_, index) => index % 10 === 0);
     for (let level = 0; level <= TOP_LEVEL; level++) {
       const bot = botAt(level, styleOf("madame-mittens"));
       for (const [index, state] of sample.entries()) {
@@ -196,7 +196,10 @@ describe("imagine", () => {
   });
 
   it("deals the hidden cats differently, under a seed of its own", () => {
-    const state = all[all.length - 5]!;
+    // Late enough that cats have moved, early enough that a deck is left.
+    const state = [...all]
+      .reverse()
+      .find((seen) => seen.sides.rival.deck.length >= 4)!;
     const seen = observe(state, "rival");
     const one = imagine(seen, createRng("one"));
     const two = imagine(seen, createRng("two"));

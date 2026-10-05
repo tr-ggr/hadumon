@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 
 import { getCat } from "./cats";
+import { GOAL_IDS } from "./goals";
 import {
   auraTotal,
   canPlay,
   canReroll,
   emptyPool,
+  GOAL_LOSE_POINTS,
+  GOAL_WIN_POINTS,
   IllegalAction,
   defaultSwap,
   payCost,
   playPayment,
+  ROUND_TURNS,
   rowReward,
   swapOffer,
   type Essence,
@@ -75,7 +79,7 @@ describe("createMatch", () => {
     expect(state.tray).toHaveLength(3);
     expect(state.deck).toHaveLength(8);
     expect(state.feeder).toHaveLength(5);
-    expect(new Set(state.goals).size).toBe(3);
+    expect(new Set(state.goals).size).toBe(ROUND_TURNS.length);
   });
 
   it("is deterministic for a seed and varies across seeds", () => {
@@ -99,7 +103,7 @@ describe("setup", () => {
     expect(next.discard).toEqual([state.setup[1], state.setup[3]]);
     expect(next.essence).toEqual(pool({ flame: 1, mist: 1 }));
     expect(next.phase).toBe("turn");
-    expect(next.turnsLeft).toBe(5);
+    expect(next.turnsLeft).toBe(ROUND_TURNS[0]);
   });
 
   it("rejects anything but exactly five", () => {
@@ -127,7 +131,7 @@ describe("setup", () => {
       essence: [],
     });
     expect(next.essence.wild).toBe(1);
-    expect(next.turnsLeft).toBe(6);
+    expect(next.turnsLeft).toBe(ROUND_TURNS[0] + 1);
   });
 });
 
@@ -805,10 +809,20 @@ describe("pending choices", () => {
 });
 
 describe("rounds and goals", () => {
+  it("has a goal, and what it pays either way, for every round", () => {
+    // A round with no entry would pay nothing, without a word.
+    expect(GOAL_WIN_POINTS).toHaveLength(ROUND_TURNS.length);
+    expect(GOAL_LOSE_POINTS).toHaveLength(ROUND_TURNS.length);
+    expect(GOAL_IDS.length).toBeGreaterThanOrEqual(ROUND_TURNS.length);
+    ROUND_TURNS.forEach((_, round) => {
+      expect(GOAL_WIN_POINTS[round]).toBeGreaterThan(GOAL_LOSE_POINTS[round]!);
+    });
+  });
+
   it("ends the round after the last turn and fires end-of-round powers", () => {
     const state = turnState({
       turnsLeft: 1,
-      goals: ["crowd", "pantry", "pawful"],
+      goals: ["crowd", "pantry", "pawful", "stash"],
       board: { hunt: [], den: [placed("verdantmane")], prowl: [] },
     });
     const { state: next, events } = applyAction(state, {
@@ -817,14 +831,14 @@ describe("rounds and goals", () => {
     });
     expect(next.board.den[0]?.yarn).toBe(2);
     expect(next.round).toBe(1);
-    expect(next.turnsLeft).toBe(4);
+    expect(next.turnsLeft).toBe(ROUND_TURNS[1]);
     expect(next.goalResults).toHaveLength(1);
     expect(events.at(-1)?.type).toBe("goal");
   });
 
-  it("finishes after the third round and refuses further actions", () => {
+  it("finishes after the last round and refuses further actions", () => {
     const state = turnState({
-      round: 2,
+      round: ROUND_TURNS.length - 1,
       turnsLeft: 1,
       board: {
         hunt: [placed("flameclaw", { yarn: 2, cached: 1, tucked: 1 })],
@@ -918,8 +932,8 @@ describe("engine guarantees", () => {
         state = applyAction(state, action).state;
       }
       expect(state.phase).toBe("over");
-      expect(turns).toBeGreaterThanOrEqual(12);
-      expect(state.goalResults).toHaveLength(3);
+      expect(turns).toBeGreaterThanOrEqual(8 + 7 + 6 + 5);
+      expect(state.goalResults).toHaveLength(ROUND_TURNS.length);
     }
   });
 });

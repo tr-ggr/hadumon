@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { act, standIn } from "./bot";
 import { getCat } from "./cats";
 import { rivalLevel } from "./difficulty";
-import { IllegalAction } from "./match";
+import { IllegalAction, ROUND_TURNS } from "./match";
 import { GAUNTLET } from "./rival";
 import { rivalDeck, rivalRelics } from "./rivalDecks";
 import {
@@ -40,7 +40,7 @@ function finishMatch(start: RunState, win: boolean): RunState {
     if (!match) throw new Error("no match");
     const last =
       match.phase === "turn" &&
-      match.round === 2 &&
+      match.round === ROUND_TURNS.length - 1 &&
       match.sides.player.turnsLeft === 1;
     if (last) {
       const rigged = {

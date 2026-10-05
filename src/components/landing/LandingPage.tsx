@@ -14,27 +14,7 @@ import { HuntDemo } from "./HuntDemo";
 import { LaneShowcase } from "./LaneShowcase";
 import { RivalFan } from "./RivalFan";
 import { StageFrame } from "./StageFrame";
-
-const WORDS = [
-  "zero",
-  "one",
-  "two",
-  "three",
-  "four",
-  "five",
-  "six",
-  "seven",
-  "eight",
-  "nine",
-  "ten",
-  "eleven",
-  "twelve",
-];
-
-function word(n: number, capital = false): string {
-  const text = WORDS[n] ?? String(n);
-  return capital ? text.charAt(0).toUpperCase() + text.slice(1) : text;
-}
+import { word } from "./words";
 
 /** "Flame, Mist, Volt, Thorn and Shade". */
 function listWords(words: readonly string[]): string {

@@ -12,8 +12,8 @@
  *
  * Phases
  *   setup    the rival keeps its opening hand, then the player keeps theirs
- *   turn     the seats alternate, the round's leader first; each takes 5, 4
- *            and 3 turns in the three rounds, and the lead changes hands
+ *   turn     the seats alternate, the round's leader first; each takes 8, 7,
+ *            6 and 5 turns in the four rounds, and the lead changes hands
  *            every round, the player leading the first (a reroll is free)
  *   pending  a power of the acting seat is waiting on its choice
  *   over     the result is final
@@ -39,7 +39,8 @@ import { combineMods, relicScore, type Mods } from "./relics";
 import { createRng, type Rng } from "./rng";
 
 export const SLOTS = 4;
-export const ROUND_TURNS = [5, 4, 3] as const;
+/** Turns a seat takes in each round; a match is as many rounds as this is long. */
+export const ROUND_TURNS = [8, 7, 6, 5] as const;
 /** Yarn spent to play a cat into column 1–4 of any row. */
 export const COLUMN_YARN_COST = [0, 1, 1, 2] as const;
 /** Base reward of a row by the number of cats in it (0–4). */
@@ -57,8 +58,9 @@ export const FEEDER_DICE = 5;
 export const TRAY_SIZE = 3;
 export const SETUP_CATS = 5;
 export const SETUP_KEEP = 5;
-export const GOAL_WIN_POINTS = [4, 5, 6] as const;
-export const GOAL_LOSE_POINTS = [1, 2, 3] as const;
+/** What each round's goal pays the higher count and the lower, one entry a round. */
+export const GOAL_WIN_POINTS = [4, 5, 6, 7] as const;
+export const GOAL_LOSE_POINTS = [1, 2, 3, 4] as const;
 
 export type Essence = Element | "wild";
 export const ESSENCES: readonly Essence[] = [...ELEMENTS, "wild"];

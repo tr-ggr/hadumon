@@ -47,6 +47,8 @@ import { rivalDeck } from "~/server/game/rivalDecks";
 import { starterDeck } from "~/server/game/run";
 import { toMatchView } from "~/server/game/view";
 
+import { word } from "./words";
+
 /** The Hunt row the visitor is handed, left to right. */
 const ROW = ["flameclaw", "burrfang", "cinderpounce"] as const;
 const RIVAL_ID = GAUNTLET[0] ?? "alley-tom";
@@ -394,8 +396,9 @@ export function HuntDemo() {
             {done ? (
               <>
                 <p className="max-w-[46ch] self-center text-sm leading-snug">
-                  That was one row for one round. A match has three rows and
-                  three rounds, and you build the rows yourself.
+                  That was one row for one round. A match has three rows and{" "}
+                  {word(ROUND_TURNS.length)} rounds, and you build the rows
+                  yourself.
                 </p>
                 <div className="flex shrink-0 gap-2.5">
                   <TableLink href="/signup" variant="primary">

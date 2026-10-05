@@ -119,8 +119,8 @@ describe("player view", () => {
     expect(view.standing).toMatchObject({ goalId: state.goals[0], player: 0 });
     expect(view.score.total).toBe(0);
     expect(view.lead).toBe("player");
-    expect(view.turnsLeft).toBe(5);
-    expect(view.rival.turnsLeft).toBe(5);
+    expect(view.turnsLeft).toBe(8);
+    expect(view.rival.turnsLeft).toBe(8);
   });
 
   it("offers a play that only a swap pays for, and not one out of reach", () => {

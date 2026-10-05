@@ -53,7 +53,7 @@ describe("levels", () => {
   it("answer the same position the same way", () => {
     for (let level = 0; level <= TOP_LEVEL; level++) {
       const bot = botAt(level, styleOf("the-archivist"));
-      for (const state of positions(`same-${level}`, 6)) {
+      for (const state of positions(`same-${level}`, 12)) {
         expect(act(state, bot)).toEqual(act(state, bot));
       }
     }
@@ -63,7 +63,7 @@ describe("levels", () => {
     for (let level = 0; level <= TOP_LEVEL; level++) {
       const bot = botAt(level, styleOf("old-nine-lives"));
       let most = 0;
-      for (const state of positions(`cap-${level}`, 3)) {
+      for (const state of positions(`cap-${level}`, 6)) {
         const before = meter.steps;
         act(state, bot);
         most = Math.max(most, meter.steps - before);
@@ -77,7 +77,7 @@ describe("levels", () => {
   it("only ever answer with a move the table lists or accepts", () => {
     for (let level = 0; level <= TOP_LEVEL; level++) {
       const bot = botAt(level, styleOf("dockside-twins"));
-      for (const state of positions(`legal-${level}`, 4)) {
+      for (const state of positions(`legal-${level}`, 8)) {
         expect(() => applyAction(state, act(state, bot))).not.toThrow();
       }
     }
@@ -127,7 +127,9 @@ describe("styles", () => {
         const tilt = style.weights[key] / NEUTRAL[key];
         expect(Math.abs(tilt - 1)).toBeLessThanOrEqual(TILT_LIMIT + 1e-9);
       }
-      expect(Math.abs(style.weights.yarn)).toBeLessThanOrEqual(TILT_LIMIT);
+      expect(Math.abs(style.weights.yarn - NEUTRAL.yarn)).toBeLessThanOrEqual(
+        TILT_LIMIT + 1e-9,
+      );
       expect([...style.habits].sort()).toEqual([
         "den",
         "hunt",

@@ -108,7 +108,7 @@ describe("simulated runs", () => {
       );
       expect(first?.level).toBe(rivalLevel(0, tier));
     }
-  });
+  }, 30_000);
 
   it("are reproducible from the seed", () => {
     const config = {

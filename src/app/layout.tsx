@@ -12,7 +12,7 @@ import { TRPCReactProvider } from "~/trpc/react";
 
 const TITLE = "HaduMon — a roguelike engine-builder about cats";
 const DESCRIPTION =
-  "Play feline Fakemon into three rows and chain their powers. Six rivals, twelve turns each, and nothing for sale.";
+  "Play feline Fakemon into three rows and chain their powers. Six rivals, twenty-six turns each, and nothing for sale.";
 
 /** Where absolute share URLs are resolved against; the deploy sets the rest. */
 const SITE_URL = env.NEXT_PUBLIC_SITE_URL ?? "https://hadumon.vercel.app";

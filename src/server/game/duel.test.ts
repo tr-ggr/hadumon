@@ -10,6 +10,7 @@ import {
   emptyPool,
   IllegalAction,
   reactsTo,
+  ROUND_TURNS,
   stepMatch,
   type Action,
   type MatchConfig,
@@ -103,7 +104,7 @@ describe("createMatch", () => {
       expect(side.hand).toEqual([]);
     }
     expect(state.feeder).toHaveLength(5);
-    expect(state.goals).toHaveLength(3);
+    expect(state.goals).toHaveLength(ROUND_TURNS.length);
   });
 
   it("deals each seat from its own stream", () => {
@@ -139,8 +140,8 @@ describe("setup", () => {
     const { state } = applyAction(kept.state, KEEP);
     expect(state.phase).toBe("turn");
     expect(state.active).toBe("player");
-    expect(state.sides.player.turnsLeft).toBe(5);
-    expect(state.sides.rival.turnsLeft).toBe(5);
+    expect(state.sides.player.turnsLeft).toBe(ROUND_TURNS[0]);
+    expect(state.sides.rival.turnsLeft).toBe(ROUND_TURNS[0]);
   });
 
   it("refuses anything but a keep", () => {
@@ -152,8 +153,8 @@ describe("setup", () => {
   it("gives Early Riser's turn to the seat that holds it", () => {
     const dealt = createMatch(config("duel", ["early-riser", "warm-saucer"]));
     const { state } = applyAction(applyAction(dealt, KEEP).state, KEEP);
-    expect(state.sides.player.turnsLeft).toBe(6);
-    expect(state.sides.rival.turnsLeft).toBe(5);
+    expect(state.sides.player.turnsLeft).toBe(ROUND_TURNS[0] + 1);
+    expect(state.sides.rival.turnsLeft).toBe(ROUND_TURNS[0]);
     expect(state.sides.player.essence.wild).toBe(1);
     expect(state.sides.rival.essence.wild).toBe(0);
   });
@@ -162,7 +163,7 @@ describe("setup", () => {
 describe("turn order", () => {
   /** Who acted on each whole turn of a match, round by round. */
   function order(relics: string[] = []): SideId[][] {
-    const rounds: SideId[][] = [[], [], []];
+    const rounds: SideId[][] = ROUND_TURNS.map(() => []);
     let state = createMatch(config("order", relics));
     state = applyAction(applyAction(state, KEEP).state, KEEP).state;
     while (state.phase !== "over") {
@@ -172,22 +173,25 @@ describe("turn order", () => {
     return rounds;
   }
 
-  it("alternates seats, 5, 4 and 3 turns each, the lead changing hands", () => {
+  it("alternates seats, 8, 7, 6 and 5 turns each, the lead changing hands", () => {
     const rounds = order();
     const p: SideId = "player";
     const r: SideId = "rival";
-    expect(rounds).toEqual([
-      [p, r, p, r, p, r, p, r, p, r],
-      [r, p, r, p, r, p, r, p],
-      [p, r, p, r, p, r],
-    ]);
+    expect(rounds.map((round) => round.length / 2)).toEqual([8, 7, 6, 5]);
+    expect(rounds.map((round) => round[0])).toEqual([p, r, p, r]);
+    for (const round of rounds) {
+      round.forEach((who, turn) => {
+        expect(who).toBe(turn % 2 === 0 ? round[0] : round[1]);
+      });
+      expect(round[1]).not.toBe(round[0]);
+    }
   });
 
   it("lets a seat with a turn to spare take it once the other is done", () => {
     const [first] = order(["early-riser"]);
-    expect(first).toHaveLength(11);
-    expect(first?.filter((who) => who === "player")).toHaveLength(6);
-    expect(first?.[10]).toBe("player");
+    expect(first).toHaveLength(17);
+    expect(first?.filter((who) => who === "player")).toHaveLength(9);
+    expect(first?.[16]).toBe("player");
   });
 
   it("does not pass the turn on a free reroll", () => {
@@ -495,7 +499,7 @@ describe("round goals", () => {
     expect(ended).toEqual(["player", "rival"]);
     expect(next.lead).toBe("rival");
     expect(next.active).toBe("rival");
-    expect(next.sides.player.turnsLeft).toBe(4);
+    expect(next.sides.player.turnsLeft).toBe(ROUND_TURNS[1]);
   });
 });
 
@@ -507,7 +511,7 @@ describe("the end of a match", () => {
         player: { turnsLeft: 0, ...sides.player },
         rival: { turnsLeft: 1, ...sides.rival },
       },
-      { round: 2, goals: ["crowd", "crowd", "pawful"] },
+      { round: 3, goals: ["crowd", "crowd", "crowd", "pawful"] },
       ["ember-charm"],
     );
 
@@ -529,23 +533,23 @@ describe("the end of a match", () => {
     expect(over.phase).toBe("over");
     // Flameclaw 2 + 2 yarn + the Ember Charm's 2 + the lower share of Pawful.
     expect(over.result?.player).toMatchObject({
-      total: 9,
-      goals: 3,
+      total: 10,
+      goals: 4,
       relics: 2,
     });
     // Bramblepaw 3 + 1 cached + 2 tucked + the goal.
     expect(over.result?.rival).toMatchObject({
-      total: 12,
-      goals: 6,
+      total: 13,
+      goals: 7,
       relics: 0,
     });
     expect(over.result?.won).toBe(false);
-    expect(sideScore(over, "rival").total).toBe(12);
+    expect(sideScore(over, "rival").total).toBe(13);
     expect(events[events.length - 1]).toEqual({
       type: "over",
       won: false,
-      player: 9,
-      rival: 12,
+      player: 10,
+      rival: 13,
       tiebreak: null,
     });
     expect(() => applyAction(over, { type: "den", targets: [] })).toThrow(
@@ -603,7 +607,7 @@ describe("the driver", () => {
       rival,
     );
     expect(next.active).toBe("player");
-    expect(next.sides.rival.turnsLeft).toBe(4);
+    expect(next.sides.rival.turnsLeft).toBe(ROUND_TURNS[0] - 1);
     const moves = events.flatMap((e) => (e.type === "move" ? [e.side] : []));
     expect(moves[0]).toBe("player");
     expect(moves).toContain("rival");
@@ -666,8 +670,9 @@ describe("engine guarantees", () => {
         }
         expect(state.phase).toBe("over");
         expect(state.result).not.toBeNull();
-        expect(turns).toBe(13);
-        expect(state.goalResults).toHaveLength(3);
+        // Every round's turns, and Early Riser's one more.
+        expect(turns).toBe(8 + 7 + 6 + 5 + 1);
+        expect(state.goalResults).toHaveLength(ROUND_TURNS.length);
       }
     }
   });

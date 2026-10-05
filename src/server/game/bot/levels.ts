@@ -4,12 +4,13 @@
  *
  *   0  a fixed list of priorities, no evaluation, never trades
  *   1  the same list, choosing its cat, its dice and its keep with care
- *   2  one step ahead, counting points only
- *   3  one step ahead, counting points and the round goal
+ *   2  the list for the kind of move and one step ahead, on points, for
+ *      which; in the last two rounds, whatever scores the most
+ *   3  the same, counting the round goal as well
  *   4  one step ahead with the full evaluation
  *   5  its 3 best moves, each played out twice to the end of the round
  *   6  its 6 best moves, each played out 6 times to the end of the match
- *   7  its 8 best moves and 256 playouts to the end of the match, spent on
+ *   7  its 8 best moves and 96 playouts to the end of the match, spent on
  *      the moves still in the running
  *
  * Every level is a pure function of what its seat can see and an RNG, and
@@ -28,6 +29,7 @@ import {
   defaultSwap,
   ESSENCES,
   otherSide,
+  ROUND_TURNS,
   rowReward,
   seatActions,
   SETUP_KEEP,
@@ -43,8 +45,10 @@ import type { Rng } from "../rng";
 import {
   evaluate,
   keepValue,
+  MATCH_TURNS,
   NEUTRAL,
   pointsLead,
+  turnsToCome,
   wantedFood,
   type Weights,
 } from "./eval";
@@ -62,7 +66,7 @@ export type Bot = (seen: Observation, rng: Rng) => Action;
 export type LevelSpec =
   /** The fixed list. `sharp` picks its cat, its dice and its keep with care. */
   | { kind: "rote"; sharp: boolean }
-  /** One step ahead on points alone, or on points and the round goal. */
+  /** The list led one step ahead on points, or on points and the round goal. */
   | { kind: "points"; goal: boolean; cap: number }
   /** One step ahead with the full evaluation. */
   | {
@@ -152,10 +156,10 @@ export const LEVELS: readonly LevelSpec[] = [
   {
     kind: "playouts",
     moves: 8,
-    stages: [16, 16, 32],
+    stages: [6, 6, 12],
     until: "match",
     by: "points",
-    cap: 9000,
+    cap: 6000,
   },
 ];
 
@@ -236,9 +240,10 @@ function firstPlay(own: OwnSeat, sharp: boolean): Action | null {
 }
 
 /**
- * The fixed list: play a cat if one can be played; with no cats in hand,
- * prowl for some; with a cat that only yarn is keeping off the board, go to
- * the Den; otherwise hunt.
+ * The fixed list: play a cat if one can be played; with no room left on the
+ * board, or no turn left to play what a row would fetch, go to the Den for
+ * yarn; with no cats in hand, prowl for some; with a cat that only yarn is
+ * keeping off the board, go to the Den; otherwise hunt.
  */
 function byRote(seen: Observation, sharp = false): Action {
   const own = seen.own;
@@ -260,6 +265,13 @@ function byRote(seen: Observation, sharp = false): Action {
   }
   const play = firstPlay(own, sharp);
   if (play) return play;
+  // Cats and food are for playing cats: with nowhere to play one, or no
+  // turn after this to do it in, only yarn is still worth a point.
+  const full = ROWS.every((row) => own.board[row].length >= SLOTS);
+  const last = turnsToCome(seen.round, own.turnsLeft) <= 1;
+  if ((full || last) && boardYarnRoom(own.board) > 0) {
+    return plainRow(seen, "den");
+  }
   if (own.hand.length === 0) return plainRow(seen, "prowl");
   const discount = auraTotal(own.board, "discount");
   const fed = own.hand.some(
@@ -474,7 +486,22 @@ const GOAL_ONLY: Weights = {
   deny: 0,
 };
 
-/** Whatever puts the most points on the table this turn. */
+/**
+ * The turns at the end of a match in which a cat played has too little time
+ * left to earn its keep: the last two rounds. Measured, a level that stops
+ * building there and takes its points beats one that stops a round later.
+ */
+const ENDGAME_TURNS = ROUND_TURNS.slice(-2).reduce<number>(
+  (sum, turns) => sum + turns,
+  0,
+);
+
+/**
+ * The fixed list says what kind of move to make, and one step ahead says
+ * which: the cat, the row and the trade that put the most points on the
+ * table. In the last two rounds the list is dropped and it makes whatever
+ * move scores the most.
+ */
 function byPoints(
   seen: Observation,
   rng: Rng,
@@ -489,7 +516,13 @@ function byPoints(
     budget: { left: cap },
     value: goal ? (state, who) => evaluate(state, who, GOAL_ONLY) : pointsLead,
   };
-  const ranked = rank([imagine(seen, rng)], seen.me, mind, false);
+  const all = rank([imagine(seen, rng)], seen.me, mind, false);
+  // Points alone never hunt or prowl, and a board is built on food and cats.
+  const building = turnsToCome(seen.round, seen.own.turnsLeft) > ENDGAME_TURNS;
+  const listed = building
+    ? all.filter((entry) => entry.action.type === rote.type)
+    : all;
+  const ranked = listed.length > 0 ? listed : all;
   const top = ranked[0];
   if (!top) return rote;
   // With nothing to choose between them, it does what it would do by rote.
@@ -575,10 +608,22 @@ function byValue(
 /** The lead, in points, at which a playout counts as about three-quarters won. */
 const WIN_MARGIN = 3;
 
+/**
+ * Moves a seat makes in a turn, at most, as a playout counts them: the turn,
+ * and the choices its powers stop for.
+ */
+const MOVES_A_TURN = 3;
+/** The most moves a playout may make: a whole match for both seats. */
+const PLAYOUT_MOVES = MATCH_TURNS * 2 * MOVES_A_TURN;
+
 /** Plays a fork on with `quickMove` for both seats until it should stop. */
 function playOut(state: MatchState, until: Playouts["until"], budget: Budget) {
   const round = state.round;
-  for (let guard = 0; guard < 80 && state.phase !== "over"; guard++) {
+  for (
+    let guard = 0;
+    guard < PLAYOUT_MOVES && state.phase !== "over";
+    guard++
+  ) {
     if (until === "round" && state.round !== round) return;
     tryMove(state, quickMove(state), budget);
   }
@@ -622,10 +667,19 @@ function byPlayouts(
   const mean = (entry: (typeof running)[number]) =>
     entry.n === 0 ? -Infinity : entry.total / entry.n;
 
+  // What one playout from here can cost: the turns both seats have left in
+  // the round or the match, with a choice to answer every other turn.
+  const turns =
+    plan.until === "round"
+      ? seen.own.turnsLeft + seen.other.turnsLeft
+      : turnsToCome(seen.round, seen.own.turnsLeft) +
+        turnsToCome(seen.round, seen.other.turnsLeft);
+  const reach = Math.ceil(turns * 1.5) + 2;
+
   for (const playouts of plan.stages) {
     for (let i = 0; i < playouts; i++) {
       // Enough left to play every move still running to the end once more.
-      if (mind.budget.left < running.length * 40) break;
+      if (mind.budget.left < running.length * reach) break;
       const table = imagine(seen, rng);
       for (const entry of running) {
         const next = fork(table);

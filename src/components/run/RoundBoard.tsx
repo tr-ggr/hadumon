@@ -17,7 +17,7 @@ export function roundTurns(match: MatchView, round: number): number {
 }
 
 /**
- * The three rounds as tiles: the turns as cubes, the goal and what it pays,
+ * The rounds as tiles: the turns as cubes, the goal and what it pays,
  * and how the goal stands or how it went. In the match's rail they stack,
  * and the rounds that are not being played are cut down to a line or two.
  */
@@ -34,7 +34,7 @@ export function RoundBoard({
   return (
     <ol
       aria-label="Rounds"
-      className={`grid gap-2.5 sm:grid-cols-3 ${rail ? "lg:grid-cols-1 lg:gap-2" : ""} ${className}`}
+      className={`grid gap-2.5 sm:grid-cols-2 ${rail ? "lg:grid-cols-1 lg:gap-2" : ""} ${className}`}
     >
       {match.goals.map((goalId, round) => (
         <RoundTile
@@ -84,7 +84,7 @@ function RoundTile({
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-print text-xl">Round {round + 1}</h3>
         <p
-          className={`flex items-center gap-1 ${line ? "lg:short:hidden" : ""}`}
+          className={`flex flex-wrap items-center justify-end gap-1 ${line ? "lg:short:hidden" : ""}`}
         >
           {Array.from({ length: turns }, (_, i) => (
             <TurnCube key={i} spent={i >= left} />
