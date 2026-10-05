@@ -33,14 +33,45 @@ export function PixelSprite({
 }: PixelSpriteProps) {
   const cat = getCat(catId);
   const colors = spriteColors(cat.element, cat.rarity, cat.id);
-  const runs = buildRuns(catSprite(catId), colors);
+
+  return (
+    <SpriteSvg
+      rows={catSprite(catId)}
+      colors={colors}
+      name={label ?? cat.name}
+      label={label ?? `${cat.name} pixel sprite`}
+      size={size}
+      className={className}
+      decorative={decorative}
+    />
+  );
+}
+
+/** A 16x16 grid drawn as crisp inline SVG, one rect per run of a colour. */
+export function SpriteSvg({
+  rows,
+  colors,
+  name,
+  label,
+  size,
+  className,
+  decorative,
+}: {
+  rows: readonly string[];
+  colors: Record<string, string | null>;
+  /** The sprite's title, shown on hover. */
+  name: string;
+  label: string;
+  size: number;
+  className?: string;
+  decorative: boolean;
+}) {
+  const runs = buildRuns(rows, colors);
 
   return (
     <svg
       role={decorative ? undefined : "img"}
-      aria-label={
-        decorative ? undefined : (label ?? `${cat.name} pixel sprite`)
-      }
+      aria-label={decorative ? undefined : label}
       aria-hidden={decorative ? true : undefined}
       viewBox={`0 0 ${SPRITE_SIZE} ${SPRITE_SIZE}`}
       width={size}
@@ -49,7 +80,7 @@ export function PixelSprite({
       className={className}
       style={{ imageRendering: "pixelated" }}
     >
-      {decorative ? null : <title>{label ?? cat.name}</title>}
+      {decorative ? null : <title>{name}</title>}
       {runs.map((run) => (
         <rect
           key={`${run.y}-${run.x}`}

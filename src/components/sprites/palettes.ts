@@ -69,3 +69,24 @@ export function spriteColors(
     w: WHITE_COLOR,
   };
 }
+
+/**
+ * Every rival is the rival coral, whoever it is: a lighter coral for the
+ * belly and a deeper one for what it wears.
+ */
+export const RIVAL_PALETTE: FurPalette = {
+  "1": "#ff7163",
+  "2": "#ffc0b8",
+  "3": "#c2463a",
+};
+
+/** The legend character → CSS colour map every rival sprite is drawn with. */
+export function rivalColors(): Record<string, string | null> {
+  return {
+    ".": null,
+    o: OUTLINE_COLOR,
+    ...RIVAL_PALETTE,
+    e: OUTLINE_COLOR,
+    w: WHITE_COLOR,
+  };
+}

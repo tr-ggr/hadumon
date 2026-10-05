@@ -3,15 +3,19 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { ClanPick } from "~/components/run/ClanPick";
+import { Climb } from "~/components/run/Climb";
 import { MatchBoard } from "~/components/run/MatchBoard";
 import { RewardPick } from "~/components/run/RewardPick";
 import { RunStrip } from "~/components/run/RunStrip";
 import { RunSummary } from "~/components/run/RunSummary";
 import { SetupKeep } from "~/components/run/SetupKeep";
 import { TableArea, TableSurface } from "~/components/run/TableSurface";
+import { useClimb } from "~/components/run/useClimb";
 import { useRunController } from "~/components/run/useRunController";
 import { TableButton } from "~/components/run/pieces";
 import { Button, Modal, Skeleton } from "~/components/ui";
+
+const NO_FLOORS: readonly string[] = [];
 
 /**
  * The whole game on one route. Which screen shows is decided by the run's
@@ -27,25 +31,51 @@ export function RunView() {
   const match = view?.match ?? null;
   const landing = run.turn !== null && match !== null;
 
+  // The way up the tower comes before the screen the run is now on. It is
+  // stepped from here, not from its own screen, so the press that skips it
+  // is still caught after that screen has gone.
+  const climb = landing ? null : run.climb;
+  const climbing = useClimb(
+    climb,
+    view?.gauntlet ?? NO_FLOORS,
+    run.finishClimb,
+  );
+
   // A new screen starts at its top, not wherever the last one was scrolled to.
   const screen =
-    run.final && !landing
-      ? "summary"
-      : !view
-        ? "clans"
-        : landing
-          ? `board:${view.matchIndex}`
-          : view.phase === "reward"
-            ? `reward:${view.matchIndex}`
-            : match?.phase === "setup"
-              ? `setup:${view.matchIndex}`
-              : `board:${view.matchIndex}`;
+    climb && climbing.frame
+      ? `climb:${climb.id}`
+      : run.final && !landing
+        ? "summary"
+        : !view
+          ? "clans"
+          : landing
+            ? `board:${view.matchIndex}`
+            : view.phase === "reward"
+              ? `reward:${view.matchIndex}`
+              : match?.phase === "setup"
+                ? `setup:${view.matchIndex}`
+                : `board:${view.matchIndex}`;
   const lastScreen = useRef(screen);
   useEffect(() => {
     if (lastScreen.current === screen) return;
     lastScreen.current = screen;
     window.scrollTo({ top: 0 });
   }, [screen]);
+
+  if (climb && climbing.frame && view) {
+    return (
+      <TableSurface>
+        <Climb
+          key={climb.id}
+          climb={climb}
+          frame={climbing.frame}
+          gauntlet={view.gauntlet}
+          onSkip={climbing.skip}
+        />
+      </TableSurface>
+    );
+  }
 
   if (run.final && !landing) {
     return (

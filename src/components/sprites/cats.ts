@@ -412,7 +412,7 @@ export const SPRITE_PATCHES: Record<string, readonly SpritePatch[]> = {
 };
 
 /** Returns `rows` with one patch written over it. */
-function applyPatch(
+export function applyPatch(
   rows: readonly string[],
   [row, column, pixels]: SpritePatch,
 ): string[] {

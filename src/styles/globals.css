@@ -20,6 +20,11 @@
   --color-chipboard: #b9a47e;
   --color-sky-deep: #73bde4;
   --color-cloth: #f4ead4;
+  /* The tower a run climbs: the only greys, used only for it. */
+  --color-stone: #9aa9b7;
+  --color-stone-light: #d0dae2;
+  --color-stone-rib: #6e7f90;
+  --color-stone-deep: #3a4857;
   /* Compatibility aliases for route-level utility classes. */
   --color-navy: #fff8e7;
   --color-navy-deep: #f4ead4;
@@ -539,6 +544,53 @@
 }
 .tabletop .anim-roll {
   animation: die-roll 280ms steps(4, end) both;
+}
+
+/*
+ * The climb between matches. `--px` is one pixel of the tower and of every
+ * sprite on it, so a cat is 16 of them wherever it stands. Hadu goes from
+ * ledge to ledge in steps and hops as it lands; a rival slides up into its
+ * window from under the sill.
+ */
+.tabletop .climb {
+  --px: 2px;
+}
+@media (min-width: 40rem) and (min-height: 50rem) {
+  .tabletop .climb {
+    --px: 3px;
+  }
+}
+.tabletop .climb-sprite {
+  display: block;
+  width: calc(var(--px) * 16);
+  height: calc(var(--px) * 16);
+}
+.tabletop .climb-pennant {
+  width: calc(var(--px) * 8);
+  height: calc(var(--px) * 8);
+}
+.tabletop .climb-cast {
+  background: var(--cast-cloth);
+}
+.tabletop .climb-hadu {
+  transform: translate(
+    calc(var(--x, 0) * var(--px)),
+    calc(var(--rise, 0) * var(--px) * -1)
+  );
+  transition: transform 320ms steps(4, end);
+}
+.tabletop .climb-hop {
+  animation: crowd-hop 360ms steps(1, end) 1;
+}
+.tabletop .climb-rival {
+  transform: translateY(100%);
+  transition: transform 240ms steps(3, end);
+}
+.tabletop .climb-rival[data-state="peek"] {
+  transform: translateY(37.5%);
+}
+.tabletop .climb-rival[data-state="out"] {
+  transform: translateY(0);
 }
 
 /*

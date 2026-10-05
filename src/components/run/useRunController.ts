@@ -9,6 +9,7 @@ import type { RewardChoice } from "~/server/game/run";
 import type { MatchView } from "~/server/game/view";
 import { api, type RouterOutputs } from "~/trpc/react";
 
+import { climbAfter, climbFits, type ClimbRecord } from "./climb";
 import {
   describeAction,
   describeEvents,
@@ -76,7 +77,20 @@ export function useRunController() {
   const [recap, setRecap] = useState<Recap>(NO_RECAP);
   /** The id of the last turn the table finished playing back. */
   const [played, setPlayed] = useState(0);
+  /** The climb up the tower still to be shown. A reload simply skips it. */
+  const [climb, setClimb] = useState<ClimbRecord | null>(null);
   const nextLogId = useRef(1);
+  const nextClimbId = useRef(1);
+
+  const climbFor = useCallback(
+    (trigger: Parameters<typeof climbAfter>[0], update: RunSnapshot) => {
+      const next = climbAfter(trigger, update.view);
+      setClimb(
+        next ? { id: nextClimbId.current++, runId: update.id, ...next } : null,
+      );
+    },
+    [],
+  );
 
   const store = useCallback(
     (update: RunSnapshot | RunUpdate) => {
@@ -97,6 +111,7 @@ export function useRunController() {
   const onError = useCallback(
     (error: { message: string; data?: { code?: string } | null }) => {
       if (error.data?.code === "CONFLICT" || error.data?.code === "NOT_FOUND") {
+        setClimb(null);
         notify("The run was updated somewhere else. Caught up now.", "error");
         void utils.run.current.invalidate();
         return;
@@ -110,6 +125,7 @@ export function useRunController() {
     onSuccess: (snapshot) => {
       setFinal(null);
       setRecap(NO_RECAP);
+      climbFor("start", snapshot);
       store(snapshot);
     },
     onError,
@@ -148,6 +164,7 @@ export function useRunController() {
           };
         });
       }
+      climbFor("act", update);
       store(update);
     },
     onError,
@@ -156,13 +173,17 @@ export function useRunController() {
   const reward = api.run.chooseReward.useMutation({
     onSuccess: (update) => {
       setRecap(NO_RECAP);
+      climbFor("reward", update);
       store(update);
     },
     onError,
   });
 
   const abandon = api.run.abandon.useMutation({
-    onSuccess: store,
+    onSuccess: (update) => {
+      setClimb(null);
+      store(update);
+    },
     onError,
   });
 
@@ -172,6 +193,10 @@ export function useRunController() {
   const live = shown && recap.key === matchKey(shown) ? recap : NO_RECAP;
   const version = snapshot?.version;
   const finishTurn = useCallback((id: number) => setPlayed(id), []);
+  const finishClimb = useCallback(
+    (id: number) => setClimb((prev) => (prev?.id === id ? null : prev)),
+    [],
+  );
 
   return {
     snapshot,
@@ -195,6 +220,13 @@ export function useRunController() {
      */
     turn: live.turn && live.turn.id !== played ? live.turn : null,
     finishTurn,
+    /**
+     * The climb to show before the screen the run is on, else `null`. It is
+     * dropped the moment the run is anywhere but where it was heading.
+     */
+    climb:
+      climb && shown && climbFits(climb, shown.id, shown.view) ? climb : null,
+    finishClimb,
     dismissGoal: () => setRecap((prev) => ({ ...prev, goal: null })),
     start: (clanId: Element) => start.mutate({ clanId }),
     act: (action: Action) => {
@@ -207,7 +239,10 @@ export function useRunController() {
       if (version !== undefined) abandon.mutate({ version });
     },
     /** Leaves the summary of a finished run. */
-    clearFinal: () => setFinal(null),
+    clearFinal: () => {
+      setClimb(null);
+      setFinal(null);
+    },
   };
 }
 
