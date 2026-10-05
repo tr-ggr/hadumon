@@ -17,7 +17,7 @@ OWN-WORLD: Pieces on a Cream Table (DESIGN.md), now the whole app: die-cut cardb
 
 STORY: See the tower and how far up it the run is; read the ribbon, which says where things stand; meet the rival who is next across the table; press the one cobalt button; under that, the record book and the codex.
 
-FIRST VIEWPORT: The ink lid (wordmark, Home in lime and pressed, Play in cobalt, Codex in cream, the name, the speaker, the notes, Log out). Under it, over the sky and the sea, at the left: the cream plaque with the wordmark and the lime ribbon carrying the h1 ("Six rivals are waiting", "Up against Alley Tom", "A reward is waiting"); a sky mat with the clan's cat, "Welcome back, name", one sentence, the coming rival's coral nameplate, the gauntlet track and one large cobalt "Start a run" or "Continue run". At the right, clear of all of it, the whole tower: pennants on the floors taken, rivals at the windows still to come, Hadu where the run has got to. Around it the scene: ember sky dithering down to pale gold, clouds along the horizon, a glinting cobalt sea, the ink rock under the tower's foot and the dark near shore at the left.
+FIRST VIEWPORT: The ink lid (wordmark, Home in lime and pressed, Play in cobalt, Deck, Shop and Codex in cream, the coin chip, the player's hadu, the speaker, the notes, Log out). Under it, over the sky and the sea, at the left: the cream plaque with the wordmark and the lime ribbon carrying the h1 ("Six rivals are waiting", "Up against Alley Tom", "A reward is waiting"); a sky mat with the player's hadu, "Welcome back, name", one sentence, the coming rival's coral nameplate, the gauntlet track and one large cobalt "Start a run" or "Continue run". At the right, clear of all of it, the whole tower: pennants on the floors taken, rivals at the windows still to come, Hadu where the run has got to. Around it the scene: ember sky dithering down to pale gold, clouds along the horizon, a glinting cobalt sea, the ink rock under the tower's foot and the dark near shore at the left.
 
 FORM: Not recorded in the build. This brief was written after the fact from the shipped code (commits `e86d9f3..4c973de`); no seed key, pin or comp was handed to the documenter.
 
@@ -34,10 +34,10 @@ FINISH: documented from the build in DESIGN.md on 2026-10-05. The finish review 
 
 All the same shape: masthead, mat, one way forward.
 
-- Loading: a blank in the ribbon, blanks on the mat, Flameclaw on the mat.
+- Loading: a blank in the ribbon, blanks on the mat, the hadu on the mat.
 - The run did not answer: "Your run did not answer", one sentence, a large cobalt "Try again" beside a large cream "Go to Play".
 - No run: "Six rivals are waiting", "None of them are in a hurry.", the first rival's nameplate under "First across the table", six dashed markers on the track, "Start a run".
-- A match in progress: "Up against <rival>", the clan, the tier and the match number, the rival's flavor line, its nameplate under "Across the table", "Continue run".
+- A match in progress: "Up against <rival>", the tier and the match number, the rival's flavor line, its nameplate under "Across the table", "Continue run".
 - A reward waiting: "A reward is waiting", then the next rival's nameplate under "Next across the table", "Continue run".
 
 ## Signature interaction

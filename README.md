@@ -2,16 +2,20 @@
 
 A web-based **roguelike engine-builder** about feline "Fakemon".
 
-A run is a gauntlet of **six short matches** against rivals who play the same
+You build a deck of 24 cats, and the rivals steal eight of them. A run is a
+gauntlet of **six matches** to take them back, against rivals who play the same
 game across the table. In a match you play pixel-art cats into three habitat
 rows and activate a row to take its reward and fire every cat's power in it,
-right to left, in the manner of base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
-and the run is over. Only unlocks carry between runs. Between matches the run
-is shown as a grey tower of six floors: Hadu climbs one for every win, past a
-rival at each window, to the roof, full screen, with a camera that follows him
-up and a title card for whoever he meets.
+right to left, in the manner of base-game Wingspan. Win a match and one stolen
+card comes back. Lose one and the run is over. Between matches the run is
+shown as a tower of six floors: your hadu climbs one for every win, past a
+rival at each window, to the roof, full screen, with a camera that follows it
+up and a title card for whoever it meets.
 
-There is no gacha, no idle play, no currency and no multiplayer.
+A finished run pays **coins**, coins open **packs**, and packs fill the
+collection your deck is built from and dress your hadu, your table and the
+tower. Coins are only ever earned by playing: the game takes no money. There
+is no idle play and no multiplayer.
 
 ## How a match plays
 
@@ -29,45 +33,63 @@ There is no gacha, no idle play, no currency and no multiplayer.
 - **Trade spots.** A lane holding exactly one cat or three offers a trade when
   you activate it: a cat from your hand for one more die, a food for one more
   yarn, a yarn for one more cat.
-- **Three rounds** of 5, 4 and 3 turns each. Each round ends with a goal,
+- **Four rounds** of 8, 7, 6 and 5 turns each. Each round ends with a goal,
   scored on what each side really has.
 - **The rival** sits across the table with its own deck, hand, food and three
   lanes, and takes a real turn after each of yours under the same rules. It
   shares your feeder, so the dice it takes are gone. You can open its board at
   any time; its hand stays face down. A bot plays it, and the bot is shown only
   what its seat can see.
-- **You win** by outscoring it after the twelfth turn. Level on points, the
+- **You win** by outscoring it after the last turn of the fourth round. Level on points, the
   match goes to the side with more food left, then more cats, then to you.
 
 ## How a run plays
 
-- Pick a **clan**: a 16-card starter deck built around one element, plus that
-  clan's relic.
+- Build a **deck** at `/deck`: exactly 24 cards you own, at most three of a cat
+  and one of a legendary. A new account has a default one.
 - Pick how hard: **Kitten**, **Stray** or **Apex**. No tier gives a rival a
   point, a card or a food. A rival plays at one of eight levels, its place in
   the gauntlet plus the tier's rank, so on a harder tier the same six rivals
   only think further ahead, and the level is printed on the nameplate.
-- Six rivals in a fixed order, with **bosses at 3 and 6**.
-- After each win, add one of three offered cats (or skip) and optionally trim a
-  card. After matches 1, 3 and 5, also choose a **relic**, a run-long passive.
+- The run opens with **eight of your cards stolen** and a **chest** of three
+  relics to take one from. Giving the run up there and starting again deals
+  the same theft and the same chest.
+- Six rivals in a fixed order, with **bosses at 3 and 6**. A rival's deck is
+  the size of yours and as rare as the deck you built, drawn from cats you own.
+- After each win, take back one of three stolen cards shown (or none) and
+  optionally trim a card. After matches 1, 3 and 5, also choose a **relic**, a
+  run-long passive. No new cat joins a deck during a run.
 - The board resets every match; the deck and relics carry through.
-- Finished runs unlock new cats, relics and clans. Nothing makes a later run
-  stronger from the start. Every tier earns unlocks; three of them ask for a
-  harder one: the Loud Bell (beat Madame Mittens on Stray or harder), the
-  Quiet Corner (win a run on Stray or harder) and Hadu (win a run on Apex).
+- A run that ends, however it ends, pays **coins** for the matches it
+  finished. You are shown the total. Some runs also pay a prize: a relic
+  unlocked for later chests, or a copy of one of eleven trophy cats.
+
+## Between runs
+
+- **The shop** (`/shop`) sells seven packs for coins. Five hold cats, one
+  element each, five cats a pack with the last rare or better. Two hold
+  cosmetics and never a piece you have. A cat you already hold every copy of
+  is paid back in coins, always less than the pack cost.
+- **The deck** (`/deck`) is built from your collection and saved; a run in
+  progress keeps the deck it began with.
+- **Your profile** (`/profile`) is your hadu: Hadu in the hat, eyes, body, tail
+  and aura you have put on him, and the board, tablecloth, tower and sky your
+  game is dressed in. None of it changes a rule.
+- **The codex** (`/codex`) lists all 102 cats with how many of each you own,
+  the relics, and the six rivals.
 
 ## At the table
 
 The match fills the screen, with no app shell around it: five small buttons in
 the top right corner set the sound and the music and go Home, to the Codex, and
 to Log out. It is laid out as a
-table. A rail down the left holds the rival, the three rounds and your turn
+table. A rail down the left holds the rival, the four rounds and your turn
 (scores, food, the prompt and its confirm); the shared supply (feeder, tray,
 deck) and your mat of three lanes are in the centre; the score sheet, relics
 and log stand to the right; and your hand is a fan along the bottom edge. Hover
 a card, or pick it, and it stands upright with its whole face showing. On a
 narrow screen it is one column with the turn and the hand docked at the bottom.
-The screens around a match (clan pick, opening hand, reward, summary) are one
+The screens around a match (the start, the chest, opening hand, reward, summary) are one
 1120px column; on a window of 1680x930 or more they are magnified whole, in
 half steps from 1.5x, to the largest size the window has room for.
 After each action the turn is played back one step
@@ -81,7 +103,7 @@ The table has sound and music, made in the browser with the Web Audio API
 (there are no audio files). Every screen of a run has its own chiptune and
 every rival its own theme. Every press on the table is heard, a press on nothing is a dull knock on the
 cloth, a mouse coming onto a button or a card is a short tick, and each of the
-26 cats has a voice of its own, played when it is chosen or turned over to
+102 cats has a voice of its own, played when it is chosen or turned over to
 read. The speaker button in the corner cycles full, quiet and off for both; the note button beside it turns the music alone off. Both
 choices are kept in the browser. Nothing plays in a background tab.
 
@@ -183,6 +205,11 @@ git add drizzle && git commit
 Migration `0001_drop_old_game` removes the tables of the earlier idle game.
 Deploying it deletes that game's data for every account.
 
+Migrations `0006_coins_cards_cosmetics` and `0007_drop_run_clan` add the
+profile, card, deck, cosmetic and pack tables and drop a run's clan column.
+They delete nothing else; a run saved before them is closed as abandoned the
+next time its owner opens the game.
+
 Migration `0004_auth_clean_break` moves accounts to email sign-in and **deletes
 every user**, with their runs and unlocks: the old accounts had a username and
 no email to carry over. `0005_better_auth` then adds the new tables. Before the
@@ -221,7 +248,9 @@ pnpm db:seed:prod
 | `pnpm db:seed`                            | Create the demo account                                         |
 | `pnpm db:seed:prod`                       | Same seed against `.env.production.local` (see Deploying)       |
 | `pnpm db:studio`                          | Drizzle Studio                                                  |
-| `pnpm selfplay`                           | Bots play each other; writes `sprints/data/14-ladder.json`      |
+| `pnpm selfplay`                           | Bots play each other; writes `sprints/data/15-ladder.json`      |
+| `pnpm sprites:recipes`                    | Picks sprite recipes for cats that have none, far apart         |
+| `pnpm sprites:sheet`                      | Draws every cat on one page to look over                        |
 | `pnpm bench:bot`                          | How many moves each level tries, and how long it takes          |
 | `pnpm format:write` / `pnpm format:check` | Prettier                                                        |
 
@@ -235,15 +264,24 @@ src/
     forgot-password/      shell); their forms are components/auth/
     reset-password/
     api/auth/[...all]/    Better Auth's route handler
-    run/                  The game: clan pick, match, reward, the climb, summary
-    codex/                Every cat, relic, clan and rival, locked or not, as a
-                          book: it opens by itself, and its pages turn
+    run/                  The game: the start, the chest, match, reward, the
+                          climb, summary
+    deck/                 The deck builder
+    shop/                 The packs, and opening one
+    profile/              The player's hadu, and the table and tower skins
+    codex/                Every cat, relic and rival, owned or not, as a book:
+                          it opens by itself, and its pages turn
   components/
-    AppShell.tsx          Sidebar, top bar and mobile nav (not on /run, which has its own corner buttons)
+    AppShell.tsx          The lid (nav, coins, the hadu) and a phone's dock (not on /run, which has its own corner buttons)
+    HaduAvatar.tsx        The player's hadu: Hadu in the cosmetics worn
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
     RivalSprite.tsx       The same renderer for the six rivals, in coral
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
-    sprites/              Cat, rival, icon, tower and habitat grids, and their palettes
+    sprites/              Cat, rival, icon, tower and habitat grids, the cats'
+                          parts and recipes, the hadu's pieces, and their palettes
+    skins/                The colours of every board, cloth, tower and sky,
+                          and the provider that dresses the page in a look
+    deck/  shop/  profile/  The three pages' components and their rules
     auth/                 The sign-in, sign-up, forgot and reset forms, the
                           screen they stand on, and the strength meter
     cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
@@ -266,25 +304,34 @@ src/
                           the demo login, form validation, error copy, and
                           the strength estimate (zxcvbn, loaded on demand)
   server/
-    api/                  tRPC root, context, routers (auth, run, codex)
+    api/                  tRPC root, context, routers (auth, run, codex,
+                          collection, shop, profile) and the coin and card
+                          helpers they share (economy.ts)
     auth/                 The Better Auth config, scrypt hashing, the current
                           user, and the reset email
     db/                   Drizzle client, schema/ (users, sessions, accounts,
-                          verifications, rate limits, runs, unlocks), seed.ts
+                          verifications, rate limits, runs, unlocks, profiles,
+                          cards, decks, cosmetics, pack opens), seed.ts
     game/                 The engine: pure, seeded, unit tested
-      cats.ts             The 26 cats and their powers, as data
+      cats.ts             The 102 cats and their powers, as data
       match.ts            One match for two seats: actions, powers, goals, score
       duel.ts             The driver: the player's action, then the rival's
       bot/                The rival's mind: what its seat sees, eight levels,
                           a style for each rival, and bots playing each other
       rival.ts            The six rivals: a clan and a manner each
       rivalDecks.ts       The deck and the charm each rival brings to a match
-      clans.ts            The five starter decks and their relics
+      clans.ts            The rivals' five clans: a starter deck and a charm each
+      collection.ts       The cards an account owns, and the copy caps
+      deck.ts             The 24-card deck and what makes one legal
+      packs.ts            The seven packs and what opening one gives
+      cosmetics.ts        What a hadu, a table and the tower can wear
+      payout.ts           What a run pays in coins (server only)
       goals.ts            Round goals
       relics.ts           Relics and the rule changes they make
       difficulty.ts       The three tiers: the level each rival plays at
-      run.ts              The gauntlet: clans, rewards, match-to-match flow
-      unlocks.ts          What a finished run unlocks
+      run.ts              The gauntlet: the theft, the chest, rewards,
+                          match-to-match flow
+      unlocks.ts          The prizes a finished run pays, each once
       view.ts             The redacted state the client is allowed to see
       rng.ts              Seeded deterministic RNG
   styles/globals.css      Tailwind v4 theme tokens and utilities
@@ -294,7 +341,8 @@ The engine is a pair of pure state machines. `applyAction(state, action)` never
 mutates its input and draws all randomness from an RNG seeded by the run seed
 and a step counter, so a state and an action always give the same result. The
 server is authoritative: the client receives `toRunView(state)`, which leaves
-out both decks' order, the rival's hand and the seed. Routers stay thin: lock the
+out both decks' order, the rival's hand, the seed and the deck as it was
+built, and of a run's coins it is sent the total and nothing else. Routers stay thin: lock the
 run row, check its `version`, call the engine, persist.
 
 ## Sprints
@@ -305,5 +353,8 @@ the rules and conventions of the current game, and
 reference.
 [`sprints/14-real-rival.md`](./sprints/14-real-rival.md) records how the rival
 came to play the game for real: the bot, its eight levels, and the measurements
-the gauntlet was set from. Sprints 00 to 07 describe the earlier idle game and are kept as
+the gauntlet was first set from.
+[`sprints/15-coins-packs-decks.md`](./sprints/15-coins-packs-decks.md) records
+coins, packs, the built deck, the stolen-deck run and the four-round match,
+with what was measured for them. Sprints 00 to 07 describe the earlier idle game and are kept as
 history.

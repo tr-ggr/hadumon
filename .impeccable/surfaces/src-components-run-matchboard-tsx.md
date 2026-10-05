@@ -2,12 +2,12 @@
 version: 1
 slug: "src-components-run-matchboard-tsx"
 primary_target: "src/components/run/MatchBoard.tsx"
-related_targets: ["src/app/run/RunView.tsx","src/components/run/ClanPick.tsx","src/components/run/SetupKeep.tsx","src/components/run/MatchResult.tsx","src/components/run/RewardPick.tsx","src/components/run/RunSummary.tsx"]
+related_targets: ["src/app/run/RunView.tsx","src/components/run/RunStart.tsx","src/components/run/ChestScene.tsx","src/components/run/SetupKeep.tsx","src/components/run/MatchResult.tsx","src/components/run/RewardPick.tsx","src/components/run/RunSummary.tsx"]
 ---
 
 # Match table — surface brief
 
-Scope: `/run`, every screen of a run (clan pick, opening hand, the match, match result, reward pick, the climb between matches, run summary). Visitor mode: Operate. Audience: roguelike and engine-builder players, many of whom know Wingspan. Job: read the whole table at a glance, take one action a turn, and see the engine fire. Every number printed on the board comes from `src/server/game/*`. Home, codex, login and landing are out of scope and must not change.
+Scope: `/run`, every screen of a run (the run's start, the chest, opening hand, the match, match result, reward pick, the climb between matches, run summary). Visitor mode: Operate. Audience: roguelike and engine-builder players, many of whom know Wingspan. Job: read the whole table at a glance, take one action a turn, and see the engine fire. Every number printed on the board comes from `src/server/game/*`. Home, codex, login and landing are out of scope and must not change.
 
 ## Direction contract
 
