@@ -91,8 +91,9 @@ export type Power =
 export type Timing = Power["timing"];
 
 /**
- * A legendary's essence: a lasting change it makes for as long as it is on
- * the board. `aura` in the code, since essence there already means food.
+ * A legendary's relic: a lasting change it makes for as long as it is on
+ * the board. `aura` in the code, since a relic there is already the kind a
+ * run carries from match to match (`relics.ts`).
  */
 export type Aura =
   /** Gain wild essence after each of the player's turns. */
@@ -664,12 +665,12 @@ export function describePower(power: Power): string {
   return `${TIMING_PREFIX[power.timing]}: ${effect}.`;
 }
 
-/** A legendary's essence as printed on its card. */
+/** A legendary's relic as printed on its card. */
 export function describeAura(aura: Aura): string {
   const text = {
     treat: `gain ${plural(aura.n, TREAT_LABEL)} after each of your turns`,
     discount: `your cats cost ${aura.n} less food to play`,
     reward: `every lane gives ${aura.n} more`,
   }[aura.kind];
-  return `Essence: from now on, ${text}.`;
+  return `Relic: from now on, ${text}.`;
 }

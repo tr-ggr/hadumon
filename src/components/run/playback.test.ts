@@ -191,10 +191,10 @@ describe("buildSteps", () => {
       picks: ["deck", "deck", "deck"],
     });
     const fired = frames.flatMap((f) => (f.firing ? [f.firing.col] : []));
-    // The last is Hadu's essence, bringing its treat as the turn ends.
+    // The last is Hadu's relic, bringing its treat as the turn ends.
     expect(fired).toEqual([3, 2, 1, 0, 3, 1, 0, 2]);
     const treat = frames.filter((f) => f.firing).at(-1);
-    expect(treat?.text).toBe("Hadu's essence brought 1 Treat.");
+    expect(treat?.text).toBe("Hadu's relic brought 1 Treat.");
     expect(treat?.view.essence.wild).toBe(before.essence.wild + 1);
 
     const settled = frames[frames.length - 2]?.view;

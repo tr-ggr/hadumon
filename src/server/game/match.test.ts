@@ -554,7 +554,7 @@ describe("encore", () => {
       "burrfang",
       "flameclaw",
     ]);
-    // The treat is Hadu's essence, at the end of the turn.
+    // The treat is Hadu's relic, at the end of the turn.
     expect(next.essence).toEqual(
       pool({ flame: 3, mist: 1, thorn: 2, wild: 1 }),
     );

@@ -172,7 +172,7 @@ export type MatchEvent =
       col: number;
       effect: Effect["kind"];
     }
-  /** A cat's essence handing over its treats at the end of a turn. */
+  /** A legendary's relic handing over its treats at the end of a turn. */
   | { type: "aura"; catId: string; row: Row; col: number }
   | { type: "feeder"; faces: Essence[] }
   | { type: "rival"; action: RivalAction; removed: string[] }
@@ -266,7 +266,7 @@ export function totalYarn(board: Board): number {
   return placedCats(board).reduce((sum, placed) => sum + placed.yarn, 0);
 }
 
-/** One kind of essence, summed over the cats on the board. */
+/** One kind of legendary's relic, summed over the cats on the board. */
 export function auraTotal(board: Board, kind: Aura["kind"]): number {
   return placedCats(board).reduce((sum, placed) => {
     const aura = getCat(placed.catId).aura;
@@ -963,7 +963,7 @@ function endRound(ctx: Ctx): void {
   });
 }
 
-/** The essences that pay out at the end of each of the player's turns. */
+/** The legendaries' relics that pay out at the end of each player turn. */
 function fireAuras(ctx: Ctx): void {
   const { s } = ctx;
   for (const row of ROWS) {

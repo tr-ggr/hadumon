@@ -265,7 +265,7 @@ export function describeEvents(
         const n = cat.aura?.kind === "treat" ? cat.aura.n : 0;
         lines.push({
           tone: "power",
-          text: `${cat.name}'s essence brought ${plural(n, TREAT_LABEL)}.`,
+          text: `${cat.name}'s relic brought ${plural(n, TREAT_LABEL)}.`,
         });
         break;
       }

@@ -94,7 +94,7 @@ export interface CatCardProps {
   variant?: "full" | "compact" | "hand";
   /** Dims the card and shows this instead of the rules, e.g. an unlock hint. */
   lockedHint?: string | null;
-  /** Food taken off the cost by an essence on the board, in a match. */
+  /** Food taken off the cost by a legendary's relic on the board, in a match. */
   discount?: number;
   className?: string;
 }

@@ -27,7 +27,7 @@ export interface CatPickProps {
   note?: ReactNode;
   /** A key that selects this card, shown where there is a keyboard. */
   hint?: string;
-  /** Food taken off the cost by an essence on the board. */
+  /** Food taken off the cost by a legendary's relic on the board. */
   discount?: number;
   className?: string;
 }
