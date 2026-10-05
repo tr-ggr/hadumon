@@ -2,9 +2,10 @@
 
 import { useState, type ReactNode } from "react";
 
-import { CatCard } from "~/components/cats/CatCard";
+import { CatCard, ElementMark } from "~/components/cats/CatCard";
 import { PixelSprite } from "~/components/PixelSprite";
 import { getCat } from "~/server/game/cats";
+import { ELEMENT_LABELS } from "~/server/game/elements";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 import {
@@ -174,13 +175,14 @@ export function RewardPick({
             <ul className="flex flex-wrap gap-x-2 gap-y-3.5 pb-2">
               {countCats(run.deck).map(([catId, copies]) => {
                 const chosen = trim === catId;
+                const card = getCat(catId);
                 return (
                   <li key={catId}>
                     <button
                       type="button"
                       disabled={busy}
                       aria-pressed={chosen}
-                      aria-label={`Trim one ${getCat(catId).name}, ${copies} in the deck`}
+                      aria-label={`Trim one ${card.name}, ${ELEMENT_LABELS[card.element]}, ${copies} in the deck`}
                       onClick={() => {
                         heard(catId, chosen);
                         setTrim(chosen ? null : catId);
@@ -188,8 +190,9 @@ export function RewardPick({
                       className={`${DECK_CHIP} ${chosen ? "is-chosen lift bg-white" : "bg-cream hover:bg-sky-soft liftable"}`}
                     >
                       <PixelSprite catId={catId} size={32} decorative />
+                      <ElementMark element={card.element} />
                       <span className="tabular-nums">
-                        {copies}× {getCat(catId).name}
+                        {copies}× {card.name}
                       </span>
                       {chosen ? (
                         <span className="bg-ink text-cream px-1 leading-4">
@@ -248,6 +251,7 @@ export function RewardPick({
                   {trim ? (
                     <div className={`${DECK_CHIP} w-fit bg-white`}>
                       <PixelSprite catId={trim} size={32} decorative />
+                      <ElementMark element={getCat(trim).element} label />
                       <span>{getCat(trim).name}</span>
                       <span className="bg-ink text-cream px-1 leading-4">
                         Trim 1

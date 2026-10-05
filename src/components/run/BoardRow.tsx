@@ -1,9 +1,12 @@
 "use client";
 
+import { ElementMark } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
 import { ROW_ICONS, type IconName } from "~/components/sprites/icons";
+import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
 import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
+import { ELEMENT_LABELS } from "~/server/game/elements";
 import {
   columnYarnCost,
   ROW_REWARD,
@@ -309,11 +312,15 @@ function PlacedSlot({
       aria-label={
         laying
           ? `Lay yarn on ${cat.name}, holding ${yarn} of ${cat.yarnCap}`
-          : `${cat.name} details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
+          : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
       }
-      // Cats tucked underneath show as a thicker edge.
-      style={{ ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px` }}
-      className={`piece border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "is-firing" : ""}`}
+      // Cats tucked underneath show as a thicker edge. The left edge is the
+      // cat's element, as on its card.
+      style={{
+        ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px`,
+        ["--element" as string]: ELEMENT_PALETTES[cat.element]["1"],
+      }}
+      className={`piece cat-tile border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream relative flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "is-firing" : ""}`}
     >
       <span className="relative shrink-0">
         <PixelSprite
@@ -342,6 +349,12 @@ function PlacedSlot({
             ) : null}
           </span>
         ) : null}
+      </span>
+      {/* The element stands in the tile's own corner, clear of the sprite.
+          A narrow tile has no room for that, so the mark carries a rim of
+          the tile's cream: over an ear it would read as part of the cat. */}
+      <span className="mark-rim absolute top-0.5 left-1 flex sm:top-1.5 sm:left-1.5">
+        <ElementMark element={cat.element} />
       </span>
       <span className="flex w-full min-w-0 flex-col items-center gap-1 @[10.5rem]:items-start">
         <span

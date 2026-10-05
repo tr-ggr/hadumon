@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 
+import { ElementMark } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
+import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
 import {
   describeAction,
   describeEvents,
@@ -297,13 +299,16 @@ export function HuntDemo() {
                   return (
                     <li key={col} className="min-w-0">
                       <div
-                        // Cats tucked underneath show as a thicker edge.
+                        // Cats tucked underneath show as a thicker edge. The
+                        // left edge is the cat's element, as on its card.
                         style={{
                           ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px`,
+                          ["--element" as string]:
+                            ELEMENT_PALETTES[cat.element]["1"],
                         }}
-                        className={`piece border-ink bg-cream flex h-full min-h-28 flex-col items-center gap-1 border-2 pt-1 pb-1.5 text-center ${firing === col ? "anim-fire" : ""}`}
+                        className={`piece cat-tile border-ink bg-cream flex h-full min-h-28 flex-col items-center gap-1 border-2 pt-1 pb-1.5 text-center ${firing === col ? "anim-fire" : ""}`}
                       >
-                        <span className="border-ink ml-0.5 self-start border bg-white px-1 text-[10px] leading-4 font-bold sm:text-[11px]">
+                        <span className="border-ink ml-1.5 self-start border bg-white px-1 text-[10px] leading-4 font-bold sm:text-[11px]">
                           Fires {ORDINALS[cats.length - 1 - col]}
                         </span>
                         <span className="relative">
@@ -313,6 +318,11 @@ export function HuntDemo() {
                             decorative
                             className="sm:h-16 sm:w-16"
                           />
+                          {/* The firing tag has the tile's corner here, so the
+                              element hangs off the sprite's, clear of the ear. */}
+                          <span className="mark-rim absolute top-0 -left-2.5 flex">
+                            <ElementMark element={cat.element} label />
+                          </span>
                           {placed.tucked > 0 ? (
                             <span className="border-ink absolute -bottom-0.5 -left-1 flex items-center border bg-white pr-0.5 text-[11px] leading-none font-bold tabular-nums">
                               <PixelIcon name="tucked" size={16} fill={LIME} />

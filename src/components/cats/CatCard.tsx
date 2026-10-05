@@ -69,20 +69,37 @@ export function EssencePip({ kind, size = 16 }: EssencePipProps) {
   );
 }
 
-/** An element's own shape in its colour, to sit beside the element's name. */
+/**
+ * An element's own shape in its colour. Beside the element's name it is
+ * decoration; with `label` it stands for the name, read out and on hover.
+ */
 export function ElementMark({
   element,
   size = 16,
+  label = false,
 }: {
   element: Element;
   size?: number;
+  /** Names the element, where no text nearby does. */
+  label?: boolean;
 }) {
-  return (
+  const mark = (
     <PixelIcon
       name={element}
       size={size}
       fill={ELEMENT_PALETTES[element]["1"]}
     />
+  );
+  if (!label) return mark;
+  return (
+    <span
+      role="img"
+      aria-label={ELEMENT_LABELS[element]}
+      title={ELEMENT_LABELS[element]}
+      className="inline-flex shrink-0"
+    >
+      {mark}
+    </span>
   );
 }
 
@@ -135,9 +152,17 @@ export function CatCard({
   const locked = lockedHint !== undefined && lockedHint !== null;
   const full = variant === "full";
   const cost = playCost(catId, discount);
-  const rarity = {
+  const bands = {
     "--rarity": RARITY_PALETTES[cat.rarity].outline,
+    "--element": ELEMENT_PALETTES[cat.element]["1"],
   } as CSSProperties;
+  // The element leads the name, so it is read before it wherever the card is.
+  const name = (
+    <p className="text-pixel flex items-center gap-1 text-sm leading-tight">
+      <ElementMark element={cat.element} label />
+      <span className="truncate">{cat.name}</span>
+    </p>
+  );
   const points = (
     <p
       className="text-pixel border-ink bg-lime shrink-0 border-2 px-1.5 text-sm leading-6"
@@ -168,7 +193,7 @@ export function CatCard({
     return (
       <div
         className={`piece piece-card cat-card border-ink bg-cream text-ink @container relative flex flex-col border-2 p-2 pb-8 text-left ${className}`}
-        style={rarity}
+        style={bands}
       >
         {cat.rarity === "legendary" ? (
           <span aria-hidden className="card-shimmer" />
@@ -197,9 +222,7 @@ export function CatCard({
             className="h-12 w-12 shrink-0 @[9.5rem]:h-16 @[9.5rem]:w-16"
           />
         </div>
-        <p className="text-pixel mt-1 truncate text-sm leading-tight">
-          {cat.name}
-        </p>
+        <div className="mt-1">{name}</div>
         <div className="border-ink/20 mt-1.5 space-y-1 border-t pt-1.5 text-[11px] leading-[1.35] @[9.5rem]:text-xs @[9.5rem]:leading-snug">
           <p className={`@[9.5rem]:line-clamp-none ${powerClamp}`}>
             {cat.power ? describePower(cat.power) : "No power."}
@@ -217,7 +240,7 @@ export function CatCard({
   return (
     <div
       className={`piece piece-card cat-card border-ink bg-cream text-ink @container flex flex-col gap-2 border-2 p-2 text-left ${locked ? "opacity-60" : ""} ${className}`}
-      style={rarity}
+      style={bands}
     >
       {/* On a narrow card the name takes a line of its own under the sprite
           and the points, so it is never cut down to a letter or two. */}
@@ -229,9 +252,7 @@ export function CatCard({
           className={`shrink-0 ${locked ? "grayscale" : ""}`}
         />
         <div className="order-last min-w-0 basis-full @[11rem]:order-none @[11rem]:flex-1 @[11rem]:basis-0">
-          <p className="text-pixel truncate text-sm leading-tight">
-            {cat.name}
-          </p>
+          {name}
           <div className="mt-1 flex items-center gap-1">{pips}</div>
         </div>
         {/* The tag and the mark together are 2px taller than the compact

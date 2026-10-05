@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { ElementMark } from "~/components/cats/CatCard";
 import { PixelSprite } from "~/components/PixelSprite";
 import { Skeleton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
@@ -11,7 +12,7 @@ import {
   difficultyOf,
   type DifficultyId,
 } from "~/server/game/difficulty";
-import type { Element } from "~/server/game/elements";
+import { ELEMENT_LABELS, type Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLAN_LIST, starterDeck, type Clan } from "~/server/game/run";
 import { UNLOCK_RULES } from "~/server/game/unlocks";
@@ -45,6 +46,7 @@ export function DeckChip({
   copies: number;
   onDetail: (catId: string) => void;
 }) {
+  const cat = getCat(catId);
   return (
     <button
       type="button"
@@ -52,12 +54,13 @@ export function DeckChip({
         playCat(catId);
         onDetail(catId);
       }}
-      aria-label={`${copies} ${getCat(catId).name}, details`}
+      aria-label={`${copies} ${cat.name}, ${ELEMENT_LABELS[cat.element]}, details`}
       className="piece border-ink bg-cream text-ink hover:bg-sky-soft flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold"
     >
       <PixelSprite catId={catId} size={32} decorative />
+      <ElementMark element={cat.element} />
       <span className="tabular-nums">
-        {copies}× {getCat(catId).name}
+        {copies}× {cat.name}
       </span>
     </button>
   );

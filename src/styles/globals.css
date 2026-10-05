@@ -128,9 +128,23 @@
   background: var(--color-white);
   border-right: 2px solid var(--color-ink);
 }
-/* The rarity band of a cat card. A variable, so the tabletop can add to it. */
+/* The bands of a cat card: its rarity along the top and its element down the
+   left edge, which starts under the first. A variable, so the tabletop can add
+   to it. */
 .cat-card {
-  --piece-inset: inset 0 3px 0 var(--rarity);
+  --piece-inset: inset 0 3px 0 var(--rarity), inset 4px 0 0 var(--element);
+  box-shadow: var(--piece-inset);
+}
+/* A mark printed over a sprite: a 2px rim in the face's colour, one pixel
+   of the mark's own grid, keeps the two apart. */
+.mark-rim {
+  --rim: var(--color-cream);
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim))
+    drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim));
+}
+/* A cat placed on the board keeps the element edge of its card. */
+.cat-tile {
+  --piece-inset: inset 4px 0 0 var(--element);
   box-shadow: var(--piece-inset);
 }
 
@@ -209,9 +223,11 @@ body:has(.table-fit) [role="dialog"] {
 }
 .tabletop .piece {
   --e: 2px;
+  /* The ring is listed first, so a chosen or due frame is drawn over a
+     card's bands and not under them. */
   box-shadow:
-    var(--piece-inset, 0 0 0 0 transparent),
     var(--piece-ring, 0 0 0 0 transparent),
+    var(--piece-inset, 0 0 0 0 transparent),
     0 calc(var(--e) - var(--sink, 0px) + 2px) 0 -2px var(--color-chipboard),
     0 calc(var(--e) - var(--sink, 0px) + 2px) 0 0 var(--color-ink),
     0 calc(var(--e) - var(--sink, 0px) + var(--lift, 0px) + 7px) 0 -2px
