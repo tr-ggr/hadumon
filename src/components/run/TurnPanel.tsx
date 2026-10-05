@@ -6,8 +6,7 @@ import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
 import { ESSENCES, type Essence } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
-import { yarnCostLabel } from "./BoardRow";
-import { essenceLabel, listWords, plural } from "./describe";
+import { essenceLabel, listWords, plural, yarnCostLabel } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
 import { MusicButton } from "./music/MusicButton";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";

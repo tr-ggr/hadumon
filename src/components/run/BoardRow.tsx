@@ -13,13 +13,17 @@ import {
 } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
-import { plural } from "./describe";
-import { COBALT, INK, KeyHint, LIME, WHITE, YarnTrack } from "./pieces";
+import { plural, yarnCostLabel } from "./describe";
+import {
+  COBALT,
+  INK,
+  KeyHint,
+  LIME,
+  SpaceCost,
+  WHITE,
+  YarnTrack,
+} from "./pieces";
 import { queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
-
-export function yarnCostLabel(cost: number): string {
-  return cost === 0 ? "Free" : `${cost} yarn`;
-}
 
 /** The thing a lane's reward is counted in, and the lane's key. */
 const LANES: Record<
@@ -60,9 +64,11 @@ export interface BoardRowProps {
 }
 
 /**
- * One lane printed on the mat: its name and activate tile, four spaces with
- * their yarn cost, and in them the reward ladder with a marker on the step
- * the lane is on. Beside the rail a lane takes its share of the mat's spare
+ * One lane printed on the mat: its name and activate tile, and four spaces.
+ * An empty space prints two separate things, each under its own label: the
+ * yarn it costs to seat a cat there, and the step of the reward ladder the
+ * row gives while that space is the next one, with a marker on the step the
+ * lane is on. Beside the rail a lane takes its share of the mat's spare
  * height.
  */
 export function BoardRow({
@@ -161,7 +167,9 @@ export function BoardRow({
                   >
                     <span>Play here</span>
                     <span className="text-[11px] font-bold">
-                      {yarnCostLabel(nextCost ?? 0)}
+                      {nextCost
+                        ? `Cat costs ${yarnCostLabel(nextCost)}`
+                        : yarnCostLabel(0)}
                     </span>
                     <KeyHint className="absolute top-1 right-1">
                       {lane.key}
@@ -172,32 +180,35 @@ export function BoardRow({
             }
             const cost = columnYarnCost(match.mods, col);
             return (
+              // The space lays out by its own width. On a phone each label
+              // stands over its value; from 640px they are two rows, which
+              // say "now" or "here" from 7rem and are worded in full from
+              // 8.5rem; a space 12rem wide sets the two parts side by side.
               <li
                 key={col}
                 data-slot={`${row}-${col}`}
-                className={`text-ink flex min-h-24 flex-col items-center justify-center gap-1.5 border-2 p-1 text-center text-[11px] leading-tight font-bold sm:min-h-[3.75rem] sm:flex-row sm:justify-between sm:px-2 lg:min-h-20 ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
+                className={`text-ink @container flex min-h-24 min-w-0 border-2 text-[11px] leading-none font-bold sm:min-h-[3.75rem] lg:min-h-20 ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
               >
-                <span className="sr-only">Empty space {col + 1}, costs </span>
-                {cost === 0 ? (
-                  "Free"
-                ) : (
-                  <span className="flex items-center gap-1">
-                    <span className="flex gap-px" aria-hidden>
-                      {Array.from({ length: cost }, (_, i) => (
-                        <PixelIcon key={i} name="yarn" size={16} />
-                      ))}
+                <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 p-1 sm:gap-0.5 @[12rem]:flex-row @[12rem]:items-center @[12rem]:justify-center @[12rem]:gap-2.5">
+                  <span className="sr-only">Empty space {col + 1}. </span>
+                  <SpaceCost cost={cost} compact className={SPACE_PART} />
+                  <span
+                    className={`border-ink/20 border-t pt-1 sm:pt-0.5 @[12rem]:border-t-0 @[12rem]:border-l @[12rem]:pt-0 @[12rem]:pl-2.5 ${SPACE_PART}`}
+                  >
+                    <span className="font-semibold" aria-hidden>
+                      Row<span className="@max-[8.5rem]:hidden"> gives</span>
+                      <span className="sm:@max-[7rem]:hidden">
+                        {next ? " now" : " here"}
+                      </span>
                     </span>
-                    <span className="max-sm:sr-only">
-                      {yarnCostLabel(cost)}
-                    </span>
+                    <RewardStep
+                      lane={lane}
+                      cats={col}
+                      reward={ladder[col] ?? 0}
+                      here={next}
+                    />
                   </span>
-                )}
-                <RewardStep
-                  lane={lane}
-                  cats={col}
-                  reward={ladder[col] ?? 0}
-                  here={next}
-                />
+                </div>
               </li>
             );
           })}
@@ -205,13 +216,16 @@ export function BoardRow({
         <p className="flex flex-col items-center justify-center gap-1.5">
           <PixelIcon name="chevron" size={16} ink={COBALT} />
           <span className="sr-only">Powers fire from right to left.</span>
-          <RewardStep
-            lane={lane}
-            cats={SLOTS}
-            reward={ladder[SLOTS] ?? 0}
-            here={line.length === SLOTS}
-            className="max-sm:h-auto max-sm:flex-col max-sm:py-0.5"
-          />
+          <span className="flex flex-col items-center gap-0.5 text-[11px] leading-none font-semibold">
+            <span aria-hidden>Full</span>
+            <RewardStep
+              lane={lane}
+              cats={SLOTS}
+              reward={ladder[SLOTS] ?? 0}
+              here={line.length === SLOTS}
+              className="max-sm:h-auto max-sm:flex-col max-sm:py-0.5"
+            />
+          </span>
         </p>
       </div>
     </section>
@@ -219,8 +233,17 @@ export function BoardRow({
 }
 
 /**
+ * One part of an empty space, the cost or the reward: on a phone and in a
+ * wide space the label stands over its value, between those they share a row.
+ */
+const SPACE_PART =
+  "flex items-center flex-col justify-center gap-0.5 sm:flex-row sm:justify-between sm:gap-1 @[12rem]:flex-col @[12rem]:justify-center @[12rem]:gap-1";
+
+/**
  * One step of a lane's reward ladder, printed in the space that is next when
  * the lane holds `cats` cats. The step the lane is on carries a lime marker.
+ * The sentence it carries is the one read out; the label printed beside it
+ * is for the eye.
  */
 function RewardStep({
   lane,
@@ -237,12 +260,12 @@ function RewardStep({
 }) {
   return (
     <span
-      className={`text-pixel flex h-6 items-center gap-0.5 border-2 px-0.5 text-sm leading-none tabular-nums sm:px-1 ${here ? "border-ink bg-lime" : "border-transparent"} ${className}`}
+      className={`text-pixel flex h-6 items-center gap-0.5 border-2 px-0.5 text-sm leading-none tabular-nums ${here ? "border-ink bg-lime" : "border-transparent"} ${className}`}
     >
       <span aria-hidden>{reward}</span>
       <PixelIcon name={lane.unit} size={16} />
       <span className="sr-only">
-        . With {plural(cats, "cat")} here the lane gives{" "}
+        With {plural(cats, "cat")} here the lane gives{" "}
         {reward === 1 ? `1 ${lane.one}` : `${reward} ${lane.many}`}
         {here ? ", which is where it is now" : ""}.
       </span>

@@ -8,7 +8,7 @@ import type { Essence } from "~/server/game/match";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 
-import { essenceLabel, plural } from "./describe";
+import { essenceLabel, plural, yarnCostLabel } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
 
 /** The palette as values, for pixel icons, which take colours and not classes. */
@@ -263,6 +263,53 @@ export function YarnTrack({
         Yarn {held + queued} of {cap}
         {queued > 0 ? `, ${queued} of it not laid yet` : ""}
       </span>
+    </span>
+  );
+}
+
+/**
+ * The price printed in an empty lane space, named as what it is: the yarn it
+ * costs to seat a cat there, which is not what the row gives. `className`
+ * sets whether the label stands over the price or beside it.
+ */
+export function SpaceCost({
+  cost,
+  compact = false,
+  className = "",
+}: {
+  cost: number;
+  /**
+   * Cuts to what the space has room for; the space must be an `@container`.
+   * Under 8.5rem the label is "Cat", and under 12rem the yarn is its icons
+   * without the words. What is cut is still read out.
+   */
+  compact?: boolean;
+  className?: string;
+}) {
+  return (
+    <span className={`flex items-center ${className}`}>
+      <span className="font-semibold">
+        Cat
+        <span className={compact ? "@max-[8.5rem]:sr-only" : ""}> costs</span>
+      </span>
+      {cost === 0 ? (
+        <span className="flex h-4 items-center">Free</span>
+      ) : (
+        // In a space too narrow for both, the words drop under the icons.
+        <span className="flex flex-wrap items-center justify-center gap-1">
+          <span className="flex gap-px" aria-hidden>
+            {Array.from({ length: cost }, (_, i) => (
+              <PixelIcon key={i} name="yarn" size={16} />
+            ))}
+          </span>
+          <span
+            className={`whitespace-nowrap ${compact ? "@max-[12rem]:sr-only" : ""}`}
+          >
+            {yarnCostLabel(cost)}
+          </span>
+        </span>
+      )}
+      <span className="sr-only">. </span>
     </span>
   );
 }

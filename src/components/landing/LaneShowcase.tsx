@@ -5,7 +5,7 @@ import { useState } from "react";
 import { PixelIcon } from "~/components/PixelIcon";
 import { ROW_ICONS, type IconName } from "~/components/sprites/icons";
 import { plural } from "~/components/run/describe";
-import { COBALT, INK, LIME, WHITE } from "~/components/run/pieces";
+import { COBALT, INK, LIME, SpaceCost, WHITE } from "~/components/run/pieces";
 import { ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
 import { COLUMN_YARN_COST, ROW_REWARD, SLOTS } from "~/server/game/match";
 
@@ -39,9 +39,10 @@ const LANES: Record<Row, Lane> = {
 };
 
 /**
- * The player's mat at a glance: three lanes with the yarn each space costs
- * and the reward each one gives as it fills, printed from the engine's own
- * tables. A lane's tile picks it, and one sentence says what it pays.
+ * The player's mat at a glance: three lanes with the yarn a cat costs in each
+ * space and, under its own label, what the row gives as it fills, printed
+ * from the engine's own tables. A lane's tile picks it, and one sentence says
+ * what it pays.
  */
 export function LaneShowcase() {
   const [row, setRow] = useState<Row>("hunt");
@@ -101,8 +102,9 @@ export function LaneShowcase() {
                     return (
                       <li
                         key={col}
-                        className="flex flex-col items-center justify-center"
+                        className="flex flex-col items-center justify-center gap-0.5 text-[11px] leading-none font-semibold"
                       >
+                        <span aria-hidden>Full</span>
                         {step}
                       </li>
                     );
@@ -111,20 +113,20 @@ export function LaneShowcase() {
                   return (
                     <li
                       key={col}
-                      className={`flex min-h-14 flex-col items-center justify-center gap-1.5 border-2 px-0.5 py-1 text-[11px] leading-none font-bold ${on ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
+                      className={`@container flex min-h-14 flex-col justify-center gap-1 border-2 p-1 text-[11px] leading-none font-bold ${on ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
                     >
-                      <span className="sr-only">Space {col + 1} costs </span>
-                      {cost === 0 ? (
-                        <span className="flex h-4 items-center">Free</span>
-                      ) : (
-                        <span className="flex gap-px">
-                          {Array.from({ length: cost }, (_, i) => (
-                            <PixelIcon key={i} name="yarn" size={16} />
-                          ))}
-                          <span className="sr-only">{cost} yarn. </span>
+                      <span className="sr-only">Space {col + 1}. </span>
+                      <SpaceCost
+                        cost={cost}
+                        compact
+                        className="flex-col gap-0.5"
+                      />
+                      <span className="border-ink/20 flex flex-col items-center gap-0.5 border-t pt-1">
+                        <span className="font-semibold" aria-hidden>
+                          Row
                         </span>
-                      )}
-                      {step}
+                        {step}
+                      </span>
                     </li>
                   );
                 })}

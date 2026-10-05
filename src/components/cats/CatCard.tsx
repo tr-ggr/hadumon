@@ -86,6 +86,25 @@ export function ElementMark({
   );
 }
 
+/**
+ * How much yarn a cat can hold, as a mark: the ball and the number. The ball
+ * is unfilled, because this is room for yarn and not yarn held.
+ */
+export function YarnCap({ cap }: { cap: number }) {
+  const label = `Holds ${cap} yarn`;
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      title={label}
+      className="text-pixel inline-flex shrink-0 items-center gap-0.5 text-sm leading-none tabular-nums"
+    >
+      <PixelIcon name="yarn" size={16} />
+      {cap}
+    </span>
+  );
+}
+
 export interface CatCardProps {
   catId: string;
   /**
@@ -136,7 +155,16 @@ export function CatCard({
 
   if (variant === "hand") {
     // The face answers to its own width, not the screen's: a narrow card
-    // takes the smaller sprite and clamps its rules to what fits.
+    // takes the smaller sprite and clamps its rules to what fits. A cost that
+    // wraps to a second row of pips leaves the narrow card one line less.
+    const tall = cost.length > 2;
+    const powerClamp = cat.aura
+      ? tall
+        ? "line-clamp-1"
+        : "line-clamp-2"
+      : tall
+        ? "line-clamp-3"
+        : "line-clamp-4";
     return (
       <div
         className={`piece piece-card cat-card border-ink bg-cream text-ink @container relative flex flex-col border-2 p-2 pb-8 text-left ${className}`}
@@ -146,8 +174,8 @@ export function CatCard({
           <span aria-hidden className="card-shimmer" />
         ) : null}
         <div className="flex items-start gap-1.5">
-          {/* The two numbers a player compares stand in the first 32px, which
-              the thinnest strip of the fan still shows. */}
+          {/* The three numbers a player compares stand in the first 32px,
+              which the thinnest strip of the fan still shows. */}
           <div className="flex w-8 shrink-0 flex-col gap-1">
             <p
               className="text-pixel border-ink bg-lime border-2 text-center text-sm leading-6"
@@ -158,6 +186,9 @@ export function CatCard({
             <div className="grid grid-cols-2 justify-items-center gap-y-0.5">
               {pips}
             </div>
+            <span className="flex justify-center">
+              <YarnCap cap={cat.yarnCap} />
+            </span>
           </div>
           <PixelSprite
             catId={catId}
@@ -170,9 +201,7 @@ export function CatCard({
           {cat.name}
         </p>
         <div className="border-ink/20 mt-1.5 space-y-1 border-t pt-1.5 text-[11px] leading-[1.35] @[9.5rem]:text-xs @[9.5rem]:leading-snug">
-          <p
-            className={`@[9.5rem]:line-clamp-none ${cat.aura ? "line-clamp-2" : "line-clamp-4"}`}
-          >
+          <p className={`@[9.5rem]:line-clamp-none ${powerClamp}`}>
             {cat.power ? describePower(cat.power) : "No power."}
           </p>
           {cat.aura ? (
@@ -205,7 +234,12 @@ export function CatCard({
           </p>
           <div className="mt-1 flex items-center gap-1">{pips}</div>
         </div>
-        <div className="ml-auto">{points}</div>
+        {/* The tag and the mark together are 2px taller than the compact
+            sprite; the 1px each way keeps the card the height it was. */}
+        <div className="-my-px ml-auto flex flex-col items-end gap-0.5">
+          {points}
+          <YarnCap cap={cat.yarnCap} />
+        </div>
       </div>
 
       {full ? (

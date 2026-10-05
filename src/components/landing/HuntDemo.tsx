@@ -19,6 +19,7 @@ import {
   Label,
   LIME,
   Nameplate,
+  SpaceCost,
   TableButton,
   TableLink,
   TurnCube,
@@ -287,21 +288,8 @@ export function HuntDemo() {
                         key={col}
                         className={`flex min-h-28 flex-col items-center justify-center gap-1.5 border-2 p-1 text-center text-[11px] leading-tight font-bold ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
                       >
-                        <span className="sr-only">
-                          Empty space {col + 1}, costs{" "}
-                        </span>
-                        {cost === 0 ? (
-                          "Free"
-                        ) : (
-                          <>
-                            <span className="flex gap-px" aria-hidden>
-                              {Array.from({ length: cost }, (_, i) => (
-                                <PixelIcon key={i} name="yarn" size={16} />
-                              ))}
-                            </span>
-                            <span>{cost} yarn</span>
-                          </>
-                        )}
+                        <span className="sr-only">Empty space {col + 1}. </span>
+                        <SpaceCost cost={cost} className="flex-col gap-1.5" />
                       </li>
                     );
                   }

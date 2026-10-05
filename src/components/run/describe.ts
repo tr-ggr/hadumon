@@ -56,6 +56,11 @@ export function plural(n: number, one: string, many = `${one}s`): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
+/** What a lane space costs to seat a cat in, in words. */
+export function yarnCostLabel(cost: number): string {
+  return cost === 0 ? "Free" : `${cost} yarn`;
+}
+
 /** "A", "A and B", "A, B and C". */
 export function listWords(words: readonly string[]): string {
   if (words.length <= 1) return words[0] ?? "";
