@@ -327,15 +327,16 @@ function gauntlet() {
 
 /**
  * The same runs under rules the game does not have, to show what each would
- * do to the table above: every rival two levels up, and a rival that holds
- * relics on the player's budget (its clan's charm, and one more after
- * matches 1, 3 and 5).
+ * do to the table above: every rival two levels up, a rival that holds its
+ * clan's charm as the player does, and a rival that holds relics on the
+ * player's whole budget (the charm, and one more after matches 1, 3 and 5).
  */
 function whatIf() {
   const extra = ["bent-whisker", "ball-of-twine", "night-map"];
   const charm = (rivalId: string) => CLANS[themeOf(rivalId)].relicId;
   const variants: Record<string, WhatIf> = {
     twoLevelsUp: { levelShift: 2 },
+    rivalCharm: { rivalRelics: (rivalId) => [charm(rivalId)] },
     rivalRelics: {
       rivalRelics: (rivalId, matchIndex) => [
         charm(rivalId),
