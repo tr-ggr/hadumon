@@ -11,6 +11,7 @@ import {
   BoardSkeleton,
   CardGridSkeleton,
   TableButton,
+  tableButtonClass,
 } from "~/components/ui";
 import { GAUNTLET } from "~/server/game/rival";
 import { api } from "~/trpc/react";
@@ -36,20 +37,18 @@ function Section({
 }) {
   const label = SECTIONS.find((section) => section.id === id)?.label ?? id;
   return (
-    <div id={id} className="scroll-mt-16">
-      <Board
-        title={label}
-        action={
-          count ? (
-            <p className="text-ink-soft text-sm font-bold tabular-nums">
-              {count}
-            </p>
-          ) : undefined
-        }
-      >
-        {children}
-      </Board>
-    </div>
+    <Board
+      id={id}
+      title={label}
+      className="scroll-mt-20"
+      action={
+        count ? (
+          <p className="text-print text-xl tabular-nums">{count}</p>
+        ) : undefined
+      }
+    >
+      {children}
+    </Board>
   );
 }
 
@@ -58,24 +57,27 @@ export function CodexView() {
   const codex = api.codex.get.useQuery();
 
   return (
-    <div className="page-wrap space-y-4">
-      <header className="space-y-3">
-        <h1 className="text-ink text-3xl sm:text-4xl">Codex</h1>
-        <p className="text-ink-soft max-w-prose">
+    <div className="flex flex-col gap-7">
+      <Board>
+        <h1 className="text-print text-3xl sm:text-[40px]">Codex</h1>
+        <p className="mt-2 max-w-prose">
           Everything on file. Locked entries say what they want from you.
         </p>
-        <nav aria-label="Codex sections" className="flex flex-wrap gap-1.5">
+        <nav
+          aria-label="Codex sections"
+          className="mt-4 flex flex-wrap gap-2.5"
+        >
           {SECTIONS.map((section) => (
             <a
               key={section.id}
               href={`#${section.id}`}
-              className="border-ink/15 text-ink hover:bg-sky-soft inline-flex min-h-11 items-center rounded-full border bg-white px-4 text-sm font-bold"
+              className={tableButtonClass("secondary", "md")}
             >
               {section.label}
             </a>
           ))}
         </nav>
-      </header>
+      </Board>
 
       {codex.data ? (
         <>
@@ -92,7 +94,7 @@ export function CodexView() {
       ) : codex.error ? (
         <Section id="cats">
           <div role="alert" className="flex flex-col items-start gap-3">
-            <p className="text-ink">
+            <p>
               The cats, relics and clans did not load. The rivals are below
               regardless; they never needed permission.
             </p>
@@ -112,10 +114,10 @@ export function CodexView() {
           <Section id="cats">
             <CardGridSkeleton count={6} />
           </Section>
-          <div id="relics" className="scroll-mt-16">
+          <div id="relics" className="scroll-mt-20">
             <BoardSkeleton title="Relics" lines={3} />
           </div>
-          <div id="clans" className="scroll-mt-16">
+          <div id="clans" className="scroll-mt-20">
             <BoardSkeleton title="Clans" lines={2} />
           </div>
         </>

@@ -13,13 +13,13 @@ interface PieceProps {
   mark?: ReactNode;
 }
 
-/** A relic or a clan drawn as a game piece: hard-edged, like a cat card. */
+/** A relic or a clan as a tile on the board, like the ones a run carries. */
 function Piece({ name, text, locked, mark }: PieceProps) {
   return (
     <li
-      className={`border-ink bg-cream text-ink flex flex-col gap-1.5 border-2 p-3 ${locked ? "opacity-60" : ""}`}
+      className={`piece border-ink text-ink flex flex-col gap-1.5 border-2 bg-white p-3 ${locked ? "opacity-60" : ""}`}
     >
-      <p className="text-pixel flex items-center gap-2 text-sm leading-tight">
+      <p className="text-print flex items-center gap-2 text-xl">
         {mark}
         <span className="min-w-0 break-words">{name}</span>
       </p>
@@ -28,7 +28,7 @@ function Piece({ name, text, locked, mark }: PieceProps) {
   );
 }
 
-const GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3";
+const GRID = "grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2 lg:grid-cols-3";
 
 export function RelicList({ entries }: { entries: readonly CodexEntry[] }) {
   return (

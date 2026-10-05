@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { Label } from "~/components/ui";
+
 export interface FilterOption<T extends string> {
   value: T;
   label: string;
@@ -16,7 +18,7 @@ export interface FilterChipsProps<T extends string> {
   onChange: (value: T | null) => void;
 }
 
-/** One row of single-choice filter chips with an "All" chip in front. */
+/** One row of single-choice filter tokens with an "All" token in front. */
 export function FilterChips<T extends string>({
   label,
   options,
@@ -27,11 +29,9 @@ export function FilterChips<T extends string>({
     <div
       role="group"
       aria-label={`Filter by ${label.toLowerCase()}`}
-      className="flex flex-wrap items-center gap-1.5"
+      className="flex flex-wrap items-center gap-x-2 gap-y-2.5"
     >
-      <span className="text-ink-soft w-full text-xs font-bold tracking-wide uppercase sm:w-16">
-        {label}
-      </span>
+      <Label className="w-full sm:w-14">{label}</Label>
       <Chip pressed={value === null} onClick={() => onChange(null)}>
         All
       </Chip>
@@ -63,10 +63,9 @@ function Chip({
       type="button"
       aria-pressed={pressed}
       onClick={onClick}
-      className={`pixel-press inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 text-sm font-bold ${
-        pressed
-          ? "border-cobalt bg-cobalt text-white"
-          : "border-ink/15 text-ink hover:bg-sky-soft bg-white"
+      data-sfx="pick"
+      className={`piece border-ink text-ink inline-flex min-h-11 items-center gap-1.5 border-2 px-3 text-sm font-bold ${
+        pressed ? "bg-lime is-chosen" : "hover:bg-sky-soft bg-white"
       }`}
     >
       {children}

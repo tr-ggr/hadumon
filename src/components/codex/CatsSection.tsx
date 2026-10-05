@@ -46,7 +46,7 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
 
   return (
     <div className="space-y-4">
-      <div className="space-y-2">
+      <div className="space-y-3">
         <FilterChips
           label="Element"
           options={ELEMENT_OPTIONS}
@@ -61,14 +61,14 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
         />
       </div>
 
-      <p aria-live="polite" className="text-ink-soft text-sm">
+      <p aria-live="polite" className="text-sm">
         {filtered
           ? `${shown.length} of ${entries.length} cats match.`
           : "Tap a cat you have unlocked to read its whole card."}
       </p>
 
       {shown.length === 0 ? (
-        <div className="border-ink/20 flex flex-col items-start gap-3 border-2 border-dashed p-4">
+        <div className="border-ink/40 flex flex-col items-start gap-3 border-2 border-dashed p-4">
           <p className="text-ink">
             No cat is both of those things. Several have tried.
           </p>
@@ -77,7 +77,7 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
           </TableButton>
         </div>
       ) : (
-        <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((entry) => (
             <li key={entry.id} className="flex">
               {entry.unlocked ? (
@@ -86,7 +86,7 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
                   aria-haspopup="dialog"
                   aria-label={`${getCat(entry.id).name}: read the whole card`}
                   onClick={() => setOpenId(entry.id)}
-                  className="pixel-press flex w-full cursor-pointer hover:-translate-y-0.5"
+                  className="liftable flex w-full cursor-pointer text-left"
                 >
                   <CatCard catId={entry.id} className="w-full" />
                 </button>
