@@ -168,7 +168,8 @@ src/
     page.tsx              Landing (signed out) or home (HomeDashboard.tsx)
     login/  signup/       Auth forms (render without the app shell)
     run/                  The game: clan pick, match, reward, the climb, summary
-    codex/                Every cat, relic, clan and rival; locked or not
+    codex/                Every cat, relic, clan and rival, locked or not, as a
+                          book: it opens by itself, and its pages turn
   components/
     AppShell.tsx          Sidebar, top bar and mobile nav (not on /run, which has its own corner buttons)
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
@@ -177,11 +178,14 @@ src/
     sprites/              Cat, rival, icon and tower grids, and their palettes
     cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
-    run/  codex/          Screen components
+    run/                  Screen components for a run
+    codex/                The book: its pages as data (book.ts), a turn as a
+                          reducer and a leaf plan (turn.ts), and the components
     run/fx/               Match effects: cue to intents (plan), sampled springs, Web Animations
     run/sfx/              Sound effects: recipes and cat voices as data, the Web Audio engine, click and hover sounds, the volume setting
     run/music/            Music: tracks as data, the bar scheduler, the on/off setting
-    ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
+    ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton,
+                          and where a dialog comes up from (pop.ts)
   server/
     api/                  tRPC root, context, routers (auth, run, codex)
     auth/                 scrypt hashing + session cookie helpers

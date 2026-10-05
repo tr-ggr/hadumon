@@ -735,8 +735,33 @@
       },
       {
         "name": "page-land",
-        "value": "piece-land 240ms cubic-bezier(0.16, 1, 0.3, 1) on every .board, .mat and header piece of the page, together; the landed state is held 320ms; one settle sound",
+        "value": "piece-land 240ms cubic-bezier(0.16, 1, 0.3, 1) on every .board, .mat and header piece of the page, together (the codex's book does not land: see room-enter); the landed state is held 320ms; one settle sound",
         "purpose": "A page is put away (visibility: hidden) at the press and set down when the camera has stopped and the page has come, whichever is later."
+      },
+      {
+        "name": "room-enter",
+        "value": "640ms cubic-bezier(0.16, 1, 0.3, 1) (ENTER_MS): the room starts as the deep stone the window's dark is, and a wash of it over the wall goes from opacity 1 to 0 while the wall, drawn 8% larger than the stage on every side, comes from scale(0.88) to 1; the shut book comes from opacity 0 and scale(0.94) with it",
+        "purpose": "Coming into the codex. The camera stops on the window's dark and the room comes up out of that same dark, still drifting closer, so there is no cut. The one place something fades in. Leaving is a cut. None of it under reduced motion."
+      },
+      {
+        "name": "book-open",
+        "value": "420ms beat once the book has come up (BEAT_MS after ENTER_MS), then the cover as the lifting leaf of a turn at 1.3 times a page's length (COVER_PACE): 286ms a half on a spread, 390ms on a single page; on a spread the shut book starts translateX(-25%) and moves over across both halves on cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "The codex comes up shut and opens by itself on every visit, once the camera has stopped. Constants in src/components/codex/turn.ts. Under reduced motion the book is open at once."
+      },
+      {
+        "name": "page-turn",
+        "value": "two half-turns about the spine that meet edge-on: rotateY 0 to 90deg in 220ms on cubic-bezier(0.5, 0, 0.9, 0.55), then the facing page 90deg to 0 in 220ms on cubic-bezier(0.2, 0.9, 0.3, 1.25); a single page is one half of 300ms; perspective 2800px at the spine (1800px at a single page's left edge); a flat ink wash to 24% on the moving leaf and 12% on the page under it",
+        "purpose": "A page of the codex turns. No page is seen from behind, so there is no preserve-3d and no backface. One leaf whatever the distance; the latest request wins. A cut under reduced motion."
+      },
+      {
+        "name": "tab-out",
+        "value": "220ms cubic-bezier(0.2, 0.9, 0.3, 1.25), each tab 40ms after the last; from translateY(100%) under the book's top edge, or translateX(100%) under its left edge from 1024px",
+        "purpose": "The codex's chapter tabs come out from behind the book once it lies open."
+      },
+      {
+        "name": "card-pop",
+        "value": "Web Animations API on the dialog's board, transform only, one scale both ways, origin 0 0: from the pocket's box to rest in 300ms on cubic-bezier(0.2, 0.9, 0.3, 1.25), back in 220ms on cubic-bezier(0.16, 1, 0.3, 1); popTransform in src/components/ui/pop.ts",
+        "purpose": "A cat taken out of its pocket in the codex comes up as its full card and goes back. Modal's origin and onClosed props; any other dialog is simply there and gone, and so is this one under reduced motion."
       },
       {
         "name": "move-limit",
@@ -815,7 +840,17 @@
       {
         "name": "cat-voices",
         "value": "src/components/run/sfx/voices.ts: 26 pitches a semitone apart from A3 (220Hz), one a cat; contour by archetype, timbre by element (triangle, sine, square at 0.1 at most; no sawtooth, no noise); longer and ornamented by rarity; 0.45s at most",
-        "purpose": "A cat is heard in its own voice when it is chosen or turned over to read."
+        "purpose": "A cat is heard in its own voice when it is chosen or turned over to read, and when it is taken out of its pocket in the codex."
+      },
+      {
+        "name": "page",
+        "value": "noise only: a bandpass rising 1400Hz to 3800Hz at 0.11 over 160ms, and a lowpass pat falling 900Hz to 320Hz at 0.1, 350ms in",
+        "purpose": "A page of the codex turned, by a tab, a button, a key or a swipe."
+      },
+      {
+        "name": "cover",
+        "value": "lowpass noise rising 520Hz to 1100Hz at 0.14 over 240ms with a sine falling 190Hz to 150Hz at 0.06; then settle, played by delay as the cover comes down, since no voice but win and loss may run past 0.5s",
+        "purpose": "The codex's cover opening by itself. The one effect on a page that a press did not cause, with the page landing."
       },
       {
         "name": "limits",
