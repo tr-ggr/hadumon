@@ -670,8 +670,9 @@ A filter in the codex is a token, one row to a group, there only while the Cats 
 ### Inputs / Fields
 - **Style:** a white slot cut into the board (`Field`): 48px tall, square, 2px ink border, a 3px shade along its top inner edge, 16px text, 12px side padding. The label sits above in 14px extra-bold ink. What is typed is the rounded face, never print.
 - **Focus:** the global 3px cobalt outline. The border does not change.
-- **Trailing control:** a field may hold one control at its right end. The password's is the word "Show" or "Hide" in 12px bold underlined text, with a target at least 48 by 40px.
-- **Error:** a message below the fields as a white marker with a 2px ink border and 14px bold ink text. 44px is kept for it so the form does not jump.
+- **Trailing control:** a field may hold one control at its right end. The password's is the word "Show" or "Hide" in 12px bold underlined text, with a target at least 48 by 40px. Where a password is typed twice, the first field has the control and it uncovers both.
+- **Error:** a message below the fields as a white marker with a 2px ink border and 14px bold ink text. 44px is kept for it so the form does not jump. A form has one, for whichever thing is wrong first (a bad username, two passwords that differ, what the server said); a field does not carry a message of its own.
+- **Strength meter** (`PasswordStrength`): under a new password's field, 8px down. Four segments in a row, 4px apart, each 12px tall and square with a 2px ink border, white until filled; then a word at the right end in 12px weight 900 ink, in a 64px column so the segments do not move when it changes. Too short (under 8 characters) fills none; Weak fills one in coral, Fair two in volt, Good three and Strong four in lime. The count and the word carry it, the colour only agrees. It is advice and stops nothing. The row is there before anything is typed, and the word is read out once when it changes.
 - **Disabled:** 60% opacity.
 
 ### Navigation
@@ -788,7 +789,7 @@ The lid of the box, top and bottom.
 - **Lid strip:** an ink band with cream text, 4px above its content and 8px below, 52px tall with 40px buttons on it.
 - **On the landing page:** left, one line in 12px bold (14px from 640px): "Free. Nothing to install. Nothing for sale." (the middle sentence drops below 640px). Right, Log in as a small cream table button and Sign up as a small cobalt one, 10px apart.
 - **On a signed-in page:** stuck to the top. The lid wordmark, the navigation from 768px, then at the right the signed-in name in 14px bold, cut short where it will not fit, and three 40px cream icon buttons 6px apart: the speaker, the notes, and Log out, which opens its confirm dialog.
-- **At login and signup:** not stuck. The lid wordmark at the left and the other form at the right as a small cream table link ("Create one", "Sign in").
+- **At login, signup, forgot password and reset password:** not stuck. The lid wordmark at the left and the other form at the right as a small cream table link ("Create one" at login, "Sign in" on the rest).
 - **Footer:** on the landing page only. The same ink band, one 14px line and "Log in" as a bold underlined text link.
 - **On ink:** a piece casts a darker ink (`#0b1118`), and the focus outline is lime, because the cobalt one is lost on ink.
 
@@ -845,8 +846,12 @@ The codex is a book in the tower's room (`src/app/codex/CodexView.tsx`, `src/com
 - **Address:** `/codex#cats`, `#relics`, `#clans` and `#rivals` open the book at that chapter, and the address follows the chapter that is open.
 
 ### Sign-in
-Login and signup (`src/app/login/AuthForm.tsx`): one board on a sky band, which lands once as a token does.
-- **Board:** cream, casting deep sky, 20px padding (32px from 640px). The h1 in print (30px, 40px from 640px), one line of intro, the username and password fields 16px apart, the line kept for an error, and a large cobalt submit the full width. Then on login "Use demo account" as a medium cream table button the full width, and on signup a tray well holding a 14px extra-bold line ("Nothing is for sale") and one 14px sentence. Under the form, a 14px line with the other form as a bold underlined text link.
+Login, signup, forgot password and reset password (`src/components/auth/`): one board on a sky band, which lands once as a token does. `AuthScreen` is the page; each form is the board's contents.
+- **Board:** cream, casting deep sky, 20px padding (32px from 640px). The h1 in print (30px, 40px from 640px), one line of intro, the fields 16px apart, the line kept for an error, and a large cobalt submit the full width. Under the form, a 14px line with another form as a bold underlined text link.
+- **Login:** email and password. "Forgot password?" is a 14px extra-bold underlined link at the far end of the password label's line, its target extended to 40px tall; it adds no height. Under the submit, "Use demo account" as a medium cream table button the full width, which signs in.
+- **Signup:** username, email, password with the strength meter under it, and "Retype password". Under the submit, a tray well holding a 14px extra-bold line ("Nothing is for sale") and one 14px sentence.
+- **Forgot password:** the email alone and "Send reset link". The answer takes the form's place on the board and is the same for any address: "Check your email", one sentence, "Back to sign in" as the large cobalt link, and a 14px line to try another address.
+- **Reset password:** the new password with the meter, and its retype. A link that is spent or too old gets "This link has run out" with "Send a new link" as the large cobalt link; a password saved gets "Password changed" with "Sign in". A board with no form has its one way forward 24px under the intro.
 - **Picture:** a stage frame holding "Six rivals. Twelve turns each." in print (20px, 30px from 1024px) over Flameclaw at 160px (256px from 1024px), with Mistpaw perched on the frame. See Layout for where it stands and when it is left out.
 
 ### Not Found

@@ -98,8 +98,37 @@ picked card into it, `Enter` confirms, `Esc` backs out.
 - **Vitest** for the game engine
 - Package manager: **pnpm**
 
-Auth is custom: `scrypt` password hashing plus an opaque session cookie
-(`hadumon_session`) backed by a `sessions` table. No NextAuth.
+## Accounts
+
+Sign-in is by email and password, through a self-hosted
+[Better Auth](https://www.better-auth.com) (the library Neon Auth is built on)
+mounted at `/api/auth`. Its tables (`users`, `sessions`, `accounts`,
+`verifications`, `rate_limits`) live in our own Postgres under the `hadumon_`
+prefix, defined in `src/server/db/schema/auth.ts`; passwords are hashed with
+our `scrypt` (`src/server/auth/password.ts`). The config is
+`src/server/auth/index.ts`.
+
+- **Sign up** takes a username, an email and a password typed twice. The
+  username is only the name a player is shown by: 3 to 20 letters, numbers and
+  underscores, not unique and not a way to sign in. The strength meter is
+  advice; the one rule is 8 characters. There is no email verification, so
+  signing up with an address that is taken says so.
+- **Forgot password** emails a link that works once, for an hour, through
+  [Resend](https://resend.com). The page answers the same whether or not the
+  address has an account. Choosing a new password signs every device out.
+- **Without `RESEND_API_KEY` and `EMAIL_FROM`** no email is sent. Outside
+  production the link is printed to the server console instead
+  (`[auth] Password reset link for …`); in production only a warning is.
+- **The demo account** (`demo@hadumon.example` / `demo1234`) is public, so it
+  cannot be reset, and the endpoints that would change or delete an account
+  (`/update-user`, `/change-password`, `/change-email`, `/delete-user`,
+  `/revoke-*`) are switched off for everyone.
+- **Rate limits** (production only) are counted in the database: 5 a minute
+  per address on sign-in, sign-up and both reset steps.
+
+Server code asks who is signed in with `getCurrentUser()`
+(`src/server/auth/session.ts`), which is also what `protectedProcedure` uses;
+the browser signs in, up and out with `authClient` (`src/lib/auth-client.ts`).
 
 ## Running it
 
@@ -107,14 +136,30 @@ Requires Node 20+, pnpm and a local Postgres you can connect to as `postgres`.
 
 ```bash
 createdb -h localhost -U postgres hadumon   # once
-cp .env.example .env                        # DATABASE_URL
+cp .env.example .env                        # DATABASE_URL, BETTER_AUTH_SECRET
 pnpm install
 pnpm db:migrate                             # create the tables
 pnpm db:seed                                # the demo account
 pnpm dev
 ```
 
-Then open <http://localhost:3000>. Sign up, or sign in as `demo` / `demo1234`.
+Then open <http://localhost:3000>. Sign up, or press "Use demo account" on the
+sign-in page (`demo@hadumon.example` / `demo1234`).
+
+Environment variables (all in `.env.example`, checked by `src/env.js`):
+
+| Variable               | Needed               | What it is                                                        |
+| ---------------------- | -------------------- | ----------------------------------------------------------------- |
+| `DATABASE_URL`         | always               | The Postgres to use                                               |
+| `BETTER_AUTH_SECRET`   | in production        | Signs session cookies; 32+ characters (`openssl rand -base64 32`) |
+| `BETTER_AUTH_URL`      | on a custom domain   | The one origin the app is served from; otherwise read per request |
+| `RESEND_API_KEY`       | to send reset emails | A Resend API key                                                  |
+| `EMAIL_FROM`           | to send reset emails | The sender, on a domain verified with Resend                      |
+| `NEXT_PUBLIC_SITE_URL` | no                   | The origin Open Graph and Twitter card URLs resolve against       |
+
+On Vercel the app's origin is worked out from `VERCEL_PROJECT_PRODUCTION_URL`,
+`VERCEL_BRANCH_URL` and `VERCEL_URL`, which Vercel sets. Only those exact hosts
+are accepted, never `*.vercel.app`: a reset link is built on that origin.
 
 `pnpm db:seed` is idempotent. To start over completely:
 
@@ -136,17 +181,28 @@ git add drizzle && git commit
 ```
 
 Migration `0001_drop_old_game` removes the tables of the earlier idle game.
-Deploying it deletes that game's data for every account; logins survive.
+Deploying it deletes that game's data for every account.
 
-The demo account is not created on deploy; seed it once by hand:
+Migration `0004_auth_clean_break` moves accounts to email sign-in and **deletes
+every user**, with their runs and unlocks: the old accounts had a username and
+no email to carry over. `0005_better_auth` then adds the new tables. Before the
+deploy that carries them:
+
+1. Set `BETTER_AUTH_SECRET`, `RESEND_API_KEY` and `EMAIL_FROM` in Vercel, for
+   Production and Preview. The build fails without the secret. `EMAIL_FROM`
+   must be on a domain you own and have verified with Resend
+   (`hadumon.vercel.app` cannot be).
+2. Check which database the Preview environment's `DATABASE_URL` points at.
+   Every build migrates, so a preview build against the production database
+   deletes the production users.
+
+The demo account is not created on deploy; seed it by hand, once after the
+deploy above and on any fresh database:
 
 ```bash
 vercel env pull .env.production.local --environment production
 pnpm db:seed:prod
 ```
-
-`NEXT_PUBLIC_SITE_URL` (optional, see `.env.example`) sets the origin that the
-Open Graph and Twitter card URLs resolve against.
 
 ## Scripts
 
@@ -175,7 +231,10 @@ Open Graph and Twitter card URLs resolve against.
 src/
   app/
     page.tsx              Landing (signed out) or home (HomeDashboard.tsx)
-    login/  signup/       Auth forms (render without the app shell)
+    login/  signup/       The signed-out pages (rendered without the app
+    forgot-password/      shell); their forms are components/auth/
+    reset-password/
+    api/auth/[...all]/    Better Auth's route handler
     run/                  The game: clan pick, match, reward, the climb, summary
     codex/                Every cat, relic, clan and rival, locked or not, as a
                           book: it opens by itself, and its pages turn
@@ -185,6 +244,8 @@ src/
     RivalSprite.tsx       The same renderer for the six rivals, in coral
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
     sprites/              Cat, rival, icon and tower grids, and their palettes
+    auth/                 The sign-in, sign-up, forgot and reset forms, the
+                          screen they stand on, and the strength meter
     cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/                  Screen components for a run
@@ -195,11 +256,17 @@ src/
     run/music/            Music: tracks as data, the bar scheduler, the on/off setting
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton,
                           and where a dialog comes up from (pop.ts)
+  lib/
+    auth-client.ts        Better Auth's browser client
+    auth/                 Shared by server, middleware and browser: routes and
+                          the demo login, form validation, error copy, and
+                          the strength estimate (zxcvbn, loaded on demand)
   server/
     api/                  tRPC root, context, routers (auth, run, codex)
-    auth/                 scrypt hashing + session cookie helpers
-    db/                   Drizzle client, schema/ (users, sessions, runs,
-                          unlocks), seed.ts
+    auth/                 The Better Auth config, scrypt hashing, the current
+                          user, and the reset email
+    db/                   Drizzle client, schema/ (users, sessions, accounts,
+                          verifications, rate limits, runs, unlocks), seed.ts
     game/                 The engine: pure, seeded, unit tested
       cats.ts             The 26 cats and their powers, as data
       match.ts            One match for two seats: actions, powers, goals, score
