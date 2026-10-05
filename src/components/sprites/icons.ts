@@ -248,6 +248,39 @@ export const ICONS = {
     "....oo..",
     "........",
   ],
+  /** The way home from the table. */
+  home: [
+    "...oo.o.",
+    "..o11oo.",
+    ".o1111o.",
+    "o111111o",
+    "oo1111oo",
+    ".o1oo1o.",
+    ".o1oo1o.",
+    ".oooooo.",
+  ],
+  /** The codex: every cat, relic and clan. */
+  book: [
+    ".oooooo.",
+    "o1o1111o",
+    "o1o1oo1o",
+    "o1o1111o",
+    "o1o1111o",
+    "o1o1111o",
+    "o1oooooo",
+    ".oooooo.",
+  ],
+  /** Logging out: a door, and the way through it. */
+  exit: [
+    "oooo....",
+    "o11o.o..",
+    "o11o..o.",
+    "o11ooooo",
+    "o11o..o.",
+    "o11o.o..",
+    "o11o....",
+    "oooo....",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICONS;

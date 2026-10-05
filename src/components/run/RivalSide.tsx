@@ -34,7 +34,8 @@ function cardsLeft(match: MatchView): string {
 
 /**
  * The far side of the table: who the rival is, the deck it flips from, the
- * card it flipped last, and what it has put away.
+ * card it flipped last, and what it has put away. In the rail it stacks, and
+ * leaves its score to the line both scores share.
  */
 export function RivalSide({
   match,
@@ -57,12 +58,12 @@ export function RivalSide({
   return (
     <section
       aria-label={`${rival.name}, the rival`}
-      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-stretch gap-x-3 gap-y-3 lg:grid-cols-[minmax(0,1.1fr)_auto_minmax(0,1fr)_auto] ${className}`}
+      className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-stretch gap-x-3 gap-y-3 lg:flex lg:flex-col ${className}`}
     >
-      <Nameplate rivalId={match.rivalId} className="col-span-2 lg:col-span-1" />
+      <Nameplate rivalId={match.rivalId} className="col-span-2" />
 
       <p
-        className="piece border-ink bg-coral text-ink col-start-3 row-start-1 flex min-w-16 flex-col items-center justify-center border-2 px-2 py-1 lg:col-start-4"
+        className="piece border-ink bg-coral text-ink col-start-3 row-start-1 flex min-w-16 flex-col items-center justify-center border-2 px-2 py-1 lg:hidden"
         aria-label={`Rival score ${score}: ${plural(banked, "banked cat")} at ${bankValue} each, ${yarn} yarn, ${goalPoints} from goals`}
       >
         <span aria-hidden className="text-[11px] leading-tight font-bold">
@@ -73,7 +74,7 @@ export function RivalSide({
         </span>
       </p>
 
-      <div className="flex items-center gap-2.5 lg:col-start-2 lg:row-start-1">
+      <div className="flex items-center gap-2.5 lg:pt-1">
         <Pile count={deckCount} owner="rival" label="Rival deck" />
         <Pile count={banked} owner="rival" label="Cats the rival has banked" />
         <p className="text-ink flex flex-col gap-1 text-xs leading-none font-bold tabular-nums">
@@ -92,7 +93,7 @@ export function RivalSide({
       </div>
 
       <div
-        className={`piece piece-card border-ink text-ink col-span-2 flex min-w-0 flex-col justify-center border-2 px-2.5 py-1.5 lg:col-span-1 lg:col-start-3 lg:row-start-1 ${flash ? "bg-coral" : last ? "bg-cream" : "bg-cloth"} ${flipping ? "anim-flip" : ""}`}
+        className={`piece piece-card border-ink text-ink col-span-2 flex min-w-0 flex-col justify-center border-2 px-2.5 py-1.5 ${flash ? "bg-coral" : last ? "bg-cream" : "bg-cloth"} ${flipping ? "anim-flip" : ""}`}
       >
         <p className="text-sm leading-snug font-black" aria-live="polite">
           {rivalLastText(match, news)}

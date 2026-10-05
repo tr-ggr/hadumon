@@ -27,6 +27,8 @@ export interface CatPickProps {
   note?: ReactNode;
   /** A key that selects this card, shown where there is a keyboard. */
   hint?: string;
+  /** Food taken off the cost by an essence on the board. */
+  discount?: number;
   className?: string;
 }
 
@@ -46,6 +48,7 @@ export function CatPick({
   verb = "Select",
   note,
   hint,
+  discount,
   className = "",
 }: CatPickProps) {
   const cat = getCat(catId);
@@ -53,6 +56,7 @@ export function CatPick({
   const card = (
     <CatCard
       catId={catId}
+      discount={discount}
       className={`h-full pb-8 ${selected ? "is-chosen" : open ? "is-open" : ""}`}
     />
   );
@@ -92,7 +96,14 @@ export function CatPick({
   );
 }
 
-function InfoButton({ name, onClick }: { name: string; onClick: () => void }) {
+/** Opens the full card. A sibling of the card's own control, never inside it. */
+export function InfoButton({
+  name,
+  onClick,
+}: {
+  name: string;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

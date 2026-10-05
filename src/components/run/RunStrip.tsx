@@ -81,12 +81,14 @@ export function RunStrip({
   compact?: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1.5 pt-1 pb-1.5">
+    <div
+      className={`flex flex-wrap items-end justify-between gap-y-1.5 pt-1 pb-1.5 ${compact ? "gap-x-2" : "gap-x-3"}`}
+    >
       <GauntletTrack run={run} />
-      <div className="text-ink-soft flex min-w-max flex-1 items-baseline justify-between gap-3 text-xs leading-tight font-semibold">
-        {compact ? (
-          <span />
-        ) : (
+      <div
+        className={`text-ink-soft flex min-w-max flex-1 items-baseline gap-3 text-xs leading-tight font-semibold ${compact ? "justify-end" : "justify-between"}`}
+      >
+        {compact ? null : (
           <p className="whitespace-nowrap">
             {CLANS[run.clanId].name} · {plural(run.deck.length, "card")}
           </p>

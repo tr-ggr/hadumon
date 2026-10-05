@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
-import { Button, Modal } from "~/components/ui";
+import { LogoutDialog } from "~/components/LogoutDialog";
 import { api } from "~/trpc/react";
 
 type IconName = "home" | "play" | "codex";
@@ -21,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/codex", label: "Codex", icon: "codex" },
 ];
 const BARE_ROUTES = ["/login", "/signup"];
-/** The table fills the main column and docks its own bar at the bottom. */
+/** The table takes the whole screen: no rail, no bar. See `TableNav`. */
 const TABLE_ROUTE = "/run";
 
 export function AppShell({
@@ -39,21 +39,24 @@ export function AppShell({
     )
   )
     return <>{children}</>;
-  const table = isActive(pathname, TABLE_ROUTE);
+  // The table lays its own cloth edge to edge and carries its own way out.
+  if (isActive(pathname, TABLE_ROUTE)) {
+    return (
+      <div className="app-shell flex min-h-dvh flex-col">
+        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+      </div>
+    );
+  }
   return (
     <div className="app-shell min-h-dvh md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
       <SideNav pathname={pathname} />
       <div className="flex min-h-dvh min-w-0 flex-col">
-        <TopBar pathname={pathname} table={table} />
-        {table ? (
-          <main className="flex min-w-0 flex-1 flex-col">{children}</main>
-        ) : (
-          <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
-            {children}
-          </main>
-        )}
+        <TopBar />
+        <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
+          {children}
+        </main>
       </div>
-      {table ? null : <BottomNav pathname={pathname} />}
+      <BottomNav pathname={pathname} />
     </div>
   );
 }
@@ -62,50 +65,20 @@ export function AppShell({
  * Sticky account bar, shown at every width: the wordmark on mobile (the rail
  * carries it on desktop), who is signed in, and Log out behind a confirm.
  */
-function TopBar({ pathname, table }: { pathname: string; table: boolean }) {
-  const router = useRouter();
-  const utils = api.useUtils();
+function TopBar() {
   const [confirming, setConfirming] = useState(false);
   const me = api.auth.me.useQuery(undefined, { retry: false });
-  const logout = api.auth.logout.useMutation({
-    onSuccess: async () => {
-      setConfirming(false);
-      await utils.invalidate();
-      router.push("/login");
-      router.refresh();
-    },
-  });
   const displayName = me.data?.user.displayName;
 
   return (
     <header className="bg-cream/95 sticky top-0 z-30 border-b border-black/5 backdrop-blur">
-      <div
-        className={`mx-auto flex w-full items-center gap-3 px-3 sm:px-5 lg:px-6 ${table ? "py-2 md:py-0.5" : "max-w-[1180px] py-2"}`}
-      >
-        {table ? (
-          <nav aria-label="Primary navigation" className="flex gap-1 md:hidden">
-            {NAV_ITEMS.map((item) => {
-              const active = isActive(pathname, item.href);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  aria-current={active ? "page" : undefined}
-                  className={`touch-target flex items-center justify-center rounded-xl px-2 text-xs font-bold ${active ? "bg-sky-soft text-cobalt" : "text-ink-soft"}`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        ) : (
-          <Link
-            href="/"
-            className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
-          >
-            Hadu<span className="text-coral">Mon</span>
-          </Link>
-        )}
+      <div className="mx-auto flex w-full max-w-[1180px] items-center gap-3 px-3 py-2 sm:px-5 lg:px-6">
+        <Link
+          href="/"
+          className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
+        >
+          Hadu<span className="text-coral">Mon</span>
+        </Link>
         <div className="ml-auto flex min-w-0 items-center gap-1">
           {displayName ? (
             <span className="text-ink min-w-0 truncate px-2 text-sm font-bold">
@@ -122,40 +95,7 @@ function TopBar({ pathname, table }: { pathname: string; table: boolean }) {
         </div>
       </div>
 
-      <Modal
-        open={confirming}
-        onClose={() => setConfirming(false)}
-        title="Log out?"
-        footer={
-          <>
-            <Button
-              variant="secondary"
-              data-autofocus
-              disabled={logout.isPending}
-              onClick={() => setConfirming(false)}
-            >
-              Stay
-            </Button>
-            <Button
-              variant="danger"
-              disabled={logout.isPending}
-              onClick={() => logout.mutate()}
-            >
-              {logout.isPending ? "Logging out…" : "Log out"}
-            </Button>
-          </>
-        }
-      >
-        <p>
-          A run in progress is saved. It will be where you left it when you log
-          back in.
-        </p>
-        {logout.error ? (
-          <p role="alert" className="text-coral mt-2 font-semibold">
-            That did not work. Try again.
-          </p>
-        ) : null}
-      </Modal>
+      <LogoutDialog open={confirming} onClose={() => setConfirming(false)} />
     </header>
   );
 }

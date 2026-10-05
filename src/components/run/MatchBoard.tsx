@@ -24,11 +24,12 @@ import {
 import { fly, launchFrom, type Launch } from "./flight";
 import { EventLog, GoalNotice } from "./MatchPanels";
 import { RelicTiles } from "./pieces";
-import { PlayerEdge, type TurnControls } from "./PlayerEdge";
+import { Hand } from "./Hand";
 import { RivalSide } from "./RivalSide";
 import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
 import { Supply } from "./Supply";
+import { TurnPanel, type TurnControls } from "./TurnPanel";
 import {
   canSwapMore,
   deckPicks,
@@ -43,16 +44,29 @@ import {
 import { usePlayback } from "./usePlayback";
 import type { TurnRecord } from "./useRunController";
 
-/** Scrolls a zone into the clear space between the top bar and the edge. */
-function reveal(element: Element | null | undefined): void {
-  if (!element) return;
-  const rect = element.getBoundingClientRect();
-  const edge = document.querySelector(".rail")?.getBoundingClientRect().top;
-  if (rect.top >= 64 && rect.bottom <= (edge ?? window.innerHeight)) return;
-  const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  element.scrollIntoView({
-    block: "center",
-    behavior: calm ? "auto" : "smooth",
+/**
+ * Scrolls a zone into the clear space above the player's edge, and no
+ * further than it takes. When that space can hold the whole of `within`,
+ * all of it is brought in, so a lane comes with the rest of its mat.
+ */
+function reveal(
+  zone: Element | null | undefined,
+  within?: Element | null,
+): void {
+  const edge = document.querySelector("[data-edge]")?.getBoundingClientRect();
+  const top = 8;
+  const bottom = (edge?.top ?? window.innerHeight) - 4;
+  const whole = within?.getBoundingClientRect();
+  const rect =
+    whole && whole.height <= bottom - top
+      ? whole
+      : zone?.getBoundingClientRect();
+  if (!rect || (rect.top >= top && rect.bottom <= bottom)) return;
+  // A zone taller than the space shows its top. The move is a cut, like
+  // every other on the table: nothing here eases.
+  const fromTop = rect.top < top || rect.height > bottom - top;
+  window.scrollBy({
+    top: fromTop ? rect.top - top : rect.bottom - bottom,
   });
 }
 
@@ -132,15 +146,19 @@ export interface MatchBoardProps {
   onTurnPlayed: (id: number) => void;
   /** The run's own strip: the gauntlet track and the way out. */
   runStrip: ReactNode;
-  /** The same strip cut down for the column beside the table. */
+  /** The same strip cut down for the rail beside the table. */
   sideStrip: ReactNode;
 }
 
 /**
- * The match as a table: the rival across, the shared supply, the player's
- * mat of three lanes, and the player's edge docked at the bottom. A turn
- * that has just been answered is played back step by step before the table
- * takes input again.
+ * The match as a table. Beside it, a rail down the left: the rival and the
+ * rounds above the line, the player's turn below it. On the table, the
+ * shared supply, the player's mat of three lanes, and the hand held as a fan
+ * along the bottom edge; the score sheet, relics and log stand to the right.
+ * Under 1024px it is one column with the turn and the hand docked below, and
+ * on a short screen the mat stands above the supply, clear of a raised card. A
+ * turn that has just been answered is played back step by step before the
+ * table takes input again.
  */
 export function MatchBoard({
   run,
@@ -320,9 +338,6 @@ export function MatchBoard({
     if (match.phase !== "turn") return;
     if (mode.kind === "play" && mode.hand === index) return setMode(IDLE);
     setMode({ kind: "play", hand: index, swap: [] });
-    // On a phone the lane that can take the card may be off screen.
-    const lane = (match.playable[index] ?? [])[0];
-    reveal(tableRef.current?.querySelector(`[data-lane="${lane ?? "hunt"}"]`));
   };
 
   const onDie = (index: number) => {
@@ -441,35 +456,77 @@ export function MatchBoard({
   const watched = firingRow ?? resolving;
   useEffect(() => {
     if (watched === null) return;
-    reveal(tableRef.current?.querySelector(`[data-lane="${watched}"]`));
+    reveal(
+      tableRef.current?.querySelector(`[data-lane="${watched}"]`),
+      matRef.current,
+    );
   }, [watched, turnId]);
+
+  // A chosen card stands up at the edge, and under a narrow table the dock
+  // grows to hold it. The lane that can take the card is brought clear of
+  // both once the table has been laid out again.
+  const chosenHand = mode.kind === "play" ? mode.hand : null;
+  const chosenLane =
+    chosenHand === null
+      ? null
+      : ((match.playable[chosenHand] ?? [])[0] ?? "hunt");
+  useEffect(() => {
+    if (chosenLane === null) return;
+    reveal(
+      tableRef.current?.querySelector(`[data-lane="${chosenLane}"]`),
+      matRef.current,
+    );
+  }, [chosenHand, chosenLane]);
 
   // Until the rival's card turns over, its last one is still face up.
   const shownNews =
     playing && !frame?.flipped ? (turn?.rivalBefore ?? null) : news;
 
+  const turnPanel = {
+    match,
+    turn: controls,
+    playing: playing ? (frame?.text ?? "") : null,
+    rivalStep: playing && frame?.tone === "rival",
+    onSkip: skip,
+  };
+
   return (
-    <div ref={tableRef} className="flex flex-1 flex-col">
+    <div
+      ref={tableRef}
+      className="flex flex-1 flex-col [overflow:clip] lg:flex-row"
+    >
       <h1 className="sr-only">
         Match {run.matchIndex + 1} of {run.gauntlet.length}
       </h1>
-      <div className="mx-auto grid w-full max-w-[1400px] flex-1 content-start gap-x-4 gap-y-3 px-3 pt-2.5 pb-3 lg:grid-cols-[minmax(0,1fr)_17.5rem]">
-        <div className="flex min-w-0 flex-col gap-2.5">
-          <div className="lg:hidden">{runStrip}</div>
 
+      {/* The rail: theirs above the line, yours below it. Under `lg` its
+          parts fall into the one column, and the turn is shown in the dock. */}
+      <div className="lg:rail-side max-lg:contents lg:flex lg:w-[19.5rem] lg:shrink-0 lg:flex-col">
+        <div className="flex flex-col gap-2.5 px-3 pt-2.5 lg:pb-3">
+          {/* The corner buttons stand beside the track on a narrow table. */}
+          <div className="max-lg:pr-36 lg:hidden">{runStrip}</div>
+          <div className="hidden lg:block">{sideStrip}</div>
           <RivalSide
             match={match}
             news={shownNews}
             flipping={frame?.flipping ?? false}
           />
+          <RoundBoard match={match} rail />
+        </div>
+        <TurnPanel
+          {...turnPanel}
+          className="border-ink sticky bottom-0 z-20 mt-auto hidden border-t-2 bg-white lg:flex"
+        />
+      </div>
 
-          <section
-            ref={matRef}
-            aria-label="Your mat"
-            className="mat order-2 lg:order-3"
-          >
-            <RoundBoard match={match} className="px-2 pt-2 pb-3.5 sm:px-3" />
-            <div className="divide-sky-deep border-sky-deep divide-y-2 border-t-2">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-1 flex-col gap-x-4 gap-y-3 px-3 pt-2.5 pb-3 lg:pt-16 xl:flex-row xl:pt-2.5">
+          <div className="flex min-w-0 flex-col gap-3 xl:flex-1">
+            <section
+              ref={matRef}
+              aria-label="Your mat"
+              className="mat divide-sky-deep tall-table:order-3 order-2 flex flex-col divide-y-2 xl:max-h-[30.5rem] xl:flex-1"
+            >
               {ROWS.map((row) => (
                 <BoardRow
                   key={row}
@@ -485,53 +542,60 @@ export function MatchBoard({
                   onSlot={onSlot}
                 />
               ))}
-            </div>
-          </section>
+            </section>
 
-          <div ref={supplyRef} className="order-3 lg:order-2">
-            <Supply
-              match={match}
-              mode={mode}
-              busy={busy}
-              take={take}
-              rolling={frame?.rolling ?? false}
-              onDie={onDie}
-              onTrayCard={onTrayCard}
-              onDeckPicks={changeDeckPicks}
-              onReroll={() => act({ type: "reroll" })}
-              onDetail={showCard}
-              deckNote={`${CLANS[run.clanId].name} deck, ${plural(run.deck.length, "card")}.`}
-            />
+            <div ref={supplyRef} className="tall-table:order-2 order-3">
+              <Supply
+                match={match}
+                mode={mode}
+                busy={busy}
+                take={take}
+                rolling={frame?.rolling ?? false}
+                onDie={onDie}
+                onTrayCard={onTrayCard}
+                onDeckPicks={changeDeckPicks}
+                onReroll={() => act({ type: "reroll" })}
+                onDetail={showCard}
+                deckNote={`${CLANS[run.clanId].name} deck, ${plural(run.deck.length, "card")}.`}
+              />
+            </div>
+          </div>
+
+          {/* Beside the table the pad takes the table's height and scrolls in
+              place, so it never makes the page longer than the table. Its top
+              is left to the corner buttons. */}
+          <div className="relative min-w-0 xl:w-64 xl:shrink-0">
+            <aside className="flex flex-col gap-3.5 lg:max-xl:grid lg:max-xl:grid-cols-2 lg:max-xl:items-start xl:absolute xl:inset-0 xl:top-12 xl:gap-2.5 xl:overflow-y-auto xl:pb-3">
+              <Scorepad match={match} className="lg:max-xl:row-span-2" />
+              <section aria-label="Your relics">
+                <RelicTiles relicIds={run.relics} />
+              </section>
+              <EventLog
+                log={log}
+                landed={playing ? frame?.lines : undefined}
+                className="max-h-80 xl:max-h-none xl:min-h-40 xl:flex-1"
+              />
+            </aside>
           </div>
         </div>
 
-        {/* Beside the table the pad takes the table's height and scrolls in
-            place, so it never makes the page longer than the table. */}
-        <div className="relative min-w-0">
-          <aside className="flex flex-col gap-3.5 lg:absolute lg:inset-0 lg:gap-2.5 lg:overflow-y-auto lg:pb-3">
-            <div className="hidden lg:block">{sideStrip}</div>
-            <Scorepad match={match} />
-            <section aria-label="Your relics">
-              <RelicTiles relicIds={run.relics} />
-            </section>
-            <EventLog
-              log={log}
-              landed={playing ? frame?.lines : undefined}
-              className="max-h-80 lg:max-h-none lg:min-h-40 lg:flex-1"
-            />
-          </aside>
+        {/* The player's edge. A white dock under a narrow table; beside the
+            rail, only the hand, and the cloth shows and clicks through it. */}
+        <div
+          data-edge
+          className="hand-zone max-lg:rail sticky bottom-0 z-20 flex flex-col sm:max-lg:grid sm:max-lg:grid-cols-[17rem_minmax(0,1fr)] lg:pointer-events-none"
+        >
+          <TurnPanel {...turnPanel} className="flex lg:hidden" />
+          <Hand
+            match={match}
+            mode={mode}
+            busy={busy}
+            onHandCard={onHandCard}
+            onDetail={showCard}
+            className="sm:max-lg:self-end"
+          />
         </div>
       </div>
-
-      <PlayerEdge
-        match={match}
-        turn={controls}
-        playing={playing ? (frame?.text ?? "") : null}
-        rivalStep={playing && frame?.tone === "rival"}
-        onSkip={skip}
-        onHandCard={onHandCard}
-        onDetail={showCard}
-      />
 
       <CatDetail
         catId={detail?.catId ?? null}

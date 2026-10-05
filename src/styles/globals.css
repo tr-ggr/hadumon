@@ -116,6 +116,35 @@
   letter-spacing: 0.01em;
   line-height: 1;
 }
+/* A screen too short to hold the supply, the mat and a full-size hand at
+   once; the rail and the table tighten for it. */
+@custom-variant short {
+  @media (max-height: 52.99rem) {
+    @slot;
+  }
+}
+/* A match beside its rail with room for all of it: supply above the mat,
+   full-size cards in the hand. */
+@custom-variant tall-table {
+  @media (min-width: 80rem) and (min-height: 53rem),
+    (min-width: 64rem) and (min-height: 57rem) {
+    @slot;
+  }
+}
+/* The player's edge of the table, docked under it: white card, ink line. */
+@utility rail {
+  --cast: color-mix(in srgb, var(--color-chipboard) 34%, var(--color-white));
+  background: var(--color-white);
+  border-top: 2px solid var(--color-ink);
+  box-shadow: 0 -3px 0 0 var(--cast-cloth);
+}
+/* The same edge stood up the left side of a match. Nothing on the table is
+   offset sideways, so the rail casts no shade onto the cloth. */
+@utility rail-side {
+  --cast: color-mix(in srgb, var(--color-chipboard) 34%, var(--color-white));
+  background: var(--color-white);
+  border-right: 2px solid var(--color-ink);
+}
 /* The rarity band of a cat card. A variable, so the tabletop can add to it. */
 .cat-card {
   --piece-inset: inset 0 3px 0 var(--rarity);
@@ -247,11 +276,198 @@
   border: 2px solid var(--color-ink);
   box-shadow: inset 0 3px 0 0 var(--cast-cloth);
 }
-.tabletop .rail {
-  --cast: color-mix(in srgb, var(--color-chipboard) 34%, var(--color-white));
-  background: var(--color-white);
-  border-top: 2px solid var(--color-ink);
-  box-shadow: 0 -3px 0 0 var(--cast-cloth);
+/*
+ * The hand, held as a fan along the player's edge. `fanLayout` gives each
+ * card its place about the middle one (`--t`), its lean and its drop; the
+ * lower part of a card at rest hangs under the edge of the screen. Hovered,
+ * focused or chosen, a card stands upright and clear of the edge, over the
+ * others, and its neighbours stay where they are.
+ *
+ * Only the strip of a card that its neighbour leaves showing takes the
+ * pointer, so sweeping along the fan turns up one card after another even
+ * though a raised face covers the strips beside it.
+ */
+.tabletop .hand-zone {
+  --card-w: 9.5rem;
+  --card-h: 13.5rem;
+  --peek: 7.5rem;
+  /* Under a raised card: its edge and its shadow. */
+  --clear: 0.75rem;
+  --rise: calc(var(--peek) - var(--card-h) - var(--clear));
+  /* How far one unit of a card's drop hangs it; a small fan is shallower. */
+  --drop-unit: 0.5px;
+}
+/* Full-size cards: in a dock that is not a phone's, and beside the rail
+   wherever the mat still clears a raised card (the `tall-table` sizes). */
+@media (min-width: 40rem) and (max-width: 63.99rem) and (min-height: 40rem),
+  (min-width: 64rem) and (min-height: 57rem),
+  (min-width: 80rem) and (min-height: 53rem) {
+  .tabletop .hand-zone {
+    --card-h: 17rem;
+    --card-w: 11.5rem;
+    --peek: 12.5rem;
+    --drop-unit: 1px;
+  }
+}
+/* Beside the rail the hand is over the cloth. Room is kept above it for a
+   raised card, so the mat is never under one, and the cloth is laid again
+   behind it, so whatever the page scrolls under the hand stays out of it. */
+@media (min-width: 64rem) {
+  .tabletop .hand-zone {
+    padding-top: calc(0.25rem - var(--rise));
+  }
+  .tabletop .hand-zone::before {
+    content: "";
+    position: absolute;
+    inset: auto 0 0;
+    z-index: -1;
+    height: var(--peek);
+    background-color: var(--color-cream);
+    background-image: var(--weave);
+    background-size: 16px 8px;
+    pointer-events: auto;
+  }
+}
+.tabletop .hand-fan {
+  container-type: inline-size;
+  position: relative;
+  height: var(--peek);
+  margin-inline: 1rem;
+}
+@media (min-width: 40rem) {
+  .tabletop .hand-fan {
+    margin-inline: 1.75rem;
+  }
+}
+.tabletop .hand-fan > li {
+  --step: min(
+    calc(var(--card-w) * 0.82),
+    calc((100cqw - var(--card-w)) / var(--gaps))
+  );
+  --at: translateX(calc(var(--t) * var(--step)));
+  position: absolute;
+  top: calc(100% - var(--peek));
+  left: calc(50% - var(--card-w) / 2);
+  width: var(--card-w);
+  height: var(--card-h);
+  pointer-events: none;
+  transform: var(--at) translateY(calc(var(--drop) * var(--drop-unit)))
+    rotate(calc(var(--tilt) * 1deg));
+  transition: transform 160ms steps(4, end);
+}
+/* Under a narrow table the dock grows to hold the chosen card whole. */
+@media (max-width: 63.99rem) {
+  .tabletop .hand-fan.is-held {
+    height: calc(var(--card-h) + var(--clear) + 0.5rem);
+  }
+}
+/*
+ * A phone's hand. A strip is never thinner than a thumb can pick, so a big
+ * hand runs off the side and is panned; being panned, it is clipped, and the
+ * dock grows to hold any raised card rather than letting it rise out.
+ */
+@media (max-width: 39.99rem), (max-width: 63.99rem) and (max-height: 39.99rem) {
+  .tabletop .hand-fan {
+    height: calc(var(--peek) + 0.75rem);
+    margin-inline: 0;
+    overflow: auto hidden;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+  .tabletop .hand-fan::-webkit-scrollbar {
+    display: none;
+  }
+  .tabletop .hand-fan.is-held,
+  .tabletop .hand-fan:has(:focus-visible) {
+    height: calc(var(--card-h) + var(--clear) + 1.25rem);
+  }
+  .tabletop .hand-fan > li {
+    --step: max(
+      2.75rem,
+      min(
+        calc(var(--card-w) * 0.82),
+        calc((100cqw - var(--card-w) - 1.5rem) / var(--gaps))
+      )
+    );
+    --at: translateX(
+      calc(
+        max((100cqw - var(--last) * var(--step) - var(--card-w)) / 2, 0.75rem) +
+          var(--i) * var(--step)
+      )
+    );
+    left: 0;
+  }
+}
+@media (hover: hover) and (max-width: 39.99rem),
+  (hover: hover) and (max-width: 63.99rem) and (max-height: 39.99rem) {
+  .tabletop .hand-fan:has(> li:hover) {
+    height: calc(var(--card-h) + var(--clear) + 1.25rem);
+  }
+}
+.tabletop .hand-fan .hand-pick {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: var(--step);
+  pointer-events: auto;
+}
+.tabletop .hand-fan > li:last-child .hand-pick {
+  width: 100%;
+}
+.tabletop .hand-fan .hand-face {
+  width: var(--card-w);
+  pointer-events: none;
+}
+.tabletop .hand-fan .hand-pick:focus-visible {
+  outline: none;
+}
+.tabletop .hand-fan .hand-pick:focus-visible > .hand-face {
+  outline: 3px solid var(--color-cobalt);
+  outline-offset: 3px;
+}
+/* A card that cannot be played now. A wash, since a see-through card would
+   show the one under it. */
+.tabletop .hand-fan .hand-wash {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--color-cream) 34%, transparent);
+  pointer-events: none;
+}
+.tabletop .hand-fan > li.is-raised,
+.tabletop .hand-fan > li:has(:focus-visible) {
+  z-index: 2;
+  transform: var(--at) translateY(var(--rise));
+}
+.tabletop .hand-fan > li:has(:focus-visible) .hand-wash {
+  display: none;
+}
+/* The raised strip keeps the pointer where the leaning one had it. */
+.tabletop .hand-fan > li.is-raised .hand-pick::after,
+.tabletop .hand-fan > li:has(:focus-visible) .hand-pick::after {
+  content: "";
+  position: absolute;
+  inset: -0.5rem -1rem calc(var(--rise) - 2.5rem);
+}
+@media (hover: hover) {
+  .tabletop .hand-fan > li:hover {
+    z-index: 3;
+    transform: var(--at) translateY(var(--rise));
+  }
+  .tabletop .hand-fan > li:hover .hand-wash {
+    display: none;
+  }
+  .tabletop .hand-fan > li:hover .hand-pick::after {
+    content: "";
+    position: absolute;
+    inset: -0.5rem -1rem calc(var(--rise) - 2.5rem);
+  }
+}
+/* With no pointer to sweep with, the chosen card is tapped anywhere on its
+   face to put it back. */
+@media (hover: none) {
+  .tabletop .hand-fan > li.is-raised .hand-face {
+    pointer-events: auto;
+  }
 }
 /* A key that does the same thing; shown only where there is a keyboard. */
 .key-hint {

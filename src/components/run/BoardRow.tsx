@@ -61,8 +61,9 @@ export interface BoardRowProps {
 
 /**
  * One lane printed on the mat: its name and activate tile, four spaces with
- * their yarn cost, and under them the reward ladder with a marker on the
- * step the lane is on.
+ * their yarn cost, and in them the reward ladder with a marker on the step
+ * the lane is on. Beside the rail a lane takes its share of the mat's spare
+ * height.
  */
 export function BoardRow({
   row,
@@ -93,7 +94,7 @@ export function BoardRow({
     <section
       aria-label={`${ROW_LABELS[row]} lane`}
       data-lane={row}
-      className="grid gap-x-3 gap-y-3 px-2 pt-2 pb-3.5 sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:px-3"
+      className="grid gap-x-3 gap-y-3 px-2 pt-2 pb-3.5 sm:grid-cols-[9.5rem_minmax(0,1fr)] sm:px-3 xl:flex-1"
     >
       <h3 className="sr-only">{ROW_LABELS[row]}</h3>
       <button
@@ -102,7 +103,7 @@ export function BoardRow({
         aria-label={`${ROW_LABELS[row]}: ${activateLabel}`}
         disabled={busy || match.phase !== "turn"}
         onClick={onActivate}
-        className={`piece border-ink relative flex min-h-12 items-center gap-2.5 self-start border-2 px-2.5 py-1.5 text-left disabled:cursor-not-allowed sm:min-h-[3.75rem] sm:self-stretch ${resolving ? "" : "disabled:opacity-55"} ${activating ? "bg-lime text-ink is-pressed" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
+        className={`piece border-ink relative flex min-h-12 items-center gap-2.5 self-start border-2 px-2.5 py-1.5 text-left disabled:cursor-not-allowed sm:min-h-[3.75rem] sm:self-stretch lg:min-h-20 ${resolving ? "" : "disabled:opacity-55"} ${activating ? "bg-lime text-ink is-pressed" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
       >
         <PixelIcon
           name={lane.icon}
@@ -126,7 +127,7 @@ export function BoardRow({
             if (placed) {
               const slot = { row, col };
               return (
-                <li key={col} className="min-w-0">
+                <li key={col} className="@container min-w-0">
                   <PlacedSlot
                     slot={slot}
                     placed={placed}
@@ -156,7 +157,7 @@ export function BoardRow({
                     type="button"
                     disabled={busy}
                     onClick={onPlayHere}
-                    className="piece border-ink bg-lime text-ink relative flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 p-1 text-center text-xs leading-tight font-black hover:brightness-95 disabled:opacity-60 sm:min-h-[3.75rem]"
+                    className="piece border-ink bg-lime text-ink relative flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 p-1 text-center text-xs leading-tight font-black hover:brightness-95 disabled:opacity-60 sm:min-h-[3.75rem] lg:min-h-20"
                   >
                     <span>Play here</span>
                     <span className="text-[11px] font-bold">
@@ -174,7 +175,7 @@ export function BoardRow({
               <li
                 key={col}
                 data-slot={`${row}-${col}`}
-                className={`text-ink flex min-h-24 flex-col items-center justify-center gap-1.5 border-2 p-1 text-center text-[11px] leading-tight font-bold sm:min-h-[3.75rem] sm:flex-row sm:justify-between sm:px-2 ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
+                className={`text-ink flex min-h-24 flex-col items-center justify-center gap-1.5 border-2 p-1 text-center text-[11px] leading-tight font-bold sm:min-h-[3.75rem] sm:flex-row sm:justify-between sm:px-2 lg:min-h-20 ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
               >
                 <span className="sr-only">Empty space {col + 1}, costs </span>
                 {cost === 0 ? (
@@ -249,6 +250,11 @@ function RewardStep({
   );
 }
 
+/**
+ * A cat in its space. The tile answers to its own width: the sprite stands
+ * over the name until there is room to set them side by side, so a name is
+ * never cut short.
+ */
 function PlacedSlot({
   slot,
   placed,
@@ -284,7 +290,7 @@ function PlacedSlot({
       }
       // Cats tucked underneath show as a thicker edge.
       style={{ ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px` }}
-      className={`piece border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream flex h-full min-h-24 w-full flex-col items-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] sm:flex-row sm:gap-2 sm:px-1.5 sm:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "anim-fire" : ""}`}
+      className={`piece border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "anim-fire" : ""}`}
     >
       <span className="relative shrink-0">
         <PixelSprite
@@ -314,10 +320,10 @@ function PlacedSlot({
           </span>
         ) : null}
       </span>
-      <span className="flex min-w-0 flex-col items-center gap-1 sm:w-full sm:items-start">
+      <span className="flex w-full min-w-0 flex-col items-center gap-1 @[10.5rem]:items-start">
         <span
           lang="en"
-          className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] sm:truncate sm:text-[11px] sm:tracking-tight"
+          className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] sm:text-[11px] sm:tracking-tight"
         >
           {cat.name}
         </span>
@@ -326,7 +332,7 @@ function PlacedSlot({
           queued={queued}
           cap={cat.yarnCap}
           size={16}
-          className="justify-center sm:justify-start"
+          className="justify-center @[10.5rem]:justify-start"
         />
       </span>
     </button>

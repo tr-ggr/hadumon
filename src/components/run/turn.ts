@@ -4,9 +4,16 @@
  * decides what is legal.
  */
 
-import { getCat, ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
+import {
+  getCat,
+  playCost,
+  ROW_LABELS,
+  ROWS,
+  type Row,
+} from "~/server/game/cats";
 import {
   ESSENCES,
+  auraTotal,
   playPayment,
   swapOffer,
   type Board,
@@ -83,19 +90,37 @@ export function fillYarn(
   return next;
 }
 
-/** One line on why a hand card has no legal row, or `null` if it has one. */
-export function whyUnplayable(view: MatchView, hand: number): string | null {
+/** What a hand card with no legal row is short of. */
+export type PlayBlock = "food" | "room" | "yarn";
+
+/** The same, in the few words a card's footer has room for. */
+export const PLAY_BLOCK_LABELS: Record<PlayBlock, string> = {
+  food: "Not enough food",
+  room: "No room",
+  yarn: "Not enough yarn",
+};
+
+/** What stops a hand card being played, or `null` if a row will take it. */
+export function playBlock(view: MatchView, hand: number): PlayBlock | null {
   if ((view.playable[hand] ?? []).length > 0) return null;
   const catId = view.hand[hand];
   if (!catId) return null;
+  if (handSwap(view, hand) === null) return "food";
+  const open = getCat(catId).rows.some((row) => view.yarnCosts[row] !== null);
+  return open ? "yarn" : "room";
+}
+
+/** One line on why a hand card has no legal row, or `null` if it has one. */
+export function whyUnplayable(view: MatchView, hand: number): string | null {
+  const block = playBlock(view, hand);
+  const catId = view.hand[hand];
+  if (block === null || !catId) return null;
   const cat = getCat(catId);
-  if (swapOffer(view.essence, cat.cost) === null) {
-    return `Not enough food for ${cat.name}.`;
-  }
-  const open = cat.rows.filter((row) => view.yarnCosts[row] !== null);
-  if (open.length === 0) {
+  if (block === "food") return `Not enough food for ${cat.name}.`;
+  if (block === "room") {
     return `No room: ${listWords(cat.rows.map((row) => `the ${ROW_LABELS[row]}`))} ${cat.rows.length === 1 ? "is" : "are"} full.`;
   }
+  const open = cat.rows.filter((row) => view.yarnCosts[row] !== null);
   const cheapest = Math.min(...open.map((row) => view.yarnCosts[row] ?? 0));
   return `Not enough yarn: the next slot costs ${cheapest} and your cats hold ${view.score.yarn}.`;
 }
@@ -111,7 +136,13 @@ export function essenceSpent(
   hand: number,
   swap: readonly Essence[] = [],
 ): Essence[] | null {
-  const left = playPayment(view.essence, view.hand, hand, swap);
+  const left = playPayment(
+    view.essence,
+    view.hand,
+    hand,
+    swap,
+    auraTotal(view.board, "discount"),
+  );
   if (!left) return null;
   return ESSENCES.flatMap((kind) =>
     Array.from({ length: view.essence[kind] - left[kind] }, () => kind),
@@ -121,7 +152,12 @@ export function essenceSpent(
 /** How a hand card's cost stands against the essence held. */
 export function handSwap(view: MatchView, hand: number): SwapOffer | null {
   const catId = view.hand[hand];
-  return catId ? swapOffer(view.essence, getCat(catId).cost) : null;
+  return catId
+    ? swapOffer(
+        view.essence,
+        playCost(catId, auraTotal(view.board, "discount")),
+      )
+    : null;
 }
 
 /** How many essence a play has to give up before it can be sent. */

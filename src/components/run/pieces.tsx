@@ -51,7 +51,9 @@ export function Die({
   const body = (
     <>
       <EssencePip kind={face} size={24} />
-      <span className="text-[10px] leading-none font-bold">
+      {/* Two lines whether the name needs them or not ("Dry food" does),
+          so every die in a row is the same shape. */}
+      <span className="flex min-h-5 items-center text-center text-[10px] leading-none font-bold">
         {essenceLabel(face)}
       </span>
       {hint ? (
@@ -59,7 +61,7 @@ export function Die({
       ) : null}
     </>
   );
-  const box = `piece border-ink text-ink relative flex min-h-12 w-full flex-col items-center justify-center gap-1 border-2 px-1 py-1.5 ${selected ? "bg-lime lift" : "bg-white"}`;
+  const box = `piece border-ink text-ink relative flex h-full min-h-12 w-full flex-col items-center justify-center gap-1 border-2 px-1 py-1.5 ${selected ? "bg-lime lift" : "bg-white"}`;
   if (!onClick) return <div className={box}>{body}</div>;
   return (
     <button
@@ -83,12 +85,15 @@ const TABLE_BUTTON_SIZE = {
   sm: "min-h-10 px-2.5 text-xs",
   md: "min-h-12 px-4 text-sm",
   lg: "min-h-14 px-6 text-base",
+  /** A square that holds one pixel icon. */
+  icon: "h-10 w-10 px-0",
 };
 
-function tableButtonClass(
+/** The table action's dress, for a control that is not a `TableButton`. */
+export function tableButtonClass(
   variant: keyof typeof TABLE_BUTTON,
   size: keyof typeof TABLE_BUTTON_SIZE,
-  className: string,
+  className = "",
 ): string {
   return `piece border-ink inline-flex items-center justify-center gap-1.5 border-2 text-center leading-tight font-black disabled:cursor-not-allowed disabled:opacity-45 ${TABLE_BUTTON[variant]} ${TABLE_BUTTON_SIZE[size]} ${className}`;
 }

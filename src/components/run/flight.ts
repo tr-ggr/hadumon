@@ -17,17 +17,39 @@ export interface Launch {
   hideTarget: boolean;
 }
 
+/**
+ * The first match that is laid out. A zone the table renders twice and shows
+ * once (the turn panel, with the food tokens in it) has a copy with no box.
+ */
+function shown(root: HTMLElement | null, selector: string): HTMLElement | null {
+  for (const el of root?.querySelectorAll<HTMLElement>(selector) ?? []) {
+    const rect = el.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) return el;
+  }
+  return null;
+}
+
 export function launchFrom(
   root: HTMLElement | null,
   source: string,
   target: string,
   hideTarget = true,
 ): Launch | null {
-  const el = root?.querySelector<HTMLElement>(source);
+  const el = shown(root, source);
   if (!el) return null;
+  // A card leaning in the fan has a box wider than the card. The copy takes
+  // the card's own size about the same centre, so it is not stretched.
+  const box = el.getBoundingClientRect();
+  const width = el.offsetWidth;
+  const height = el.offsetHeight;
   return {
     node: el.cloneNode(true) as HTMLElement,
-    from: el.getBoundingClientRect(),
+    from: new DOMRect(
+      box.left + (box.width - width) / 2,
+      box.top + (box.height - height) / 2,
+      width,
+      height,
+    ),
     target,
     hideTarget,
   };
@@ -38,7 +60,7 @@ export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
   if (!root) return;
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   for (const { node, from, target, hideTarget } of launches) {
-    const landing = root.querySelector<HTMLElement>(target);
+    const landing = shown(root, target);
     if (!landing) continue;
     const to = landing.getBoundingClientRect();
     const scale = Math.max(

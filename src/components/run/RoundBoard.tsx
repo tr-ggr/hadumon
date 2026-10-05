@@ -17,29 +17,46 @@ export function roundTurns(match: MatchView, round: number): number {
 }
 
 /**
- * The three rounds as tiles along the top of the mat: the turns as cubes, the
- * goal and what it pays, and how the goal stands or how it went.
+ * The three rounds as tiles: the turns as cubes, the goal and what it pays,
+ * and how the goal stands or how it went. In the match's rail they stack,
+ * and the rounds that are not being played are cut down to a line or two.
  */
 export function RoundBoard({
   match,
+  rail = false,
   className = "",
 }: {
   match: MatchView;
+  /** Stacked in the rail beside the table, from `lg` up. */
+  rail?: boolean;
   className?: string;
 }) {
   return (
     <ol
       aria-label="Rounds"
-      className={`grid gap-2.5 sm:grid-cols-3 ${className}`}
+      className={`grid gap-2.5 sm:grid-cols-3 ${rail ? "lg:grid-cols-1 lg:gap-2" : ""} ${className}`}
     >
       {match.goals.map((goalId, round) => (
-        <RoundTile key={`${round}-${goalId}`} match={match} round={round} />
+        <RoundTile
+          key={`${round}-${goalId}`}
+          match={match}
+          round={round}
+          rail={rail}
+        />
       ))}
     </ol>
   );
 }
 
-function RoundTile({ match, round }: { match: MatchView; round: number }) {
+function RoundTile({
+  match,
+  round,
+  rail,
+}: {
+  match: MatchView;
+  round: number;
+  rail: boolean;
+}) {
   const goal = getGoal(match.goals[round] ?? "");
   const rival = getRival(match.rivalId).name;
   const playing = match.phase !== "over" && match.phase !== "setup";
@@ -54,15 +71,21 @@ function RoundTile({ match, round }: { match: MatchView; round: number }) {
         ? 0
         : turns;
   const standing = current ? match.standing : null;
+  // In the rail a round that is not being played gives way to the one that is,
+  // and on a short screen one already scored is a single line.
+  const compact = rail && !current;
+  const line = compact && scored !== undefined;
 
   return (
     <li
       aria-current={current ? "step" : undefined}
-      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
+      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-print text-xl">Round {round + 1}</h3>
-        <p className="flex items-center gap-1">
+        <p
+          className={`flex items-center gap-1 ${line ? "lg:short:hidden" : ""}`}
+        >
           {Array.from({ length: turns }, (_, i) => (
             <TurnCube key={i} spent={i >= left} />
           ))}
@@ -76,34 +99,48 @@ function RoundTile({ match, round }: { match: MatchView; round: number }) {
         </p>
       </div>
 
-      <p className="flex items-start gap-1.5 text-xs leading-snug">
-        <PixelIcon name="goal" size={16} className="mt-px" />
-        <span className="min-w-0">
-          <span className="font-black">{goal.name}.</span> {goal.text}{" "}
-          <span className="font-bold whitespace-nowrap tabular-nums">
-            Pays {GOAL_WIN_POINTS[round]} or {GOAL_LOSE_POINTS[round]}.
+      <div
+        className={
+          compact && scored
+            ? "flex flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-2"
+            : "contents"
+        }
+      >
+        <p
+          className={`flex items-start gap-1.5 text-xs leading-snug ${compact ? "lg:text-[11px]" : ""} ${line ? "lg:short:sr-only" : ""}`}
+        >
+          <PixelIcon name="goal" size={16} className="mt-px" />
+          <span className="min-w-0">
+            <span className="font-black">{goal.name}.</span>{" "}
+            {/* A round already scored keeps its name; how it went says the rest. */}
+            <span className={compact && scored ? "lg:sr-only" : ""}>
+              {goal.text}{" "}
+              <span className="font-bold whitespace-nowrap tabular-nums">
+                Pays {GOAL_WIN_POINTS[round]} or {GOAL_LOSE_POINTS[round]}.
+              </span>
+            </span>
           </span>
-        </span>
-      </p>
+        </p>
 
-      {standing ? (
-        <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
-          <Marker tone="lime">You {standing.player}</Marker>
-          <Marker tone="coral">
-            {rival} {standing.rival}
-          </Marker>
-          <span>
-            Now: you {standing.playerPoints}, rival {standing.rivalPoints}.
-          </span>
-        </p>
-      ) : scored ? (
-        <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
-          <Marker tone="lime">You took {scored.playerPoints}</Marker>
-          <Marker tone="coral">
-            {rival} took {scored.rivalPoints}
-          </Marker>
-        </p>
-      ) : null}
+        {standing ? (
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
+            <Marker tone="lime">You {standing.player}</Marker>
+            <Marker tone="coral">
+              {rival} {standing.rival}
+            </Marker>
+            <span>
+              Now: you {standing.playerPoints}, rival {standing.rivalPoints}.
+            </span>
+          </p>
+        ) : scored ? (
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
+            <Marker tone="lime">You took {scored.playerPoints}</Marker>
+            <Marker tone="coral">
+              {rival} took {scored.rivalPoints}
+            </Marker>
+          </p>
+        ) : null}
+      </div>
     </li>
   );
 }

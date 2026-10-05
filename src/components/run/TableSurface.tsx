@@ -2,10 +2,13 @@ import type { ReactNode } from "react";
 
 import { pixelFont } from "~/styles/fonts";
 
+import { TableNav } from "./TableNav";
+
 /**
  * The cloth every screen of a run is laid on. It opens the `.tabletop`
  * scope, inside which a piece gains its cardboard thickness and the pixel
- * face is available for print.
+ * face is available for print. The ways off the table sit in its top right
+ * corner on every screen.
  */
 export function TableSurface({
   children,
@@ -16,14 +19,15 @@ export function TableSurface({
 }) {
   return (
     <div
-      className={`tabletop ${pixelFont.variable} flex min-w-0 flex-1 flex-col ${className}`}
+      className={`tabletop ${pixelFont.variable} relative flex min-w-0 flex-1 flex-col ${className}`}
     >
+      <TableNav className="absolute top-2 right-2 z-30 sm:right-3" />
       {children}
     </div>
   );
 }
 
-/** The part of the cloth a screen lays its pieces on. */
+/** The part of the cloth a screen lays its pieces on, clear of the corner. */
 export function TableArea({
   children,
   className = "",
@@ -33,7 +37,7 @@ export function TableArea({
 }) {
   return (
     <div
-      className={`mx-auto w-full max-w-[1120px] flex-1 px-3 pt-3 pb-8 sm:px-5 ${className}`}
+      className={`mx-auto w-full max-w-[1120px] flex-1 px-3 pt-14 pb-8 sm:px-5 ${className}`}
     >
       {children}
     </div>

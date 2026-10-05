@@ -1,13 +1,12 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
 import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
 import { ESSENCES, type Essence } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
 import { yarnCostLabel } from "./BoardRow";
-import { CatPick } from "./CatPick";
 import { essenceLabel, listWords, plural } from "./describe";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
 import {
@@ -38,7 +37,7 @@ export interface TurnControls {
   resolve: (choice: number | null) => void;
 }
 
-export interface PlayerEdgeProps {
+export interface TurnPanelProps {
   match: MatchView;
   turn: TurnControls;
   /** What the table is showing while a turn plays back, else `null`. */
@@ -46,35 +45,28 @@ export interface PlayerEdgeProps {
   /** True on the step the rival's card turns over. */
   rivalStep: boolean;
   onSkip: () => void;
-  onHandCard: (index: number) => void;
-  onDetail: (catId: string) => void;
+  /**
+   * Where the panel shows. The match renders it twice, in the rail beside
+   * the table and in the dock under it, and shows one of the two.
+   */
   className?: string;
 }
 
 /**
- * The player's edge of the table, docked to the bottom of the screen: what
- * is being decided and its confirm, the essence held, and the hand.
+ * The player's turn: what is being decided and its confirm, the food held,
+ * and the score. In the rail the score leads, then the food, and the prompt
+ * and its confirm close it, level with the hand. In the dock under a narrow
+ * table the prompt leads, since the hand is right below.
  */
-export function PlayerEdge({
+export function TurnPanel({
   match,
   turn,
   playing,
   rivalStep,
   onSkip,
-  onHandCard,
-  onDetail,
   className = "",
-}: PlayerEdgeProps) {
+}: TurnPanelProps) {
   const { mode, busy } = turn;
-  // On a phone the hand folds down to a peek of card tops. It opens by
-  // itself for a tuck, which is answered from the hand, and the fold stays
-  // the player's to work either way.
-  const tucking = mode.kind === "tuck";
-  const [fold, setFold] = useState({ open: false, tucking });
-  if (fold.tucking !== tucking) setFold({ open: tucking, tucking });
-  const shown = fold.open;
-  const setOpen = (open: boolean) => setFold({ open, tucking });
-  const selected = mode.kind === "play" || tucking ? mode.hand : null;
   // A play that is short turns the essence held into the thing to choose from.
   const swapping =
     mode.kind === "play" && playing === null && swapOwed(match, mode.hand) > 0
@@ -83,121 +75,97 @@ export function PlayerEdge({
 
   return (
     <section
-      aria-label="Your edge of the table"
-      className={`rail sticky bottom-0 z-20 ${className}`}
+      aria-label="Your turn"
+      className={`min-w-0 flex-col gap-2 px-3 pt-2.5 pb-3 ${className}`}
     >
-      <div className="mx-auto grid w-full max-w-[1400px] gap-x-4 gap-y-2 px-3 pt-2.5 sm:grid-cols-[17rem_minmax(0,1fr)] lg:h-[12.125rem] lg:grid-cols-[26rem_minmax(0,1fr)]">
-        <div className="flex min-w-0 flex-col gap-2 sm:pb-3">
-          {playing === null ? (
-            <Prompt match={match} turn={turn} />
-          ) : (
-            <Row2 text={playing || "Settling the table."} rival={rivalStep}>
-              <TableButton variant="secondary" onClick={onSkip}>
-                Skip
-              </TableButton>
-            </Row2>
-          )}
-          <div className="mt-auto flex items-center justify-between gap-3">
-            <div className="flex min-w-0 flex-col gap-1">
-              <ul
-                aria-label="Your food"
-                className="flex flex-wrap items-center gap-x-1 gap-y-2"
-              >
-                {ESSENCES.map((kind) => {
-                  const given = swapping ? swapTaken(swapping.swap, kind) : 0;
-                  const open =
-                    swapping !== null &&
-                    (given > 0 ||
-                      canSwapMore(match, swapping.hand, swapping.swap, kind));
-                  return (
-                    <EssenceToken
-                      key={kind}
-                      kind={kind}
-                      count={match.essence[kind]}
-                      given={given}
-                      onPick={open ? () => turn.swapEssence(kind) : undefined}
-                      disabled={busy}
-                    />
-                  );
-                })}
-              </ul>
-              <p className="text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
-                Any 2 food pay for 1 you lack.
-              </p>
-            </div>
-            <p
-              className="piece border-ink bg-lime text-ink flex shrink-0 flex-col items-center border-2 px-2 py-0.5"
-              aria-label={`Your score ${match.score.total}`}
-            >
-              <span aria-hidden className="text-[11px] leading-tight font-bold">
-                You
-              </span>
-              <span aria-hidden className="text-print text-3xl tabular-nums">
-                {match.score.total}
-              </span>
-            </p>
-          </div>
+      {playing === null ? (
+        <Prompt match={match} turn={turn} />
+      ) : (
+        <Row2 text={playing || "Settling the table."} rival={rivalStep}>
+          <TableButton variant="secondary" onClick={onSkip}>
+            Skip
+          </TableButton>
+        </Row2>
+      )}
+      <div className="mt-auto flex items-center justify-between gap-3 lg:contents">
+        <div className="flex min-w-0 flex-col gap-1">
+          <ul
+            aria-label="Your food"
+            className="flex flex-wrap items-center gap-x-1 gap-y-2"
+          >
+            {ESSENCES.map((kind) => {
+              const given = swapping ? swapTaken(swapping.swap, kind) : 0;
+              const open =
+                swapping !== null &&
+                (given > 0 ||
+                  canSwapMore(match, swapping.hand, swapping.swap, kind));
+              return (
+                <EssenceToken
+                  key={kind}
+                  kind={kind}
+                  count={match.essence[kind]}
+                  given={given}
+                  onPick={open ? () => turn.swapEssence(kind) : undefined}
+                  disabled={busy}
+                />
+              );
+            })}
+          </ul>
+          <p className="text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
+            Any 2 food pay for 1 you lack.
+          </p>
         </div>
-
-        <div className="min-w-0">
-          <div className="flex items-center justify-between gap-2 sm:hidden">
-            <p className="text-ink-soft text-xs font-bold">
-              Your hand, {plural(match.hand.length, "cat")}
-            </p>
-            <button
-              type="button"
-              aria-expanded={shown}
-              onClick={() => setOpen(!shown)}
-              className="text-cobalt-dark min-h-10 px-2 text-xs font-bold underline underline-offset-2 disabled:opacity-45"
-            >
-              {shown ? "Fold the hand" : "Show the hand"}
-            </button>
-          </div>
-          {match.hand.length === 0 ? (
-            <p className="text-ink-soft pb-3 text-sm sm:pt-2">
-              Your hand is empty. The Prowl draws more.
-            </p>
-          ) : (
-            <ul
-              aria-label={`Your hand, ${plural(match.hand.length, "cat")}`}
-              className={`-mx-3 flex gap-3 overflow-x-auto px-3 pt-1.5 pb-4 sm:mx-0 sm:px-1 lg:h-full lg:pt-1 lg:pb-2.5 ${shown ? "" : "max-sm:max-h-16 max-sm:items-start max-sm:overflow-y-hidden"}`}
-            >
-              {match.hand.map((catId, index) => (
-                <li
-                  key={`${index}-${catId}`}
-                  data-hand={index}
-                  className="w-56 shrink-0 sm:min-w-44 sm:shrink"
-                >
-                  <CatPick
-                    catId={catId}
-                    verb={tucking ? "Choose" : "Play"}
-                    onDetail={() => onDetail(catId)}
-                    onSelect={() => {
-                      // A card to play folds the hand so the lanes show; a
-                      // card to tuck is chosen with the hand open.
-                      setOpen(tucking);
-                      onHandCard(index);
-                    }}
-                    selected={selected === index}
-                    pickable={tucking}
-                    hint={index < 9 ? String(index + 1) : undefined}
-                    disabled={busy || match.phase === "over"}
-                    dimmed={
-                      match.phase === "turn" &&
-                      whyUnplayable(match, index) !== null
-                    }
-                    className="h-full"
-                  />
-                </li>
-              ))}
-            </ul>
-          )}
+        <div className="flex shrink-0 gap-2.5 lg:order-first lg:grid lg:grid-cols-2 lg:pb-1.5">
+          <ScoreToken
+            label="You"
+            said={`Your score ${match.score.total}`}
+            value={match.score.total}
+            className="bg-lime"
+          />
+          <ScoreToken
+            label="Rival"
+            said={`Rival score ${match.rival.score}`}
+            value={match.rival.score}
+            className="bg-coral max-lg:hidden"
+          />
         </div>
       </div>
     </section>
   );
 }
 
+/** A score as a token: whose it is, and the number in print. */
+function ScoreToken({
+  label,
+  said,
+  value,
+  className,
+}: {
+  label: string;
+  said: string;
+  value: number;
+  className: string;
+}) {
+  return (
+    <p
+      className={`piece border-ink text-ink flex flex-col items-center border-2 px-2 py-0.5 lg:flex-row lg:justify-between lg:px-2.5 lg:py-1 ${className}`}
+      aria-label={said}
+    >
+      <span aria-hidden className="text-[11px] leading-tight font-bold">
+        {label}
+      </span>
+      <span aria-hidden className="text-print text-3xl tabular-nums">
+        {value}
+      </span>
+    </p>
+  );
+}
+
+/**
+ * A sentence and the actions under it. In the rail both keep the room their
+ * longest form needs, so the panel does not jump as the choice changes. A
+ * short screen keeps one row of actions and lets a second push the panel up.
+ */
 function Row2({
   text,
   rival = false,
@@ -209,9 +177,9 @@ function Row2({
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2 lg:order-last">
       <p
-        className="text-ink flex text-sm leading-5 font-semibold lg:min-h-10"
+        className="text-ink flex text-sm leading-5 font-semibold lg:min-h-[3.75rem]"
         aria-live="polite"
       >
         <span
@@ -222,7 +190,7 @@ function Row2({
           {text}
         </span>
       </p>
-      <div className="flex flex-wrap items-center gap-2 pb-1.5 lg:min-h-12 lg:flex-nowrap">
+      <div className="flex flex-wrap items-center gap-2 pb-1.5 lg:min-h-12 lg:content-start lg:[@media(min-height:53rem)]:min-h-[5.875rem]">
         {children}
       </div>
     </div>
@@ -326,10 +294,17 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
             <TableButton
               key={row}
               disabled={busy}
+              aria-label={`Play into the ${ROW_LABELS[row]}, ${yarnCostLabel(match.yarnCosts[row] ?? 0).toLowerCase()}`}
               onClick={() => turn.playInto(row)}
             >
-              {ROW_LABELS[row]} ·{" "}
-              {yarnCostLabel(match.yarnCosts[row] ?? 0).toLowerCase()}
+              {/* In the rail the lane's own "Play here" space prints the cost. */}
+              <span>
+                {ROW_LABELS[row]}
+                <span className="lg:hidden">
+                  {" · "}
+                  {yarnCostLabel(match.yarnCosts[row] ?? 0).toLowerCase()}
+                </span>
+              </span>
             </TableButton>
           ))}
           {cancel}
