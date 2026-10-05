@@ -224,7 +224,7 @@ export function SpaceCost({
 }
 
 /** How thick a pile of `count` cards stands, in pixels. */
-function pileEdge(count: number): number {
+export function pileEdge(count: number): number {
   return Math.min(9, 2 + Math.ceil(count / 3));
 }
 

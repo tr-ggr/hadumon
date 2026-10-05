@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, PointerEvent } from "react";
+import type { CSSProperties } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
 import { Habitats } from "~/components/cats/Habitats";
@@ -10,34 +10,10 @@ import type { MatchView } from "~/server/game/view";
 
 import { InfoButton } from "./CatPick";
 import { plural } from "./describe";
-import { prefersCalm } from "./fx/dom";
+import { lean, settle } from "./fx/lean";
 import { fanLayout } from "./hand";
 import { KeyHint } from "./pieces";
 import { PLAY_BLOCK_LABELS, playBlock, type Mode } from "./turn";
-
-/** How far a raised card leans toward the pointer, in degrees. */
-const LEAN = 5;
-
-/**
- * Leans a card toward a mouse held over it. The two angles are written
- * straight onto the card as CSS variables, so the pointer moving costs no
- * render. Touch and reduced motion leave the card flat.
- */
-function lean(event: PointerEvent<HTMLLIElement>): void {
-  if (event.pointerType !== "mouse" || prefersCalm()) return;
-  const card = event.currentTarget;
-  const box = card.getBoundingClientRect();
-  const x = (event.clientX - box.left) / box.width - 0.5;
-  const y = (event.clientY - box.top) / box.height - 0.5;
-  const clamp = (n: number) => Math.max(-0.5, Math.min(0.5, n));
-  card.style.setProperty("--lean-y", (clamp(x) * 2 * LEAN).toFixed(2));
-  card.style.setProperty("--lean-x", (clamp(y) * -2 * LEAN).toFixed(2));
-}
-
-function settle(event: PointerEvent<HTMLLIElement>): void {
-  event.currentTarget.style.removeProperty("--lean-x");
-  event.currentTarget.style.removeProperty("--lean-y");
-}
 
 export interface HandProps {
   match: MatchView;

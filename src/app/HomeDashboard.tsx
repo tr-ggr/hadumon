@@ -5,11 +5,11 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { ElementMark } from "~/components/cats/CatCard";
 import { countUnlocked } from "~/components/codex/entries";
 import { PixelSprite } from "~/components/PixelSprite";
+import { CLAN_MASCOTS } from "~/components/run/packs";
 import { Nameplate } from "~/components/run/pieces";
 import { GauntletTrack } from "~/components/run/RunStrip";
 import { Board, Skeleton, TableButton, TableLink } from "~/components/ui";
 import { difficultyOf } from "~/server/game/difficulty";
-import type { Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLANS, isClanId } from "~/server/game/run";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -20,15 +20,6 @@ export interface HomeDashboardProps {
 
 type RunSnapshot = NonNullable<RouterOutputs["run"]["current"]>;
 type PastRun = RouterOutputs["run"]["history"][number];
-
-/** The common cat that fronts each clan's starter deck. */
-const CLAN_MASCOTS: Record<Element, string> = {
-  flame: "flameclaw",
-  mist: "mistpaw",
-  volt: "voltwhisk",
-  thorn: "thornkit",
-  shade: "shadewhisker",
-};
 
 const HISTORY_LIMIT = 5;
 /** A gauntlet nobody has started: every rival still to come. */

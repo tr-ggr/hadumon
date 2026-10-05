@@ -17,9 +17,9 @@ import {
 import type { MatchView, RunView } from "~/server/game/view";
 
 import { CatDetail, CatPick } from "./CatPick";
-import { countCats } from "./ClanPick";
 import { plural } from "./describe";
 import { MatchResult } from "./MatchResult";
+import { countCats } from "./packs";
 import { RelicTile } from "./pieces";
 import { playCat, playSound } from "./sfx/engine";
 import { rewardSteps, type RewardStep } from "./steps";

@@ -1,69 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
-import { ElementMark } from "~/components/cats/CatCard";
-import { PixelSprite } from "~/components/PixelSprite";
 import { Skeleton } from "~/components/ui";
-import { getCat } from "~/server/game/cats";
 import {
   DIFFICULTY,
   DIFFICULTY_LIST,
   difficultyOf,
   type DifficultyId,
 } from "~/server/game/difficulty";
-import { ELEMENT_LABELS, type Element } from "~/server/game/elements";
+import { ELEMENTS, type Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
-import { CLAN_LIST, starterDeck, type Clan } from "~/server/game/run";
+import { CLAN_LIST, CLANS } from "~/server/game/run";
 import { UNLOCK_RULES } from "~/server/game/unlocks";
 import { api } from "~/trpc/react";
 
-import { CatDetail } from "./CatPick";
-import { Pile, RelicTile, TableButton } from "./pieces";
-import { playCat } from "./sfx/engine";
+import { PackCarousel, PackRowSkeleton, packTabId } from "./PackCarousel";
+import { PackViewer } from "./PackViewer";
+import { RelicTile, TableButton } from "./pieces";
 import { stored, useStored } from "./stored";
 import { TableArea, TableRail } from "./TableSurface";
-
-/** A deck as `[catId, copies]`, most copies first. */
-export function countCats(deck: readonly string[]): [string, number][] {
-  const counts = new Map<string, number>();
-  for (const catId of deck) counts.set(catId, (counts.get(catId) ?? 0) + 1);
-  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
-}
 
 function unlockHint(clanId: Element): string {
   const rule = UNLOCK_RULES.find((r) => r.kind === "clan" && r.key === clanId);
   return rule ? `Locked. ${rule.hint}` : "Locked.";
-}
-
-/** One kind of cat in a deck, as a chip that opens its card in its own voice. */
-export function DeckChip({
-  catId,
-  copies,
-  onDetail,
-}: {
-  catId: string;
-  copies: number;
-  onDetail: (catId: string) => void;
-}) {
-  const cat = getCat(catId);
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        playCat(catId);
-        onDetail(catId);
-      }}
-      aria-label={`${copies} ${cat.name}, ${ELEMENT_LABELS[cat.element]}, details`}
-      className="piece border-ink bg-cream text-ink hover:bg-sky-soft flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold"
-    >
-      <PixelSprite catId={catId} size={32} decorative />
-      <ElementMark element={cat.element} />
-      <span className="tabular-nums">
-        {copies}× {cat.name}
-      </span>
-    </button>
-  );
 }
 
 /** The tier of the last run started here, offered again the next time. */
@@ -77,20 +37,33 @@ export interface ClanPickProps {
   onStart: (clanId: Element, difficulty: DifficultyId) => void;
 }
 
-/** No run in progress: choose a starter deck and begin. */
+/**
+ * No run in progress: choose a starter deck and begin. The clans are a row
+ * of packs; the one in the middle is the one being looked at, and looking
+ * at a pack does not choose it.
+ */
 export function ClanPick({ busy, onStart }: ClanPickProps) {
   const clans = api.run.clans.useQuery();
   const unlocked = clans.data ?? [];
   const [picked, setPicked] = useState<Element | null>(null);
-  const [detail, setDetail] = useState<string | null>(null);
+  /** The pack turned to, once the row has been turned at all. */
+  const [turnedTo, setTurnedTo] = useState<Element | null>(null);
+  /** The pack whose cards are open in the viewer. */
+  const [viewing, setViewing] = useState<Element | null>(null);
   const difficulty = useStored(lastDifficulty);
   const tier = DIFFICULTY[difficulty];
+  const idBase = useId();
+  const panelId = `${idBase}-panel`;
 
   const firstOpen = CLAN_LIST.find((clan) => unlocked.includes(clan.id));
   const chosen =
     picked && unlocked.includes(picked) ? picked : (firstOpen?.id ?? null);
   const chosenClan = CLAN_LIST.find((clan) => clan.id === chosen);
   const firstRival = GAUNTLET[0];
+
+  const shown = CLANS[turnedTo ?? chosen ?? ELEMENTS[0]];
+  const shownLocked = !unlocked.includes(shown.id);
+  const shownChosen = chosen === shown.id;
 
   return (
     <>
@@ -136,29 +109,62 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
         </section>
 
         {clans.isLoading ? (
-          <div
-            className="tray-well space-y-2 p-4"
-            role="status"
-            aria-busy="true"
-          >
-            <span className="sr-only">Loading…</span>
-            <Skeleton className="h-4 w-1/2" />
-            <Skeleton className="h-4 w-3/4" />
-          </div>
+          <>
+            <PackRowSkeleton />
+            <div className="mx-auto w-full max-w-xl space-y-2">
+              <Skeleton className="mx-auto h-7 w-1/2" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </>
         ) : (
-          <ul className="grid gap-4 lg:grid-cols-2">
-            {CLAN_LIST.map((clan) => (
-              <li key={clan.id}>
-                <ClanOption
-                  clan={clan}
-                  locked={!unlocked.includes(clan.id)}
-                  selected={chosen === clan.id}
-                  onSelect={() => setPicked(clan.id)}
-                  onDetail={setDetail}
-                />
-              </li>
-            ))}
-          </ul>
+          <>
+            <PackCarousel
+              clans={CLAN_LIST}
+              shown={shown.id}
+              chosen={chosen}
+              unlocked={unlocked}
+              onShow={setTurnedTo}
+              onOpen={setViewing}
+              idBase={idBase}
+              panelId={panelId}
+            />
+
+            <div
+              role="tabpanel"
+              id={panelId}
+              aria-labelledby={packTabId(idBase, shown.id)}
+              className="mx-auto w-full max-w-xl space-y-3 text-center"
+            >
+              <h2 aria-live="polite" className="text-print text-ink text-3xl">
+                {shown.name}
+              </h2>
+              <p
+                className={`text-ink text-sm leading-snug ${shownLocked ? "font-semibold" : ""}`}
+              >
+                {shownLocked ? unlockHint(shown.id) : shown.text}
+              </p>
+              <RelicTile relicId={shown.relicId} className="text-left" />
+              <div className="flex flex-wrap justify-center gap-3 pt-1 pb-1.5">
+                <TableButton
+                  variant="secondary"
+                  size="md"
+                  onClick={() => setViewing(shown.id)}
+                >
+                  View cards
+                </TableButton>
+                <button
+                  type="button"
+                  disabled={shownLocked}
+                  aria-pressed={shownChosen}
+                  onClick={() => setPicked(shown.id)}
+                  className={`piece border-ink min-h-12 shrink-0 border-2 px-4 text-sm font-black disabled:cursor-not-allowed ${shownChosen ? "bg-lime text-ink is-pressed" : shownLocked ? "text-ink bg-white" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
+                >
+                  {shownLocked ? "Locked" : shownChosen ? "Chosen" : "Choose"}
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </TableArea>
 
@@ -184,70 +190,16 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
         </TableButton>
       </TableRail>
 
-      <CatDetail catId={detail} onClose={() => setDetail(null)} />
-    </>
-  );
-}
-
-function ClanOption({
-  clan,
-  locked,
-  selected,
-  onSelect,
-  onDetail,
-}: {
-  clan: Clan;
-  locked: boolean;
-  selected: boolean;
-  onSelect: () => void;
-  onDetail: (catId: string) => void;
-}) {
-  const deck = starterDeck(clan.id);
-
-  return (
-    <div
-      className={`tray-well flex h-full flex-col gap-3 p-3 ${selected ? "outline-cobalt outline-4 -outline-offset-2" : ""}`}
-    >
-      <div className="flex items-start gap-3">
-        <Pile
-          count={deck.length}
-          label={`${clan.name} starter deck`}
-          className={selected ? "lift" : locked ? "opacity-50" : ""}
-        />
-        <div className="min-w-0 flex-1">
-          <h2 className="text-print text-ink text-xl">{clan.name}</h2>
-          <p
-            className={`text-ink mt-1 text-sm leading-snug ${locked ? "font-semibold" : ""}`}
-          >
-            {locked ? unlockHint(clan.id) : clan.text}
-          </p>
-        </div>
-        <button
-          type="button"
-          disabled={locked}
-          aria-pressed={selected}
-          onClick={onSelect}
-          className={`piece border-ink min-h-11 shrink-0 border-2 px-3 text-sm font-black disabled:cursor-not-allowed ${selected ? "bg-lime text-ink is-pressed" : locked ? "text-ink bg-white" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
-        >
-          {locked ? "Locked" : selected ? "Chosen" : "Choose"}
-        </button>
-      </div>
-
-      <RelicTile
-        relicId={clan.relicId}
-        className={locked ? "opacity-50" : ""}
+      <PackViewer
+        clanId={viewing}
+        chosen={viewing !== null && viewing === chosen}
+        locked={viewing !== null && !unlocked.includes(viewing)}
+        onChoose={() => {
+          if (viewing) setPicked(viewing);
+          setViewing(null);
+        }}
+        onClose={() => setViewing(null)}
       />
-
-      <ul
-        aria-label={`Starter deck, ${deck.length} cards`}
-        className={`flex flex-wrap gap-x-2 gap-y-3 pb-1.5 ${locked ? "opacity-50" : ""}`}
-      >
-        {countCats(deck).map(([catId, copies]) => (
-          <li key={catId}>
-            <DeckChip catId={catId} copies={copies} onDetail={onDetail} />
-          </li>
-        ))}
-      </ul>
-    </div>
+    </>
   );
 }

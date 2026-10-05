@@ -21,20 +21,30 @@ export interface CatFiltersProps {
   /** How many cats the filters leave, of how many there are. */
   shown: number;
   total: number;
+  /**
+   * `board` is two labelled rows and a line of status, for a board under the
+   * book. `flags` is the two groups side by side with nothing else printed,
+   * to stand along the book's top edge, one group over each page.
+   */
+  layout?: "board" | "flags";
 }
 
 /**
- * The two rows of filter tokens for the Cats chapter, and one line saying
- * what they have left. Setting one deals the chapter's pages out again.
+ * The element and rarity filter tokens for the Cats chapter, and one line
+ * saying what they have left. Setting one deals the chapter's pages out
+ * again.
  */
 export function CatFilters({
   filters,
   onChange,
   shown,
   total,
+  layout = "board",
 }: CatFiltersProps) {
-  return (
-    <div className="space-y-3">
+  const filtered = isFiltered(filters);
+  const matches = `${shown} of ${total} cats match.`;
+  const groups = (
+    <>
       <FilterChips
         label="Element"
         options={ELEMENT_OPTIONS}
@@ -47,9 +57,27 @@ export function CatFilters({
         value={filters.rarity}
         onChange={(rarity) => onChange({ ...filters, rarity })}
       />
+    </>
+  );
+
+  if (layout === "flags") {
+    return (
+      <div className="book-flags">
+        {groups}
+        {/* The count is printed at the head of the page; this reads it out. */}
+        <p aria-live="polite" className="sr-only">
+          {filtered ? matches : ""}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {groups}
       <p aria-live="polite" className="text-sm">
-        {isFiltered(filters)
-          ? `${shown} of ${total} cats match.`
+        {filtered
+          ? matches
           : "Tap a cat you have unlocked to read its whole card."}
       </p>
     </div>

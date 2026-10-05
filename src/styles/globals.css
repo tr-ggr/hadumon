@@ -439,7 +439,8 @@ body:has(.table-fit) [role="dialog"] {
 /* A raised card leans a few degrees toward a mouse held over it. `Hand`
    sets the two angles; with no fine pointer they stay at 0. */
 @media (hover: hover) and (pointer: fine) {
-  .tabletop .hand-fan .hand-face {
+  .tabletop .hand-fan .hand-face,
+  .tabletop .pack-lean {
     transform: perspective(40rem) rotateX(calc(var(--lean-x, 0) * 1deg))
       rotateY(calc(var(--lean-y, 0) * 1deg));
     transition:
@@ -1350,7 +1351,10 @@ body:has(.table-fit) [role="dialog"] {
  * book with its pager is one screen of it: `--book-h` is what the lid, the
  * dock and the column's own padding leave, and the spread takes whatever of
  * that the tabs (`--book-head`) and the pager (`--book-foot`) do not. The
- * filters are the next thing down.
+ * cats' filters are on that screen too where the tabs are down the book's
+ * side: flags along its top edge, in a row kept for them whatever chapter
+ * is open, so the book never moves. Where the tabs have the top edge, the
+ * filters are a board under the pager, the next thing down.
  *
  * Every page is in the same cell of the spread's grid, so the book is as tall
  * as its tallest page whichever pages are open. `data-leaf` says which ones
@@ -1423,6 +1427,10 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .book-tabs button {
   width: 100%;
   padding-inline: 0.25rem;
+}
+/* The flags: only from 1024px. See there. */
+.tabletop .book-flags {
+  display: none;
 }
 .tabletop .book:not([data-phase="open"]) .book-tabs,
 .tabletop .book:not([data-phase="open"]) .book-pager {
@@ -1576,11 +1584,13 @@ body:has(.table-fit) [role="dialog"] {
 /* Room for the chapters down the book's left edge, under its name. */
 @media (min-width: 64rem) {
   .tabletop .book {
-    --book-head: 0px;
+    /* The row the flags stand in, less the 2px they are tucked under. */
+    --book-head: 2.625rem;
     grid-template-columns: auto minmax(0, 1fr);
+    grid-template-rows: var(--book-head);
   }
   .tabletop .book-rail {
-    grid-row: 1;
+    grid-row: 1 / span 2;
     align-self: start;
     justify-items: stretch;
   }
@@ -1588,12 +1598,57 @@ body:has(.table-fit) [role="dialog"] {
     margin-right: 0.75rem;
   }
   .tabletop .book-spread,
-  .tabletop .book-pager,
-  .tabletop .book-filters {
+  .tabletop .book-pager {
     grid-column: 2;
   }
   .tabletop .book-spread {
-    scroll-margin-top: calc(var(--lid-h) + 1.25rem);
+    grid-row: 2;
+    scroll-margin-top: calc(var(--lid-h) + 1.25rem + var(--book-head));
+  }
+  .tabletop .book-pager {
+    grid-row: 3;
+  }
+  /*
+   * The cats' filters as flags along the book's top edge: the elements over
+   * the left page, the rarities over the right, each a filter token with its
+   * foot tucked under the edge as a chapter tab's is. A group comes up from
+   * behind the book as one. The group's label is not printed: the tokens
+   * say what they are, and the group is still named for a screen reader.
+   */
+  .tabletop .book-filters {
+    display: none;
+  }
+  .tabletop .book-flags {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-column: 2;
+    grid-row: 1;
+    align-self: end;
+    margin-bottom: -2px;
+  }
+  .tabletop .book-flags > [role="group"] {
+    flex-wrap: nowrap;
+    gap: 0.375rem;
+    padding-inline: 0.75rem;
+    animation: tab-out 220ms var(--ease-give) backwards;
+  }
+  .tabletop .book-flags > [role="group"] + [role="group"] {
+    animation-delay: 60ms;
+  }
+  .tabletop .book-flags > [role="group"] > p {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .tabletop .book-flags button {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 0;
+    padding-inline: 0.375rem;
+    white-space: nowrap;
   }
   .tabletop .book-tabs > ul {
     grid-template-columns: none;
@@ -1609,6 +1664,16 @@ body:has(.table-fit) [role="dialog"] {
     --tab-y: 0;
   }
 }
+/* A page too narrow for six flags at their full size sets them a size down. */
+@media (min-width: 64rem) and (max-width: 79.99rem) {
+  .tabletop .book-flags > [role="group"] {
+    gap: 0.25rem;
+    padding-inline: 0.375rem;
+  }
+  .tabletop .book-flags button {
+    font-size: 0.75rem;
+  }
+}
 /* Reduced motion: the book is open, and a turn is a cut. The rule at the
    foot of this sheet only shortens an animation; it would leave the second
    half of a turn waiting edge-on for the first. */
@@ -1619,6 +1684,7 @@ body:has(.table-fit) [role="dialog"] {
   .tabletop .book-cover,
   .tabletop .book-shade,
   .tabletop .book-tabs li,
+  .tabletop .book-flags > [role="group"],
   .tabletop .tower-room,
   .tabletop .tower-room::after {
     animation: none !important;
@@ -1743,6 +1809,429 @@ body:has(.table-fit) [role="dialog"] {
 @media (prefers-reduced-motion: reduce) {
   .tabletop .crowd-cat > svg {
     animation: none !important;
+  }
+}
+
+/*
+ * A clan's starter deck as a booster pack: a wrapper in the element's colour,
+ * crimped along its top and bottom, standing as tall as the sixteen cards in
+ * it. `box-shadow` cannot follow a cut edge, so a pack is not a `.piece`.
+ * Each crimp is a fin of flat strips (`.pack-cut`) cut out by one sawtooth
+ * tile: the cut line, the wrapper's face inside it, and under the bottom one
+ * the chipboard edge, the ink line beneath it and the cast. They are moved,
+ * in the two steps a piece's shadow takes, off the same `--e`, `--lift` and
+ * `--sink` a piece reads, so `.lift` and a press work on a pack as they do
+ * on anything else.
+ *
+ * A pack is one of two sizes, both 2:3 and both drawn at their own size, so
+ * a 2px line is 2px on either. `--u` is one unit of the wrapper's print and
+ * one pixel of the mascot: 4px, and 6px on the pack in the middle of the row.
+ * `ClanPack` sets the colours (`--ground`, `--light`), the print and the cut.
+ */
+.tabletop .pack,
+.tabletop .pack-space {
+  --u: 4px;
+  position: relative;
+  display: block;
+  width: 128px;
+  height: 184px;
+}
+.tabletop .pack[data-size="centre"],
+.tabletop .pack-space[data-size="centre"] {
+  --u: 6px;
+  width: 192px;
+  height: 276px;
+}
+.tabletop .pack {
+  --e: 8px;
+  --line: var(--color-ink);
+  color: var(--color-ink);
+  transition: transform 150ms var(--ease-give);
+}
+/* Chosen: the cut line turns cobalt. The lift and the lime tag say the rest. */
+.tabletop .pack.is-chosen {
+  --line: var(--color-cobalt);
+}
+.tabletop .pack-lean {
+  position: relative;
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  isolation: isolate;
+}
+.tabletop .pack-fin {
+  position: relative;
+  height: 8px;
+  flex: none;
+}
+.tabletop .pack-cut {
+  position: absolute;
+  inset: 0;
+  background: var(--line);
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-size: 16px 8px;
+  mask-size: 16px 8px;
+  transition: transform 120ms steps(2, end);
+}
+.tabletop .pack-fin[data-edge="top"] .pack-cut {
+  -webkit-mask-image: var(--cut-top);
+  mask-image: var(--cut-top);
+}
+.tabletop .pack-fin[data-edge="bottom"] .pack-cut {
+  -webkit-mask-image: var(--cut-bottom);
+  mask-image: var(--cut-bottom);
+}
+/* The wrapper inside the cut line: the same teeth, 2px in from every side. */
+.tabletop .pack-cut.is-face {
+  background: var(--light);
+  clip-path: inset(0 2px);
+}
+.tabletop .pack-fin[data-edge="top"] .pack-cut.is-face {
+  transform: translateY(2px);
+}
+.tabletop .pack-fin[data-edge="bottom"] .pack-cut.is-face {
+  transform: translateY(-2px);
+}
+/* What is under the bottom crimp. These reach 12px up behind the wrapper, and
+   their tile has that much above its teeth, so the strip between the cut and
+   where they have been moved to is filled. */
+.tabletop .pack-fin[data-edge="bottom"] .pack-cut.is-edge,
+.tabletop .pack-fin[data-edge="bottom"] .pack-cut.is-under,
+.tabletop .pack-fin[data-edge="bottom"] .pack-cut.is-cast {
+  top: -12px;
+  z-index: -1;
+  -webkit-mask-image: var(--cut-under);
+  mask-image: var(--cut-under);
+  -webkit-mask-size: 16px 20px;
+  mask-size: 16px 20px;
+}
+.tabletop .pack-cut.is-cast {
+  background: var(--cast);
+  clip-path: inset(0 2px);
+  transform: translateY(
+    calc(var(--e) - var(--sink, 0px) + var(--lift, 0px) + 5px)
+  );
+}
+.tabletop .pack-cut.is-under {
+  background: var(--color-ink);
+  transform: translateY(calc(var(--e) - var(--sink, 0px) + 2px));
+}
+.tabletop .pack-cut.is-edge {
+  background: var(--color-chipboard);
+  clip-path: inset(0 2px);
+  transform: translateY(calc(var(--e) - var(--sink, 0px)));
+}
+.tabletop .pack-body {
+  position: relative;
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  border-inline: 2px solid var(--line);
+  background-color: var(--ground);
+  background-image: var(--print);
+  background-position: 50% 50%;
+  background-size: calc(var(--u) * 16) calc(var(--u) * 16);
+  image-rendering: pixelated;
+}
+/* The sealed band inside each crimp: ribbed, a rib to every tooth and every
+   gap between two. */
+.tabletop .pack-band {
+  height: calc(var(--u) * 2);
+  flex: none;
+  background-color: var(--light);
+  background-image: var(--rib);
+  background-position: 5px 0;
+  background-size: 8px 2px;
+}
+.tabletop .pack-front {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 2);
+}
+/* The mascot as a sticker: a cream rim one line wide keeps its fur, which is
+   the wrapper's own colour, off the wrapper. */
+.tabletop .pack-mascot {
+  --rim: var(--color-cream);
+  display: block;
+  width: calc(var(--u) * 16);
+  height: calc(var(--u) * 16);
+  filter: drop-shadow(2px 0 0 var(--rim)) drop-shadow(-2px 0 0 var(--rim))
+    drop-shadow(0 2px 0 var(--rim)) drop-shadow(0 -2px 0 var(--rim));
+}
+.tabletop .pack.is-locked .pack-mascot {
+  filter: grayscale(1) drop-shadow(2px 0 0 var(--rim))
+    drop-shadow(-2px 0 0 var(--rim)) drop-shadow(0 2px 0 var(--rim))
+    drop-shadow(0 -2px 0 var(--rim));
+}
+.tabletop .pack-plate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: calc(var(--u) * 22);
+  padding: calc(var(--u) / 2) var(--u);
+  border: 2px solid var(--color-ink);
+  background: var(--color-cream);
+  font-size: 20px;
+}
+.tabletop .pack[data-size="centre"] .pack-plate {
+  font-size: 30px;
+}
+.tabletop button.pack:active:not(:disabled) {
+  --sink: 2px;
+  transform: translateY(2px);
+}
+/* The one band of light that crosses a pack: flat, and cut on a slant. */
+.tabletop .card-shimmer.is-band::before {
+  inset: -10% auto -10% 0;
+  width: 34%;
+  background: rgb(255 255 255 / 0.5);
+  transform: translateX(-160%) skewX(-18deg);
+}
+@keyframes pack-shine {
+  from {
+    transform: translateX(-160%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(360%) skewX(-18deg);
+  }
+}
+@keyframes pack-hop {
+  0% {
+    transform: translateY(0);
+  }
+  20% {
+    transform: translateY(calc(var(--u) * -1));
+  }
+  70%,
+  100% {
+    transform: translateY(0);
+  }
+}
+/*
+ * The row of packs. One is in the middle at the larger size, and the others
+ * stand to its sides, as many as the stage has room for; the rest are cut off
+ * at its edges. The row is a ring drawn as a strip of places: `--dir` and
+ * `--n` say which side of the middle a place is and how many places out, and
+ * so where it stands. Turning the row moves every place along, and the pack
+ * that changes size does it under one move: it is drawn at its new size at
+ * once and scaled from the old one (`.pack-size`), about the middle of its
+ * foot. Past the two packs each side the ring comes round again, and those
+ * places are the same packs in shadow (`data-ghost`): one shows at each end
+ * of a wide stage, so a pack leaving the row has somewhere to go and the one
+ * coming in has somewhere to come from.
+ */
+.tabletop .pack-stage {
+  container-type: inline-size;
+  position: relative;
+  height: 312px;
+  overflow-x: clip;
+  touch-action: pan-y;
+}
+.tabletop .pack-slot {
+  --half: 64px;
+  --s1: 176px;
+  --s2: 320px;
+  position: absolute;
+  bottom: 22px;
+  left: calc(50% - var(--half));
+  /* The first place out is `--s1` from the middle; each one after it is a
+     side pack and a gap further (`--s2` less `--s1`). */
+  transform: translateX(
+    calc(
+      var(--dir, 0) * (var(--s1) + (var(--n, 1) - 1) * (var(--s2) - var(--s1)))
+    )
+  );
+  transition: transform 220ms var(--ease-give);
+}
+/* Half a pixel of an odd width would put every line of a pack between two. */
+@supports (width: round(1.5px, 1px)) {
+  .tabletop .pack-slot {
+    left: calc(round(down, 50%, 1px) - var(--half));
+  }
+}
+@container (min-width: 480px) {
+  .tabletop .pack-slot {
+    --s1: 184px;
+    --s2: 336px;
+  }
+}
+@container (min-width: 900px) {
+  .tabletop .pack-slot {
+    --s1: 200px;
+    --s2: 368px;
+  }
+}
+.tabletop .pack-slot[data-slot="0"] {
+  --half: 96px;
+  z-index: 2;
+}
+.tabletop .pack-slot[data-left] {
+  z-index: 1;
+}
+/* The light on a pack changes as its shadow does: in two steps, not eased. */
+.tabletop .pack-size {
+  transform-origin: 50% 100%;
+  transition: filter 220ms steps(2, end);
+}
+.tabletop .pack-slot[data-ghost] .pack-size {
+  filter: brightness(0.58) saturate(0.6);
+}
+@keyframes pack-grow {
+  from {
+    transform: scale(0.6667);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes pack-shrink {
+  from {
+    transform: scale(1.5);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.tabletop .pack-stage[data-turned] .pack-slot[data-slot="0"] .pack-size {
+  animation: pack-grow 220ms var(--ease-give) both;
+}
+.tabletop .pack-stage[data-turned] .pack-slot[data-left] .pack-size {
+  animation: pack-shrink 220ms var(--ease-give) both;
+}
+/* Only the pack in the middle leans, whatever a pointer left on the others. */
+.tabletop .pack-slot:not([data-slot="0"]) .pack-lean {
+  --lean-x: 0;
+  --lean-y: 0;
+}
+/* Under a mouse. The slot is what is hovered, and it stays where it is, so a
+   pack that rises cannot leave the pointer behind. */
+@media (hover: hover) {
+  .tabletop .pack-slot:hover .pack:not(.lift, :active) {
+    --lift: 2px;
+    transform: translateY(-2px);
+  }
+  .tabletop .pack-slot[data-slot="0"]:hover .pack:not(.lift, :active) {
+    --lift: 4px;
+    transform: translateY(-4px);
+  }
+  .tabletop .pack-slot[data-slot="0"]:hover .card-shimmer.is-band {
+    opacity: 1;
+  }
+  .tabletop .pack-slot[data-slot="0"]:hover .card-shimmer.is-band::before {
+    /* At one speed all the way: eased, it would be across before it was seen. */
+    animation: pack-shine 520ms linear both;
+  }
+  .tabletop .pack-slot[data-slot="0"]:hover .pack-mascot {
+    animation: pack-hop 360ms steps(1, end) 1;
+  }
+}
+/*
+ * The copies of one cat as a stack: the card on top, and a plate for every
+ * copy under it, each showing 6px more of its top edge. A plate is not a
+ * piece, so a stack has one edge, which is as thick as the stack. Room is
+ * kept above for two plates whether they are there or not, so a row of
+ * stacks stands on one line. Under a mouse the plates come further out and
+ * turn.
+ */
+.tabletop .card-stack {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding-top: 12px;
+}
+.tabletop .stack-under {
+  position: absolute;
+  inset: 12px 0 0;
+  border: 2px solid var(--color-ink);
+  background: var(--color-cream);
+  box-shadow:
+    inset 0 3px 0 var(--rarity),
+    inset 4px 0 0 var(--element);
+  transform: translateY(calc(var(--k) * -6px));
+  transform-origin: 50% 100%;
+  transition: transform 220ms var(--ease-give);
+}
+.tabletop .card-stack:focus-visible .stack-under {
+  transform: translateY(calc(var(--k) * -8px)) rotate(calc(var(--k) * 2deg));
+}
+@media (hover: hover) {
+  .tabletop .card-stack:hover .stack-under {
+    transform: translateY(calc(var(--k) * -8px)) rotate(calc(var(--k) * 2deg));
+  }
+}
+/* The stacks of a pack on their mat: three across on a phone and six from
+   640px. A column is a card wide wherever there is room for it, and the row
+   of them starts on a whole pixel, so no card's lines fall between two. */
+.tabletop .stack-grid {
+  --cols: 3;
+  --gap: 2px;
+  --row: calc(var(--cols) * 96px + (var(--cols) - 1) * var(--gap));
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 96px));
+  gap: 16px var(--gap);
+  width: min(100%, var(--row));
+  margin-inline: auto;
+}
+@supports (width: round(1.5px, 1px)) {
+  .tabletop .stack-grid {
+    margin-left: round(down, calc((100% - min(100%, var(--row))) / 2), 1px);
+  }
+}
+@media (min-width: 640px) {
+  .tabletop .stack-grid {
+    --cols: 6;
+    --gap: 12px;
+  }
+}
+/* A pack's cards, dealt onto the mat one after another. */
+.tabletop .deal {
+  animation: piece-land 240ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 24ms);
+}
+/* One card at a time: the card turned to comes in from the side it was on. */
+@keyframes card-next {
+  from {
+    transform: translateX(16px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@keyframes card-prev {
+  from {
+    transform: translateX(-16px);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.tabletop .card-next {
+  animation: card-next 220ms var(--ease-out) both;
+}
+.tabletop .card-prev {
+  animation: card-prev 220ms var(--ease-out) both;
+}
+/* Reduced motion: a pack is where it stands and a card is simply there.
+   Nothing grows, hops, is dealt or comes in from the side. */
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .pack-size,
+  .tabletop .pack-mascot,
+  .tabletop .deal,
+  .tabletop .card-next,
+  .tabletop .card-prev {
+    animation: none !important;
+  }
+  .tabletop .card-stack .stack-under,
+  .tabletop .card-stack:hover .stack-under,
+  .tabletop .card-stack:focus-visible .stack-under {
+    transform: translateY(calc(var(--k) * -6px));
   }
 }
 

@@ -295,6 +295,7 @@ export function CodexBook({
   const label = chapterLabel(chapter);
   const filtering =
     state.phase === "open" && chapter === "cats" && shelf.status === "ready";
+  const matching = filtering ? filterCats(shelf.cats, state.filters).length : 0;
 
   return (
     <>
@@ -343,6 +344,19 @@ export function CodexBook({
             </ul>
           </nav>
         </div>
+
+        {/* The filters twice, and the stylesheet shows one: flags along the
+            book's top edge where the tabs are down its side, and a board
+            under the pager where the tabs have the top edge. */}
+        {filtering ? (
+          <CatFilters
+            layout="flags"
+            filters={state.filters}
+            onChange={setFilters}
+            shown={matching}
+            total={shelf.cats.length}
+          />
+        ) : null}
 
         <div
           ref={spreadRef}
@@ -428,7 +442,7 @@ export function CodexBook({
             <CatFilters
               filters={state.filters}
               onChange={setFilters}
-              shown={filterCats(shelf.cats, state.filters).length}
+              shown={matching}
               total={shelf.cats.length}
             />
           </Board>
