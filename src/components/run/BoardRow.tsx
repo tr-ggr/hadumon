@@ -290,7 +290,7 @@ function PlacedSlot({
       }
       // Cats tucked underneath show as a thicker edge.
       style={{ ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px` }}
-      className={`piece border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "anim-fire" : ""}`}
+      className={`piece border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "is-firing" : ""}`}
     >
       <span className="relative shrink-0">
         <PixelSprite

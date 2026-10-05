@@ -11,6 +11,8 @@ import type { MatchView } from "~/server/game/view";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import { climbAfter, climbFits, type ClimbRecord } from "./climb";
+import { chainEnd } from "./playback";
+import { playSound } from "./sfx/engine";
 import {
   describeAction,
   describeEvents,
@@ -37,6 +39,8 @@ export interface TurnRecord {
   events: MatchEvent[];
   /** What the rival's card read before this turn. */
   rivalBefore: RivalNews | null;
+  /** Powers the activation had landed before this turn answered a choice. */
+  chainStart: number;
 }
 
 interface Recap {
@@ -117,6 +121,8 @@ export function useRunController() {
         void utils.run.current.invalidate();
         return;
       }
+      // The table refused the move.
+      playSound("illegal");
       notify(error.message, "error");
     },
     [notify, utils],
@@ -149,6 +155,19 @@ export function useRunController() {
         const goal = after.phase === "over" ? null : findGoal(update.events);
         setRecap((prev) => {
           const base = prev.key === key ? prev : { ...NO_RECAP, key };
+          // A choice is answered in the middle of an activation, which
+          // carries on from where the turn before left it.
+          const asked = base.turn;
+          const chainStart =
+            variables.action.type === "resolve" && asked
+              ? chainEnd(
+                  asked.before,
+                  asked.after,
+                  asked.action,
+                  asked.events,
+                  asked.chainStart,
+                )
+              : 0;
           return {
             key,
             log: [entry, ...base.log].slice(0, LOG_LIMIT),
@@ -161,6 +180,7 @@ export function useRunController() {
               action: variables.action,
               events: update.events,
               rivalBefore: base.rival,
+              chainStart,
             },
           };
         });

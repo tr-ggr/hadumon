@@ -7,6 +7,7 @@ import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
 import { plural, type RivalNews } from "./describe";
+import { RollingNumber } from "./fx/RollingNumber";
 import { rivalLastText, useFlash } from "./MatchPanels";
 import { CORAL, Nameplate, Pile } from "./pieces";
 
@@ -70,6 +71,7 @@ export function RivalSide({
       />
 
       <p
+        data-score="rival"
         className="piece border-ink bg-coral text-ink col-start-3 row-start-1 flex min-w-16 flex-col items-center justify-center border-2 px-2 py-1 lg:hidden"
         aria-label={`Rival score ${score}: ${plural(banked, "banked cat")} at ${bankValue} each, ${yarn} yarn, ${goalPoints} from goals`}
       >
@@ -77,7 +79,7 @@ export function RivalSide({
           Rival
         </span>
         <span aria-hidden className="text-print text-3xl tabular-nums">
-          {score}
+          <RollingNumber value={score} />
         </span>
       </p>
 

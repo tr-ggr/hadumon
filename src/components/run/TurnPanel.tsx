@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
 import { ESSENCES, type Essence } from "~/server/game/match";
@@ -8,7 +8,9 @@ import type { MatchView } from "~/server/game/view";
 
 import { yarnCostLabel } from "./BoardRow";
 import { essenceLabel, listWords, plural } from "./describe";
+import { RollingNumber } from "./fx/RollingNumber";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
+import { SoundButton } from "./sfx/SoundButton";
 import {
   boardYarnRoom,
   canSwapMore,
@@ -44,6 +46,11 @@ export interface TurnPanelProps {
   playing: string | null;
   /** True on the step the rival's card turns over. */
   rivalStep: boolean;
+  /**
+   * How hot the player's score runs, 0 to 1: nothing at rest, deeper with
+   * every power of a chain.
+   */
+  heat: number;
   onSkip: () => void;
   /**
    * Where the panel shows. The match renders it twice, in the rail beside
@@ -63,6 +70,7 @@ export function TurnPanel({
   turn,
   playing,
   rivalStep,
+  heat,
   onSkip,
   className = "",
 }: TurnPanelProps) {
@@ -78,15 +86,22 @@ export function TurnPanel({
       aria-label="Your turn"
       className={`min-w-0 flex-col gap-2 px-3 pt-2.5 pb-3 ${className}`}
     >
-      {playing === null ? (
-        <Prompt match={match} turn={turn} />
-      ) : (
-        <Row2 text={playing || "Settling the table."} rival={rivalStep}>
-          <TableButton variant="secondary" onClick={onSkip}>
-            Skip
-          </TableButton>
-        </Row2>
-      )}
+      {/* A phone's match keeps its sound button here: the corner has no
+          room for it beside the gauntlet track. */}
+      <div className="flex items-start gap-2 lg:contents">
+        <div className="min-w-0 flex-1 lg:contents">
+          {playing === null ? (
+            <Prompt match={match} turn={turn} />
+          ) : (
+            <Row2 text={playing || "Settling the table."} rival={rivalStep}>
+              <TableButton variant="secondary" onClick={onSkip}>
+                Skip
+              </TableButton>
+            </Row2>
+          )}
+        </div>
+        <SoundButton className="shrink-0 sm:hidden" />
+      </div>
       <div className="mt-auto flex items-center justify-between gap-3 lg:contents">
         <div className="flex min-w-0 flex-col gap-1">
           <ul
@@ -117,16 +132,20 @@ export function TurnPanel({
         </div>
         <div className="flex shrink-0 gap-2.5 lg:order-first lg:grid lg:grid-cols-2 lg:pb-1.5">
           <ScoreToken
+            side="you"
             label="You"
             said={`Your score ${match.score.total}`}
             value={match.score.total}
+            heat={heat}
             className="bg-lime"
           />
           <ScoreToken
+            side="rival"
             label="Rival"
             said={`Rival score ${match.rival.score}`}
             value={match.rival.score}
-            className="bg-coral max-lg:hidden"
+            className="bg-coral"
+            wrapClassName="max-lg:hidden"
           />
         </div>
       </div>
@@ -134,30 +153,49 @@ export function TurnPanel({
   );
 }
 
-/** A score as a token: whose it is, and the number in print. */
+/**
+ * A score as a token: whose it is, and the number in print, rolling up as
+ * it changes. The player's has light behind it while a chain runs.
+ */
 function ScoreToken({
+  side,
   label,
   said,
   value,
+  heat = 0,
   className,
+  wrapClassName = "",
 }: {
+  side: "you" | "rival";
   label: string;
   said: string;
   value: number;
+  heat?: number;
   className: string;
+  wrapClassName?: string;
 }) {
   return (
-    <p
-      className={`piece border-ink text-ink flex flex-col items-center border-2 px-2 py-0.5 lg:flex-row lg:justify-between lg:px-2.5 lg:py-1 ${className}`}
-      aria-label={said}
-    >
-      <span aria-hidden className="text-[11px] leading-tight font-bold">
-        {label}
-      </span>
-      <span aria-hidden className="text-print text-3xl tabular-nums">
-        {value}
-      </span>
-    </p>
+    <div className={`relative isolate ${wrapClassName}`}>
+      {side === "you" ? (
+        <span
+          aria-hidden
+          className="score-heat"
+          style={{ "--heat": heat } as CSSProperties}
+        />
+      ) : null}
+      <p
+        data-score={side}
+        className={`piece border-ink text-ink flex flex-col items-center border-2 px-2 py-0.5 lg:flex-row lg:justify-between lg:px-2.5 lg:py-1 ${className}`}
+        aria-label={said}
+      >
+        <span aria-hidden className="text-[11px] leading-tight font-bold">
+          {label}
+        </span>
+        <span aria-hidden className="text-print text-3xl tabular-nums">
+          <RollingNumber value={value} />
+        </span>
+      </p>
+    </div>
   );
 }
 

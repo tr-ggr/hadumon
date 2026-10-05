@@ -7,17 +7,21 @@ import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
 
 import { tableButtonClass } from "./pieces";
+import { SoundButton } from "./sfx/SoundButton";
 
 /**
- * The ways off the table, as three small pieces in its corner. A run has no
- * app shell around it, so these stand in for the rail and the account bar.
+ * The table's corner: its sound, and the three ways off it. A run has no app
+ * shell around it, so these stand in for the rail and the account bar. On a
+ * phone a match has no room for a fourth piece beside the gauntlet track,
+ * and its sound button sits in the turn dock instead.
  */
 export function TableNav({ className = "" }: { className?: string }) {
   const [confirming, setConfirming] = useState(false);
   const piece = tableButtonClass("secondary", "icon");
 
   return (
-    <nav aria-label="Leave the table" className={`flex gap-1.5 ${className}`}>
+    <nav aria-label="Table" className={`flex gap-1.5 ${className}`}>
+      <SoundButton className="corner-sound" />
       <Link href="/" aria-label="Home" title="Home" className={piece}>
         <PixelIcon name="home" />
       </Link>

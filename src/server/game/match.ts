@@ -494,17 +494,22 @@ export function rivalBankValue(state: MatchState): number {
   );
 }
 
-export function playerScore(state: MatchState): ScoreBreakdown {
-  const placed = placedCats(state.board);
+/**
+ * What a board scores. It takes the three things a score is made of and not
+ * the whole state, so the client can score a board it has rebuilt.
+ */
+export function scoreBoard(
+  board: Board,
+  goalResults: readonly GoalResult[],
+  relicIds: readonly string[],
+): ScoreBreakdown {
+  const placed = placedCats(board);
   const cats = placed.reduce((sum, p) => sum + getCat(p.catId).points, 0);
   const yarn = placed.reduce((sum, p) => sum + p.yarn, 0);
   const cached = placed.reduce((sum, p) => sum + p.cached, 0);
   const tucked = placed.reduce((sum, p) => sum + p.tucked, 0);
-  const goals = state.goalResults.reduce((sum, g) => sum + g.playerPoints, 0);
-  const relics = state.relics.reduce(
-    (sum, id) => sum + relicScore(id, state.board),
-    0,
-  );
+  const goals = goalResults.reduce((sum, g) => sum + g.playerPoints, 0);
+  const relics = relicIds.reduce((sum, id) => sum + relicScore(id, board), 0);
   return {
     cats,
     yarn,
@@ -514,6 +519,10 @@ export function playerScore(state: MatchState): ScoreBreakdown {
     relics,
     total: cats + yarn + cached + tucked + goals + relics,
   };
+}
+
+export function playerScore(state: MatchState): ScoreBreakdown {
+  return scoreBoard(state.board, state.goalResults, state.relics);
 }
 
 export function rivalScore(state: MatchState): number {

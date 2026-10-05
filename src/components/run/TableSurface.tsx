@@ -9,7 +9,7 @@ import { TableNav } from "./TableNav";
  * The cloth every screen of a run is laid on. It opens the `.tabletop`
  * scope, inside which a piece gains its cardboard thickness and the pixel
  * face is available for print. The ways off the table sit in its top right
- * corner on every screen.
+ * corner on every screen, and a slow light drifts on the cloth under it all.
  */
 export function TableSurface({
   children,
@@ -20,8 +20,9 @@ export function TableSurface({
 }) {
   return (
     <div
-      className={`tabletop ${pixelFont.variable} relative flex min-w-0 flex-1 flex-col ${className}`}
+      className={`tabletop ${pixelFont.variable} relative isolate flex min-w-0 flex-1 flex-col ${className}`}
     >
+      <span aria-hidden className="cloth-light" />
       <TableNav className="absolute top-2 right-2 z-30 sm:right-3" />
       {children}
     </div>

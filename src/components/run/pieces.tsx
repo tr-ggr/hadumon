@@ -9,6 +9,7 @@ import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 
 import { essenceLabel, plural } from "./describe";
+import { RollingNumber } from "./fx/RollingNumber";
 
 /** The palette as values, for pixel icons, which take colours and not classes. */
 export const INK = "#17212b";
@@ -195,7 +196,7 @@ export function EssenceToken({
         aria-hidden
         className={`text-pixel min-w-3 text-sm leading-none ${left === 0 ? "text-ink-soft" : ""}`}
       >
-        {left}
+        <RollingNumber value={left} />
       </span>
     </>
   );

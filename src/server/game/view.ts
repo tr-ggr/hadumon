@@ -69,6 +69,8 @@ export interface MatchView {
   pending: Pending | null;
   result: MatchResult | null;
   mods: Mods;
+  /** The run's relics, which a board is scored with. */
+  relics: string[];
   deckCount: number;
   discardCount: number;
   rival: RivalView;
@@ -124,6 +126,7 @@ export function toMatchView(state: MatchState): MatchView {
     pending: state.pending,
     result: state.result,
     mods: state.mods,
+    relics: state.relics,
     deckCount: state.deck.length,
     discardCount: state.discard.length,
     rival: {

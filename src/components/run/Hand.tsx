@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import type { CSSProperties, PointerEvent } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
 import { getCat } from "~/server/game/cats";
@@ -9,9 +9,40 @@ import type { MatchView } from "~/server/game/view";
 
 import { InfoButton } from "./CatPick";
 import { plural } from "./describe";
+import { hasFinePointer, prefersCalm } from "./fx/dom";
 import { fanLayout } from "./hand";
 import { KeyHint } from "./pieces";
+import { playSound } from "./sfx/engine";
 import { PLAY_BLOCK_LABELS, playBlock, rowsLabel, type Mode } from "./turn";
+
+/** How far a raised card leans toward the pointer, in degrees. */
+const LEAN = 5;
+
+/**
+ * Leans a card toward a mouse held over it. The two angles are written
+ * straight onto the card as CSS variables, so the pointer moving costs no
+ * render. Touch and reduced motion leave the card flat.
+ */
+function lean(event: PointerEvent<HTMLLIElement>): void {
+  if (event.pointerType !== "mouse" || prefersCalm()) return;
+  const card = event.currentTarget;
+  const box = card.getBoundingClientRect();
+  const x = (event.clientX - box.left) / box.width - 0.5;
+  const y = (event.clientY - box.top) / box.height - 0.5;
+  const clamp = (n: number) => Math.max(-0.5, Math.min(0.5, n));
+  card.style.setProperty("--lean-y", (clamp(x) * 2 * LEAN).toFixed(2));
+  card.style.setProperty("--lean-x", (clamp(y) * -2 * LEAN).toFixed(2));
+}
+
+function settle(event: PointerEvent<HTMLLIElement>): void {
+  event.currentTarget.style.removeProperty("--lean-x");
+  event.currentTarget.style.removeProperty("--lean-y");
+}
+
+/** A card turning up under the pointer as it sweeps the fan. */
+function turnUp(event: PointerEvent<HTMLLIElement>): void {
+  if (event.pointerType === "mouse" && hasFinePointer()) playSound("hover");
+}
 
 export interface HandProps {
   match: MatchView;
@@ -25,8 +56,9 @@ export interface HandProps {
 /**
  * The hand, held as a fan along the player's edge of the table. A card at
  * rest leans with the arc and hangs under the edge of the screen; hovered,
- * focused or chosen it stands upright with its whole face showing. Where
- * each card sits comes from `fanLayout`; the stylesheet does the rest.
+ * focused or chosen it stands upright with its whole face showing, and
+ * leans a little toward a mouse held over it. Where each card sits comes
+ * from `fanLayout`; the stylesheet does the rest.
  */
 export function Hand({
   match,
@@ -76,6 +108,9 @@ export function Hand({
             key={`${index}-${catId}`}
             data-hand={index}
             className={selected ? "is-raised" : undefined}
+            onPointerEnter={busy ? undefined : turnUp}
+            onPointerMove={lean}
+            onPointerLeave={settle}
             style={
               {
                 "--i": index,

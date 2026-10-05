@@ -2,16 +2,15 @@
 
 import { useMemo } from "react";
 
-import { buildSteps, type Frame } from "./playback";
+import { buildSteps, stepDuration, type Frame } from "./playback";
 import type { TurnRecord } from "./useRunController";
 import { useStepper } from "./useStepper";
-
-/** How long each step of a turn stays up before the next lands. */
-export const STEP_MS = 380;
 
 export interface Playback {
   /** The frame to show, or `null` when no turn is landing. */
   frame: Frame | null;
+  /** Which frame of the turn that is. */
+  index: number;
   /** True while steps are still to come; the table takes no input. */
   playing: boolean;
   skip: () => void;
@@ -28,18 +27,26 @@ export function usePlayback(
 ): Playback {
   const frames = useMemo(
     () =>
-      turn ? buildSteps(turn.before, turn.after, turn.action, turn.events) : [],
+      turn
+        ? buildSteps(
+            turn.before,
+            turn.after,
+            turn.action,
+            turn.events,
+            turn.chainStart,
+          )
+        : [],
     [turn],
   );
-  // The last frame is the table itself, so nothing waits on it.
   const holds = useMemo(
-    () => frames.map((_, index) => (index < frames.length - 1 ? STEP_MS : 0)),
+    () => frames.map((_, index) => stepDuration(frames, index)),
     [frames],
   );
   const { index, playing, skip } = useStepper(turn?.id ?? null, holds, onDone);
 
   return {
     frame: turn ? (frames[index] ?? null) : null,
+    index,
     playing,
     skip,
   };

@@ -281,6 +281,39 @@ export const ICONS = {
     "o11o....",
     "oooo....",
   ],
+  /** Sound at full: a speaker and two waves. */
+  sound: [
+    "...o....",
+    "..oo..o.",
+    "oo1o...o",
+    "o11o.o.o",
+    "o11o.o.o",
+    "oo1o...o",
+    "..oo..o.",
+    "...o....",
+  ],
+  /** Sound turned down: a speaker and one wave. */
+  quiet: [
+    "...o....",
+    "..oo....",
+    "oo1o....",
+    "o11o.o..",
+    "o11o.o..",
+    "oo1o....",
+    "..oo....",
+    "...o....",
+  ],
+  /** Sound off: a speaker, crossed out. */
+  mute: [
+    "...o....",
+    "..oo....",
+    "oo1o.o.o",
+    "o11o..o.",
+    "o11o..o.",
+    "oo1o.o.o",
+    "..oo....",
+    "...o....",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICONS;

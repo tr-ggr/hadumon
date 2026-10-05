@@ -7,6 +7,8 @@
   --color-cobalt: #1557d8;
   --color-cobalt-dark: #0d3c9d;
   --color-lime: #d8ff4f;
+  /* Lime deep enough to read as light on white and cream. Score heat only. */
+  --color-lime-deep: #a3d900;
   --color-coral: #ff7163;
   --color-ink: #17212b;
   --color-ink-soft: #5b6c7d;
@@ -198,6 +200,10 @@
   );
   --cast: var(--cast-cloth);
   --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E");
+  /* Arrives quickly and settles a touch past where it is going. */
+  --ease-give: cubic-bezier(0.2, 0.9, 0.3, 1.25);
+  /* Arrives quickly and stops. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   background-color: var(--color-cream);
   background-image: var(--weave);
   background-size: 16px 8px;
@@ -222,10 +228,13 @@
     0 calc(var(--e) - var(--sink, 0px) + 2px) 0 0 var(--color-ink),
     0 calc(var(--e) - var(--sink, 0px) + var(--lift, 0px) + 7px) 0 -2px
       var(--cast);
+  /* The move eases with a little give; the edge and cast under it change in
+     two steps, since a shadow eased every frame is paint the table can do
+     without. */
   transition:
-    transform 120ms steps(2, end),
+    transform 150ms var(--ease-give),
     box-shadow 120ms steps(2, end),
-    background-color 700ms steps(6, end);
+    background-color 520ms ease-out;
 }
 .tabletop .piece-card {
   --e: 3px;
@@ -253,7 +262,7 @@
 }
 .tabletop .lift,
 .tabletop .liftable {
-  transition: transform 120ms steps(2, end);
+  transition: transform 150ms var(--ease-give);
 }
 @media (hover: hover) {
   .tabletop .liftable:hover:not(.lift) {
@@ -358,7 +367,7 @@
   pointer-events: none;
   transform: var(--at) translateY(calc(var(--drop) * var(--drop-unit)))
     rotate(calc(var(--tilt) * 1deg));
-  transition: transform 160ms steps(4, end);
+  transition: transform 220ms var(--ease-give);
 }
 /* Under a narrow table the dock grows to hold the chosen card whole. */
 @media (max-width: 63.99rem) {
@@ -423,6 +432,59 @@
   width: var(--card-w);
   pointer-events: none;
 }
+/* A raised card leans a few degrees toward a mouse held over it. `Hand`
+   sets the two angles; with no fine pointer they stay at 0. */
+@media (hover: hover) and (pointer: fine) {
+  .tabletop .hand-fan .hand-face {
+    transform: perspective(40rem) rotateX(calc(var(--lean-x, 0) * 1deg))
+      rotateY(calc(var(--lean-y, 0) * 1deg));
+    transition:
+      transform 140ms var(--ease-out),
+      box-shadow 120ms steps(2, end);
+  }
+}
+/* A legendary catches the light while it stands up: one band crossing its
+   face. The band is moved, never repainted. */
+.tabletop .card-shimmer {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+.tabletop .card-shimmer::before {
+  content: "";
+  position: absolute;
+  inset: -10% -75%;
+  background: linear-gradient(
+    105deg,
+    transparent 42%,
+    rgb(255 255 255 / 0.62) 50%,
+    transparent 58%
+  );
+  transform: translateX(-70%);
+}
+.tabletop .hand-fan > li.is-raised .card-shimmer,
+.tabletop .hand-fan > li:has(:focus-visible) .card-shimmer {
+  opacity: 1;
+}
+.tabletop .hand-fan > li.is-raised .card-shimmer::before,
+.tabletop .hand-fan > li:has(:focus-visible) .card-shimmer::before {
+  animation: card-shimmer 2200ms var(--ease-out) infinite;
+}
+@media (hover: hover) {
+  .tabletop .hand-fan > li:hover .card-shimmer {
+    opacity: 1;
+  }
+  .tabletop .hand-fan > li:hover .card-shimmer::before {
+    animation: card-shimmer 2200ms var(--ease-out) infinite;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .card-shimmer {
+    display: none;
+  }
+}
 .tabletop .hand-fan .hand-pick:focus-visible {
   outline: none;
 }
@@ -485,20 +547,31 @@
 }
 
 @keyframes piece-land {
-  from {
-    transform: translateY(-6px);
+  0% {
+    transform: translateY(-7px);
   }
-  to {
+  60% {
+    transform: translateY(1px);
+  }
+  100% {
     transform: translateY(0);
   }
 }
 @keyframes slot-fire {
   0% {
-    transform: translateY(-2px);
+    transform: translateY(0) scale(1);
   }
-  35%,
+  22% {
+    transform: translateY(-4px) scale(1.07);
+  }
+  52% {
+    transform: translateY(1px) scale(0.985);
+  }
+  76% {
+    transform: translateY(-1px) scale(1.01);
+  }
   100% {
-    transform: translateY(2px);
+    transform: translateY(0) scale(1);
   }
 }
 @keyframes card-flip {
@@ -506,12 +579,12 @@
     transform: scaleX(1);
     background-color: var(--color-coral);
   }
-  45% {
-    transform: scaleX(0.05);
+  50% {
+    transform: scaleX(0.04);
     background-color: var(--color-coral);
   }
-  55% {
-    transform: scaleX(0.05);
+  82% {
+    transform: scaleX(1.04);
     background-color: var(--color-coral);
   }
   100% {
@@ -521,29 +594,175 @@
 }
 @keyframes die-roll {
   0% {
-    transform: translateY(-5px) rotate(-90deg);
+    transform: translateY(-9px) rotate(-120deg);
   }
-  50% {
-    transform: translateY(-2px) rotate(-30deg);
+  55% {
+    transform: translateY(1px) rotate(8deg);
+  }
+  78% {
+    transform: translateY(-2px) rotate(-3deg);
   }
   100% {
     transform: translateY(0) rotate(0);
   }
 }
-.tabletop .anim-land {
-  animation: piece-land 200ms steps(3, end) both;
+@keyframes card-shimmer {
+  0% {
+    transform: translateX(-70%);
+  }
+  55%,
+  100% {
+    transform: translateX(70%);
+  }
 }
+@keyframes cloth-light {
+  0% {
+    transform: translate3d(-8%, -4%, 0);
+  }
+  100% {
+    transform: translate3d(8%, 5%, 0);
+  }
+}
+.tabletop .anim-land {
+  animation: piece-land 240ms var(--ease-out) both;
+}
+/* A cat whose power is firing turns lime at once, and goes back to cream as
+   slowly as any piece changes colour. On the match table the jump itself is
+   a spring played by `fx/effects.ts`, so it can start over when the same
+   cat fires twice running; `.anim-fire` is the same thing with the jump
+   built in, for a table that only ever shows it once. */
+.tabletop .is-firing,
 .tabletop .anim-fire {
-  --sink: 2px;
   background-color: var(--color-lime) !important;
   transition-duration: 0ms !important;
-  animation: slot-fire 300ms steps(3, end) both;
+}
+.tabletop .anim-fire {
+  animation: slot-fire 380ms ease-out both;
 }
 .tabletop .anim-flip {
-  animation: card-flip 360ms steps(6, end) both;
+  animation: card-flip 380ms cubic-bezier(0.45, 0, 0.3, 1) both;
 }
 .tabletop .anim-roll {
-  animation: die-roll 280ms steps(4, end) both;
+  animation: die-roll 340ms var(--ease-out) both;
+}
+/* Dice tumble in one after another, not as a block. */
+.tabletop .anim-roll:nth-child(2) {
+  animation-delay: 30ms;
+}
+.tabletop .anim-roll:nth-child(3) {
+  animation-delay: 60ms;
+}
+.tabletop .anim-roll:nth-child(4) {
+  animation-delay: 90ms;
+}
+.tabletop .anim-roll:nth-child(5) {
+  animation-delay: 120ms;
+}
+
+/*
+ * What is drawn over the table while a turn lands: pieces in flight, the
+ * numbers that rise off a cat, sparks. One layer, fixed to the screen and
+ * outside everything that shakes, so its contents are placed in screen
+ * coordinates. `fx/effects.ts` fills it and empties it; nothing in it takes
+ * the pointer or is read out.
+ */
+.tabletop .fx-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  overflow: clip;
+  pointer-events: none;
+}
+.tabletop .fx-float {
+  position: fixed;
+  padding: 2px 5px 1px;
+  border: 2px solid var(--color-ink);
+  background: var(--color-lime);
+  color: var(--color-ink);
+  font-family: var(--font-pixel), var(--font-display);
+  font-size: 20px;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 0 var(--color-ink);
+  will-change: transform, opacity;
+}
+.tabletop .fx-float.fx-coral {
+  background: var(--color-coral);
+}
+.tabletop .fx-spark {
+  position: fixed;
+  width: 4px;
+  height: 4px;
+  margin: -2px 0 0 -2px;
+  background: var(--color-lime);
+  box-shadow: 0 0 0 1px var(--color-ink);
+  will-change: transform, opacity;
+}
+.tabletop .fx-spark.fx-coral {
+  background: var(--color-coral);
+}
+.tabletop .fx-spark.fx-ink {
+  background: var(--color-ink);
+  box-shadow: none;
+}
+/*
+ * Score heat: light behind the player's total that deepens as a chain runs.
+ * One of the three places the table glows. `--heat` runs 0 to 1; the glow
+ * is one painted gradient whose opacity and size are all that change.
+ */
+.tabletop .score-heat {
+  position: absolute;
+  inset: -14px -18px;
+  z-index: -1;
+  background: radial-gradient(
+    closest-side,
+    var(--color-lime-deep) 0%,
+    color-mix(in srgb, var(--color-lime-deep) 55%, transparent) 45%,
+    transparent 100%
+  );
+  opacity: var(--heat, 0);
+  transform: scale(calc(0.82 + var(--heat, 0) * 0.3));
+  transition:
+    opacity 260ms ease-out,
+    transform 260ms var(--ease-give);
+  pointer-events: none;
+}
+/*
+ * A slow light on the cloth of a run: a wide, faint patch of warmth that
+ * drifts across and back. It is the size of the screen, sits under every
+ * piece (the surface is its own stacking context), and is moved, never
+ * repainted. The landing page lays its own cloth and has none.
+ */
+.tabletop .cloth-light {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.tabletop .cloth-light::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(
+    ellipse 46% 38% at 50% 42%,
+    rgb(255 255 255 / 0.5),
+    transparent 70%
+  );
+  animation: cloth-light 26s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .cloth-light::before {
+    animation: none;
+  }
+}
+/* A phone's match has no room for a fourth corner piece beside the track;
+   its sound button is in the turn dock. */
+@media (max-width: 39.99rem) {
+  .tabletop:has([data-match]) .corner-sound {
+    display: none;
+  }
 }
 
 /*

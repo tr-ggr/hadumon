@@ -22,12 +22,15 @@ import {
   type RivalNews,
 } from "./describe";
 import { fly, launchFrom, type Launch } from "./flight";
+import { markEnded } from "./fx/ended";
+import { useFrameFx } from "./fx/useFrameFx";
 import { EventLog, GoalNotice } from "./MatchPanels";
 import { RelicTiles } from "./pieces";
 import { Hand } from "./Hand";
 import { RivalSide } from "./RivalSide";
 import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
+import { playSound } from "./sfx/engine";
 import { Supply } from "./Supply";
 import { TurnPanel, type TurnControls } from "./TurnPanel";
 import {
@@ -36,6 +39,7 @@ import {
   fillYarn,
   huntTake,
   IDLE,
+  playBlock,
   swapOwed,
   toggleDie,
   yarnRoom,
@@ -43,6 +47,10 @@ import {
 } from "./turn";
 import { usePlayback } from "./usePlayback";
 import type { TurnRecord } from "./useRunController";
+import { useReducedMotion } from "./useStepper";
+
+/** How many powers into a chain the player's score is as hot as it gets. */
+const HEAT_STEPS = 6;
 
 /**
  * Scrolls a zone into the clear space above the player's edge, and no
@@ -158,7 +166,7 @@ export interface MatchBoardProps {
  * Under 1024px it is one column with the turn and the hand docked below, and
  * on a short screen the mat stands above the supply, clear of a raised card. A
  * turn that has just been answered is played back step by step before the
- * table takes input again.
+ * table takes input again, and each step sets off its own sound and effects.
  */
 export function MatchBoard({
   run,
@@ -174,7 +182,8 @@ export function MatchBoard({
   runStrip,
   sideStrip,
 }: MatchBoardProps) {
-  const { frame, playing, skip } = usePlayback(turn, onTurnPlayed);
+  const { frame, index, playing, skip } = usePlayback(turn, onTurnPlayed);
+  const calm = useReducedMotion();
   /** What the table shows: a step of the turn landing, else the server's view. */
   const match = frame?.view ?? served;
   const busy = sending || playing;
@@ -214,6 +223,19 @@ export function MatchBoard({
     fly(tableRef.current, launches.current);
     launches.current = [];
   }, [turnId]);
+  useFrameFx(tableRef, turnId, index, frame, calm);
+
+  // The result sheet that follows a match's last turn counts its score up.
+  const endedMatch = turn?.after.phase === "over" ? turn.after : null;
+  useEffect(() => {
+    if (endedMatch) markEnded(endedMatch);
+  }, [endedMatch]);
+
+  // The player's score warms from the third power of a chain on.
+  const heat =
+    playing && frame && !calm
+      ? Math.min(1, Math.max(0, frame.cue.chain - 1) / HEAT_STEPS)
+      : 0;
 
   const act = (action: Action) => {
     launches.current = launchesFor(tableRef.current, match, action);
@@ -230,20 +252,26 @@ export function MatchBoard({
 
   const activate = (row: Row) => {
     if (match.phase !== "turn" || busy) return;
-    if (mode.kind === row) return setMode(IDLE);
+    if (mode.kind === row) {
+      playSound("click");
+      return setMode(IDLE);
+    }
     if (row === "hunt") {
       // Nothing to choose when the Hunt takes every die that is left.
       if (take === match.feeder.length) {
         return act({ type: "hunt", dice: match.feeder.map((_, i) => i) });
       }
+      playSound("click");
       setMode({ kind: "hunt", dice: [] });
       return reveal(supplyRef.current);
     }
     if (row === "den") {
+      playSound("click");
       setMode({ kind: "den", targets: [] });
       return reveal(matRef.current);
     }
     if (match.prowlPicks === 0) return act({ type: "prowl", picks: [] });
+    playSound("click");
     setMode({ kind: "prowl", picks: [] });
     reveal(supplyRef.current);
   };
@@ -268,19 +296,25 @@ export function MatchBoard({
     swapEssence: (kind: Essence) => {
       if (mode.kind !== "play" || busy) return;
       if (canSwapMore(match, mode.hand, mode.swap, kind)) {
+        playSound("pick");
         return setMode({ ...mode, swap: [...mode.swap, kind] });
       }
       // Nothing more of it can go in, so the tap takes one back.
       const last = mode.swap.lastIndexOf(kind);
       if (last >= 0) {
+        playSound("click");
         setMode({ ...mode, swap: mode.swap.filter((_, i) => i !== last) });
       }
     },
     undoSwap: () => {
       if (mode.kind !== "play") return;
+      playSound("click");
       setMode({ ...mode, swap: mode.swap.slice(0, -1) });
     },
-    cancel: () => setMode(IDLE),
+    cancel: () => {
+      playSound("click");
+      setMode(IDLE);
+    },
     confirm: () => {
       if (mode.kind === "hunt" && mode.dice.length === take) {
         act({ type: "hunt", dice: mode.dice });
@@ -296,6 +330,7 @@ export function MatchBoard({
     },
     fillDen: () => {
       if (mode.kind !== "den") return;
+      playSound("yarn");
       setMode({
         kind: "den",
         targets: fillYarn(match.board, mode.targets, match.rewards.den),
@@ -303,6 +338,7 @@ export function MatchBoard({
     },
     undoDen: () => {
       if (mode.kind !== "den") return;
+      playSound("click");
       setMode({ kind: "den", targets: mode.targets.slice(0, -1) });
     },
     resolve: (choice) => act({ type: "resolve", choice }),
@@ -312,6 +348,7 @@ export function MatchBoard({
     if (mode.kind !== "den") {
       const placed = match.board[slot.row][slot.col];
       if (placed) {
+        playSound("click");
         setDetail({
           catId: placed.catId,
           tucked: { count: placed.tucked, under: placed.under ?? [] },
@@ -323,38 +360,53 @@ export function MatchBoard({
       mode.targets.length < match.rewards.den &&
       yarnRoom(match.board, mode.targets, slot) > 0
     ) {
+      playSound("yarn");
       setMode({ kind: "den", targets: [...mode.targets, slot] });
+    } else {
+      playSound("illegal");
     }
   };
 
   const onHandCard = (index: number) => {
     if (busy || match.hand[index] === undefined) return;
     if (mode.kind === "tuck") {
+      playSound(mode.hand === index ? "click" : "pick");
       return setMode({
         kind: "tuck",
         hand: mode.hand === index ? null : index,
       });
     }
     if (match.phase !== "turn") return;
-    if (mode.kind === "play" && mode.hand === index) return setMode(IDLE);
+    if (mode.kind === "play" && mode.hand === index) {
+      playSound("click");
+      return setMode(IDLE);
+    }
+    // A card that cannot be played is still raised, so the prompt can say
+    // why; it sounds like the refusal it is.
+    playSound(playBlock(match, index) ? "illegal" : "pick");
     setMode({ kind: "play", hand: index, swap: [] });
   };
 
   const onDie = (index: number) => {
     if (mode.kind !== "hunt" || match.feeder[index] === undefined) return;
+    playSound(mode.dice.includes(index) ? "click" : "pick");
     setMode({ kind: "hunt", dice: toggleDie(mode.dice, index, take) });
   };
 
   const onTrayCard = (index: number) => {
     if (mode.kind !== "prowl" || match.tray[index] === undefined) return;
     if (mode.picks.includes(index)) {
+      playSound("click");
       return setMode({
         kind: "prowl",
         picks: mode.picks.filter((pick) => pick !== index),
       });
     }
     if (mode.picks.length < match.prowlPicks) {
+      playSound("pick");
       setMode({ kind: "prowl", picks: [...mode.picks, index] });
+    } else {
+      playSound("illegal");
     }
   };
 
@@ -365,10 +417,12 @@ export function MatchBoard({
         mode.picks.length < match.prowlPicks &&
         deckPicks(mode.picks) < deckAvailable
       ) {
+        playSound("pick");
         setMode({ kind: "prowl", picks: [...mode.picks, "deck"] });
       }
       return;
     }
+    playSound("click");
     const last = mode.picks.lastIndexOf("deck");
     setMode({ kind: "prowl", picks: mode.picks.filter((_, i) => i !== last) });
   };
@@ -487,14 +541,19 @@ export function MatchBoard({
     turn: controls,
     playing: playing ? (frame?.text ?? "") : null,
     rivalStep: playing && frame?.tone === "rival",
+    heat,
     onSkip: skip,
   };
 
   return (
     <div
       ref={tableRef}
+      data-match
       className="flex flex-1 flex-col [overflow:clip] lg:flex-row"
     >
+      {/* Pieces in flight, floating numbers and sparks are drawn here, over
+          the table and outside everything on it that shakes. */}
+      <div aria-hidden data-fx-layer className="fx-layer" />
       <h1 className="sr-only">
         Match {run.matchIndex + 1} of {run.gauntlet.length}
       </h1>
@@ -503,8 +562,11 @@ export function MatchBoard({
           parts fall into the one column, and the turn is shown in the dock. */}
       <div className="lg:rail-side max-lg:contents lg:flex lg:w-[19.5rem] lg:shrink-0 lg:flex-col">
         <div className="flex flex-col gap-2.5 px-3 pt-2.5 lg:pb-3">
-          {/* The corner buttons stand beside the track on a narrow table. */}
-          <div className="max-lg:pr-36 lg:hidden">{runStrip}</div>
+          {/* The corner buttons stand beside the track on a narrow table:
+              three of them on a phone, four from 640px. */}
+          <div className="max-lg:pr-36 sm:max-lg:pr-48 lg:hidden">
+            {runStrip}
+          </div>
           <div className="hidden lg:block">{sideStrip}</div>
           <RivalSide
             match={match}
@@ -525,6 +587,7 @@ export function MatchBoard({
           <div className="flex min-w-0 flex-col gap-3 xl:flex-1">
             <section
               ref={matRef}
+              data-shake
               aria-label="Your mat"
               className="mat divide-sky-deep tall-table:order-3 order-2 flex flex-col divide-y-2 xl:max-h-[30.5rem] xl:flex-1"
             >
@@ -545,7 +608,11 @@ export function MatchBoard({
               ))}
             </section>
 
-            <div ref={supplyRef} className="tall-table:order-2 order-3">
+            <div
+              ref={supplyRef}
+              data-shake
+              className="tall-table:order-2 order-3"
+            >
               <Supply
                 match={match}
                 mode={mode}

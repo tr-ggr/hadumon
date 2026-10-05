@@ -10,15 +10,19 @@ import type { MatchView } from "~/server/game/view";
 import type { ReactNode } from "react";
 
 import { plural } from "./describe";
+import { RollingNumber } from "./fx/RollingNumber";
 
 function Line({
   label,
   value,
   total = false,
+  tally,
 }: {
   label: string;
   value: number;
   total?: boolean;
+  /** Marks the number a finished match's tally ends on. */
+  tally?: "total";
 }) {
   return (
     <div
@@ -26,9 +30,10 @@ function Line({
     >
       <dt className="text-xs leading-[1.125rem]">{label}</dt>
       <dd
+        data-tally={tally}
         className={`tabular-nums ${total ? "text-print text-xl" : "text-xs leading-[1.125rem] font-bold"}`}
       >
-        {value}
+        <RollingNumber value={value} />
       </dd>
     </div>
   );
@@ -61,7 +66,7 @@ export function ScoreSheets({
         <Line label="Tucked" value={player.tucked} />
         <Line label="Goals" value={player.goals} />
         <Line label="Relics" value={player.relics} />
-        <Line label="Total" value={player.total} total />
+        <Line label="Total" value={player.total} total tally="total" />
       </dl>
       <dl>
         <p className="border-ink bg-coral mb-1 inline-block max-w-full truncate border-2 px-1 align-bottom text-xs leading-5 font-black">

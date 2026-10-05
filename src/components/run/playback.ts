@@ -5,16 +5,28 @@
  * at a time. Pure, so it is tested without a browser.
  *
  * Only what the client can know is rebuilt (essence, yarn, the hand, the
- * feeder). Anything else waits for the last frame, which is always the
- * server's own view.
+ * feeder, and the score they add up to). Anything else waits for the last
+ * frame, which is always the server's own view.
+ *
+ * Each frame also carries a cue: what kind of moment it is and what it
+ * changed. Sound and effects are worked out from the cue alone, so neither
+ * has to read the table.
  */
 
-import { getCat, ROWS } from "~/server/game/cats";
+import {
+  getCat,
+  ROWS,
+  type Effect,
+  type RivalAction,
+} from "~/server/game/cats";
 import {
   auraTotal,
   columnYarnCost,
+  ESSENCES,
   playPayment,
+  scoreBoard,
   type Action,
+  type Essence,
   type MatchEvent,
   type PlacedCat,
   type SlotRef,
@@ -23,9 +35,64 @@ import type { MatchView } from "~/server/game/view";
 
 import { describeAction, describeEvents, type LogTone } from "./describe";
 
+/** What one cat on the mat gained or lost in a frame. */
+export interface SlotDelta extends SlotRef {
+  yarn: number;
+  cached: number;
+  tucked: number;
+}
+
+/** What a frame changed, against the frame before it. */
+export interface Delta {
+  food: Record<Essence, number>;
+  yarn: number;
+  cached: number;
+  tucked: number;
+  hand: number;
+  /** The player's total. */
+  score: number;
+  /** The rival's total. */
+  rival: number;
+  /** The cats whose yarn, cache or tucked cards changed. */
+  slots: SlotDelta[];
+}
+
+export type CueKind =
+  /** The opening frame: the player's own move. */
+  | Exclude<Action["type"], "keep">
+  | "power"
+  | "aura"
+  | "feeder"
+  | "rival"
+  | "goal"
+  | "over"
+  /** The closing frame. It is the table itself and sets nothing off. */
+  | "settle";
+
+export interface Cue {
+  kind: CueKind;
+  /** What a power does. */
+  effect: Effect["kind"] | null;
+  /** The slot a power fired from, or a played cat landed in. */
+  slot: SlotRef | null;
+  /**
+   * How many powers of this activation had landed before this frame. It
+   * carries on across a choice, which is answered as an action of its own.
+   */
+  chain: number;
+  /** A power that fired and changed nothing: a full cat, an empty deck. */
+  fizzled: boolean;
+  /** The card the rival turned over. */
+  rivalAction: RivalAction | null;
+  /** Who a goal or the match went to; `null` for a split goal. */
+  won: boolean | null;
+  delta: Delta;
+}
+
 export interface Frame {
   /** The table as it stands once this frame has landed. */
   view: MatchView;
+  cue: Cue;
   /** The slot whose power is firing. */
   firing: SlotRef | null;
   /** True on the frame the rival flips its card. */
@@ -39,6 +106,60 @@ export interface Frame {
   /** What this frame shows, in a sentence; empty on the closing frame. */
   text: string;
   tone: LogTone;
+}
+
+function noDelta(): Delta {
+  return {
+    food: { flame: 0, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 },
+    yarn: 0,
+    cached: 0,
+    tucked: 0,
+    hand: 0,
+    score: 0,
+    rival: 0,
+    slots: [],
+  };
+}
+
+function diff(prev: MatchView, now: MatchView): Delta {
+  const delta = noDelta();
+  for (const kind of ESSENCES) {
+    delta.food[kind] = now.essence[kind] - prev.essence[kind];
+  }
+  for (const row of ROWS) {
+    now.board[row].forEach((placed, col) => {
+      const was = prev.board[row][col];
+      const slot: SlotDelta = {
+        row,
+        col,
+        yarn: placed.yarn - (was?.yarn ?? 0),
+        cached: placed.cached - (was?.cached ?? 0),
+        tucked: placed.tucked - (was?.tucked ?? 0),
+      };
+      if (slot.yarn === 0 && slot.cached === 0 && slot.tucked === 0) return;
+      delta.slots.push(slot);
+      delta.yarn += slot.yarn;
+      delta.cached += slot.cached;
+      delta.tucked += slot.tucked;
+    });
+  }
+  delta.hand = now.hand.length - prev.hand.length;
+  delta.score = now.score.total - prev.score.total;
+  delta.rival = now.rival.score - prev.rival.score;
+  return delta;
+}
+
+/** True when a frame moved nothing a player holds. */
+function unchanged(delta: Delta): boolean {
+  return (
+    delta.slots.length === 0 &&
+    delta.hand === 0 &&
+    ESSENCES.every((kind) => delta.food[kind] === 0)
+  );
+}
+
+function rescore(view: MatchView): void {
+  view.score = scoreBoard(view.board, view.goalResults, view.relics);
 }
 
 function addYarn(placed: PlacedCat, n: number): void {
@@ -219,20 +340,50 @@ function applyRival(
   view.turnsLeft = Math.max(0, view.turnsLeft - 1);
 }
 
+/** A goal scored at the end of a round, paid to both sides. */
+function applyGoal(
+  view: MatchView,
+  event: Extract<MatchEvent, { type: "goal" }>,
+): void {
+  const { goalId, player, rival, playerPoints, rivalPoints } = event;
+  view.goalResults = [
+    ...view.goalResults,
+    { goalId, player, rival, playerPoints, rivalPoints },
+  ];
+  view.rival = {
+    ...view.rival,
+    goalPoints: view.rival.goalPoints + rivalPoints,
+    score: view.rival.score + rivalPoints,
+  };
+}
+
 /**
  * The frames of one turn, in the order things happened. The first shows the
  * player's own move, then one per power, feeder roll, rival card and scored
- * goal; the last is `after` untouched.
+ * goal; the last is `after` untouched. `chainStart` is how many powers the
+ * activation had already landed when this action answers a choice in the
+ * middle of it.
  */
 export function buildSteps(
   before: MatchView,
   after: MatchView,
   action: Action,
   events: readonly MatchEvent[],
+  chainStart = 0,
 ): Frame[] {
   const lines = describeEvents(before, after, events);
-  const closing: Frame = {
+  const closing = (chain: number): Frame => ({
     view: after,
+    cue: {
+      kind: "settle",
+      effect: null,
+      slot: null,
+      chain,
+      fizzled: false,
+      rivalAction: null,
+      won: null,
+      delta: noDelta(),
+    },
     firing: null,
     flipping: false,
     flipped: true,
@@ -240,14 +391,33 @@ export function buildSteps(
     lines: lines.length,
     text: "",
     tone: "note",
-  };
+  });
   // Setup is a change of screen, not a turn at the table.
-  if (action.type === "keep" || before.phase === "setup") return [closing];
+  if (action.type === "keep" || before.phase === "setup") {
+    return [closing(chainStart)];
+  }
 
   let view = applyOwnAction(before, after, action);
+  rescore(view);
+  let chain = chainStart;
   const frames: Frame[] = [
     {
       view,
+      cue: {
+        kind: action.type,
+        effect: null,
+        slot:
+          action.type === "play"
+            ? { row: action.row, col: before.board[action.row].length }
+            : action.type === "resolve"
+              ? (before.pending?.slot ?? null)
+              : null,
+        chain,
+        fizzled: false,
+        rivalAction: null,
+        won: null,
+        delta: diff(before, view),
+      },
       firing: null,
       flipping: false,
       flipped: false,
@@ -260,15 +430,16 @@ export function buildSteps(
 
   let line = 0;
   let flipped = false;
-  for (const event of events) {
+  events.forEach((event, at) => {
     if (
       event.type === "kept" ||
       event.type === "played" ||
       event.type === "activated"
     ) {
-      continue;
+      return;
     }
     const described = lines[line++];
+    const prev = view;
     view = structuredClone(view);
     if (event.type === "power") applyPower(view, after, event);
     if (event.type === "aura") {
@@ -280,12 +451,42 @@ export function buildSteps(
       applyRival(view, after, event);
       flipped = true;
     }
+    if (event.type === "goal") applyGoal(view, event);
+    rescore(view);
+
+    const delta = diff(prev, view);
+    const fires = event.type === "power" || event.type === "aura";
+    const slot = fires ? { row: event.row, col: event.col } : null;
+    // An encore changes nothing itself, and a power that stops for a choice
+    // is always the last thing to happen; neither has fizzled.
+    const waits =
+      event.type === "power" &&
+      at === events.length - 1 &&
+      after.pending?.slot.row === event.row &&
+      after.pending.slot.col === event.col;
+    const fizzled =
+      event.type === "power" &&
+      event.effect !== "encore" &&
+      !waits &&
+      unchanged(delta);
     frames.push({
       view,
-      firing:
-        event.type === "power" || event.type === "aura"
-          ? { row: event.row, col: event.col }
-          : null,
+      cue: {
+        kind: event.type,
+        effect: event.type === "power" ? event.effect : null,
+        slot,
+        chain,
+        fizzled,
+        rivalAction: event.type === "rival" ? event.action : null,
+        won:
+          event.type === "over"
+            ? event.won
+            : event.type === "goal" && event.playerPoints !== event.rivalPoints
+              ? event.playerPoints > event.rivalPoints
+              : null,
+        delta,
+      },
+      firing: slot,
       flipping: event.type === "rival",
       flipped,
       rolling: event.type === "feeder",
@@ -293,8 +494,65 @@ export function buildSteps(
       text: described?.text ?? "",
       tone: described?.tone ?? "note",
     });
-  }
+    if (fires && !fizzled) chain += 1;
+  });
 
-  frames.push(closing);
+  frames.push(closing(chain));
   return frames;
+}
+
+/** How many powers an activation has landed once this action has played. */
+export function chainEnd(
+  before: MatchView,
+  after: MatchView,
+  action: Action,
+  events: readonly MatchEvent[],
+  chainStart = 0,
+): number {
+  const frames = buildSteps(before, after, action, events, chainStart);
+  return frames[frames.length - 1]?.cue.chain ?? chainStart;
+}
+
+/** A step of a turn with nothing to hurry it. */
+export const STEP_MS = 380;
+/** The quickest a power lands, however long the chain. */
+export const STEP_FLOOR_MS = 180;
+/** How much of the last power's time the next one keeps. */
+const CHAIN_PACE = 0.88;
+/** The player's own move, which a piece in flight has to finish inside. */
+export const OPENING_MS = 440;
+const RIVAL_MS = 540;
+const GOAL_MS = 760;
+const OVER_MS = 1000;
+
+/**
+ * How long frame `index` stays up before the next lands. A chain speeds up
+ * as its powers pile on, down to a floor; the rival's card and a scored goal
+ * get a beat of their own, and the end of the match is held. The closing
+ * frame is the table itself, so nothing waits on it.
+ */
+export function stepDuration(frames: readonly Frame[], index: number): number {
+  const frame = frames[index];
+  if (!frame || index >= frames.length - 1) return 0;
+  switch (frame.cue.kind) {
+    case "power":
+    case "aura":
+      return Math.max(
+        STEP_FLOOR_MS,
+        Math.round(STEP_MS * CHAIN_PACE ** frame.cue.chain),
+      );
+    case "rival":
+      return RIVAL_MS;
+    case "goal":
+      return GOAL_MS;
+    case "over":
+      return OVER_MS;
+    case "play":
+    case "hunt":
+    case "prowl":
+    case "resolve":
+      return OPENING_MS;
+    default:
+      return STEP_MS;
+  }
 }

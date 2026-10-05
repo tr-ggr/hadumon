@@ -2,8 +2,13 @@
  * Pieces in flight. A piece that changes zone (a card from the hand to its
  * space, a die from the feeder to the essence tokens) is copied where it
  * stood before the action, and the copy travels to where the piece lands.
- * Web Animations only; nothing here touches React's tree.
+ * It leaves quickly, rides a slight arc, slows in, and the piece it lands as
+ * gives under it. Web Animations only; nothing here touches React's tree.
  */
+
+import { fxLayer, prefersCalm, shown } from "./fx/dom";
+import { squash } from "./fx/effects";
+import { track } from "./fx/registry";
 
 export const FLIGHT_MS = 300;
 
@@ -15,18 +20,6 @@ export interface Launch {
   target: string;
   /** Keeps the landing place empty until the copy arrives. */
   hideTarget: boolean;
-}
-
-/**
- * The first match that is laid out. A zone the table renders twice and shows
- * once (the turn panel, with the food tokens in it) has a copy with no box.
- */
-function shown(root: HTMLElement | null, selector: string): HTMLElement | null {
-  for (const el of root?.querySelectorAll<HTMLElement>(selector) ?? []) {
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) return el;
-  }
-  return null;
 }
 
 export function launchFrom(
@@ -55,10 +48,35 @@ export function launchFrom(
   };
 }
 
+/** How many straight pieces the arc is drawn in. */
+const ARC_STEPS = 10;
+
+/**
+ * The path of a flight: out fast and slowing in, lifted off the straight
+ * line in the middle the further it has to go.
+ */
+export function flightPath(
+  dx: number,
+  dy: number,
+  scale: number,
+): { offset: number; transform: string }[] {
+  const lift = Math.min(36, Math.hypot(dx, dy) * 0.14);
+  return Array.from({ length: ARC_STEPS + 1 }, (_, i) => {
+    const offset = i / ARC_STEPS;
+    const p = 1 - (1 - offset) ** 3;
+    const arc = Math.sin(Math.PI * p) * lift;
+    return {
+      offset,
+      transform: `translate(${dx * p}px, ${dy * p - arc}px) scale(${1 + (scale - 1) * p})`,
+    };
+  });
+}
+
 /** Sends each copy to its landing place inside `root`. */
 export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
   if (!root) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  if (prefersCalm()) return;
+  const layer = fxLayer(root) ?? root;
   for (const { node, from, target, hideTarget } of launches) {
     const landing = shown(root, target);
     if (!landing) continue;
@@ -85,20 +103,23 @@ export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
       zIndex: "60",
       pointerEvents: "none",
     });
-    root.appendChild(node);
+    layer.appendChild(node);
 
-    const timing = { duration: FLIGHT_MS, easing: "steps(6, end)" };
     if (hideTarget) {
-      landing.animate([{ opacity: 0 }, { opacity: 0 }], timing);
+      track(
+        landing.animate([{ opacity: 0 }, { opacity: 0 }], {
+          duration: FLIGHT_MS,
+        }),
+      );
+      // The piece gives as the copy comes down on it.
+      squash(landing, FLIGHT_MS);
     }
-    const flight = node.animate(
-      [
-        { transform: "translate(0, -4px) scale(1)" },
-        { transform: `translate(${dx}px, ${dy}px) scale(${scale})` },
-      ],
-      { ...timing, fill: "forwards" },
+    track(
+      node.animate(flightPath(dx, dy, scale), {
+        duration: FLIGHT_MS,
+        fill: "forwards",
+      }),
+      () => node.remove(),
     );
-    const land = () => node.remove();
-    flight.finished.then(land, land);
   }
 }

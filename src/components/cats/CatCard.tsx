@@ -137,9 +137,12 @@ export function CatCard({
     // takes the smaller sprite and clamps its rules to what fits.
     return (
       <div
-        className={`piece piece-card cat-card border-ink bg-cream text-ink @container flex flex-col border-2 p-2 pb-8 text-left ${className}`}
+        className={`piece piece-card cat-card border-ink bg-cream text-ink @container relative flex flex-col border-2 p-2 pb-8 text-left ${className}`}
         style={rarity}
       >
+        {cat.rarity === "legendary" ? (
+          <span aria-hidden className="card-shimmer" />
+        ) : null}
         <div className="flex items-start gap-1.5">
           {/* The two numbers a player compares stand in the first 32px, which
               the thinnest strip of the fan still shows. */}
