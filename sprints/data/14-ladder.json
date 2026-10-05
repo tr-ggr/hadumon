@@ -4,215 +4,2429 @@
       "higher": 1,
       "lower": 0,
       "games": 600,
-      "winRate": 0.735,
-      "wins": 430,
-      "ties": 22,
-      "losses": 148,
-      "scored": 25.4,
-      "conceded": 20.71,
-      "msPerMatch": 3.4
+      "winRate": 0.647,
+      "wins": 373,
+      "ties": 30,
+      "losses": 197,
+      "scored": 22.34,
+      "conceded": 19.79,
+      "msPerMatch": 1
     },
     {
       "higher": 2,
       "lower": 1,
       "games": 600,
-      "winRate": 0.748,
-      "wins": 428,
-      "ties": 41,
-      "losses": 131,
-      "scored": 28.64,
-      "conceded": 24.11,
-      "msPerMatch": 7.5
+      "winRate": 0.662,
+      "wins": 381,
+      "ties": 33,
+      "losses": 186,
+      "scored": 25.13,
+      "conceded": 22.45,
+      "msPerMatch": 3.3
     },
     {
       "higher": 3,
       "lower": 2,
       "games": 600,
-      "winRate": 0.507,
-      "wins": 276,
-      "ties": 56,
-      "losses": 268,
-      "scored": 26.35,
-      "conceded": 26.22,
-      "msPerMatch": 24.8
+      "winRate": 0.638,
+      "wins": 364,
+      "ties": 38,
+      "losses": 198,
+      "scored": 27.18,
+      "conceded": 24.47,
+      "msPerMatch": 7.1
     },
     {
       "higher": 4,
       "lower": 3,
+      "games": 600,
+      "winRate": 0.608,
+      "wins": 345,
+      "ties": 39,
+      "losses": 216,
+      "scored": 26.78,
+      "conceded": 24.96,
+      "msPerMatch": 9.5
+    },
+    {
+      "higher": 5,
+      "lower": 4,
+      "games": 600,
+      "winRate": 0.618,
+      "wins": 346,
+      "ties": 50,
+      "losses": 204,
+      "scored": 27.59,
+      "conceded": 26.01,
+      "msPerMatch": 18.6
+    },
+    {
+      "higher": 6,
+      "lower": 5,
       "games": 300,
-      "winRate": 0.48,
-      "wins": 136,
-      "ties": 16,
-      "losses": 148,
-      "scored": 26.76,
-      "conceded": 26.61,
-      "msPerMatch": 156.8
+      "winRate": 0.605,
+      "wins": 169,
+      "ties": 25,
+      "losses": 106,
+      "scored": 28.71,
+      "conceded": 26.95,
+      "msPerMatch": 74.8
+    },
+    {
+      "higher": 7,
+      "lower": 6,
+      "games": 100,
+      "winRate": 0.525,
+      "wins": 47,
+      "ties": 11,
+      "losses": 42,
+      "scored": 29.03,
+      "conceded": 28.46,
+      "msPerMatch": 446.8
     },
     {
       "higher": 2,
       "lower": 0,
       "games": 600,
-      "winRate": 0.936,
-      "wins": 552,
-      "ties": 19,
-      "losses": 29,
-      "scored": 29.16,
-      "conceded": 19.28,
-      "msPerMatch": 5.5
+      "winRate": 0.733,
+      "wins": 426,
+      "ties": 27,
+      "losses": 147,
+      "scored": 25.08,
+      "conceded": 20.52,
+      "msPerMatch": 3.3
     },
     {
       "higher": 3,
       "lower": 1,
       "games": 600,
-      "winRate": 0.747,
-      "wins": 431,
-      "ties": 34,
-      "losses": 135,
-      "scored": 28.67,
-      "conceded": 23.98,
-      "msPerMatch": 26.1
+      "winRate": 0.806,
+      "wins": 474,
+      "ties": 19,
+      "losses": 107,
+      "scored": 27.42,
+      "conceded": 21.81,
+      "msPerMatch": 5.2
     },
     {
       "higher": 4,
       "lower": 2,
+      "games": 600,
+      "winRate": 0.74,
+      "wins": 430,
+      "ties": 28,
+      "losses": 142,
+      "scored": 28.59,
+      "conceded": 23.9,
+      "msPerMatch": 7.8
+    },
+    {
+      "higher": 5,
+      "lower": 3,
+      "games": 600,
+      "winRate": 0.702,
+      "wins": 405,
+      "ties": 32,
+      "losses": 163,
+      "scored": 27.71,
+      "conceded": 24.5,
+      "msPerMatch": 20
+    },
+    {
+      "higher": 6,
+      "lower": 4,
       "games": 300,
-      "winRate": 0.543,
-      "wins": 153,
+      "winRate": 0.66,
+      "wins": 188,
       "ties": 20,
-      "losses": 127,
-      "scored": 26.83,
-      "conceded": 26.2,
-      "msPerMatch": 125.1
+      "losses": 92,
+      "scored": 28.76,
+      "conceded": 25.86,
+      "msPerMatch": 66.9
+    },
+    {
+      "higher": 7,
+      "lower": 5,
+      "games": 100,
+      "winRate": 0.665,
+      "wins": 63,
+      "ties": 7,
+      "losses": 30,
+      "scored": 28.88,
+      "conceded": 26.91,
+      "msPerMatch": 391.3
     }
   ],
   "seats": [
     {
-      "level": 2,
+      "level": 4,
       "games": 600,
-      "winRate": 0.479,
-      "wins": 265,
-      "ties": 45,
-      "losses": 290,
-      "scored": 26.17,
-      "conceded": 26.45,
-      "playerSeatWins": 0.442,
-      "rivalSeatWins": 0.483,
-      "tieRate": 0.075,
+      "winRate": 0.49,
+      "wins": 273,
+      "ties": 42,
+      "losses": 285,
+      "scored": 26.38,
+      "conceded": 26.73,
+      "playerSeatWins": 0.455,
+      "rivalSeatWins": 0.475,
+      "tieRate": 0.07,
       "stillTiedAfter": {
         "mostFoodLeft": 0.023,
-        "mostCats": 0.047,
-        "foodThenCats": 0.01
+        "mostCats": 0.037,
+        "foodThenCats": 0.013
       }
     },
     {
-      "level": 4,
+      "level": 6,
       "games": 300,
-      "winRate": 0.49,
-      "wins": 133,
-      "ties": 28,
-      "losses": 139,
-      "scored": 26.66,
-      "conceded": 27.05,
-      "playerSeatWins": 0.443,
-      "rivalSeatWins": 0.463,
-      "tieRate": 0.093,
+      "winRate": 0.488,
+      "wins": 134,
+      "ties": 25,
+      "losses": 141,
+      "scored": 27.73,
+      "conceded": 27.99,
+      "playerSeatWins": 0.447,
+      "rivalSeatWins": 0.47,
+      "tieRate": 0.083,
       "stillTiedAfter": {
-        "mostFoodLeft": 0.033,
-        "mostCats": 0.053,
-        "foodThenCats": 0.02
+        "mostFoodLeft": 0.037,
+        "mostCats": 0.04,
+        "foodThenCats": 0.013
       }
     }
   ],
   "relics": [
     {
       "relic": "ember-charm",
-      "points": 3.89,
-      "winRate": 0.688,
-      "winRateWithout": 0.471
+      "points": 3.93,
+      "winRate": 0.689,
+      "winRateWithout": 0.468
     },
     {
       "relic": "tide-charm",
-      "points": 4.09,
+      "points": 4.07,
       "winRate": 0.783,
       "winRateWithout": 0.538
     },
     {
       "relic": "spark-charm",
-      "points": 4.49,
+      "points": 4.46,
       "winRate": 0.764,
-      "winRateWithout": 0.499
+      "winRateWithout": 0.502
     },
     {
       "relic": "briar-charm",
-      "points": 3.55,
-      "winRate": 0.662,
-      "winRateWithout": 0.447
+      "points": 3.56,
+      "winRate": 0.66,
+      "winRateWithout": 0.448
     },
     {
       "relic": "dusk-charm",
-      "points": 3.23,
-      "winRate": 0.663,
-      "winRateWithout": 0.48
+      "points": 3.24,
+      "winRate": 0.667,
+      "winRateWithout": 0.484
     },
     {
       "relic": "warm-saucer",
-      "points": 1.18,
-      "winRate": 0.549,
-      "winRateWithout": 0.477
+      "points": 1.15,
+      "winRate": 0.55,
+      "winRateWithout": 0.482
     },
     {
       "relic": "ball-of-twine",
-      "points": 1.8,
-      "winRate": 0.601,
-      "winRateWithout": 0.477
+      "points": 1.81,
+      "winRate": 0.608,
+      "winRateWithout": 0.482
     },
     {
       "relic": "bent-whisker",
-      "points": 2.01,
-      "winRate": 0.653,
-      "winRateWithout": 0.477
+      "points": 1.97,
+      "winRate": 0.649,
+      "winRateWithout": 0.482
     },
     {
       "relic": "night-map",
-      "points": 1.11,
-      "winRate": 0.591,
-      "winRateWithout": 0.477
+      "points": 1.12,
+      "winRate": 0.592,
+      "winRateWithout": 0.482
     },
     {
       "relic": "soft-landing",
       "points": 1.21,
-      "winRate": 0.552,
-      "winRateWithout": 0.477
+      "winRate": 0.556,
+      "winRateWithout": 0.482
     },
     {
       "relic": "early-riser",
-      "points": 2.02,
-      "winRate": 0.632,
-      "winRateWithout": 0.477
+      "points": 1.99,
+      "winRate": 0.636,
+      "winRateWithout": 0.482
     },
     {
       "relic": "lucky-collar",
-      "points": 2.44,
-      "winRate": 0.779,
-      "winRateWithout": 0.477
+      "points": 2.43,
+      "winRate": 0.78,
+      "winRateWithout": 0.482
     },
     {
       "relic": "loud-bell",
-      "points": 0.96,
-      "winRate": 0.562,
-      "winRateWithout": 0.477
+      "points": 0.94,
+      "winRate": 0.564,
+      "winRateWithout": 0.482
     },
     {
       "relic": "hoarders-basket",
-      "points": 2.43,
-      "winRate": 0.631,
-      "winRateWithout": 0.477
+      "points": 2.42,
+      "winRate": 0.632,
+      "winRateWithout": 0.482
     },
     {
       "relic": "quiet-corner",
-      "points": 3.14,
-      "winRate": 0.642,
-      "winRateWithout": 0.477
+      "points": 3.13,
+      "winRate": 0.641,
+      "winRateWithout": 0.482
+    }
+  ],
+  "gauntlet": [
+    {
+      "pool": "newAccount",
+      "tier": "kitten",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.733,
+      "matchesWon": 1.71,
+      "runsWon": 0.02,
+      "wins": [
+        40,
+        30,
+        43,
+        16,
+        15,
+        3,
+        3
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 35,
+        "atLeast": {
+          "30": 0.427,
+          "33": 0.213,
+          "35": 0.107,
+          "38": 0.04,
+          "40": 0.007,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "kitten",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.8,
+      "matchesWon": 2.51,
+      "runsWon": 0.1,
+      "wins": [
+        30,
+        16,
+        41,
+        17,
+        17,
+        14,
+        15
+      ],
+      "bestScore": {
+        "median": 34,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.707,
+          "33": 0.553,
+          "35": 0.413,
+          "38": 0.147,
+          "40": 0.04,
+          "42": 0.02,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "kitten",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.973,
+      "matchesWon": 4.63,
+      "runsWon": 0.527,
+      "wins": [
+        4,
+        1,
+        24,
+        14,
+        11,
+        17,
+        79
+      ],
+      "bestScore": {
+        "median": 38,
+        "p90": 43,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.973,
+          "35": 0.887,
+          "38": 0.593,
+          "40": 0.307,
+          "42": 0.147,
+          "45": 0.02
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "kitten",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 1,
+      "matchesWon": 5.74,
+      "runsWon": 0.89,
+      "wins": [
+        0,
+        0,
+        2,
+        2,
+        5,
+        2,
+        89
+      ],
+      "bestScore": {
+        "median": 41,
+        "p90": 45,
+        "atLeast": {
+          "30": 1,
+          "33": 1,
+          "35": 0.99,
+          "38": 0.94,
+          "40": 0.75,
+          "42": 0.43,
+          "45": 0.1
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "stray",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.587,
+      "matchesWon": 1.01,
+      "runsWon": 0.007,
+      "wins": [
+        62,
+        48,
+        25,
+        9,
+        5,
+        0,
+        1
+      ],
+      "bestScore": {
+        "median": 27,
+        "p90": 33,
+        "atLeast": {
+          "30": 0.307,
+          "33": 0.153,
+          "35": 0.053,
+          "38": 0.02,
+          "40": 0,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "stray",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.727,
+      "matchesWon": 1.89,
+      "runsWon": 0.053,
+      "wins": [
+        41,
+        34,
+        27,
+        21,
+        11,
+        8,
+        8
+      ],
+      "bestScore": {
+        "median": 32,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.633,
+          "33": 0.48,
+          "35": 0.327,
+          "38": 0.12,
+          "40": 0.027,
+          "42": 0.007,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "stray",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.947,
+      "matchesWon": 3.97,
+      "runsWon": 0.387,
+      "wins": [
+        8,
+        13,
+        20,
+        22,
+        16,
+        13,
+        58
+      ],
+      "bestScore": {
+        "median": 37,
+        "p90": 42,
+        "atLeast": {
+          "30": 0.94,
+          "33": 0.893,
+          "35": 0.773,
+          "38": 0.473,
+          "40": 0.26,
+          "42": 0.12,
+          "45": 0.02
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "stray",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 0.99,
+      "matchesWon": 5.77,
+      "runsWon": 0.92,
+      "wins": [
+        1,
+        0,
+        2,
+        1,
+        2,
+        2,
+        92
+      ],
+      "bestScore": {
+        "median": 41,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.99,
+          "33": 0.99,
+          "35": 0.98,
+          "38": 0.91,
+          "40": 0.76,
+          "42": 0.49,
+          "45": 0.11
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "apex",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.487,
+      "matchesWon": 0.82,
+      "runsWon": 0,
+      "wins": [
+        77,
+        40,
+        19,
+        12,
+        1,
+        1,
+        0
+      ],
+      "bestScore": {
+        "median": 26,
+        "p90": 34,
+        "atLeast": {
+          "30": 0.28,
+          "33": 0.133,
+          "35": 0.04,
+          "38": 0.007,
+          "40": 0,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "apex",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.667,
+      "matchesWon": 1.57,
+      "runsWon": 0.04,
+      "wins": [
+        50,
+        33,
+        31,
+        18,
+        9,
+        3,
+        6
+      ],
+      "bestScore": {
+        "median": 31,
+        "p90": 37,
+        "atLeast": {
+          "30": 0.56,
+          "33": 0.387,
+          "35": 0.26,
+          "38": 0.06,
+          "40": 0.027,
+          "42": 0.007,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "apex",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.907,
+      "matchesWon": 3.55,
+      "runsWon": 0.327,
+      "wins": [
+        14,
+        16,
+        25,
+        23,
+        12,
+        11,
+        49
+      ],
+      "bestScore": {
+        "median": 36,
+        "p90": 41,
+        "atLeast": {
+          "30": 0.913,
+          "33": 0.773,
+          "35": 0.633,
+          "38": 0.38,
+          "40": 0.167,
+          "42": 0.053,
+          "45": 0.007
+        }
+      }
+    },
+    {
+      "pool": "newAccount",
+      "tier": "apex",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 0.97,
+      "matchesWon": 5.05,
+      "runsWon": 0.73,
+      "wins": [
+        3,
+        5,
+        5,
+        7,
+        4,
+        3,
+        73
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 43,
+        "atLeast": {
+          "30": 0.97,
+          "33": 0.97,
+          "35": 0.95,
+          "38": 0.84,
+          "40": 0.64,
+          "42": 0.33,
+          "45": 0.06
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.733,
+      "matchesWon": 1.69,
+      "runsWon": 0.013,
+      "wins": [
+        40,
+        31,
+        41,
+        20,
+        11,
+        5,
+        2
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 35,
+        "atLeast": {
+          "30": 0.453,
+          "33": 0.22,
+          "35": 0.1,
+          "38": 0.047,
+          "40": 0.027,
+          "42": 0.013,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 1,
+      "runs": 150,
+      "firstMatch": 0.88,
+      "matchesWon": 2.7,
+      "runsWon": 0.147,
+      "wins": [
+        18,
+        22,
+        47,
+        19,
+        10,
+        12,
+        22
+      ],
+      "bestScore": {
+        "median": 32,
+        "p90": 37,
+        "atLeast": {
+          "30": 0.707,
+          "33": 0.48,
+          "35": 0.273,
+          "38": 0.093,
+          "40": 0.033,
+          "42": 0.007,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.8,
+      "matchesWon": 2.67,
+      "runsWon": 0.133,
+      "wins": [
+        30,
+        14,
+        36,
+        19,
+        18,
+        13,
+        20
+      ],
+      "bestScore": {
+        "median": 34,
+        "p90": 39,
+        "atLeast": {
+          "30": 0.7,
+          "33": 0.58,
+          "35": 0.46,
+          "38": 0.213,
+          "40": 0.093,
+          "42": 0.033,
+          "45": 0.013
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 3,
+      "runs": 150,
+      "firstMatch": 0.96,
+      "matchesWon": 3.93,
+      "runsWon": 0.327,
+      "wins": [
+        6,
+        5,
+        36,
+        15,
+        22,
+        17,
+        49
+      ],
+      "bestScore": {
+        "median": 36,
+        "p90": 41,
+        "atLeast": {
+          "30": 0.94,
+          "33": 0.86,
+          "35": 0.727,
+          "38": 0.413,
+          "40": 0.213,
+          "42": 0.093,
+          "45": 0.02
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.973,
+      "matchesWon": 4.77,
+      "runsWon": 0.58,
+      "wins": [
+        4,
+        1,
+        23,
+        8,
+        12,
+        15,
+        87
+      ],
+      "bestScore": {
+        "median": 39,
+        "p90": 43,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.933,
+          "35": 0.887,
+          "38": 0.633,
+          "40": 0.393,
+          "42": 0.2,
+          "45": 0.053
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 5,
+      "runs": 150,
+      "firstMatch": 0.993,
+      "matchesWon": 5.47,
+      "runsWon": 0.82,
+      "wins": [
+        1,
+        0,
+        12,
+        4,
+        3,
+        7,
+        123
+      ],
+      "bestScore": {
+        "median": 41,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.987,
+          "33": 0.973,
+          "35": 0.967,
+          "38": 0.867,
+          "40": 0.72,
+          "42": 0.44,
+          "45": 0.14
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 1,
+      "matchesWon": 5.73,
+      "runsWon": 0.89,
+      "wins": [
+        0,
+        0,
+        4,
+        1,
+        2,
+        4,
+        89
+      ],
+      "bestScore": {
+        "median": 44,
+        "p90": 48,
+        "atLeast": {
+          "30": 1,
+          "33": 1,
+          "35": 1,
+          "38": 0.94,
+          "40": 0.89,
+          "42": 0.72,
+          "45": 0.37
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 7,
+      "runs": 38,
+      "firstMatch": 1,
+      "matchesWon": 5.89,
+      "runsWon": 0.947,
+      "wins": [
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        36
+      ],
+      "bestScore": {
+        "median": 44,
+        "p90": 47,
+        "atLeast": {
+          "30": 1,
+          "33": 1,
+          "35": 1,
+          "38": 0.947,
+          "40": 0.842,
+          "42": 0.658,
+          "45": 0.368
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.587,
+      "matchesWon": 0.99,
+      "runsWon": 0,
+      "wins": [
+        62,
+        49,
+        26,
+        7,
+        4,
+        2,
+        0
+      ],
+      "bestScore": {
+        "median": 27,
+        "p90": 34,
+        "atLeast": {
+          "30": 0.307,
+          "33": 0.147,
+          "35": 0.06,
+          "38": 0.013,
+          "40": 0.007,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 1,
+      "runs": 150,
+      "firstMatch": 0.753,
+      "matchesWon": 1.68,
+      "runsWon": 0.033,
+      "wins": [
+        37,
+        42,
+        37,
+        14,
+        11,
+        4,
+        5
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 36,
+        "atLeast": {
+          "30": 0.48,
+          "33": 0.3,
+          "35": 0.173,
+          "38": 0.04,
+          "40": 0.013,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.727,
+      "matchesWon": 1.91,
+      "runsWon": 0.06,
+      "wins": [
+        41,
+        36,
+        26,
+        15,
+        15,
+        8,
+        9
+      ],
+      "bestScore": {
+        "median": 32,
+        "p90": 39,
+        "atLeast": {
+          "30": 0.62,
+          "33": 0.487,
+          "35": 0.347,
+          "38": 0.167,
+          "40": 0.073,
+          "42": 0.02,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 3,
+      "runs": 150,
+      "firstMatch": 0.887,
+      "matchesWon": 2.98,
+      "runsWon": 0.18,
+      "wins": [
+        17,
+        25,
+        27,
+        21,
+        22,
+        11,
+        27
+      ],
+      "bestScore": {
+        "median": 35,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.827,
+          "33": 0.687,
+          "35": 0.513,
+          "38": 0.247,
+          "40": 0.1,
+          "42": 0.033,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.947,
+      "matchesWon": 4.19,
+      "runsWon": 0.473,
+      "wins": [
+        8,
+        13,
+        21,
+        12,
+        13,
+        12,
+        71
+      ],
+      "bestScore": {
+        "median": 38,
+        "p90": 42,
+        "atLeast": {
+          "30": 0.933,
+          "33": 0.873,
+          "35": 0.76,
+          "38": 0.547,
+          "40": 0.34,
+          "42": 0.127,
+          "45": 0.04
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 5,
+      "runs": 150,
+      "firstMatch": 0.967,
+      "matchesWon": 4.93,
+      "runsWon": 0.633,
+      "wins": [
+        5,
+        4,
+        13,
+        8,
+        9,
+        16,
+        95
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.967,
+          "33": 0.96,
+          "35": 0.933,
+          "38": 0.8,
+          "40": 0.593,
+          "42": 0.367,
+          "45": 0.12
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 0.99,
+      "matchesWon": 5.53,
+      "runsWon": 0.85,
+      "wins": [
+        1,
+        0,
+        6,
+        4,
+        1,
+        3,
+        85
+      ],
+      "bestScore": {
+        "median": 42,
+        "p90": 46,
+        "atLeast": {
+          "30": 0.99,
+          "33": 0.99,
+          "35": 0.99,
+          "38": 0.88,
+          "40": 0.77,
+          "42": 0.58,
+          "45": 0.26
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "stray",
+      "player": 7,
+      "runs": 38,
+      "firstMatch": 1,
+      "matchesWon": 5.68,
+      "runsWon": 0.868,
+      "wins": [
+        0,
+        0,
+        2,
+        0,
+        1,
+        2,
+        33
+      ],
+      "bestScore": {
+        "median": 44,
+        "p90": 49,
+        "atLeast": {
+          "30": 1,
+          "33": 1,
+          "35": 1,
+          "38": 0.974,
+          "40": 0.842,
+          "42": 0.763,
+          "45": 0.447
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 0,
+      "runs": 150,
+      "firstMatch": 0.487,
+      "matchesWon": 0.83,
+      "runsWon": 0,
+      "wins": [
+        77,
+        39,
+        20,
+        11,
+        2,
+        1,
+        0
+      ],
+      "bestScore": {
+        "median": 26,
+        "p90": 34,
+        "atLeast": {
+          "30": 0.313,
+          "33": 0.147,
+          "35": 0.06,
+          "38": 0.007,
+          "40": 0.007,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 1,
+      "runs": 150,
+      "firstMatch": 0.62,
+      "matchesWon": 1.34,
+      "runsWon": 0.027,
+      "wins": [
+        57,
+        36,
+        31,
+        10,
+        11,
+        1,
+        4
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 36,
+        "atLeast": {
+          "30": 0.48,
+          "33": 0.3,
+          "35": 0.16,
+          "38": 0.053,
+          "40": 0.007,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 2,
+      "runs": 150,
+      "firstMatch": 0.667,
+      "matchesWon": 1.58,
+      "runsWon": 0.033,
+      "wins": [
+        50,
+        33,
+        32,
+        14,
+        12,
+        4,
+        5
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.547,
+          "33": 0.387,
+          "35": 0.273,
+          "38": 0.107,
+          "40": 0.047,
+          "42": 0.007,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 3,
+      "runs": 150,
+      "firstMatch": 0.813,
+      "matchesWon": 2.65,
+      "runsWon": 0.133,
+      "wins": [
+        28,
+        16,
+        34,
+        21,
+        24,
+        7,
+        20
+      ],
+      "bestScore": {
+        "median": 34,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.78,
+          "33": 0.607,
+          "35": 0.48,
+          "38": 0.18,
+          "40": 0.073,
+          "42": 0.013,
+          "45": 0
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 4,
+      "runs": 150,
+      "firstMatch": 0.907,
+      "matchesWon": 3.82,
+      "runsWon": 0.407,
+      "wins": [
+        14,
+        17,
+        19,
+        14,
+        15,
+        10,
+        61
+      ],
+      "bestScore": {
+        "median": 37,
+        "p90": 42,
+        "atLeast": {
+          "30": 0.9,
+          "33": 0.787,
+          "35": 0.687,
+          "38": 0.44,
+          "40": 0.213,
+          "42": 0.113,
+          "45": 0.033
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 5,
+      "runs": 150,
+      "firstMatch": 0.96,
+      "matchesWon": 4.45,
+      "runsWon": 0.52,
+      "wins": [
+        6,
+        13,
+        16,
+        8,
+        14,
+        15,
+        78
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.92,
+          "35": 0.873,
+          "38": 0.713,
+          "40": 0.5,
+          "42": 0.253,
+          "45": 0.107
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 6,
+      "runs": 100,
+      "firstMatch": 0.97,
+      "matchesWon": 5.29,
+      "runsWon": 0.81,
+      "wins": [
+        3,
+        3,
+        5,
+        4,
+        2,
+        2,
+        81
+      ],
+      "bestScore": {
+        "median": 42,
+        "p90": 46,
+        "atLeast": {
+          "30": 0.97,
+          "33": 0.96,
+          "35": 0.96,
+          "38": 0.88,
+          "40": 0.69,
+          "42": 0.5,
+          "45": 0.24
+        }
+      }
+    },
+    {
+      "pool": "everything",
+      "tier": "apex",
+      "player": 7,
+      "runs": 38,
+      "firstMatch": 1,
+      "matchesWon": 5.66,
+      "runsWon": 0.895,
+      "wins": [
+        0,
+        0,
+        1,
+        3,
+        0,
+        0,
+        34
+      ],
+      "bestScore": {
+        "median": 43,
+        "p90": 47,
+        "atLeast": {
+          "30": 1,
+          "33": 1,
+          "35": 1,
+          "38": 0.921,
+          "40": 0.789,
+          "42": 0.684,
+          "45": 0.342
+        }
+      }
+    }
+  ],
+  "planned": [
+    {
+      "higher": 1,
+      "lower": 0,
+      "games": 600,
+      "winRate": 0.769,
+      "wins": 454,
+      "ties": 15,
+      "losses": 131,
+      "scored": 25.68,
+      "conceded": 20.5,
+      "msPerMatch": 3.2
+    },
+    {
+      "higher": 2,
+      "lower": 1,
+      "games": 600,
+      "winRate": 0.735,
+      "wins": 426,
+      "ties": 30,
+      "losses": 144,
+      "scored": 28.59,
+      "conceded": 24,
+      "msPerMatch": 7.4
+    },
+    {
+      "higher": 3,
+      "lower": 2,
+      "games": 600,
+      "winRate": 0.517,
+      "wins": 291,
+      "ties": 38,
+      "losses": 271,
+      "scored": 26.61,
+      "conceded": 26.41,
+      "msPerMatch": 23.8
+    },
+    {
+      "higher": 4,
+      "lower": 3,
+      "games": 600,
+      "winRate": 0.5,
+      "wins": 276,
+      "ties": 48,
+      "losses": 276,
+      "scored": 26.59,
+      "conceded": 26.63,
+      "msPerMatch": 150.8
+    },
+    {
+      "higher": 5,
+      "lower": 4,
+      "games": 600,
+      "winRate": 0.641,
+      "wins": 362,
+      "ties": 45,
+      "losses": 193,
+      "scored": 28.29,
+      "conceded": 26.23,
+      "msPerMatch": 146.8
+    },
+    {
+      "higher": 6,
+      "lower": 5,
+      "games": 300,
+      "winRate": 0.593,
+      "wins": 165,
+      "ties": 26,
+      "losses": 109,
+      "scored": 28.91,
+      "conceded": 27.8,
+      "msPerMatch": 84.6
+    },
+    {
+      "higher": 7,
+      "lower": 6,
+      "games": 100,
+      "winRate": 0.525,
+      "wins": 48,
+      "ties": 9,
+      "losses": 43,
+      "scored": 28.71,
+      "conceded": 27.84,
+      "msPerMatch": 207.2
+    },
+    {
+      "higher": 2,
+      "lower": 0,
+      "games": 600,
+      "winRate": 0.938,
+      "wins": 557,
+      "ties": 12,
+      "losses": 31,
+      "scored": 29.05,
+      "conceded": 19.37,
+      "msPerMatch": 4.9
+    },
+    {
+      "higher": 3,
+      "lower": 1,
+      "games": 600,
+      "winRate": 0.739,
+      "wins": 429,
+      "ties": 29,
+      "losses": 142,
+      "scored": 28.74,
+      "conceded": 23.82,
+      "msPerMatch": 24.8
+    },
+    {
+      "higher": 4,
+      "lower": 2,
+      "games": 600,
+      "winRate": 0.541,
+      "wins": 309,
+      "ties": 31,
+      "losses": 260,
+      "scored": 26.84,
+      "conceded": 26.49,
+      "msPerMatch": 120.7
+    },
+    {
+      "higher": 5,
+      "lower": 3,
+      "games": 600,
+      "winRate": 0.653,
+      "wins": 368,
+      "ties": 48,
+      "losses": 184,
+      "scored": 28.14,
+      "conceded": 25.9,
+      "msPerMatch": 42.6
+    },
+    {
+      "higher": 6,
+      "lower": 4,
+      "games": 300,
+      "winRate": 0.722,
+      "wins": 201,
+      "ties": 31,
+      "losses": 68,
+      "scored": 28.84,
+      "conceded": 26.19,
+      "msPerMatch": 174.9
+    },
+    {
+      "higher": 7,
+      "lower": 5,
+      "games": 100,
+      "winRate": 0.54,
+      "wins": 50,
+      "ties": 8,
+      "losses": 42,
+      "scored": 28.75,
+      "conceded": 27.91,
+      "msPerMatch": 174.7
+    }
+  ],
+  "whatIf": [
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.675,
+      "matchesWon": 1.6,
+      "runsWon": 0.033,
+      "wins": [
+        39,
+        29,
+        23,
+        11,
+        10,
+        4,
+        4
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.55,
+          "33": 0.383,
+          "35": 0.258,
+          "38": 0.108,
+          "40": 0.05,
+          "42": 0.008,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.917,
+      "matchesWon": 3.95,
+      "runsWon": 0.417,
+      "wins": [
+        10,
+        11,
+        15,
+        11,
+        15,
+        8,
+        50
+      ],
+      "bestScore": {
+        "median": 37,
+        "p90": 42,
+        "atLeast": {
+          "30": 0.908,
+          "33": 0.8,
+          "35": 0.708,
+          "38": 0.45,
+          "40": 0.208,
+          "42": 0.117,
+          "45": 0.025
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.973,
+      "matchesWon": 5.41,
+      "runsWon": 0.84,
+      "wins": [
+        2,
+        2,
+        2,
+        3,
+        2,
+        1,
+        63
+      ],
+      "bestScore": {
+        "median": 42,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.96,
+          "35": 0.96,
+          "38": 0.867,
+          "40": 0.72,
+          "42": 0.507,
+          "45": 0.187
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.492,
+      "matchesWon": 1.11,
+      "runsWon": 0.017,
+      "wins": [
+        61,
+        21,
+        16,
+        13,
+        6,
+        1,
+        2
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 37,
+        "atLeast": {
+          "30": 0.433,
+          "33": 0.283,
+          "35": 0.208,
+          "38": 0.083,
+          "40": 0.017,
+          "42": 0.008,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.817,
+      "matchesWon": 2.73,
+      "runsWon": 0.208,
+      "wins": [
+        22,
+        16,
+        26,
+        17,
+        12,
+        2,
+        25
+      ],
+      "bestScore": {
+        "median": 35,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.783,
+          "33": 0.667,
+          "35": 0.5,
+          "38": 0.2,
+          "40": 0.117,
+          "42": 0.067,
+          "45": 0.008
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.947,
+      "matchesWon": 4.76,
+      "runsWon": 0.627,
+      "wins": [
+        4,
+        0,
+        8,
+        6,
+        9,
+        1,
+        47
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.947,
+          "33": 0.947,
+          "35": 0.933,
+          "38": 0.787,
+          "40": 0.68,
+          "42": 0.347,
+          "45": 0.16
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.467,
+      "matchesWon": 0.83,
+      "runsWon": 0,
+      "wins": [
+        64,
+        27,
+        18,
+        7,
+        4,
+        0,
+        0
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 35,
+        "atLeast": {
+          "30": 0.442,
+          "33": 0.208,
+          "35": 0.117,
+          "38": 0.025,
+          "40": 0,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.817,
+      "matchesWon": 2.77,
+      "runsWon": 0.208,
+      "wins": [
+        22,
+        13,
+        28,
+        18,
+        11,
+        3,
+        25
+      ],
+      "bestScore": {
+        "median": 35,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.817,
+          "33": 0.633,
+          "35": 0.517,
+          "38": 0.283,
+          "40": 0.117,
+          "42": 0.075,
+          "45": 0.017
+        }
+      }
+    },
+    {
+      "variant": "twoLevelsUp",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.92,
+      "matchesWon": 4.16,
+      "runsWon": 0.52,
+      "wins": [
+        6,
+        5,
+        11,
+        6,
+        7,
+        1,
+        39
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 46,
+        "atLeast": {
+          "30": 0.947,
+          "33": 0.893,
+          "35": 0.88,
+          "38": 0.707,
+          "40": 0.587,
+          "42": 0.387,
+          "45": 0.2
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.567,
+      "matchesWon": 1.27,
+      "runsWon": 0.017,
+      "wins": [
+        52,
+        20,
+        25,
+        15,
+        4,
+        2,
+        2
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.55,
+          "33": 0.408,
+          "35": 0.308,
+          "38": 0.1,
+          "40": 0.033,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.892,
+      "matchesWon": 3.08,
+      "runsWon": 0.175,
+      "wins": [
+        13,
+        6,
+        32,
+        24,
+        18,
+        6,
+        21
+      ],
+      "bestScore": {
+        "median": 37,
+        "p90": 42,
+        "atLeast": {
+          "30": 0.917,
+          "33": 0.85,
+          "35": 0.775,
+          "38": 0.483,
+          "40": 0.242,
+          "42": 0.1,
+          "45": 0.025
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.933,
+      "matchesWon": 4.6,
+      "runsWon": 0.613,
+      "wins": [
+        5,
+        2,
+        10,
+        5,
+        3,
+        4,
+        46
+      ],
+      "bestScore": {
+        "median": 42,
+        "p90": 48,
+        "atLeast": {
+          "30": 0.96,
+          "33": 0.947,
+          "35": 0.933,
+          "38": 0.88,
+          "40": 0.76,
+          "42": 0.613,
+          "45": 0.293
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.525,
+      "matchesWon": 1,
+      "runsWon": 0.008,
+      "wins": [
+        57,
+        29,
+        21,
+        6,
+        5,
+        1,
+        1
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.525,
+          "33": 0.358,
+          "35": 0.25,
+          "38": 0.125,
+          "40": 0.05,
+          "42": 0.008,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.833,
+      "matchesWon": 2.39,
+      "runsWon": 0.108,
+      "wins": [
+        20,
+        23,
+        25,
+        24,
+        11,
+        4,
+        13
+      ],
+      "bestScore": {
+        "median": 36,
+        "p90": 41,
+        "atLeast": {
+          "30": 0.892,
+          "33": 0.733,
+          "35": 0.575,
+          "38": 0.35,
+          "40": 0.175,
+          "42": 0.083,
+          "45": 0.025
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.96,
+      "matchesWon": 4.55,
+      "runsWon": 0.533,
+      "wins": [
+        3,
+        4,
+        7,
+        7,
+        8,
+        6,
+        40
+      ],
+      "bestScore": {
+        "median": 42,
+        "p90": 46,
+        "atLeast": {
+          "30": 0.987,
+          "33": 0.973,
+          "35": 0.947,
+          "38": 0.84,
+          "40": 0.72,
+          "42": 0.587,
+          "45": 0.16
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.525,
+      "matchesWon": 0.83,
+      "runsWon": 0.008,
+      "wins": [
+        57,
+        40,
+        14,
+        7,
+        0,
+        1,
+        1
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 37,
+        "atLeast": {
+          "30": 0.467,
+          "33": 0.275,
+          "35": 0.2,
+          "38": 0.067,
+          "40": 0.033,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.725,
+      "matchesWon": 2.01,
+      "runsWon": 0.083,
+      "wins": [
+        33,
+        18,
+        26,
+        24,
+        6,
+        3,
+        10
+      ],
+      "bestScore": {
+        "median": 35,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.825,
+          "33": 0.617,
+          "35": 0.508,
+          "38": 0.3,
+          "40": 0.108,
+          "42": 0.05,
+          "45": 0.017
+        }
+      }
+    },
+    {
+      "variant": "rivalCharm",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.893,
+      "matchesWon": 4.04,
+      "runsWon": 0.44,
+      "wins": [
+        8,
+        4,
+        8,
+        8,
+        9,
+        5,
+        33
+      ],
+      "bestScore": {
+        "median": 41,
+        "p90": 46,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.893,
+          "35": 0.827,
+          "38": 0.707,
+          "40": 0.613,
+          "42": 0.453,
+          "45": 0.187
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.567,
+      "matchesWon": 0.97,
+      "runsWon": 0,
+      "wins": [
+        52,
+        34,
+        24,
+        7,
+        2,
+        1,
+        0
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.542,
+          "33": 0.367,
+          "35": 0.267,
+          "38": 0.1,
+          "40": 0.008,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.892,
+      "matchesWon": 2.27,
+      "runsWon": 0.017,
+      "wins": [
+        13,
+        19,
+        40,
+        26,
+        16,
+        4,
+        2
+      ],
+      "bestScore": {
+        "median": 37,
+        "p90": 41,
+        "atLeast": {
+          "30": 0.917,
+          "33": 0.808,
+          "35": 0.692,
+          "38": 0.45,
+          "40": 0.192,
+          "42": 0.075,
+          "45": 0.025
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "kitten",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.933,
+      "matchesWon": 3.77,
+      "runsWon": 0.24,
+      "wins": [
+        5,
+        5,
+        12,
+        8,
+        13,
+        14,
+        18
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 45,
+        "atLeast": {
+          "30": 0.96,
+          "33": 0.947,
+          "35": 0.92,
+          "38": 0.813,
+          "40": 0.613,
+          "42": 0.4,
+          "45": 0.16
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.525,
+      "matchesWon": 0.84,
+      "runsWon": 0,
+      "wins": [
+        57,
+        35,
+        20,
+        6,
+        2,
+        0,
+        0
+      ],
+      "bestScore": {
+        "median": 30,
+        "p90": 38,
+        "atLeast": {
+          "30": 0.508,
+          "33": 0.342,
+          "35": 0.242,
+          "38": 0.108,
+          "40": 0.033,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.833,
+      "matchesWon": 1.66,
+      "runsWon": 0,
+      "wins": [
+        20,
+        44,
+        25,
+        23,
+        4,
+        4,
+        0
+      ],
+      "bestScore": {
+        "median": 35,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.867,
+          "33": 0.683,
+          "35": 0.525,
+          "38": 0.308,
+          "40": 0.15,
+          "42": 0.058,
+          "45": 0.017
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "stray",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.96,
+      "matchesWon": 2.67,
+      "runsWon": 0.04,
+      "wins": [
+        3,
+        15,
+        14,
+        26,
+        9,
+        5,
+        3
+      ],
+      "bestScore": {
+        "median": 40,
+        "p90": 44,
+        "atLeast": {
+          "30": 0.987,
+          "33": 0.96,
+          "35": 0.893,
+          "38": 0.68,
+          "40": 0.52,
+          "42": 0.293,
+          "45": 0.053
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 2,
+      "runs": 120,
+      "firstMatch": 0.525,
+      "matchesWon": 0.81,
+      "runsWon": 0,
+      "wins": [
+        57,
+        36,
+        20,
+        7,
+        0,
+        0,
+        0
+      ],
+      "bestScore": {
+        "median": 29,
+        "p90": 37,
+        "atLeast": {
+          "30": 0.475,
+          "33": 0.3,
+          "35": 0.2,
+          "38": 0.05,
+          "40": 0.025,
+          "42": 0,
+          "45": 0
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 4,
+      "runs": 120,
+      "firstMatch": 0.725,
+      "matchesWon": 1.46,
+      "runsWon": 0,
+      "wins": [
+        33,
+        31,
+        31,
+        20,
+        3,
+        2,
+        0
+      ],
+      "bestScore": {
+        "median": 34,
+        "p90": 40,
+        "atLeast": {
+          "30": 0.825,
+          "33": 0.592,
+          "35": 0.483,
+          "38": 0.267,
+          "40": 0.117,
+          "42": 0.042,
+          "45": 0.017
+        }
+      }
+    },
+    {
+      "variant": "rivalRelics",
+      "pool": "everything",
+      "tier": "apex",
+      "player": 6,
+      "runs": 75,
+      "firstMatch": 0.893,
+      "matchesWon": 2.59,
+      "runsWon": 0.053,
+      "wins": [
+        8,
+        15,
+        14,
+        15,
+        13,
+        6,
+        4
+      ],
+      "bestScore": {
+        "median": 38,
+        "p90": 43,
+        "atLeast": {
+          "30": 0.973,
+          "33": 0.88,
+          "35": 0.813,
+          "38": 0.56,
+          "40": 0.36,
+          "42": 0.24,
+          "45": 0.027
+        }
+      }
     }
   ]
 }

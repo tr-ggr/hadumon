@@ -141,3 +141,114 @@ What a relic is worth to the seat that holds it, level 2 against level 2 on the 
 | Quiet Corner | +3.1 | 47.7% | 64.2% |
 
 The clan relic alone is the player's biggest edge: three to four and a half points from the first match, which at equal skill is about twenty points of win rate. The Lucky Collar moves fewer points but takes them off the rival, so it wins as many matches as a charm.
+
+## Phase 5 — Playouts, and the level table that separates (done), and Gate B
+
+Levels 5 to 7 play a position out. A playout deals the unseen cats afresh, makes the move being weighed, and then has `quickMove` choose for both seats to the end of the round or the match. `quickMove` (`bot/quick.ts`) weighs a turn's few kinds of move by rule of thumb straight off the table and tries nothing, so a playout is about twenty in-place steps (`stepDuel`) and no copies. Every move being weighed is played out on the same deals, so luck does not choose between them.
+
+The eight levels as planned did not all separate. One deal played twice with the seats swapped, plain starter decks, a tie half a win:
+
+| Planned pairing | Higher level wins | Matches | Mean score |
+|-----------------|-------------------|---------|------------|
+| 1 v 0 | 76.9% | 600 | 25.7 to 20.5 |
+| 2 v 1 | 73.5% | 600 | 28.6 to 24.0 |
+| 3 v 2 | 51.7% | 600 | 26.6 to 26.4 |
+| 4 v 3 | 50.0% | 600 | 26.6 to 26.6 |
+| 5 v 4 | 64.1% | 600 | 28.3 to 26.2 |
+| 6 v 5 | 59.3% | 300 | 28.9 to 27.8 |
+| 7 v 6 | 52.5% | 100 | 28.7 to 27.8 |
+
+Three steps fail the 56% bar: averaging over re-deals (3), reading one reply (4), and more playouts scored on wins (7). As planned, that is five levels: 0, 1, 2 to 4, 5, and 6 to 7. The steps that do hold are wide, 74% and 77% at the bottom, which is room for a simpler algorithm in between. So the table was re-spaced with algorithms that are each simpler or stronger than a neighbour, and none is a stronger one made to blunder:
+
+| Level | Algorithm | Moves tried, typical / most | Time, typical / slowest in 20 |
+|-------|-----------|-----------------------------|-------------------------------|
+| 0 | The fixed list: play the first cat that can be played; with an empty hand, prowl; with a cat only yarn keeps off the board, go to the Den; otherwise hunt. Declines every choice, never trades | 0 | under 0.1 ms |
+| 1 | The same list with care: its best cat first, the dice its hand needs, the cheapest cats kept, the cat worth least tucked | 0 | under 0.1 ms |
+| 2 | One step ahead, counting points only | 18 / 139 | 0.2 / 0.8 ms |
+| 3 | One step ahead, counting points and the round goal | 16 / 139 | 0.2 / 1.4 ms |
+| 4 | One step ahead with the full evaluation | 16 / 141 | 0.3 / 1.0 ms |
+| 5 | Its 3 best moves, each played out twice to the end of the round | 70 / 278 | 0.9 / 2.2 ms |
+| 6 | Its 6 best moves, each played out 6 times to the end of the match | 442 / 993 | 4.4 / 7.6 ms |
+| 7 | Its 8 best moves and 256 playouts to the end of the match, the worse half dropped twice | 3100 / 6832 | 28 / 51 ms |
+
+| Pairing | Higher level wins | Matches | Mean score |
+|---------|-------------------|---------|------------|
+| 1 v 0 | 64.7% | 600 | 22.3 to 19.8 |
+| 2 v 1 | 66.2% | 600 | 25.1 to 22.4 |
+| 3 v 2 | 63.8% | 600 | 27.2 to 24.5 |
+| 4 v 3 | 60.8% | 600 | 26.8 to 25.0 |
+| 5 v 4 | 61.8% | 600 | 27.6 to 26.0 |
+| 6 v 5 | 60.5% | 300 | 28.7 to 26.9 |
+| 7 v 6 | 52.5% | 100 | 29.0 to 28.5 |
+| 2 v 0 | 73.3% | 600 | 25.1 to 20.5 |
+| 3 v 1 | 80.6% | 600 | 27.4 to 21.8 |
+| 4 v 2 | 74.0% | 600 | 28.6 to 23.9 |
+| 5 v 3 | 70.2% | 600 | 27.7 to 24.5 |
+| 6 v 4 | 66.0% | 300 | 28.8 to 25.9 |
+| 7 v 5 | 66.5% | 100 | 28.9 to 26.9 |
+
+Levels 0 to 6 are seven clear steps, each winning 60 to 66 matches in 100 against the one below. Level 7 over 6 is the weak one: 52.5% in this run of 100 and 56.2% in an earlier one of 300, about 55% over the 400 together, a hair under the bar. More playouts, scoring on wins, and a sharper first reply inside the playout were each tried and none moved it; with this rule of thumb inside the playout, level 6 is close to the ceiling. `LEVELS` in `bot/levels.ts` is the table in use; `PLANNED` is kept beside it so the first table can be measured again.
+
+**Gate B.** `pnpm tsx --conditions=react-server scripts/bench-bot.ts` answers every position of twelve matches at each level. The slowest level answers in 28 ms typically, 51 ms for the slowest answer in twenty and 56 ms at worst on this machine, inside the 60 ms budget. No level reached its cap of moves, so no answer was cut short. A player's action comes back with one rival turn and sometimes two (the rival closes one round and opens the next), so the worst request thinks for about a tenth of a second.
+
+## Phase 6 — The gauntlet, measured, and Gate C
+
+`playGauntlet` (`bot/arena.ts`) is a whole run with a bot in the player's seat: the six rivals in order, each on its own deck with no relics, at the level `match index + tier rank`; the stand-in holds its clan's relic, and after a win takes the rarest cat offered and the first relic. `bot/gauntlet.test.ts` holds the bounds the old `sim.test.ts` held for the scripted rival.
+
+Each cell is: wins the first match / matches won per run / runs won. 150 runs a cell (100 for level 6, 38 for level 7), an account with everything unlocked:
+
+| Stand-in player | Kitten | Stray | Apex |
+|-----------------|--------|-------|------|
+| 0 fixed list | 73% / 1.7 / 1% | 59% / 1.0 / 0% | 49% / 0.8 / 0% |
+| 1 careful list | 88% / 2.7 / 15% | 75% / 1.7 / 3% | 62% / 1.3 / 3% |
+| 2 points | 80% / 2.7 / 13% | 73% / 1.9 / 6% | 67% / 1.6 / 3% |
+| 3 points and goal | 96% / 3.9 / 33% | 89% / 3.0 / 18% | 81% / 2.6 / 13% |
+| 4 full evaluation | 97% / 4.8 / 58% | 95% / 4.2 / 47% | 91% / 3.8 / 41% |
+| 5 playouts, round | 99% / 5.5 / 82% | 97% / 4.9 / 63% | 96% / 4.5 / 52% |
+| 6 playouts, match | 100% / 5.7 / 89% | 99% / 5.5 / 85% | 97% / 5.3 / 81% |
+| 7 more playouts | 100% / 5.9 / 95% | 100% / 5.7 / 87% | 100% / 5.7 / 90% |
+
+A new account (starting cats and relics only):
+
+| Stand-in player | Kitten | Stray | Apex |
+|-----------------|--------|-------|------|
+| 0 fixed list | 73% / 1.7 / 2% | 59% / 1.0 / 1% | 49% / 0.8 / 0% |
+| 2 points | 80% / 2.5 / 10% | 73% / 1.9 / 5% | 67% / 1.6 / 4% |
+| 4 full evaluation | 97% / 4.6 / 53% | 95% / 4.0 / 39% | 91% / 3.5 / 33% |
+| 6 playouts, match | 100% / 5.7 / 89% | 99% / 5.8 / 92% | 97% / 5.0 / 73% |
+
+What this says:
+
+- The tiers work on the rival's play alone: every stand-in wins fewer runs on each harder tier, and the first match of a tier is a level table's step harder, not a head start.
+- Thinking is rewarded steeply. On Kitten a fixed list wins 1 run in 100, counting points 13, the full evaluation 58, playouts 89.
+- It is a much easier game than the one it replaces. Against the scripted rival the one-step bot of `sim.ts`, which plays about like level 4, wins 2% of Kitten runs and none on Apex. Here level 4 wins 58% and 41%.
+- The reason is the relics. A stand-in that reaches the last match holds four of them, worth about ten points, and the best rival there is, on its 21 cards and no relics, is two or three points better than a level 4 player. Skill within the thinking budget cannot buy those points back.
+
+The same runs under rules the game does not have, runs won on Kitten / Stray / Apex:
+
+| Stand-in player | As built | Every rival two levels up | Rival holds its clan's charm | Rival holds relics on the player's budget |
+|-----------------|----------|---------------------------|------------------------------|-------------------------------------------|
+| 2 points | 13% / 6% / 3% | 3% / 2% / 0% | 2% / 1% / 1% | 0% / 0% / 0% |
+| 4 full evaluation | 58% / 47% / 41% | 42% / 21% / 21% | 18% / 11% / 8% | 2% / 0% / 0% |
+| 6 playouts, match | 89% / 85% / 81% | 84% / 63% / 52% | 61% / 53% / 44% | 24% / 4% / 5% |
+
+Two levels up squeezes the tiers together, because the table has no levels above 7 to give. A rival with relics on the player's whole budget is about as hard as the scripted rival was. A rival with only its clan's charm sits between: each side starts with one relic, and the three more the player picks up are the reward for winning.
+
+The two unlocks that ask for a score (35 for Verdantmane and the Hoarder's Basket, 42 for Infernomane) were set for the old game, where the one-step bot reached 35 in 38% of Kitten runs and 42 in 2%. A run's best match, new account on Kitten:
+
+| Stand-in player | Median best | Reaches 35 | 40 | 42 | 45 |
+|-----------------|-------------|------------|----|----|----|
+| 2 points | 34 | 41% | 4% | 2% | 0% |
+| 4 full evaluation | 38 | 89% | 31% | 15% | 2% |
+| 6 playouts, match | 41 | 99% | 75% | 43% | 10% |
+
+To ask of a level 4 player what 35 and 42 asked of the one-step bot, the thresholds would be 40 and 45. They are left alone until the difficulty is settled, since that moves the scores.
+
+How long a turn takes to watch, with the rival's turn played back as a real one at today's pacing (440 ms for a move, 380 ms a power and quickening, 760 ms for a goal): 1.3 s for the middle answer and 2.8 s for the slowest in ten, of which the rival's part is 0.4 s and 1.3 s. That is inside the 2.5 s line set for the median.
+
+**Open at Gate C**, for the user to decide before phase 7 switches the game over:
+
+1. The level table: the re-spaced eight (seven clear steps and a marginal eighth), or the planned one (five steps).
+2. The difficulty: as built, or with the rival holding its clan's charm, or relics on the player's budget.
+3. The tie rule: food left, then cats, then the player.
+4. The score unlocks: 40 and 45 in place of 35 and 42, once the difficulty is fixed.
