@@ -252,3 +252,63 @@ How long a turn takes to watch, with the rival's turn played back as a real one 
 2. The difficulty: as built, or with the rival holding its clan's charm, or relics on the player's budget.
 3. The tie rule: food left, then cats, then the player.
 4. The score unlocks: 40 and 45 in place of 35 and 42, once the difficulty is fixed.
+
+## Gate C — decided
+
+1. **The level table** is the re-spaced eight.
+2. **The rival holds its clan's charm**, as the player holds theirs, and no other relic. Each side starts with one; the three more a player picks up are the reward for winning. This replaces "no relics" in the decisions at the top.
+3. **A tie** goes to the seat with more food left, then to the one with more cats, then to the player.
+4. **The score unlocks** were measured again under these rules (below) and are 38 and 45.
+
+## Phase 7 — The switch (done)
+
+The two-seat game is the game. `MatchState`, `createMatch`, `applyAction`, `stepMatch`, `legalActions`, `goalStanding`, `sideScore` and `MatchEvent` are the names the `Duel` ones took; the scripted rival is gone.
+
+Deleted: `rivalTurn`, `RivalState`, `rivalScore`, `rivalBankValue`, the flat `MatchState`, the `rival` event, `RivalAction`, every goal's `par`, the rival's `bankPoints`, `stashYarn`, `raidDice`, `burnCards`, `goalEdge` and action deck, the mods `rivalBankDelta` and `rivalStartYarn`, a tier's `mods`, and `sim.ts` with its test.
+
+- **Cards.** A "between turns" power names the turn of the rival's it answers: `on: "hunt" | "den" | "prowl" | "any"`. Brumefang answers a Hunt, Gloomtail the Den, Shadewhisker a Prowl, Nyxaroth every turn. The card text says so ("when the rival hunts", "after each of the rival's turns").
+- **The Loud Bell** keeps its id: "Whenever the feeder is refilled, gain 1 Treat."
+- **Tiers** (`difficulty.ts`) are a rank and a line of text and nothing else. `rivalLevel(matchIndex, tier)` is the level a rival plays at; the text prints it counted from 1 ("Rivals play at levels 3 to 8 of 8. Nobody gets a head start.").
+- **Rivals** (`rival.ts`) are a name, a boss mark, a clan (`theme`), a manner (`trait`) and a line of flavor. `rivalDecks.ts` builds the deck and `rivalRelics` hands it its charm.
+- **A run** (`run.ts`) deals each match with `openMatch`, so the rival has kept by the time the player sees the table, and answers every action with `advance`. Clans moved to `clans.ts`; `run.ts` still exports them.
+- **A stored run carries `v: 2`.** One saved by an older game cannot be read. `run.current` and `run.start` close it as abandoned (`retireRun`), with the unlocks its won matches earned, which is what abandoning it did; the account lands on a clean start. No migration.
+- **The view** (`view.ts`) lays the player's seat flat, as before, and adds `lead`. `rival` is the rival's seat as it shows across the table: `level`, `board` (tucked cats counted, not named), `tray`, `essence`, `relics`, `handCount`, `deckCount`, `discardCount`, `turnsLeft`, `score` (a full `ScoreBreakdown`) and `last` (its last whole turn). `result.rival` is a `ScoreBreakdown` too, and `result.tiebreak` says what settled a level match.
+- **`run.act`** returns `beats` beside `events`: the rival's seat and the feeder after each of the rival's actions, in order. An action's events start with its `move`, so the two line up.
+- **Playback.** The player's own move is rebuilt frame by frame as before. Each action of the rival's is one frame: its seat from the beat, the dice it took gone from the feeder, its move in words, and the lines for whatever its cats did landing with it. A goal's points reach both sides on the goal's own frame.
+- **The table.** The rival's panel shows its hand and deck as piles, cats out, turns left, yarn, goal points, food and its last move, and opens `RivalMat`: its three lanes with every cat and what each holds, its tray, food and relic, its hand face down. The scorepad and the result sheet print both sides line for line. The nameplate prints the tier and the level. The codex's rival cards print the level on each tier, the deck and the charm.
+
+`src/server/game/solo.ts` is a test helper: one seat laid flat at a table whose other seat never has a turn. The rules of a single turn are tested there (`match.test.ts`, `trade.test.ts`) and what two seats do to each other in `duel.test.ts`.
+
+### The gauntlet as it ships
+
+Wins the first match / matches won per run / runs won. 200 runs a cell (133 for level 6, 50 for level 7), everything unlocked:
+
+| Stand-in player | Kitten | Stray | Apex |
+|-----------------|--------|-------|------|
+| 0 fixed list | 42% / 0.8 / 0% | 40% / 0.5 / 0% | 34% / 0.4 / 0% |
+| 1 careful list | 61% / 1.2 / 2% | 46% / 0.8 / 2% | 38% / 0.5 / 0% |
+| 2 points | 61% / 1.4 / 2% | 55% / 1.0 / 1% | 52% / 0.8 / 1% |
+| 3 points and goal | 78% / 2.2 / 8% | 72% / 1.6 / 3% | 67% / 1.4 / 0% |
+| 4 full evaluation | 89% / 2.9 / 14% | 87% / 2.4 / 10% | 73% / 2.0 / 7% |
+| 5 playouts, round | 95% / 4.2 / 44% | 88% / 3.4 / 31% | 89% / 2.9 / 14% |
+| 6 playouts, match | 92% / 4.5 / 61% | 96% / 4.5 / 52% | 90% / 4.2 / 46% |
+| 7 more playouts | 100% / 5.4 / 73% | 100% / 5.1 / 63% | 100% / 4.1 / 40% |
+
+A new account:
+
+| Stand-in player | Kitten | Stray | Apex |
+|-----------------|--------|-------|------|
+| 0 fixed list | 42% / 0.7 / 0% | 40% / 0.5 / 0% | 34% / 0.4 / 0% |
+| 2 points | 61% / 1.4 / 0% | 55% / 1.0 / 1% | 52% / 0.9 / 0% |
+| 4 full evaluation | 89% / 2.9 / 15% | 87% / 2.5 / 11% | 73% / 1.8 / 5% |
+| 6 playouts, match | 92% / 4.5 / 57% | 96% / 4.4 / 51% | 90% / 3.5 / 33% |
+
+A run's best match, new account on Kitten, which is what the score unlocks were set from. The old one-step bot reached the old 35 in 38% of runs and the old 42 in 2%; a level 4 player now reaches 38 in 39% and 45 in 2%.
+
+| Stand-in player | Median best | Reaches 35 | 38 | 40 | 42 | 45 |
+|-----------------|-------------|------------|----|----|----|----|
+| 2 points | 31 | 33% | 12% | 1% | 1% | 0% |
+| 4 full evaluation | 37 | 71% | 39% | 15% | 8% | 2% |
+| 6 playouts, match | 41 | 91% | 84% | 66% | 49% | 8% |
+
+Checked in the browser on a new account: a run starts on the tier text above, the rival has kept before the keep screen, a played cat is answered by the rival's own turn in the log and on its panel, the Hunt's trade arms from a hand card and takes one die more, the rival's board opens and shows its cats, tray, food and charm, and a match runs to its result sheet with both score sheets.
