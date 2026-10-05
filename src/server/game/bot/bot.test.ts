@@ -73,8 +73,8 @@ describe("levels", () => {
         most = Math.max(most, meter.steps - before);
       }
       expect(most).toBeLessThanOrEqual(STEP_CAP[level] ?? 0);
-      // Only the two fixed lists try nothing.
-      expect(most > 0).toBe(level > 1);
+      // Only the three fixed lists try nothing.
+      expect(most > 0).toBe(level > 2);
     }
   });
 

@@ -4,12 +4,12 @@
  *
  *   0  a fixed list of priorities, no evaluation, never trades
  *   1  the same list, choosing its cat, its dice and its keep with care
- *   2  the list for the kind of move and one step ahead, on points, for
+ *   2  the same again, giving its last two turns to yarn
+ *   3  the list for the kind of move and one step ahead, on points, for
  *      which; in the last two rounds, whatever scores the most
- *   3  the same, counting the round goal as well
- *   4  one step ahead with the full evaluation
- *   5  its 3 best moves, each played out twice to the end of the round
- *   6  its 6 best moves, each played out 6 times to the end of the match
+ *   4  the same, counting the round goal as well
+ *   5  one step ahead with the full evaluation
+ *   6  its 3 best moves, each played out twice to the end of the round
  *   7  its 8 best moves and 96 playouts to the end of the match, spent on
  *      the moves still in the running
  *
@@ -64,8 +64,12 @@ export type Bot = (seen: Observation, rng: Rng) => Action;
  * answers.
  */
 export type LevelSpec =
-  /** The fixed list. `sharp` picks its cat, its dice and its keep with care. */
-  | { kind: "rote"; sharp: boolean }
+  /**
+   * The fixed list. `sharp` picks its cat, its dice and its keep with care;
+   * `yarn` is how many of its last turns it gives to yarn when it has no cat
+   * to play (1 if left out).
+   */
+  | { kind: "rote"; sharp: boolean; yarn?: number }
   /** The list led one step ahead on points, or on points and the round goal. */
   | { kind: "points"; goal: boolean; cap: number }
   /** One step ahead with the full evaluation. */
@@ -91,9 +95,10 @@ interface Playouts {
 }
 
 /**
- * The eight levels as first planned. Measured, three of them did not beat
- * the level below (see `sprints/14-real-rival.md`); they are kept so that
- * measurement can be run again.
+ * The eight levels as first planned, for a match of twelve turns. Measured,
+ * three of them did not beat the level below (see
+ * `sprints/14-real-rival.md`); they are kept so that measurement can be run
+ * again.
  */
 export const PLANNED: readonly LevelSpec[] = [
   { kind: "rote", sharp: false },
@@ -129,11 +134,15 @@ export const PLANNED: readonly LevelSpec[] = [
 
 /**
  * The levels a rival plays at, 0 the least. Each beat the one below it in
- * at least 56 matches of 100 when it was measured.
+ * at least 56 matches of 100 when it was measured over four rounds
+ * (`sprints/15-coins-packs-decks.md`). Two plans that were here did not and
+ * are gone: 36 playouts to the end of the match measured no better than
+ * level 6, and 192 no better than 96.
  */
 export const LEVELS: readonly LevelSpec[] = [
   { kind: "rote", sharp: false },
   { kind: "rote", sharp: true },
+  { kind: "rote", sharp: true, yarn: 2 },
   { kind: "points", goal: false, cap: 400 },
   { kind: "points", goal: true, cap: 400 },
   { kind: "value", deals: 1, wide: false, replies: 0, cap: 400 },
@@ -144,14 +153,6 @@ export const LEVELS: readonly LevelSpec[] = [
     until: "round",
     by: "value",
     cap: 1000,
-  },
-  {
-    kind: "playouts",
-    moves: 6,
-    stages: [6],
-    until: "match",
-    by: "points",
-    cap: 2500,
   },
   {
     kind: "playouts",
@@ -245,7 +246,7 @@ function firstPlay(own: OwnSeat, sharp: boolean): Action | null {
  * yarn; with no cats in hand, prowl for some; with a cat that only yarn is
  * keeping off the board, go to the Den; otherwise hunt.
  */
-function byRote(seen: Observation, sharp = false): Action {
+function byRote(seen: Observation, sharp = false, yarn = 1): Action {
   const own = seen.own;
   if (seen.phase === "setup") {
     return sharp ? quickKeep(own.setup) : firstKeep(own.setup);
@@ -268,7 +269,7 @@ function byRote(seen: Observation, sharp = false): Action {
   // Cats and food are for playing cats: with nowhere to play one, or no
   // turn after this to do it in, only yarn is still worth a point.
   const full = ROWS.every((row) => own.board[row].length >= SLOTS);
-  const last = turnsToCome(seen.round, own.turnsLeft) <= 1;
+  const last = turnsToCome(seen.round, own.turnsLeft) <= yarn;
   if ((full || last) && boardYarnRoom(own.board) > 0) {
     return plainRow(seen, "den");
   }
@@ -535,7 +536,7 @@ function byPoints(
 }
 
 /**
- * Levels 2 to 4: the full evaluation, one step ahead. `deals` is how many
+ * Level 5: the full evaluation, one step ahead. `deals` is how many
  * ways the unseen cats are dealt and averaged over; `wide` weighs more ways
  * to make each move; `replies` is how many of its best moves are tested
  * against the other seat's best answer.
@@ -630,7 +631,7 @@ function playOut(state: MatchState, until: Playouts["until"], budget: Budget) {
 }
 
 /**
- * Levels 5 to 7: the moves that look best one step ahead are each played out
+ * Levels 6 and 7: the moves that look best one step ahead are each played out
  * to the end of the round or the match, on tables dealt afresh for every
  * playout and shared by every move, and the one that comes out best is made.
  */
@@ -701,7 +702,7 @@ function byPlayouts(
 export function botFrom(spec: LevelSpec, style: Style): Bot {
   switch (spec.kind) {
     case "rote":
-      return (seen) => byRote(seen, spec.sharp);
+      return (seen) => byRote(seen, spec.sharp, spec.yarn);
     case "points":
       return (seen, rng) => byPoints(seen, rng, style, spec);
     case "value":

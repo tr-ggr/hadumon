@@ -458,9 +458,9 @@ describe("what a run pays", () => {
     const apex = payout({ ...base, difficulty: "apex" });
     expect(stray).toBeGreaterThan(kitten);
     expect(apex).toBeGreaterThan(stray);
-    // The points themselves are worth the same on every tier.
-    expect(payout(run({ totalScore: 200, difficulty: "apex" }))).toBe(
-      payout(run({ totalScore: 200 })),
-    );
+    // The points are worth more too, not only the bonuses.
+    expect(payout(run({ totalScore: 200, difficulty: "apex" }))).toBe(150);
+    expect(payout(run({ totalScore: 200, difficulty: "stray" }))).toBe(120);
+    expect(payout(run({ totalScore: 200 }))).toBe(100);
   });
 });

@@ -149,7 +149,7 @@ const cats = (state: MatchState, who: SideId) =>
  */
 function seats() {
   const rows = [];
-  for (const level of [4, 6]) {
+  for (const level of [5, 6]) {
     const bot = standIn(level);
     const tally = emptyTally();
     const left = { food: 0, cats: 0, foodThenCats: 0 };
@@ -192,12 +192,12 @@ function seats() {
 
 /**
  * What a relic is worth to the seat that holds it: the same deals played by
- * the same bot with the relic and without, at level 4. A charm is measured
+ * the same bot with the relic and without, at level 5. A charm is measured
  * on the deck of its own clan.
  */
 function relics() {
-  const bot = standIn(4);
-  const games = pairsFor(4) * 2;
+  const bot = standIn(5);
+  const games = pairsFor(5) * 2;
   const charmClan: Record<string, number> = {
     "ember-charm": 0,
     "tide-charm": 1,
@@ -360,7 +360,8 @@ function gauntlet() {
     for (const tier of DIFFICULTIES) {
       for (let level = 0; level < LEVELS.length; level++) {
         // A new account is measured at the levels a new player might play at.
-        if (poolName === "newAccount" && level % 2 === 1) continue;
+        if (poolName === "newAccount" && ![0, 3, 5, 6].includes(level))
+          continue;
         const runs = Math.max(
           30,
           Math.round(scale / [2, 2, 2, 2, 2, 2, 3, 8][level]!),
@@ -394,8 +395,8 @@ function whatIf() {
   const rows = [];
   for (const [variant, rules] of Object.entries(variants)) {
     for (const tier of DIFFICULTIES) {
-      for (const level of [2, 4, 6]) {
-        const runs = Math.max(30, Math.round(scale / (level === 6 ? 4 : 2.5)));
+      for (const level of [3, 5, 6]) {
+        const runs = Math.max(30, Math.round(scale / 2.5));
         console.log(variant);
         rows.push({
           variant,

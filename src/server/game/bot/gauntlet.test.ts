@@ -58,11 +58,12 @@ describe("the level a rival plays at", () => {
 });
 
 describe("simulated runs", () => {
-  // Bounds are taken from `sprints/data/14-ladder.json`, with room for the
-  // smaller sample here.
+  // Bounds are taken from `sprints/data/15-ladder.json`, with room for the
+  // smaller sample here. The stand-ins are the fixed list, the list led by
+  // points, and the full evaluation.
   const rote = climb(0, "kitten", 60);
-  const points = climb(2, "kitten", 60);
-  const careful = climb(4, "kitten", 60);
+  const points = climb(3, "kitten", 60);
+  const careful = climb(5, "kitten", 60);
 
   it("always end decided: a loss, or six wins", () => {
     for (const { matches, run } of [
@@ -114,8 +115,8 @@ describe("simulated runs", () => {
   });
 
   it("get harder with each tier, by the rival's play alone", () => {
-    const stray = climb(2, "stray", 60);
-    const apex = climb(2, "apex", 60);
+    const stray = climb(3, "stray", 60);
+    const apex = climb(3, "apex", 60);
     expect(stray.matchesWon).toBeLessThan(points.matchesWon);
     expect(apex.matchesWon).toBeLessThanOrEqual(stray.matchesWon);
     expect(apex.firstMatch).toBeLessThan(points.firstMatch);

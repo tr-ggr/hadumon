@@ -29,8 +29,8 @@ export interface UnlockRule extends Unlock {
  * reaches the first in about two runs of five and the second in about one
  * of fifty.
  */
-export const HIGH_SCORE = 74;
-export const TOP_SCORE = 85;
+export const HIGH_SCORE = 76;
+export const TOP_SCORE = 87;
 
 /** Cats of one element a deck needs to count as built on it: half of it. */
 export const ELEMENT_DECK = 12;
