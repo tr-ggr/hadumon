@@ -18,7 +18,7 @@
   --color-volt: #f5c84c;
   --color-thorn: #77bd70;
   --color-shade: #8275c6;
-  /* Die-cut material, used only inside `.tabletop`. */
+  /* Die-cut material: the edge of a piece, a mat's shade, the cloth. */
   --color-chipboard: #b9a47e;
   --color-sky-deep: #73bde4;
   --color-cloth: #f4ead4;
@@ -27,17 +27,6 @@
   --color-stone-light: #d0dae2;
   --color-stone-rib: #6e7f90;
   --color-stone-deep: #3a4857;
-  /* Compatibility aliases for route-level utility classes. */
-  --color-navy: #fff8e7;
-  --color-navy-deep: #f4ead4;
-  --color-panel: #ffffff;
-  --color-panel-hi: #e7f7fd;
-  --color-edge: #c8dfea;
-  --color-gold: #f5c84c;
-  --color-mint: #5cbf89;
-  --color-pink: #ff7163;
-  --color-sky: #1557d8;
-  --color-ink-dim: #5b6c7d;
   --font-display:
     ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
   --font-body: ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
@@ -95,28 +84,8 @@
   font-weight: 800;
   letter-spacing: -0.025em;
 }
-@utility panel {
-  background: var(--color-white);
-  border: 1px solid rgb(23 33 43 / 0.08);
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgb(23 33 43 / 0.08);
-}
-@utility panel-flat {
-  background: var(--color-white);
-  border: 1px solid rgb(23 33 43 / 0.08);
-  border-radius: 16px;
-}
-@utility pixel-press {
-  transition:
-    transform 140ms ease,
-    box-shadow 140ms ease,
-    filter 140ms ease;
-  &:active {
-    transform: translateY(2px) scale(0.99);
-  }
-}
-/* Print on the board: lane names, track numerals, scores. 20px or 30px, and
-   40px for a heading on the landing page. */
+/* Print: names, numerals, scores and headings. 20px or 30px, and 40px for a
+   page's one heading. Never a sentence, and never anything typed. */
 @utility text-print {
   font-family: var(--font-pixel), var(--font-display);
   font-weight: 400;
@@ -164,40 +133,13 @@
   --piece-inset: inset 0 3px 0 var(--rarity);
   box-shadow: var(--piece-inset);
 }
-.app-shell {
-  background: var(--color-cream);
-}
-.app-main {
-  width: 100%;
-  max-width: 1180px;
-}
-.app-rail {
-  background: var(--color-white);
-  border-right: 1px solid rgb(23 33 43 / 0.08);
-}
-.surface-sky {
-  background: var(--color-sky-surface);
-}
-.touch-target {
-  min-height: 48px;
-  min-width: 48px;
-}
-.pill {
-  border-radius: 999px;
-}
-.muted {
-  color: var(--color-ink-soft);
-}
-.page-wrap {
-  padding: 24px 16px 64px;
-}
 
 /*
  * The tabletop: die-cut cardboard on a woven cloth. A piece is a face, a
  * chipboard edge straight down, and an unblurred cast shadow in a darker
  * tint of what it sits on. Three heights: print (0), token or tile (2px),
- * card (3px). Everything here is scoped, so a piece outside the table stays
- * flat.
+ * card (3px). The whole app is one: the class is on the body, and a run's
+ * table is another inside it (`TableSurface`).
  */
 .tabletop {
   --cast-cloth: color-mix(
