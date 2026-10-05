@@ -5,7 +5,10 @@
  */
 
 import { getCat, ROWS, type Row } from "./cats";
-import type { MatchState, PlacedCat } from "./match";
+import type { PlacedCat, Side } from "./match";
+
+/** What a goal counts: one seat's board, food and hand. */
+export type Counted = Pick<Side, "board" | "essence" | "hand">;
 
 export interface Goal {
   id: string;
@@ -13,10 +16,10 @@ export interface Goal {
   text: string;
   /** What a steady player has by the end of rounds 1, 2 and 3. */
   par: readonly [number, number, number];
-  count(match: MatchState): number;
+  count(side: Counted): number;
 }
 
-function placedCats(match: MatchState): PlacedCat[] {
+function placedCats(match: Counted): PlacedCat[] {
   return ROWS.flatMap((row) => match.board[row]);
 }
 
@@ -41,7 +44,7 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
         name: "Yarn Hoard",
         text: "Most yarn on the board.",
         par: [2, 3, 5],
-        count: (match: MatchState) =>
+        count: (match: Counted) =>
           placedCats(match).reduce((sum, placed) => sum + placed.yarn, 0),
       },
       {
@@ -49,7 +52,7 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
         name: "Warm Den",
         text: "Most yarn on cats in the Den.",
         par: [1, 2, 3],
-        count: (match: MatchState) =>
+        count: (match: Counted) =>
           match.board.den.reduce((sum, placed) => sum + placed.yarn, 0),
       },
       {
@@ -57,7 +60,7 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
         name: "Mixed Company",
         text: "Most different elements on the board.",
         par: [1, 2, 3],
-        count: (match: MatchState) =>
+        count: (match: Counted) =>
           new Set(placedCats(match).map((p) => getCat(p.catId).element)).size,
       },
       {
@@ -65,14 +68,14 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
         name: "Crowd",
         text: "Most cats on the board.",
         par: [2, 3, 4],
-        count: (match: MatchState) => placedCats(match).length,
+        count: (match: Counted) => placedCats(match).length,
       },
       {
         id: "pantry",
         name: "Pantry",
         text: "Most food in hand.",
         par: [1, 2, 2],
-        count: (match: MatchState) =>
+        count: (match: Counted) =>
           Object.values(match.essence).reduce((sum, n) => sum + n, 0),
       },
       {
@@ -80,14 +83,14 @@ export const GOALS: Record<string, Goal> = Object.fromEntries(
         name: "Pawful",
         text: "Most cats in hand.",
         par: [1, 2, 2],
-        count: (match: MatchState) => match.hand.length,
+        count: (match: Counted) => match.hand.length,
       },
       {
         id: "stash",
         name: "Stash",
         text: "Most cached food and tucked cats.",
         par: [1, 1, 2],
-        count: (match: MatchState) =>
+        count: (match: Counted) =>
           placedCats(match).reduce((sum, p) => sum + p.cached + p.tucked, 0),
       },
     ] satisfies Goal[]

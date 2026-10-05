@@ -120,31 +120,44 @@ export interface RivalState {
 
 export type MatchPhase = "setup" | "turn" | "pending" | "over";
 
-export interface MatchState {
-  seed: string;
-  step: number;
-  rivalId: string;
+/** Everything one seat at the table owns. */
+export interface Side {
   relics: string[];
   mods: Mods;
-  phase: MatchPhase;
-  round: number;
+  /** Turns this seat still has in the current round. */
   turnsLeft: number;
   board: Board;
   hand: string[];
   deck: string[];
   discard: string[];
   tray: string[];
-  /** The cats dealt at setup; empty once the player has kept. */
+  /** The cats dealt at setup; empty once they have been kept. */
   setup: string[];
   essence: EssencePool;
+}
+
+/** What the seats at a table share. */
+export interface Table {
+  phase: MatchPhase;
+  round: number;
   feeder: Essence[];
   /** One goal id per round. */
   goals: string[];
   goalResults: GoalResult[];
-  rival: RivalState;
   /** Powers still to fire in the current activation. */
   queue: SlotRef[];
   pending: Pending | null;
+}
+
+/**
+ * A match against the scripted rival: one seat and its table laid flat, plus
+ * the rival's card deck and counters.
+ */
+export interface MatchState extends Side, Table {
+  seed: string;
+  step: number;
+  rivalId: string;
+  rival: RivalState;
   result: MatchResult | null;
 }
 
@@ -176,7 +189,8 @@ export type Action =
   /** Answer a pending choice. `null` declines. */
   | { type: "resolve"; choice: number | null };
 
-export type MatchEvent =
+/** What a seat's own turn can set off. */
+export type TurnEvent =
   | { type: "kept"; cats: number; essence: number }
   | { type: "played"; catId: string; row: Row; col: number }
   | { type: "activated"; row: Row; reward: number }
@@ -189,7 +203,10 @@ export type MatchEvent =
     }
   /** A legendary's relic handing over its treats at the end of a turn. */
   | { type: "aura"; catId: string; row: Row; col: number }
-  | { type: "feeder"; faces: Essence[] }
+  | { type: "feeder"; faces: Essence[] };
+
+export type MatchEvent =
+  | TurnEvent
   | { type: "rival"; action: RivalAction; removed: string[] }
   | ({ type: "goal"; round: number } & GoalResult)
   | { type: "over"; won: boolean; player: number; rival: number };
@@ -210,10 +227,16 @@ function fail(message: string): never {
   throw new IllegalAction(message);
 }
 
+/**
+ * One action being applied: the table, the seat acting on it, and where its
+ * events go. The turn pieces below know a seat and a table and nothing of who
+ * else is sitting there.
+ */
 interface Ctx {
-  s: MatchState;
+  t: Table;
+  side: Side;
   rng: Rng;
-  events: MatchEvent[];
+  emit: (event: TurnEvent) => void;
 }
 
 export interface MatchConfig {
@@ -292,15 +315,18 @@ export function auraTotal(board: Board, kind: Aura["kind"]): number {
   }, 0);
 }
 
-/** How many dice, yarn or cats activating `row` gives right now. */
-export function rowReward(state: MatchState, row: Row): number {
-  const base = ROW_REWARD[row][state.board[row].length] ?? 0;
+/** How many dice, yarn or cats activating `row` gives a seat right now. */
+export function rowReward(
+  side: Pick<Side, "board" | "mods">,
+  row: Row,
+): number {
+  const base = ROW_REWARD[row][side.board[row].length] ?? 0;
   const bonus = {
-    hunt: state.mods.huntBonus,
-    den: state.mods.denBonus,
-    prowl: state.mods.prowlBonus,
+    hunt: side.mods.huntBonus,
+    den: side.mods.denBonus,
+    prowl: side.mods.prowlBonus,
   }[row];
-  return base + bonus + auraTotal(state.board, "reward");
+  return base + bonus + auraTotal(side.board, "reward");
 }
 
 export function columnYarnCost(mods: Mods, col: number): number {
@@ -454,36 +480,43 @@ export function defaultSwap(
   return swap;
 }
 
-export function canPlay(state: MatchState, hand: number, row: Row): boolean {
-  const catId = state.hand[hand];
+export function canPlay(
+  side: Pick<Side, "board" | "hand" | "essence" | "mods">,
+  hand: number,
+  row: Row,
+): boolean {
+  const catId = side.hand[hand];
   if (!catId) return false;
   const cat = getCat(catId);
-  const line = state.board[row];
+  const line = side.board[row];
   return (
     cat.rows.includes(row) &&
     line.length < SLOTS &&
     swapOffer(
-      state.essence,
-      playCost(catId, auraTotal(state.board, "discount")),
+      side.essence,
+      playCost(catId, auraTotal(side.board, "discount")),
     ) !== null &&
-    totalYarn(state.board) >= columnYarnCost(state.mods, line.length)
+    totalYarn(side.board) >= columnYarnCost(side.mods, line.length)
   );
 }
 
-export function canReroll(state: MatchState): boolean {
-  const first = state.feeder[0];
+export function canReroll(table: Pick<Table, "phase" | "feeder">): boolean {
+  const first = table.feeder[0];
   return (
-    state.phase === "turn" &&
+    table.phase === "turn" &&
     first !== undefined &&
-    state.feeder.every((face) => face === first)
+    table.feeder.every((face) => face === first)
   );
 }
 
-/** Where `n` yarn goes when the player does not choose: board order, to capacity. */
-export function autoYarnTargets(state: MatchState, n: number): SlotRef[] {
+/** Where `n` yarn goes when nobody chooses: board order, to capacity. */
+export function autoYarnTargets(
+  side: Pick<Side, "board">,
+  n: number,
+): SlotRef[] {
   const targets: SlotRef[] = [];
   for (const row of ROWS) {
-    state.board[row].forEach((placed, col) => {
+    side.board[row].forEach((placed, col) => {
       let room = getCat(placed.catId).yarnCap - placed.yarn;
       while (room > 0 && targets.length < n) {
         targets.push({ row, col });
@@ -494,11 +527,12 @@ export function autoYarnTargets(state: MatchState, n: number): SlotRef[] {
   return targets;
 }
 
-/** How many cats a Prowl must pick right now. */
-export function prowlPickCount(state: MatchState): number {
-  const available =
-    state.tray.length + state.deck.length + state.discard.length;
-  return Math.min(rowReward(state, "prowl"), available);
+/** How many cats a seat's Prowl must pick right now. */
+export function prowlPickCount(
+  side: Pick<Side, "board" | "mods" | "tray" | "deck" | "discard">,
+): number {
+  const available = side.tray.length + side.deck.length + side.discard.length;
+  return Math.min(rowReward(side, "prowl"), available);
 }
 
 /** Total yarn the board could still take. */
@@ -516,51 +550,62 @@ export function tradeOpen(board: Board, row: Row): boolean {
 }
 
 /**
- * True when `row`'s trade can be made right now: the row offers it, there is
- * something to pay with, and the extra it buys can actually be taken. Nobody
- * pays for nothing.
+ * True when a seat could make `row`'s trade on its turn: the row offers it,
+ * there is something to pay with, and the extra it buys can actually be
+ * taken. Nobody pays for nothing.
  *
  *   hunt   discard 1 cat from hand, take 1 extra die
  *   den    spend 1 food, lay 1 extra yarn
  *   prowl  spend 1 yarn from a cat, take 1 extra cat
  */
-export function canTrade(state: MatchState, row: Row): boolean {
-  if (state.phase !== "turn" || !tradeOpen(state.board, row)) return false;
-  const reward = rowReward(state, row);
+export function tradeOffered(
+  side: Side,
+  feeder: readonly Essence[],
+  row: Row,
+): boolean {
+  if (!tradeOpen(side.board, row)) return false;
+  const reward = rowReward(side, row);
   switch (row) {
     case "hunt":
-      return state.hand.length > 0 && state.feeder.length > reward;
+      return side.hand.length > 0 && feeder.length > reward;
     case "den":
       return (
-        ESSENCES.some((kind) => state.essence[kind] > 0) &&
-        boardYarnRoom(state.board) > reward
+        ESSENCES.some((kind) => side.essence[kind] > 0) &&
+        boardYarnRoom(side.board) > reward
       );
     case "prowl":
       return (
-        totalYarn(state.board) > 0 &&
-        state.tray.length + state.deck.length + state.discard.length > reward
+        totalYarn(side.board) > 0 &&
+        side.tray.length + side.deck.length + side.discard.length > reward
       );
   }
+}
+
+/** True when `row`'s trade can be made right now. */
+export function canTrade(state: MatchState, row: Row): boolean {
+  return state.phase === "turn" && tradeOffered(state, state.feeder, row);
 }
 
 /**
  * The food a Den trade spends when nobody chooses: what the hand needs
  * least, and a Treat only when there is nothing else.
  */
-export function spareFood(state: MatchState): Essence | null {
+export function spareFood(
+  side: Pick<Side, "board" | "hand" | "essence">,
+): Essence | null {
   const reserve: Partial<Record<Essence, number>> = handReserve(
-    state.hand,
+    side.hand,
     -1,
-    auraTotal(state.board, "discount"),
+    auraTotal(side.board, "discount"),
   );
-  const free = (kind: Essence) => state.essence[kind] - (reserve[kind] ?? 0);
+  const free = (kind: Essence) => side.essence[kind] - (reserve[kind] ?? 0);
   let best: Essence | null = null;
   for (const kind of ELEMENTS) {
-    if (state.essence[kind] > 0 && (best === null || free(kind) > free(best))) {
+    if (side.essence[kind] > 0 && (best === null || free(kind) > free(best))) {
       best = kind;
     }
   }
-  return best ?? (state.essence.wild > 0 ? "wild" : null);
+  return best ?? (side.essence.wild > 0 ? "wild" : null);
 }
 
 /** The cat a Prowl trade takes its yarn from when nobody chooses: the richest. */
@@ -659,26 +704,26 @@ function isIndexList(values: readonly number[], length: number): boolean {
 }
 
 function drawCard(ctx: Ctx): string | null {
-  const { s } = ctx;
-  if (s.deck.length === 0) {
-    if (s.discard.length === 0) return null;
-    s.deck = ctx.rng.shuffle(s.discard);
-    s.discard = [];
+  const { side } = ctx;
+  if (side.deck.length === 0) {
+    if (side.discard.length === 0) return null;
+    side.deck = ctx.rng.shuffle(side.discard);
+    side.discard = [];
   }
-  return s.deck.shift() ?? null;
+  return side.deck.shift() ?? null;
 }
 
 function refillTray(ctx: Ctx): void {
-  while (ctx.s.tray.length < TRAY_SIZE) {
+  while (ctx.side.tray.length < TRAY_SIZE) {
     const card = drawCard(ctx);
     if (card === null) return;
-    ctx.s.tray.push(card);
+    ctx.side.tray.push(card);
   }
 }
 
 function rollFeeder(ctx: Ctx): void {
-  ctx.s.feeder = rollDice(ctx.rng);
-  ctx.events.push({ type: "feeder", faces: [...ctx.s.feeder] });
+  ctx.t.feeder = rollDice(ctx.rng);
+  ctx.emit({ type: "feeder", faces: [...ctx.t.feeder] });
 }
 
 function spendYarn(board: Board, n: number): void {
@@ -705,9 +750,9 @@ function tuck(placed: PlacedCat, catId: string): void {
 /* -------------------------------------------------------------- powers */
 
 /**
- * Runs one power. Choice effects open a pending choice during the player's
- * own turn and are skipped anywhere else (no catalogue cat pairs them with a
- * between-turns or end-of-round timing).
+ * Runs one power of the seat's. Choice effects open a pending choice during
+ * the seat's own turn and are skipped anywhere else (no catalogue cat pairs
+ * them with a between-turns or end-of-round timing).
  */
 function firePower(
   ctx: Ctx,
@@ -715,11 +760,11 @@ function firePower(
   effect: Effect,
   allowChoice: boolean,
 ): void {
-  const { s } = ctx;
-  const placed = s.board[slot.row][slot.col];
+  const { t, side } = ctx;
+  const placed = side.board[slot.row][slot.col];
   if (!placed) return;
   const cat = getCat(placed.catId);
-  ctx.events.push({
+  ctx.emit({
     type: "power",
     catId: cat.id,
     row: slot.row,
@@ -729,21 +774,21 @@ function firePower(
 
   switch (effect.kind) {
     case "essence":
-      s.essence[effect.element] += effect.n;
+      side.essence[effect.element] += effect.n;
       return;
     case "wild":
-      s.essence.wild += effect.n;
+      side.essence.wild += effect.n;
       return;
     case "yarnSelf":
       addYarn(placed, effect.n);
       return;
     case "yarnRow":
-      for (const other of s.board[slot.row]) addYarn(other, effect.n);
+      for (const other of side.board[slot.row]) addYarn(other, effect.n);
       return;
     case "draw":
       for (let i = 0; i < effect.n; i++) {
         const card = drawCard(ctx);
-        if (card !== null) s.hand.push(card);
+        if (card !== null) side.hand.push(card);
       }
       return;
     case "cache":
@@ -759,44 +804,45 @@ function firePower(
       const card = drawCard(ctx);
       if (card === null) return;
       if (getCat(card).points <= effect.maxPoints) tuck(placed, card);
-      else s.discard.push(card);
+      else side.discard.push(card);
       return;
     }
     case "tuckHand":
-      if (allowChoice && s.hand.length > 0) {
-        s.pending = { kind: "tuckHand", slot, draw: effect.draw };
+      if (allowChoice && side.hand.length > 0) {
+        t.pending = { kind: "tuckHand", slot, draw: effect.draw };
       }
       return;
     case "trade":
       if (allowChoice && placed.yarn > 0) {
-        s.pending = { kind: "trade", slot };
+        t.pending = { kind: "trade", slot };
       }
       return;
     case "encore":
       // Queued behind what is still to fire, so the row finishes its first
       // pass before the second. Another encore is left out, or two would
       // set each other off for ever.
-      for (let col = s.board[slot.row].length - 1; col >= 0; col--) {
-        const other = s.board[slot.row][col];
+      for (let col = side.board[slot.row].length - 1; col >= 0; col--) {
+        const other = side.board[slot.row][col];
         const power = other ? getCat(other.catId).power : null;
         if (
           col !== slot.col &&
           power?.timing === "activated" &&
           power.effect.kind !== "encore"
         ) {
-          s.queue.push({ row: slot.row, col });
+          t.queue.push({ row: slot.row, col });
         }
       }
       return;
   }
 }
 
+/** Fires every power of the seat's that `matches`, in board order. */
 function fireTimed(
   ctx: Ctx,
   matches: (cat: ReturnType<typeof getCat>) => boolean,
 ): void {
   for (const row of ROWS) {
-    ctx.s.board[row].forEach((placed, col) => {
+    ctx.side.board[row].forEach((placed, col) => {
       const cat = getCat(placed.catId);
       if (cat.power && matches(cat)) {
         firePower(ctx, { row, col }, cat.power.effect, false);
@@ -806,11 +852,11 @@ function fireTimed(
 }
 
 function drain(ctx: Ctx): void {
-  const { s } = ctx;
-  while (!s.pending) {
-    const slot = s.queue.shift();
+  const { t, side } = ctx;
+  while (!t.pending) {
+    const slot = t.queue.shift();
     if (!slot) return;
-    const placed = s.board[slot.row][slot.col];
+    const placed = side.board[slot.row][slot.col];
     const power = placed ? getCat(placed.catId).power : null;
     if (power) firePower(ctx, slot, power.effect, true);
   }
@@ -818,9 +864,13 @@ function drain(ctx: Ctx): void {
 
 /* --------------------------------------------------------- turn pieces */
 
+/**
+ * Setup: the seat keeps cats and food and starts with its relics' Treats.
+ * Starting the first round is left to whoever runs the table.
+ */
 function keep(ctx: Ctx, action: Extract<Action, { type: "keep" }>): void {
-  const { s } = ctx;
-  if (!isIndexList(action.cats, s.setup.length))
+  const { side } = ctx;
+  if (!isIndexList(action.cats, side.setup.length))
     fail("Those are not cats you were dealt.");
   const essenceOk =
     new Set(action.essence).size === action.essence.length &&
@@ -830,16 +880,13 @@ function keep(ctx: Ctx, action: Extract<Action, { type: "keep" }>): void {
     fail(`Keep exactly ${SETUP_KEEP} cats and food in total.`);
   }
 
-  s.setup.forEach((catId, i) => {
-    (action.cats.includes(i) ? s.hand : s.discard).push(catId);
+  side.setup.forEach((catId, i) => {
+    (action.cats.includes(i) ? side.hand : side.discard).push(catId);
   });
-  s.setup = [];
-  for (const element of action.essence) s.essence[element] += 1;
-  s.essence.wild += s.mods.startWild;
-  s.phase = "turn";
-  s.round = 0;
-  s.turnsLeft = ROUND_TURNS[0] + s.mods.extraTurns;
-  ctx.events.push({
+  side.setup = [];
+  for (const element of action.essence) side.essence[element] += 1;
+  side.essence.wild += side.mods.startWild;
+  ctx.emit({
     type: "kept",
     cats: action.cats.length,
     essence: action.essence.length,
@@ -847,28 +894,28 @@ function keep(ctx: Ctx, action: Extract<Action, { type: "keep" }>): void {
 }
 
 function activate(ctx: Ctx, row: Row, reward: number): void {
-  const { s } = ctx;
-  ctx.events.push({ type: "activated", row, reward });
-  for (let col = s.board[row].length - 1; col >= 0; col--) {
-    const placed = s.board[row][col];
+  const { t, side } = ctx;
+  ctx.emit({ type: "activated", row, reward });
+  for (let col = side.board[row].length - 1; col >= 0; col--) {
+    const placed = side.board[row][col];
     if (placed && getCat(placed.catId).power?.timing === "activated") {
-      s.queue.push({ row, col });
+      t.queue.push({ row, col });
     }
   }
 }
 
 function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
-  const { s } = ctx;
-  const catId = s.hand[action.hand];
+  const { t, side } = ctx;
+  const catId = side.hand[action.hand];
   if (!catId) fail("That cat is not in your hand.");
   if (!ROWS.includes(action.row)) fail("That is not a row.");
   const cat = getCat(catId);
-  const line = s.board[action.row];
+  const line = side.board[action.row];
   if (!cat.rows.includes(action.row))
     fail(`${cat.name} cannot live in that row.`);
   if (line.length >= SLOTS) fail("That row is full.");
-  const discount = auraTotal(s.board, "discount");
-  const offer = swapOffer(s.essence, playCost(catId, discount));
+  const discount = auraTotal(side.board, "discount");
+  const offer = swapOffer(side.essence, playCost(catId, discount));
   if (!offer) fail(`Not enough food for ${cat.name}.`);
   const swap = action.swap ?? [];
   const owed = 2 * offer.short.length;
@@ -879,63 +926,71 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
         : `${cat.name} is ${offer.short.length} food short: give up ${owed} food in its place.`,
     );
   }
-  const paid = playPayment(s.essence, s.hand, action.hand, swap, discount);
+  const paid = playPayment(
+    side.essence,
+    side.hand,
+    action.hand,
+    swap,
+    discount,
+  );
   if (!paid) fail(`Give up only food ${cat.name} does not need.`);
   const col = line.length;
-  const yarn = columnYarnCost(s.mods, col);
-  if (totalYarn(s.board) < yarn) fail(`That column costs ${yarn} yarn.`);
+  const yarn = columnYarnCost(side.mods, col);
+  if (totalYarn(side.board) < yarn) fail(`That column costs ${yarn} yarn.`);
 
-  s.essence = paid;
-  spendYarn(s.board, yarn);
-  s.hand.splice(action.hand, 1);
+  side.essence = paid;
+  spendYarn(side.board, yarn);
+  side.hand.splice(action.hand, 1);
   line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
-  ctx.events.push({ type: "played", catId, row: action.row, col });
-  if (cat.power?.timing === "played") s.queue.push({ row: action.row, col });
+  ctx.emit({ type: "played", catId, row: action.row, col });
+  if (cat.power?.timing === "played") t.queue.push({ row: action.row, col });
 }
 
 function hunt(ctx: Ctx, action: Extract<Action, { type: "hunt" }>): void {
-  const { s } = ctx;
-  const reward = rowReward(s, "hunt");
+  const { t, side } = ctx;
+  const reward = rowReward(side, "hunt");
   const trade = action.trade;
   if (trade !== undefined) {
-    if (!canTrade(s, "hunt")) fail("The Hunt has no trade to make right now.");
-    if (!isIndexList([trade], s.hand.length))
+    if (!tradeOffered(side, t.feeder, "hunt"))
+      fail("The Hunt has no trade to make right now.");
+    if (!isIndexList([trade], side.hand.length))
       fail("That cat is not in your hand.");
   }
   const take =
-    trade !== undefined ? reward + 1 : Math.min(reward, s.feeder.length);
+    trade !== undefined ? reward + 1 : Math.min(reward, t.feeder.length);
   if (
-    !isIndexList(action.dice, s.feeder.length) ||
+    !isIndexList(action.dice, t.feeder.length) ||
     action.dice.length !== take
   ) {
     fail(`Take exactly ${take} dice from the feeder.`);
   }
-  if (trade !== undefined) s.discard.push(...s.hand.splice(trade, 1));
+  if (trade !== undefined) side.discard.push(...side.hand.splice(trade, 1));
   for (const index of [...action.dice].sort((a, b) => b - a)) {
-    const [face] = s.feeder.splice(index, 1);
-    if (face) s.essence[face] += 1;
+    const [face] = t.feeder.splice(index, 1);
+    if (face) side.essence[face] += 1;
   }
-  if (s.feeder.length === 0) rollFeeder(ctx);
+  if (t.feeder.length === 0) rollFeeder(ctx);
   activate(ctx, "hunt", reward);
 }
 
 function den(ctx: Ctx, action: Extract<Action, { type: "den" }>): void {
-  const { s } = ctx;
-  const reward = rowReward(s, "den");
+  const { t, side } = ctx;
+  const reward = rowReward(side, "den");
   const trade = action.trade;
   if (trade !== undefined) {
-    if (!canTrade(s, "den")) fail("The Den has no trade to make right now.");
-    if (!ESSENCES.includes(trade) || s.essence[trade] <= 0)
+    if (!tradeOffered(side, t.feeder, "den"))
+      fail("The Den has no trade to make right now.");
+    if (!ESSENCES.includes(trade) || side.essence[trade] <= 0)
       fail("You do not hold that food.");
     if (action.targets.length !== reward + 1)
       fail(`A trade lays all ${reward + 1} yarn, or it is not made.`);
-    s.essence[trade] -= 1;
+    side.essence[trade] -= 1;
   }
   if (action.targets.length > reward + (trade !== undefined ? 1 : 0))
     fail(`The Den lays ${reward} yarn.`);
   for (const target of action.targets) {
     const placed = ROWS.includes(target.row)
-      ? s.board[target.row][target.col]
+      ? side.board[target.row][target.col]
       : undefined;
     if (!placed) fail("There is no cat in that slot.");
     if (placed.yarn >= getCat(placed.catId).yarnCap) {
@@ -947,15 +1002,15 @@ function den(ctx: Ctx, action: Extract<Action, { type: "den" }>): void {
 }
 
 function prowl(ctx: Ctx, action: Extract<Action, { type: "prowl" }>): void {
-  const { s } = ctx;
-  const reward = rowReward(s, "prowl");
+  const { t, side } = ctx;
+  const reward = rowReward(side, "prowl");
   const trade = action.trade;
-  let want = prowlPickCount(s);
+  let want = prowlPickCount(side);
   if (trade !== undefined) {
-    if (!canTrade(s, "prowl"))
+    if (!tradeOffered(side, t.feeder, "prowl"))
       fail("The Prowl has no trade to make right now.");
     const payer = ROWS.includes(trade.row)
-      ? s.board[trade.row][trade.col]
+      ? side.board[trade.row][trade.col]
       : undefined;
     if (!payer || payer.yarn <= 0) fail("That cat holds no yarn to spend.");
     payer.yarn -= 1;
@@ -965,50 +1020,102 @@ function prowl(ctx: Ctx, action: Extract<Action, { type: "prowl" }>): void {
   const deckPicks = action.picks.length - trayPicks.length;
   if (
     action.picks.length !== want ||
-    !isIndexList(trayPicks, s.tray.length) ||
-    deckPicks > s.deck.length + s.discard.length
+    !isIndexList(trayPicks, side.tray.length) ||
+    deckPicks > side.deck.length + side.discard.length
   ) {
     fail(`Pick exactly ${want} cats from the tray or the deck.`);
   }
   for (const index of [...trayPicks].sort((a, b) => b - a)) {
-    const [card] = s.tray.splice(index, 1);
-    if (card) s.hand.push(card);
+    const [card] = side.tray.splice(index, 1);
+    if (card) side.hand.push(card);
   }
   for (let i = 0; i < deckPicks; i++) {
     const card = drawCard(ctx);
-    if (card !== null) s.hand.push(card);
+    if (card !== null) side.hand.push(card);
   }
   activate(ctx, "prowl", reward);
 }
 
 function resolve(ctx: Ctx, choice: number | null): void {
-  const { s } = ctx;
-  const pending = s.pending;
+  const { t, side } = ctx;
+  const pending = t.pending;
   if (!pending) fail("Nothing is waiting on a choice.");
-  const placed = s.board[pending.slot.row][pending.slot.col];
-  s.pending = null;
+  const placed = side.board[pending.slot.row][pending.slot.col];
+  t.pending = null;
   if (choice === null || !placed) return;
 
   if (pending.kind === "tuckHand") {
-    if (!isIndexList([choice], s.hand.length))
+    if (!isIndexList([choice], side.hand.length))
       fail("That cat is not in your hand.");
-    const [card] = s.hand.splice(choice, 1);
+    const [card] = side.hand.splice(choice, 1);
     if (card) tuck(placed, card);
     for (let i = 0; i < pending.draw; i++) {
       const card = drawCard(ctx);
-      if (card !== null) s.hand.push(card);
+      if (card !== null) side.hand.push(card);
     }
     return;
   }
   if (choice !== 1) fail("Answer 1 to trade, or decline.");
   if (placed.yarn > 0) {
     placed.yarn -= 1;
-    s.essence.wild += 1;
+    side.essence.wild += 1;
   }
 }
 
-function rivalTurn(ctx: Ctx): void {
-  const { s } = ctx;
+/** The legendaries' relics that pay out at the end of each of a seat's turns. */
+function fireAuras(ctx: Ctx): void {
+  const { side } = ctx;
+  for (const row of ROWS) {
+    side.board[row].forEach((placed, col) => {
+      const aura = getCat(placed.catId).aura;
+      if (aura?.kind !== "treat") return;
+      side.essence.wild += aura.n;
+      ctx.emit({ type: "aura", catId: placed.catId, row, col });
+    });
+  }
+}
+
+/**
+ * Applies a turn action for the seat: its own move, then every power it
+ * queued, as far as the first choice. A free reroll is not a turn; it
+ * returns `false` and the seat is still to act.
+ */
+function takeTurn(ctx: Ctx, action: Action): boolean {
+  switch (action.type) {
+    case "reroll":
+      if (!canReroll(ctx.t))
+        fail("Reroll only when every die shows the same face.");
+      rollFeeder(ctx);
+      return false;
+    case "play":
+      play(ctx, action);
+      break;
+    case "hunt":
+      hunt(ctx, action);
+      break;
+    case "den":
+      den(ctx, action);
+      break;
+    case "prowl":
+      prowl(ctx, action);
+      break;
+    default:
+      fail("That action is not available right now.");
+  }
+  drain(ctx);
+  return true;
+}
+
+/** Closes a seat's turn once nothing is left waiting on a choice. */
+function endTurn(ctx: Ctx): void {
+  fireAuras(ctx);
+  refillTray(ctx);
+  ctx.side.turnsLeft -= 1;
+}
+
+/* ------------------------------------------------- the scripted rival */
+
+function rivalTurn(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
   const rival = getRival(s.rivalId);
   const r = s.rival;
   if (r.deck.length === 0) {
@@ -1054,7 +1161,7 @@ function rivalTurn(ctx: Ctx): void {
       r.pushes += 1;
       break;
   }
-  ctx.events.push({ type: "rival", action: card, removed });
+  events.push({ type: "rival", action: card, removed });
   if (s.feeder.length === 0) rollFeeder(ctx);
   refillTray(ctx);
 
@@ -1066,15 +1173,14 @@ function rivalTurn(ctx: Ctx): void {
   );
 }
 
-function endRound(ctx: Ctx): void {
-  const { s } = ctx;
+function endRound(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
   fireTimed(ctx, (cat) => cat.power?.timing === "roundEnd");
 
   const result = goalStanding(s);
   if (result) {
     s.goalResults.push(result);
     s.rival.goalPoints += result.rivalPoints;
-    ctx.events.push({ type: "goal", round: s.round, ...result });
+    events.push({ type: "goal", round: s.round, ...result });
   }
   s.rival.pushes = 0;
 
@@ -1088,7 +1194,7 @@ function endRound(ctx: Ctx): void {
   const rival = rivalScore(s);
   s.phase = "over";
   s.result = { player, rival, won: player.total > rival };
-  ctx.events.push({
+  events.push({
     type: "over",
     won: s.result.won,
     player: player.total,
@@ -1096,76 +1202,48 @@ function endRound(ctx: Ctx): void {
   });
 }
 
-/** The legendaries' relics that pay out at the end of each player turn. */
-function fireAuras(ctx: Ctx): void {
-  const { s } = ctx;
-  for (const row of ROWS) {
-    s.board[row].forEach((placed, col) => {
-      const aura = getCat(placed.catId).aura;
-      if (aura?.kind !== "treat") return;
-      s.essence.wild += aura.n;
-      ctx.events.push({ type: "aura", catId: placed.catId, row, col });
-    });
-  }
-}
-
-/** Finishes the action: fire queued powers, then hand the turn to the rival. */
-function settle(ctx: Ctx): void {
-  const { s } = ctx;
-  drain(ctx);
+/** Finishes the action: once no choice is pending, hand the turn to the rival. */
+function settle(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
   if (s.pending) {
     s.phase = "pending";
     return;
   }
   s.phase = "turn";
-  fireAuras(ctx);
-  refillTray(ctx);
-  s.turnsLeft -= 1;
-  rivalTurn(ctx);
-  if (s.turnsLeft <= 0) endRound(ctx);
+  endTurn(ctx);
+  rivalTurn(s, ctx, events);
+  if (s.turnsLeft <= 0) endRound(s, ctx, events);
 }
 
 export function applyAction(state: MatchState, action: Action): ActionResult {
   const s = structuredClone(state);
   s.step += 1;
-  const ctx: Ctx = { s, rng: createRng(`${s.seed}:${s.step}`), events: [] };
+  const events: MatchEvent[] = [];
+  // The one seat and its table are the same object here.
+  const ctx: Ctx = {
+    t: s,
+    side: s,
+    rng: createRng(`${s.seed}:${s.step}`),
+    emit: (event) => events.push(event),
+  };
 
   if (s.phase === "over") fail("The match is over.");
   if (s.phase === "setup") {
     if (action.type !== "keep") fail("Choose what to keep first.");
     keep(ctx, action);
-    return { state: s, events: ctx.events };
+    s.phase = "turn";
+    s.round = 0;
+    s.turnsLeft = ROUND_TURNS[0] + s.mods.extraTurns;
+    return { state: s, events };
   }
   if (s.phase === "pending") {
     if (action.type !== "resolve") fail("Answer the pending choice first.");
     resolve(ctx, action.choice);
-    settle(ctx);
-    return { state: s, events: ctx.events };
+    drain(ctx);
+    settle(s, ctx, events);
+    return { state: s, events };
   }
-
-  switch (action.type) {
-    case "reroll":
-      if (!canReroll(s))
-        fail("Reroll only when every die shows the same face.");
-      rollFeeder(ctx);
-      return { state: s, events: ctx.events };
-    case "play":
-      play(ctx, action);
-      break;
-    case "hunt":
-      hunt(ctx, action);
-      break;
-    case "den":
-      den(ctx, action);
-      break;
-    case "prowl":
-      prowl(ctx, action);
-      break;
-    default:
-      fail("That action is not available right now.");
-  }
-  settle(ctx);
-  return { state: s, events: ctx.events };
+  if (takeTurn(ctx, action)) settle(s, ctx, events);
+  return { state: s, events };
 }
 
 /* ------------------------------------------------------- legal actions */
@@ -1187,21 +1265,24 @@ export function combinations(n: number, k: number): number[][] {
 }
 
 /**
- * The actions available now. Complete for every action type except Den, which
- * is listed once with automatic yarn placement; any placement that respects
- * capacity is also legal. A play that is short is listed once with the
- * default swap; any other spare essence may be given up instead.
+ * The actions a seat has on a table. Complete for every action type except
+ * Den, which is listed once with automatic yarn placement; any placement that
+ * respects capacity is also legal. A play that is short is listed once with
+ * the default swap; any other spare essence may be given up instead.
  *
  * A row's trade is listed with every way to take what it buys. The Hunt's is
  * listed for each different cat that could be discarded; the Den's and the
  * Prowl's are listed with one way to pay (`spareFood`, `richestSlot`), and any
  * other food held, or any other cat holding yarn, may pay instead.
  */
-export function legalActions(state: MatchState): Action[] {
-  if (state.phase === "over") return [];
+export function seatActions(
+  table: Pick<Table, "phase" | "pending" | "feeder">,
+  side: Side,
+): Action[] {
+  if (table.phase === "over") return [];
 
-  if (state.phase === "setup") {
-    const cats = state.setup.length;
+  if (table.phase === "setup") {
+    const cats = side.setup.length;
     return combinations(cats + ELEMENTS.length, SETUP_KEEP).map((combo) => ({
       type: "keep",
       cats: combo.filter((i) => i < cats),
@@ -1212,29 +1293,29 @@ export function legalActions(state: MatchState): Action[] {
     }));
   }
 
-  if (state.phase === "pending") {
-    const pending = state.pending;
+  if (table.phase === "pending") {
+    const pending = table.pending;
     if (!pending) return [];
     const choices: (number | null)[] =
-      pending.kind === "trade" ? [null, 1] : [null, ...state.hand.keys()];
+      pending.kind === "trade" ? [null, 1] : [null, ...side.hand.keys()];
     return choices.map((choice) => ({ type: "resolve", choice }));
   }
 
   const actions: Action[] = [];
-  if (canReroll(state)) actions.push({ type: "reroll" });
+  if (canReroll(table)) actions.push({ type: "reroll" });
 
   const seen = new Set<string>();
-  state.hand.forEach((catId, hand) => {
+  side.hand.forEach((catId, hand) => {
     if (seen.has(catId)) return;
     seen.add(catId);
     const swap = defaultSwap(
-      state.essence,
-      state.hand,
+      side.essence,
+      side.hand,
       hand,
-      auraTotal(state.board, "discount"),
+      auraTotal(side.board, "discount"),
     );
     for (const row of ROWS) {
-      if (!canPlay(state, hand, row)) continue;
+      if (!canPlay(side, hand, row)) continue;
       actions.push(
         swap.length > 0
           ? { type: "play", hand, row, swap }
@@ -1243,40 +1324,40 @@ export function legalActions(state: MatchState): Action[] {
     }
   });
 
-  const take = Math.min(rowReward(state, "hunt"), state.feeder.length);
-  for (const dice of combinations(state.feeder.length, take)) {
+  const take = Math.min(rowReward(side, "hunt"), table.feeder.length);
+  for (const dice of combinations(table.feeder.length, take)) {
     actions.push({ type: "hunt", dice });
   }
-  if (canTrade(state, "hunt")) {
-    const discards = state.hand.flatMap((catId, hand) =>
-      state.hand.indexOf(catId) === hand ? [hand] : [],
+  if (tradeOffered(side, table.feeder, "hunt")) {
+    const discards = side.hand.flatMap((catId, hand) =>
+      side.hand.indexOf(catId) === hand ? [hand] : [],
     );
-    for (const dice of combinations(state.feeder.length, take + 1)) {
+    for (const dice of combinations(table.feeder.length, take + 1)) {
       for (const trade of discards) actions.push({ type: "hunt", dice, trade });
     }
   }
 
-  const yarn = rowReward(state, "den");
-  actions.push({ type: "den", targets: autoYarnTargets(state, yarn) });
-  const food = canTrade(state, "den") ? spareFood(state) : null;
+  const yarn = rowReward(side, "den");
+  actions.push({ type: "den", targets: autoYarnTargets(side, yarn) });
+  const food = tradeOffered(side, table.feeder, "den") ? spareFood(side) : null;
   if (food !== null) {
     actions.push({
       type: "den",
-      targets: autoYarnTargets(state, yarn + 1),
+      targets: autoYarnTargets(side, yarn + 1),
       trade: food,
     });
   }
 
   const prowls = (want: number, trade?: SlotRef) => {
-    const deckAvailable = state.deck.length + state.discard.length;
+    const deckAvailable = side.deck.length + side.discard.length;
     for (
       let fromTray = 0;
-      fromTray <= Math.min(want, state.tray.length);
+      fromTray <= Math.min(want, side.tray.length);
       fromTray++
     ) {
       const fromDeck = want - fromTray;
       if (fromDeck > deckAvailable) continue;
-      for (const combo of combinations(state.tray.length, fromTray)) {
+      for (const combo of combinations(side.tray.length, fromTray)) {
         const picks = [
           ...combo,
           ...Array.from({ length: fromDeck }, () => "deck" as const),
@@ -1287,9 +1368,16 @@ export function legalActions(state: MatchState): Action[] {
       }
     }
   };
-  const want = prowlPickCount(state);
+  const want = prowlPickCount(side);
   prowls(want);
-  const payer = canTrade(state, "prowl") ? richestSlot(state.board) : null;
+  const payer = tradeOffered(side, table.feeder, "prowl")
+    ? richestSlot(side.board)
+    : null;
   if (payer) prowls(want + 1, payer);
   return actions;
+}
+
+/** The actions available now in a match against the scripted rival. */
+export function legalActions(state: MatchState): Action[] {
+  return seatActions(state, state);
 }
