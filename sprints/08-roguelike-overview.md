@@ -47,12 +47,13 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 
 ### Run
 
-- Pick a clan, then 6 matches. Matches 3 and 6 are bosses.
+- Pick a clan and a difficulty, then 6 matches. Matches 3 and 6 are bosses.
+- Difficulty is one of three tiers. Kitten changes nothing. On Stray every rival starts each match with 2 yarn (2 points); on Apex, 4. Nothing else differs between tiers, and no dice are rolled for it: the same seed deals the same table on all three. A run saved before tiers existed is a Kitten run.
 - On screen the run is a tower of six floors, a rival at each window. Hadu walks in at the foot, goes up a floor after each win, and stands on the roof when the run is won. It is a picture of the gauntlet and changes no rule.
 - After a win: add 1 of 3 offered cats (or skip), and optionally trim one card from the deck (never below 12). After matches 1, 3 and 5: also choose 1 of 3 relics.
 - Every clan starts with its own relic.
 - Losing a match ends the run. One active run per account.
-- Between runs only unlocks persist (cats, relics, clans).
+- Between runs only unlocks persist (cats, relics, clans). Every tier earns them. Three rules name a tier: the Loud Bell (beat Madame Mittens on Stray or harder), the Quiet Corner (win a run on Stray or harder), and Hadu (win a run on Apex). Stormsabre is still any won run. An unlock already held stays held.
 
 ### Engine contract
 

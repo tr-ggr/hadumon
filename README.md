@@ -35,17 +35,23 @@ There is no gacha, no idle play, no currency and no multiplayer.
 
 - Pick a **clan**: a 16-card starter deck built around one element, plus that
   clan's relic.
+- Pick how hard: **Kitten**, **Stray** or **Apex**. Kitten is the game as it
+  is. On Stray every rival starts each match 2 points ahead, as 2 yarn; on
+  Apex, 4. Nothing else changes, and the head start is on the rival's sheet
+  from the first turn.
 - Six rivals in a fixed order, with **bosses at 3 and 6**.
 - After each win, add one of three offered cats (or skip) and optionally trim a
   card. After matches 1, 3 and 5, also choose a **relic**, a run-long passive.
 - The board resets every match; the deck and relics carry through.
 - Finished runs unlock new cats, relics and clans. Nothing makes a later run
-  stronger from the start.
+  stronger from the start. Every tier earns unlocks; three of them ask for a
+  harder one: the Loud Bell (beat Madame Mittens on Stray or harder), the
+  Quiet Corner (win a run on Stray or harder) and Hadu (win a run on Apex).
 
 ## At the table
 
-The match fills the screen, with no app shell around it: three small buttons in
-the top right corner go Home, to the Codex, and to Log out. It is laid out as a
+The match fills the screen, with no app shell around it: four small buttons in
+the top right corner set the sound and go Home, to the Codex, and to Log out. It is laid out as a
 table. A rail down the left holds the rival, the three rounds and your turn
 (scores, food, the prompt and its confirm); the shared supply (feeder, tray,
 deck) and your mat of three lanes are in the centre; the score sheet, relics
@@ -54,7 +60,14 @@ a card, or pick it, and it stands upright with its whole face showing. On a
 narrow screen it is one column with the turn and the hand docked at the bottom.
 After each action the turn is played back one step
 at a time: the lane's cats fire from right to left, then the rival's card
-flips. Any click or key skips to the end, and reduced motion lands it at once.
+flips. Each cat pops as it fires, the points it scored rise off it, and the
+score rolls up; a chain speeds up as it runs, and each power sounds one note
+higher than the last. Any click or key skips to the end, and reduced motion
+lands it at once.
+
+The table has sound, made in the browser with the Web Audio API (there are no
+audio files). The speaker button in the corner cycles full, quiet and off, and
+the choice is kept in the browser. Nothing plays in a background tab.
 
 Keys, where there is a keyboard: `1`-`9` pick a hand card (or a die, tray card
 or cat while a lane is being resolved), `H` `D` `P` activate a lane or play the
@@ -156,6 +169,8 @@ src/
     cats/                 CatCard, the food icons (EssencePip) and ElementMark
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components
+    run/fx/               Match effects: cue to intents (plan), sampled springs, Web Animations
+    run/sfx/              Match sound: recipes as data, the Web Audio engine, the volume setting
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/
     api/                  tRPC root, context, routers (auth, run, codex)
@@ -168,6 +183,7 @@ src/
       rival.ts            The six rivals and their action decks
       goals.ts            Round goals
       relics.ts           Relics and the rule changes they make
+      difficulty.ts       The three tiers, as rule changes laid over the relics'
       run.ts              The gauntlet: clans, rewards, match-to-match flow
       unlocks.ts          What a finished run unlocks
       view.ts             The redacted state the client is allowed to see

@@ -12,9 +12,10 @@ Everything is pure, deterministic, and safe to import in client components.
 | `elements.ts` | `ELEMENTS`, `Element`, `ELEMENT_LABELS`, `FOOD_LABELS` (the cat food each element eats; the player-facing name for essence), `TREAT_LABEL` (wild) |
 | `match.ts` | `Action`, `MatchEvent`, `Essence`, `PlacedCat`, `swapOffer(pool, cost)`, `playPayment(pool, hand, index, swap, discount)`, `defaultSwap(pool, hand, index, discount)`, `auraTotal(board, kind)` (one kind of legendary's relic summed over the board; the `discount` the two before it take), `SlotRef`, `Pending`, `GoalResult`, `ScoreBreakdown`; constants `SLOTS` (4), `ROUND_TURNS` ([5,4,3]), `SETUP_KEEP` (5), `COLUMN_YARN_COST`, `GOAL_WIN_POINTS`, `GOAL_LOSE_POINTS` |
 | `goals.ts` | `getGoal(id)` → `{ name, text, par }` |
-| `relics.ts` | `getRelic(id)` → `{ name, text }`, `RELIC_LIST` |
+| `relics.ts` | `getRelic(id)` → `{ name, text }`, `RELIC_LIST`, `Mods`, `NO_MODS`, `combineMods(relicIds, extra)` (the relics' rule changes summed, with a tier's laid on top) |
+| `difficulty.ts` | `DIFFICULTIES` (`kitten`, `stray`, `apex`), `DifficultyId`, `DIFFICULTY`, `DIFFICULTY_LIST` (`{ id, name, text, mods, rank }`), `isDifficulty(value)`, `difficultyOf(value)` (anything that is not a tier is Kitten), `isAtLeast(value, tier)`. A tier's only mod is `rivalStartYarn`: the yarn the rival holds when a match starts (0, 2, 4) |
 | `rival.ts` | `getRival(id)` → `{ name, boss, trait, flavor, bankPoints, stashYarn, raidDice, burnCards, deck }`, `GAUNTLET` |
-| `run.ts` | `CLANS`, `CLAN_LIST` (`{ id, name, relicId, text }`), `starterDeck(clanId)`, `RewardOffer`, `MatchRecord`, `MIN_DECK` |
+| `run.ts` | `CLANS`, `CLAN_LIST` (`{ id, name, relicId, text }`), `starterDeck(clanId)`, `RewardOffer`, `MatchRecord`, `MIN_DECK`, `loadRun(state)` (gives a stored match any mod it was saved without) |
 | `unlocks.ts` | `Unlock` (`{ kind: "cat" | "relic" | "clan", key }`), `UNLOCK_RULES` |
 | `view.ts` | `RunView`, `MatchView`, `RivalView`: the only shapes the client ever receives |
 
@@ -38,11 +39,11 @@ Every player turn is followed by one rival action and, after the last turn of a 
 
 ### `MatchView` fields worth knowing
 
-`phase` (`setup` / `turn` / `pending` / `over`), `round` (0–2), `turnsLeft`, `board` (`Record<Row, PlacedCat[]>`, each `{ catId, yarn, cached, tucked, under }`; `under` lists the tucked cat ids, oldest first, and can be missing or shorter than `tucked` on a match saved before tucks were recorded), `hand`, `tray`, `setup`, `essence` (five elements plus `wild`), `feeder`, `goals` (one id per round), `goalResults`, `standing` (this round's goal as it would score now), `pending`, `result`, `score` (`ScoreBreakdown`), `rival` (`banked`, `bankValue`, `yarn`, `pushes`, `goalPoints`, `score`, `last`, `seen`, `deckCount`), `rewards`, `yarnCosts` (per row, `null` when full), `playable`, `canReroll`, `prowlPicks`, `deckCount`, `discardCount`, `mods`.
+`phase` (`setup` / `turn` / `pending` / `over`), `round` (0–2), `turnsLeft`, `board` (`Record<Row, PlacedCat[]>`, each `{ catId, yarn, cached, tucked, under }`; `under` lists the tucked cat ids, oldest first, and can be missing or shorter than `tucked` on a match saved before tucks were recorded), `hand`, `tray`, `setup`, `essence` (five elements plus `wild`), `feeder`, `goals` (one id per round), `goalResults`, `standing` (this round's goal as it would score now), `pending`, `result`, `score` (`ScoreBreakdown`), `rival` (`banked`, `bankValue`, `yarn`, `pushes`, `goalPoints`, `score`, `last`, `seen`, `deckCount`), `rewards`, `yarnCosts` (per row, `null` when full), `playable`, `canReroll`, `prowlPicks`, `deckCount`, `discardCount`, `mods`, `relics` (the run's relic ids; with `board` and `goalResults` they are all `scoreBoard(board, goalResults, relicIds)` needs, so the client can score a board it has rebuilt for playback).
 
 ### `RunView`
 
-`clanId`, `deck` (sorted cat ids), `relics`, `matchIndex` (0–5), `gauntlet` (six rival ids), `phase` (`match` / `reward` / `over`), `match`, `reward` (`{ cats, relics, canTrim }`), `results` (`{ rivalId, player, rival, won }[]`), `outcome` (`won` / `lost` / `abandoned` / `null`).
+`clanId`, `difficulty` (`kitten` / `stray` / `apex`), `deck` (sorted cat ids), `relics`, `matchIndex` (0–5), `gauntlet` (six rival ids), `phase` (`match` / `reward` / `over`), `match`, `reward` (`{ cats, relics, canTrim }`), `results` (`{ rivalId, player, rival, won }[]`), `outcome` (`won` / `lost` / `abandoned` / `null`).
 
 ## API: `src/server/api/routers/`
 
@@ -50,11 +51,11 @@ Every player turn is followed by one rival action and, after the last turn of a 
 |-----------|-------|---------|
 | `run.current` (query) | — | `RunSnapshot \| null`: `{ id, version, view }` |
 | `run.clans` (query) | — | ids of unlocked clans |
-| `run.start` | `{ clanId }` | `RunSnapshot` |
+| `run.start` | `{ clanId, difficulty }` (`difficulty` defaults to `kitten`) | `RunSnapshot` |
 | `run.act` | `{ version, action }` | `RunUpdate`: `{ id, version, view, events, unlocked }` |
 | `run.chooseReward` | `{ version, cat, relic, trim }` (each an id or `null`) | `RunUpdate` |
 | `run.abandon` | `{ version }` | `RunUpdate` |
-| `run.history` (query) | `{ limit }` | finished runs: `{ id, clanId, status, matchesWon, score, startedAt, endedAt }[]` |
+| `run.history` (query) | `{ limit }` | finished runs: `{ id, clanId, difficulty, status, matchesWon, score, startedAt, endedAt }[]` |
 | `codex.get` (query) | — | `{ cats, relics, clans }`, each `{ id, unlocked, hint }[]` |
 
 - Always send the `version` from the latest snapshot. A stale one returns `CONFLICT`; refetch `run.current` and carry on.

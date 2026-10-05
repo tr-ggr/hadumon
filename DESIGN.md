@@ -8,6 +8,7 @@ colors:
   cobalt: "#1557d8"
   cobalt-dark: "#0d3c9d"
   lime: "#d8ff4f"
+  lime-deep: "#a3d900"
   coral: "#ff7163"
   ink: "#17212b"
   ink-soft: "#5b6c7d"
@@ -483,6 +484,7 @@ Each element has two further fur tones used only inside sprites (`src/components
 - **Sprite Outline** (`sprite-outline`): the outline pixel of every cat and pixel icon. Slightly warmer and darker than ink; used nowhere else.
 
 Tabletop only:
+- **Deep Lime** (`lime-deep`): the light behind the player's score while a chain of powers runs, and nothing else. Lime itself is lost on white and cream; this is the same hue taken down far enough to read as light there. It is never a fill and never text.
 - **Chipboard** (`chipboard`): the cut edge under every piece, the outline of an empty yarn space, the paw on a face-up pile, and the edge under the landing wordmark's letters. Mixed into cream (42%) or white (34%) it is the cast shadow on the cloth and on the docked edge.
 - **Deep Sky** (`sky-deep`): the cast shadow of a piece lying on the mat, the printed lines between lanes, the outline of a printed empty space, and a spent turn cube. On the landing page it is also the paws and yarn printed on the sky bands.
 - **Cloth** (`cloth`): the weave of the tabletop (a 16x8px brick of 4x2px marks on cream), the floor of a tray well, and the rival's card space before any card has turned.
@@ -637,7 +639,7 @@ An action on the table is a piece, cut from the same card as everything else.
 - **Key hint:** a confirm carries "Enter" and a back carries "Esc" as a hint inside the button.
 - **Link:** a link dressed as a table action is the same piece on a real anchor, in either variant and any size; it defaults to the medium cream button, which is what a link that leaves the table ("Open the codex") uses. On the landing page Log in is the small cream button, Sign up the small cobalt one, and "Start a run" the large cobalt one (medium inside the demo).
 - **Stepper:** a 40px white square piece for one more or one fewer.
-- A way out of the run that is not a move in the game ("Abandon run") is an underlined 12px bold text link, not a piece. The ways off the table are the three corner buttons.
+- A way out of the run that is not a move in the game ("Abandon run") is an underlined 12px bold text link, not a piece. The ways off the table are the corner buttons.
 - **Icon:** a 40px cream square holding one 16px pixel icon, with the action as its accessible name and tooltip. The corner buttons.
 
 ### Chips
@@ -660,7 +662,7 @@ An action on the table is a piece, cut from the same card as everything else.
 ### Navigation
 - **Rail (768px and up):** 48px items, 12px radius, icon plus 14px bold label. Inactive is soft ink and takes a soft sky fill on hover; active is cobalt with white text.
 - **Bar (below 768px):** three equal columns, icon over an 11px bold label. Active is a soft sky fill with cobalt text.
-- **Corner buttons (run route only):** three cream icon table buttons 6px apart in the top right corner, in a `nav` named "Leave the table": a house (Home), a book (Codex), a door with an arrow (Log out). The run route has no other navigation.
+- **Corner buttons (run route only):** four cream icon table buttons 6px apart in the top right corner, in a `nav` named "Table": a speaker (the sound), a house (Home), a book (Codex), a door with an arrow (Log out). The run route has no other navigation. The speaker is the only one that is not a way off the table: each press moves the sound on from full (two waves) to quiet (one wave) to off (crossed out) and back. In a match under 640px the corner holds the other three, the gauntlet track beside them needing the room, and the speaker sits at the top right of the turn dock.
 - **Wordmark:** "Hadu" in ink, "Mon" in coral, bold rounded, 24px in the rail.
 
 ### Cat Card
@@ -701,10 +703,10 @@ One of three lanes printed on the mat.
 Three tiles, one per round: stacked in the match's rail, across the cloth above the mat from 640px to 1023px, and across a mat on the opening-hand screen. Each prints "Round n" at 20px, the round's turns as 12px cubes (lime piece for a turn still to play, a deep-sky outline once spent), the goal with its pixel icon and what it pays, and how the goal stands or went as a lime marker for the player and a coral marker for the rival. The current round's tile is white; the others are cream; a scored round drops to 80% opacity. In the rail a round that is not being played is cut down: 11px goal text, and a scored round keeps only its goal's name beside the two markers.
 
 ### Rival Side
-- **Nameplate:** a coral tile with the rival's name in print at 20px, an ink Boss tag (cream text, 11px) for a boss, and its trait in 12px bold. On the opening-hand screen it also prints the flavor line in italics.
+- **Nameplate:** a coral tile with the rival's name in print at 20px, an ink Boss tag (cream text, 11px) for a boss, and its trait in 12px bold. On the opening-hand screen it also prints the flavor line in italics. In a run on Stray or Apex it carries the tier as a white tag (ink border, 11px at weight 900) beside the name, and its trait line ends with the head start the tier gave it ("Started 2 points ahead, as 2 yarn."). A Kitten run's plate has neither.
 - **Pile:** a 36 by 48px card back with a pixel paw and a white count tag on its top corner: cobalt for the player's deck, coral for the rival's deck and bank, cream for a face-up discard. Empty is a dashed outline.
 - **Last card:** a card-height piece saying what the rival flipped last in 14px at weight 900, and under it what is still in its deck in 11px soft ink. Cloth before any card, cream after, coral for a moment when a card has just turned.
-- **Score token:** a tile with "Rival" in 11px bold over the score in print at 30px, coral. The player's, in the turn block, is the same in lime and reads "You". In the rail the two stand side by side at the top of the turn block, label left and score right, and the rival's side does not repeat its own.
+- **Score token:** a tile with "Rival" in 11px bold over the score in print at 30px, coral. The player's, in the turn block, is the same in lime and reads "You". In the rail the two stand side by side at the top of the turn block, label left and score right, and the rival's side does not repeat its own. Both numbers roll to a new value instead of jumping to it, and the player's token has score heat behind it while a chain runs (see Motion).
 
 ### Scorepad, Relic Tile, Event Log
 - **Scorepad:** a white tile holding both score sheets side by side: a lime "You" tag and a coral tag with the rival's name, lines in 12px divided by hairlines, the total under a 2px ink rule in print at 20px. The same sheets appear on the match result.
@@ -712,7 +714,7 @@ Three tiles, one per round: stacked in the match's rail, across the cloth above 
 - **Event log:** a white tile headed "What just happened" in print at 20px. The newest turn is at the top at full strength; older turns sit under a hairline at 75%. A power's line is plain ink; a note is soft ink; the rival's line is a coral marker and a scored goal a lime marker, each with a 2px ink border.
 
 ### Gauntlet Track and Run Strip
-Six markers, 28px wide, numbered in print at 20px: a lime tile for a rival beaten, a coral tile for the one across the table (lifted) or the one that ended the run, a dashed outline for those to come. Bosses stand taller (36px). Beside it, the clan and deck size in 12px soft ink, and "Abandon run" as an underlined text link that opens a confirm dialog. In the match's rail the strip is the track and the link alone.
+Six markers, 28px wide, numbered in print at 20px: a lime tile for a rival beaten, a coral tile for the one across the table (lifted) or the one that ended the run, a dashed outline for those to come. Bosses stand taller (36px). Beside it, the clan, the tier and the deck size in 12px soft ink ("Cinder Clan · Stray · 16 cards"), and "Abandon run" as an underlined text link that opens a confirm dialog. In the match's rail the strip is the track, the tier's name, and the link.
 
 ### Tower and Climb
 Between matches the run is shown as a tower, whole, with no camera: a grey ribbed cat condo of six floors, the first match at the bottom, under a roof slab and on a foot with a flat cast on the cloth. It is not a piece: it has no chipboard edge and takes no clicks. It is drawn as pixel rows in `src/components/sprites/tower.ts`, at the sprites' own pixel size (2px, or 3px from 640px wide and 800px tall), so a 16x16 sprite stands on it unscaled.
@@ -724,6 +726,7 @@ Between matches the run is shown as a tower, whole, with no camera: a grey ribbe
 - **Rival sprites** (`src/components/RivalSprite.tsx`, data in `src/components/sprites/rivals.ts`): Alley Tom (a bitten ear and a plaster), The Dockside Twins (two small cats, one in a striped cap), Madame Mittens (a feathered hat, pearls, white paws), The Rooftop Syndicate (a flat cap, two more heads behind), The Archivist (white spectacles and an index card), Old Nine Lives (a crown, one eye shut, white whiskers). Only a boss's sprite reaches the top row.
 
 ### Other Run Screens
+- **Tier pick:** on the clan pick, above the clans, under a 20px print heading "How hard": three cream tiles in a row from 640px and stacked below it, each at least 56px tall with the tier's name in print at 20px over its exact rule in 12px at weight 600 ("Every rival starts 2 points ahead, as 2 yarn."). The chosen one is lime and pressed. The last tier chosen is offered again on the next visit, and the rail's sentence names it ("Cinder Clan on Stray.").
 - **Clan pick:** each clan in a tray well: its name in print at 20px, what it does, a cobalt "Choose" tile (lime and pressed once chosen, white for a locked clan), its relic tile, and its starting deck spread out as small tiles (sprite, count, name).
 - **Opening hand:** the rival's nameplate with flavor, the round tiles on a mat, the hand five across to keep from, five food tiles to keep from (white; lime, framed, and lifted when kept), then the feeder, piles, and tray as they will be on the table.
 - **Match result:** a white card-height sheet: the headline in print at 30px, the score in a lime marker for a win or a coral one for a loss, both score sheets, and the three goals in a sentence each. It is the first step after a match, alone on its screen.
@@ -812,15 +815,32 @@ A cream board on the closing sky band, centred, casting deep sky. It holds a pri
 ### Motion
 Short and functional. Chrome: press feedback is 140ms; the auth card rises 12px and fades in once over 320ms on an ease-out curve; skeletons pulse. All animation and transition durations collapse under `prefers-reduced-motion`.
 
-The landing page is a tabletop and moves like one. The demo lands a turn one step at a time, 560ms apart. The cat whose power is firing takes the tabletop's firing animation (lime and pressed, 300ms in 3 steps) and its line in the power list fills lime; the rival's last card takes the tabletop's flip (360ms in 6 steps) and is coral for that step. The crowd idles on a bob: 2px up and back in two steps every 1.6 seconds, each cat started at a different point so no two move together. When the row fires the crowd hops with the chain, 14px at the top in four steps over 360ms: the cluster right of the stage on the first slot to fire, the cat on the plaque on the middle one, the cluster on the left on the last. When the round is won every cat on the page hops three times. Under reduced motion the crowd is still and the steps land at once.
+The landing page is a tabletop and moves like one. The demo lands a turn one step at a time, 560ms apart. The cat whose power is firing turns lime and makes one small jump (4px up and 7% larger, back in 380ms on an ease-out), and its line in the power list fills lime; the rival's last card takes the tabletop's flip (380ms) and is coral for that step. The crowd idles on a bob: 2px up and back in two steps every 1.6 seconds, each cat started at a different point so no two move together. When the row fires the crowd hops with the chain, 14px at the top in four steps over 360ms: the cluster right of the stage on the first slot to fire, the cat on the plaque on the middle one, the cluster on the left on the last. When the round is won every cat on the page hops three times. Under reduced motion the crowd is still and the steps land at once. The landing page makes no sound.
 
-On the tabletop motion is stepped, never eased smooth, and nothing fades in on load.
-- **Lift and press:** 120ms in 2 steps, for the move and for the edge and cast shadow together.
-- **The fan:** a hand card stands up, or settles back, in 160ms of 4 steps; the cards that are left close up the same way when one is played. Nothing else in the hand moves when a card is raised.
-- **The firing chain:** an answered turn is played back one step every 380ms before the table takes input again. The played card or the taken dice travel to where they land (300ms in 6 steps). Each cat in the lane fires from right to left: its tile turns lime and presses (300ms in 3 steps), its line lands in the event log, its counters settle, and the tile returns to cream over 700ms in 6 steps. A token that arrives drops 6px into place (200ms in 3 steps); rerolled dice tumble in (280ms in 4 steps). Then the rival's card turns edge-on and back (360ms in 6 steps) and stays coral for about 1.4 seconds, and the prompt line in the turn block takes a coral marker for that step.
-- **During the chain** the prompt says what is happening in a sentence, and its only action is a cream "Skip". Any click or key skips to the end. The last frame is always the server's own view.
-- **Reduced motion:** the whole turn lands at once, nothing travels, and the rival's card still colours for a moment so the flip is seen.
+On the tabletop cardboard moves like cardboard: smoothly, with a little spring, and it settles. Pixel sprites (the crowd, Hadu on the tower, a rival in its window) still move in whole steps. Nothing fades in on load. Every effect moves `transform` and `opacity` only; springs are worked out ahead of time and played as plain keyframes (`src/components/run/fx/spring.ts`).
+- **Lift and press:** the move takes 150ms on a curve that goes a touch past and settles (`cubic-bezier(0.2, 0.9, 0.3, 1.25)`). The edge and cast shadow under the piece change with it in 2 steps over 120ms; a shadow is never eased.
+- **The fan:** a hand card stands up, or settles back, in 220ms on the same curve; the cards that are left close up the same way when one is played. Nothing else in the hand moves when a card is raised. A raised card leans up to 5 degrees toward a mouse held over it; touch and reduced motion leave it flat.
+- **The firing chain:** an answered turn is played back a step at a time before the table takes input again. The played card or the taken dice travel to where they land in 300ms, out fast and slowing in on a slight arc, and the piece they land as gives under them and springs back. Each cat in the lane then fires from right to left: its tile turns lime and pops (a spring of about 400ms: up 4px, 7% larger, tilted under 2 degrees, each growing a little with every power before it), its line lands in the event log, and the tile returns to cream over 520ms. A cat firing twice running pops twice.
+- **What a power shows:** points scored rise off the cat as a lime chip ("+2", print at 20px, 2px ink border) that springs out, drifts up 34px and fades in 720ms, with a burst of 4px pixel sparks (lime with an ink line, and ink) thrown out and falling. A food token or a cat that changed takes a quick punch (16% larger, about 240ms). Counts and scores roll to their new value (70ms a step, between 140ms and 520ms). A power that changed nothing shrugs sideways 3px and shows nothing else.
+- **Pace:** the first power holds 380ms and each one after it 12% less, down to a floor of 180ms, so a long chain speeds up. The player's own move holds 440ms (a piece in flight lands inside it), the rival's card 540ms, a scored goal 760ms, and the end of a match 1 second.
+- **Score heat:** from the third power of a chain a soft deep-lime light grows behind the player's score, at full strength by the eighth, and fades when the turn has landed.
+- **Then the rival:** its card turns edge-on and back (380ms) and stays coral for about 1.4 seconds, the prompt line in the turn block takes a coral marker for that step, and what it scored rises off its total as a coral chip. A token that arrives drops 7px into place (240ms); rerolled dice tumble in one after another (340ms each, 30ms apart).
+- **Shake:** the mat and the supply jolt a few pixels and settle (about 400ms) when one power scores 4 or more, deep in a long chain, when the rival raids or burns, on a lost goal, and harder on a lost match. Nothing else on the table shakes.
+- **Limits:** one frame throws at most 12 sparks (6 under 640px) and floats at most 4 numbers. Everything drawn over the table lives in one layer that takes no pointer and is not read out.
+- **During the chain** the prompt says what is happening in a sentence, and its only action is a cream "Skip". Any click or key skips to the end: every animation is finished and every sound cut at once, and the press does nothing else. The last frame is always the server's own view.
+- **The end of a match:** on the result sheet that follows, the player's lines are counted up one at a time, 190ms apart, the total rolling up with them; on a win the total lands with a punch and a burst. This happens once, straight after the match; a reload, or coming back to the sheet, shows it as it is.
+- **Light:** three things on the tabletop may glow, and nothing else. Score heat. A legendary in the hand, which has one band of light cross its face every 2.2 seconds while it stands up. And the cloth of a run, which has a wide, faint patch of white light drifting across it and back over 26 seconds, under every piece. The landing page has none of the three.
+- **Reduced motion:** the whole turn lands at once and numbers are simply set; nothing travels, pops, floats, sparks, shakes, leans, shimmers or drifts, and the result sheet is not counted up. The rival's card still colours for a moment so the flip is seen, and the turn is heard as one soft thud.
 - **The climb:** plays when a run starts (Hadu lands at the foot, the windows fill from the bottom up in pairs 160ms apart, he goes up to floor 1), after a reward is confirmed (the window of the floor won goes dark and its pennant lands, he goes up one floor, the next rival comes out), and after the last match is won (he goes up to the roof and a pennant lands there). Beats are 380ms, 480ms for a window shutting or a pennant landing. Hadu moves between ledges in 320ms of 4 steps and hops as he lands (the crowd's hop); a rival slides up into its window in 240ms of 3 steps; the nameplate and pennants drop in as any token does. The last frame rests 1.4 seconds and then gives way to the next screen by itself. Any click or key leaves at once, in one press, and that press does nothing on the screen that follows; a key still held from the confirm does not count. Under reduced motion only the last frame is shown, for 2.2 seconds. A lost match does not climb, and a reload skips the climb as it skips a turn's playback.
+
+### Sound
+The match has sound, and nothing else in the product does. Every sound is made in the browser with the Web Audio API from a written recipe (`src/components/run/sfx/recipes.ts`); there are no audio files.
+- **Voices:** the player's pieces are short and bright, in triangle and sine waves: a card leaving the hand and landing, dice taken, yarn laid, food gained, a cat drawn, cached or tucked. The rival's card is lower and sawn, so it is never mistaken for one of the player's powers; a raid and a burn follow it as noise.
+- **The chain:** each power that lands plays one step further up a major pentatonic scale from E4, stopping two octaves and a third up. With the pace it is what makes a long chain feel like one. A power that changed nothing plays a dull low note and does not climb. Each point scored adds a short tick, at most five a step.
+- **Moments:** a won goal is three rising notes and a lost one two falling; winning a match is a four-note run into a held chord, losing it three low falling notes. The result sheet ticks once a line, rising.
+- **The table's controls:** raising a card or picking a die is a rising blip, backing out a falling click, a card passing under a mouse a very short tick, and a move the table refuses a low double buzz.
+- **Limits:** no note is louder than half scale; everything passes through one limiter; at most 14 voices sound at once. Nothing plays in a background tab, and a skip cuts every voice and plays one soft thud.
+- **Control:** the speaker in the corner: full, quiet, off. The choice is kept in the browser. Sound starts on the first press or key, as browsers require; a muted table never opens an audio session.
 
 ## Do's and Don'ts
 
@@ -833,7 +853,7 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 - **Do** show state on the table with the frame (cobalt border, cobalt inner line, lime inner line) and with height (lifted 4px, pressed 2px), and reinforce a chosen token with a lime fill.
 - **Do** end every choice in a run in the turn block or a rail, with a sentence saying what will happen and one cobalt table button.
 - **Do** give a sequence of screens a `StepRail` and keep its confirm on the last step alone; every earlier step only moves.
-- **Do** keep the run route free of app chrome: the three corner buttons are its only navigation.
+- **Do** keep the run route free of app chrome: the corner buttons are its only navigation.
 - **Do** keep what names a hand card (sprite, points, cost, name, Info) in its left strip, and tilt only a card at rest; anything being read stands upright.
 - **Do** make actions on the table from `TableButton`: cobalt for the one confirm, cream for the rest.
 - **Do** set the pixel face at 20px or 30px, or at 40px for a heading on the landing page, and only for print on the board.
@@ -846,15 +866,17 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 
 ### Don't:
 - **Don't** round the corners of a game piece.
-- **Don't** give a piece a blurred shadow, a diagonal offset shadow, or a glow. Outside the tabletop a piece has no shadow at all; inside it has only the straight-down edge and cast.
+- **Don't** give a piece a blurred shadow, a diagonal offset shadow, or a glow. Outside the tabletop a piece has no shadow at all; inside it has only the straight-down edge and cast. The only light on the tabletop is the three named under Motion: score heat, a raised legendary's shimmer, and the drift on a run's cloth.
 - **Don't** bring the cardboard edge, the cloth, or the pixel face to home, the codex, auth, or a dialog.
 - **Don't** put a 2px ink border or square corners on page chrome, and don't lay a white rounded panel or a pill button on the tabletop.
 - **Don't** draw a ring outside a piece's border to show state.
 - **Don't** use coral for a decision the player owes or for a card the player is trimming; coral is the rival's.
 - **Don't** set the pixel face at any size but 20px and 30px, or 40px for a landing heading, or use it for rules text.
 - **Don't** set readable text below 10px, or below 11px on a piece from 640px up.
-- **Don't** ease tabletop motion smoothly or fade pieces in; lifts, presses, flips, and rolls move in steps.
-- **Don't** use gradients or emoji anywhere.
+- **Don't** move a cardboard piece in steps, or a pixel sprite smoothly: pieces ease and spring, sprites hop a whole pixel at a time. Don't fade pieces in.
+- **Don't** animate anything on the table but `transform` and `opacity`, ease a shadow, or shake the table itself; a shake belongs to the mat and the supply.
+- **Don't** add a sound outside a match, play one the player's own action or the turn's playback did not cause, or ship an audio file.
+- **Don't** use gradients or emoji anywhere. The three lights named under Motion are the only gradients, and each is a light, never a fill.
 - **Don't** use raster or smoothed creature art; a cat is its 16x16 sprite.
 - **Don't** use the stone greys for anything but the tower, or draw a rival in any colour but coral.
 - **Don't** use an element hue for a panel, a button, or a heading.

@@ -37,7 +37,9 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 - 26 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 3 legendary. Rarity is a power tier: it weights reward offers and gates unlocks. Each legendary also has a relic of its own, a lasting effect while it is on the board.
 - Five elements, each with the cat food its cats cost: Beef, Fish, Chicken, Dry food and Pork. A Treat pays for anything. There is no advantage wheel.
 - A match: 3 rows of 4 slots; 3 rounds of 5 / 4 / 3 turns; a five-dice feeder; a three-card tray; one goal per round contested with the rival.
-- A run: pick a clan (a starter deck built around one element), six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
+- A run: pick a clan (a starter deck built around one element) and a difficulty, six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
+- Three difficulties: Kitten (the game as it is), Stray (every rival starts each match 2 points ahead, as 2 yarn) and Apex (4 ahead). The head start is the only change, it is printed on the rival's nameplate, and the player's own score means the same on every tier. Every tier earns unlocks; the Loud Bell and the Quiet Corner need Stray or harder, and Hadu needs a run won on Apex.
+- A match has sound and effects: synthesized in the browser, no audio files, with a control on the table for full, quiet and off. Reduced motion lands a turn at once.
 - Between runs only unlocks persist: cats, relics, and clans. No permanent power upgrades.
 - Rivals are scripted (an action deck), not other players. There is no multiplayer.
 - Stack: Next.js 15 App Router, TypeScript strict, tRPC v11, Drizzle + Postgres, Tailwind v4. Game rules live as pure functions in `src/server/game/*` and are importable client-side.

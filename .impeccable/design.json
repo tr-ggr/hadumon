@@ -94,6 +94,21 @@
           "#deff7d"
         ]
       },
+      "lime-deep": {
+        "role": "secondary",
+        "displayName": "Deep Lime",
+        "canonical": "#a3d900",
+        "tonalRamp": [
+          "#0a0e00",
+          "#222e00",
+          "#3b4f00",
+          "#587300",
+          "#779a00",
+          "#97c400",
+          "#b4e61f",
+          "#d2f770"
+        ]
+      },
       "coral": {
         "role": "secondary",
         "displayName": "Rival Coral",
@@ -529,47 +544,102 @@
       {
         "name": "demo-step",
         "value": "560ms between steps; 0ms under prefers-reduced-motion",
-        "purpose": "The landing demo lands a turn one step at a time: the firing slot takes slot-fire, its line in the power list fills lime, and the rival's last card takes card-flip and is coral for that step."
+        "purpose": "The landing demo lands a turn one step at a time: the firing slot takes slot-fire, its line in the power list fills lime, and the rival's last card takes card-flip and is coral for that step. The landing page makes no sound."
       },
       {
         "name": "table-lift",
-        "value": "transform and box-shadow 120ms steps(2, end); lifted translateY(-4px), hover translateY(-2px) for fine pointers, pressed translateY(2px)",
-        "purpose": "Tabletop: a piece lifts when chosen, rises on hover, sinks when pressed."
+        "value": "transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.25); box-shadow 120ms steps(2, end); lifted translateY(-4px), hover translateY(-2px) for fine pointers, pressed translateY(2px)",
+        "purpose": "Tabletop: a piece lifts when chosen, rises on hover, sinks when pressed. The move eases with a little give; the edge and cast under it change in two steps and are never eased."
       },
       {
         "name": "hand-raise",
-        "value": "transform 160ms steps(4, end); a hand card loses its lean (up to 9deg) and its drop (up to 28px) and rises to stand 12px clear of the bottom edge",
+        "value": "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25); a hand card loses its lean (up to 9deg) and its drop (up to 28px) and rises to stand 12px clear of the bottom edge",
         "purpose": "Tabletop: a card in the fanned hand stands upright and whole when hovered, focused or chosen. Its neighbours do not move."
       },
       {
+        "name": "hand-lean",
+        "value": "perspective(40rem) rotateX/rotateY up to 5deg toward the pointer; transform 140ms cubic-bezier(0.16, 1, 0.3, 1); mouse only",
+        "purpose": "Tabletop: a raised hand card leans toward a mouse held over it. Flat on touch and under reduced motion."
+      },
+      {
         "name": "table-step",
-        "value": "380ms per step",
-        "purpose": "Tabletop: an answered turn is played back one frame at a time; any click or key skips to the end."
+        "value": "380ms for the first power, each next one 12% shorter, floor 180ms; 440ms for the player's own move, 540ms for the rival's card, 760ms for a scored goal, 1000ms for the end of a match",
+        "purpose": "Tabletop: an answered turn is played back one frame at a time and a chain speeds up as it runs; any click or key skips to the end, finishing every animation and cutting every sound."
       },
       {
         "name": "table-flight",
-        "value": "300ms steps(6, end)",
+        "value": "300ms; cubic ease-out along a slight arc (up to 36px), sampled into 11 keyframes; the landing piece squashes 9% and springs back",
         "purpose": "Tabletop: a played card or taken dice travel to where they land."
       },
       {
         "name": "piece-land",
-        "value": "200ms steps(3, end); from translateY(-6px)",
+        "value": "240ms cubic-bezier(0.16, 1, 0.3, 1); from translateY(-7px), 1px past, back",
         "purpose": "Tabletop: a token arriving drops into place."
       },
       {
         "name": "slot-fire",
-        "value": "300ms steps(3, end); lime fill, translateY(-2px) to translateY(2px); returns to cream over 700ms steps(6, end)",
-        "purpose": "Tabletop, the landing demo included: the cat whose power is firing presses and lights lime."
+        "value": "380ms ease-out; lime fill, translateY(-4px) scale(1.07) and back; returns to cream over 520ms ease-out",
+        "purpose": "The landing demo: the cat whose power is firing lights lime and makes one small jump. The match table uses slot-pop for the jump instead."
+      },
+      {
+        "name": "slot-pop",
+        "value": "sampled spring, about 400ms (stiffness 960, damping 28); translateY(-4px) scale(1.07) rotate(1.6deg), each multiplied by 1 + 0.12 for every power before it, up to 8",
+        "purpose": "Match table: a cat pops as its power fires, harder the longer the chain, and starts over if it fires twice running. The lime fill is the is-firing class."
+      },
+      {
+        "name": "token-punch",
+        "value": "sampled spring, about 240ms (stiffness 1750, damping 46); scale to 1.16 and back",
+        "purpose": "Match table: a food token, a cat or a score that just changed takes a hit. A power that changed nothing shrugs translateX(3px) on the same curve."
+      },
+      {
+        "name": "score-float",
+        "value": "720ms; springs out from scale(0.6), rises 34px, fades over the last 30%",
+        "purpose": "Match table: points scored rise off a cat as a lime chip, and off the rival's total as a coral one. At most 4 a frame."
+      },
+      {
+        "name": "pixel-sparks",
+        "value": "420 to 600ms; 4px squares thrown out 24 to 78px and falling 22 to 40px, fading over the last 40%",
+        "purpose": "Match table: a burst from a cat that scored, a won goal, a won match. At most 12 a frame, 6 under 640px."
+      },
+      {
+        "name": "number-roll",
+        "value": "70ms a step, 140ms to 520ms, cubic ease-out; written by a frame timer, not by React",
+        "purpose": "Tabletop: counts and scores roll to a new value instead of jumping. Set at once under reduced motion."
+      },
+      {
+        "name": "score-heat",
+        "value": "opacity and scale 260ms; a deep-lime radial gradient behind the player's score, 0 at two powers into a chain and full at eight",
+        "purpose": "Match table: light that deepens behind the player's total as a chain runs. One of the three lights on the tabletop."
+      },
+      {
+        "name": "table-shake",
+        "value": "sampled spring, about 400ms (stiffness 4900, damping 28); translate up to 3px by 1.5px, doubled for a lost match",
+        "purpose": "Match table: the mat and the supply jolt on a big hit, deep in a chain, on a raid or a burn, on a lost goal or match. The table itself never moves."
+      },
+      {
+        "name": "result-tally",
+        "value": "320ms, then one line every 190ms; the total punches 160ms after the last line, with a burst on a win",
+        "purpose": "The result sheet straight after a match counts the player's lines up in turn. Not on a reload, not on coming back to it."
+      },
+      {
+        "name": "card-shimmer",
+        "value": "2200ms cubic-bezier(0.16, 1, 0.3, 1) infinite; one white band translated across the face",
+        "purpose": "Tabletop: a legendary in the hand catches the light while it stands up. One of the three lights; removed under reduced motion."
+      },
+      {
+        "name": "cloth-light",
+        "value": "26s ease-in-out infinite alternate; a faint white radial patch the size of the screen, translated 16% by 9%",
+        "purpose": "The run route: a slow light drifting on the cloth, under every piece. One of the three lights; still under reduced motion; absent from the landing page."
       },
       {
         "name": "card-flip",
-        "value": "360ms steps(6, end); scaleX 1 to 0.05 to 1",
+        "value": "380ms cubic-bezier(0.45, 0, 0.3, 1); scaleX 1 to 0.04 to 1.04 to 1",
         "purpose": "Tabletop, the landing demo included: the rival's card turns over and comes back coral."
       },
       {
         "name": "die-roll",
-        "value": "280ms steps(4, end); from translateY(-5px) rotate(-90deg)",
-        "purpose": "Tabletop: rerolled dice tumble in."
+        "value": "340ms cubic-bezier(0.16, 1, 0.3, 1), each die 30ms after the last; from translateY(-9px) rotate(-120deg), a small bounce",
+        "purpose": "Tabletop: rerolled dice tumble in one after another."
       },
       {
         "name": "rival-hold",
@@ -608,7 +678,7 @@
       },
       {
         "name": "reduced-motion",
-        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once and skips flights; the landing crowd's animations are removed and the demo's steps land with no delay",
+        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once with one settle sound, sets numbers at once, and skips flights, pops, floats, sparks, shakes, the hand lean, the shimmer, the cloth light and the result tally; the landing crowd's animations are removed and the demo's steps land with no delay",
         "purpose": "Applied under prefers-reduced-motion: reduce."
       }
     ],
@@ -640,6 +710,28 @@
       {
         "name": "key-hints",
         "value": "(hover: hover) and (pointer: fine)"
+      }
+    ],
+    "sound": [
+      {
+        "name": "source",
+        "value": "Web Audio API oscillators and filtered noise from recipes in src/components/run/sfx/recipes.ts; no audio files, no library",
+        "purpose": "Every sound in a match."
+      },
+      {
+        "name": "chain-ladder",
+        "value": "major pentatonic from E4 (329.63Hz), one step a power, capped at step 12",
+        "purpose": "The pitch of a power climbs with the chain; a power that changed nothing plays a dull 185Hz note and does not climb."
+      },
+      {
+        "name": "limits",
+        "value": "peak note gain 0.5; master gain 0.8 full, 0.28 quiet, 0 muted; one limiter; 14 voices at most; longest voice 1.6s",
+        "purpose": "A long chain cannot clip or pile up."
+      },
+      {
+        "name": "control",
+        "value": "localStorage key hadumon:sound: full, quiet or muted; default full",
+        "purpose": "The speaker corner button cycles the three. Nothing plays in a hidden tab; a skip cuts every voice and plays one settle sound."
       }
     ]
   },
