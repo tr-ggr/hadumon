@@ -160,7 +160,7 @@ export function RunSummary({
             </div>
             <p className="piece piece-card border-ink text-ink flex w-fit items-center gap-3 border-2 bg-white py-3 pr-5 pl-3">
               <PixelIcon name="coin" size={32} fill={COIN_COLOR} />
-              <span className="text-print text-5xl tabular-nums">
+              <span className="text-print text-[40px] tabular-nums">
                 <span className="sr-only">You earned </span>
                 {coins}
               </span>

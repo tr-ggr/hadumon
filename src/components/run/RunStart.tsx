@@ -113,7 +113,7 @@ export function RunStart({ busy, onStart }: RunStartProps) {
               {problems.length > 0 ? (
                 <div
                   role="alert"
-                  className="piece border-ink bg-coral text-ink border-2 px-3 py-2 text-sm font-semibold"
+                  className="piece border-ink bg-ink text-cream border-2 px-3 py-2 text-sm font-semibold"
                 >
                   <p className="font-black">This deck cannot be played.</p>
                   <ul className="mt-1 space-y-0.5">

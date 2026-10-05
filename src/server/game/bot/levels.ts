@@ -133,11 +133,12 @@ export const PLANNED: readonly LevelSpec[] = [
 ];
 
 /**
- * The levels a rival plays at, 0 the least. Each beat the one below it in
- * at least 56 matches of 100 when it was measured over four rounds
- * (`sprints/15-coins-packs-decks.md`). Two plans that were here did not and
- * are gone: 36 playouts to the end of the match measured no better than
- * level 6, and 192 no better than 96.
+ * The levels a rival plays at, 0 the least. Measured over four rounds
+ * (`sprints/15-coins-packs-decks.md`), each of the first seven beat the one
+ * below it in 60 matches of 100 or more. The last step is the short one:
+ * level 7 beat level 6 in 55 of 100 over 300 matches, a point a match. Two
+ * plans that were here did no better and are gone: 36 playouts to the end
+ * of the match against level 6, and 192 against 96.
  */
 export const LEVELS: readonly LevelSpec[] = [
   { kind: "rote", sharp: false },

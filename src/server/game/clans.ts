@@ -1,7 +1,9 @@
 /**
- * Clans: the five starter decks, one built around each element, and the
- * relic each one brings. A player picks a clan to start a run; a rival's
- * deck is built on one too (`rivalDecks.ts`).
+ * Clans: one for each element, with the charm it carries and the 16 cards
+ * it once started a run on. Only rivals have a clan now: each holds its
+ * clan's charm and draws its deck with that element first
+ * (`rivalDecks.ts`). The starter decks are kept for the measuring harness
+ * and the landing page's demo, and pin what a new account's rivals bring.
  */
 
 import { ELEMENT_LABELS, type Element } from "./elements";
@@ -10,7 +12,7 @@ import { getRelic } from "./relics";
 export interface Clan {
   id: Element;
   name: string;
-  /** The relic every run with this clan starts with. */
+  /** The charm a rival of this clan holds. */
   relicId: string;
   text: string;
 }

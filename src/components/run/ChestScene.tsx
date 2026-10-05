@@ -91,9 +91,7 @@ export function ChestScene({
               climb with the {run.deck.length} they left.
             </StepHeading>
             <div className="space-y-2">
-              <h3 className="text-ink text-xs font-black tracking-wide uppercase">
-                Stolen
-              </h3>
+              <h3 className="text-ink-soft text-xs font-bold">Stolen</h3>
               <DeckSpread
                 cards={run.stolen}
                 label="Stolen cards"
@@ -101,9 +99,7 @@ export function ChestScene({
               />
             </div>
             <div className="space-y-2">
-              <h3 className="text-ink text-xs font-black tracking-wide uppercase">
-                Left to you
-              </h3>
+              <h3 className="text-ink-soft text-xs font-bold">Left to you</h3>
               <DeckSpread cards={run.deck} label="The cards you start with" />
             </div>
           </section>

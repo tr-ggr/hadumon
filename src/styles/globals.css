@@ -2934,10 +2934,14 @@ html:has(.turn-phone) {
     visibility: visible;
   }
 }
+/* A piece is never faded in: a relic is not there, and then it is, rising. */
 @keyframes chest-rise {
   from {
-    opacity: 0;
+    visibility: hidden;
     transform: translateY(1rem);
+  }
+  to {
+    visibility: visible;
   }
 }
 @media (prefers-reduced-motion: reduce) {

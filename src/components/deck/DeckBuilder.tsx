@@ -48,6 +48,17 @@ const RARITY_OPTIONS: FilterOption<Rarity>[] = RARITIES.map((rarity) => ({
   label: RARITY_LABELS[rarity],
 }));
 
+/** The page's name on a plate, as every room of the tower has. */
+function DeckHeader() {
+  return (
+    <header className="flex">
+      <h1 className="piece border-ink bg-cream text-print border-2 px-3.5 py-2 text-3xl sm:px-5 sm:text-[40px]">
+        Deck
+      </h1>
+    </header>
+  );
+}
+
 /**
  * The deck an account brings to its next run: the deck being built, as
  * stacks, beside the collection it is built from. A press on a card of the
@@ -112,6 +123,7 @@ export function DeckBuilder() {
   if (collection.isLoading || saved.isLoading) {
     return (
       <div className="in-room space-y-4" role="status" aria-busy="true">
+        <DeckHeader />
         <span className="sr-only">Loading your deck…</span>
         <Board title="Your deck">
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -134,7 +146,8 @@ export function DeckBuilder() {
   if (!owned || !deck || !saved.data || !status) {
     const problem = collection.error ?? saved.error;
     return (
-      <div className="in-room">
+      <div className="in-room space-y-4">
+        <DeckHeader />
         <Board title="Your deck">
           <div role="alert" className="flex flex-col items-start gap-3">
             <p>
@@ -181,13 +194,14 @@ export function DeckBuilder() {
 
   return (
     <div className="in-room space-y-4">
+      <DeckHeader />
       <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_24.5rem]">
         <Board
           title="Your deck"
           className="min-w-0 lg:sticky lg:top-20 lg:order-2"
           action={
             <p
-              className={`text-print text-xl tabular-nums ${over ? "bg-coral border-ink border-2 px-1.5" : ""}`}
+              className={`text-print text-xl tabular-nums ${over ? "bg-ink text-cream px-1.5" : ""}`}
             >
               {deck.length} of {DECK_SIZE}
             </p>
