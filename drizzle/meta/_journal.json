@@ -43,6 +43,13 @@
       "when": 1791222817774,
       "tag": "0005_better_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791226057772,
+      "tag": "0006_coins_cards_cosmetics",
+      "breakpoints": true
     }
   ]
 }

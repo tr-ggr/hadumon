@@ -44,6 +44,8 @@ export const runs = createTable(
     state: jsonb("state").$type<RunState>().notNull(),
     matchesWon: integer("matches_won").notNull().default(0),
     score: integer("score").notNull().default(0),
+    /** What the run paid when it ended; 0 while it is being played. */
+    coins: integer("coins").notNull().default(0),
     startedAt: timestamp("started_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
