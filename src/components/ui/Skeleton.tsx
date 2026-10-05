@@ -47,13 +47,16 @@ export function BoardSkeleton({
 }
 
 /** Grid of card-shaped printed spaces, for boards of cats. */
-export function CardGridSkeleton({ count = 4 }: { count?: number }) {
+export function CardGridSkeleton({
+  count = 4,
+  className = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3",
+}: {
+  count?: number;
+  /** The grid the cards will be laid out on once they come. */
+  className?: string;
+}) {
   return (
-    <ul
-      role="status"
-      aria-busy="true"
-      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
-    >
+    <ul role="status" aria-busy="true" className={className}>
       <span className="sr-only">Loading…</span>
       {Array.from({ length: count }, (_, index) => (
         <li

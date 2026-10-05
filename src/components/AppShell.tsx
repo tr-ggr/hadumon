@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 
 import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
@@ -48,6 +55,17 @@ export function AppShell({
   )
     return <>{children}</>;
   return <Shell pathname={pathname}>{children}</Shell>;
+}
+
+const ShellMoving = createContext(false);
+
+/**
+ * True while the camera is on its way to the page and the page is put away.
+ * Something that plays by itself on arriving waits for it to be false, since
+ * an animation runs whether or not the page it is on is showing.
+ */
+export function useShellMoving(): boolean {
+  return useContext(ShellMoving);
 }
 
 /** A page being gone to: where from, where to, and whether the camera is there. */
@@ -157,7 +175,7 @@ function Shell({
             : "shell-page mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-3 pt-5 pb-28 sm:px-5 md:pb-12"
         }
       >
-        {children}
+        <ShellMoving.Provider value={moving}>{children}</ShellMoving.Provider>
       </main>
       {onTable && !moving ? null : <Dock pathname={here} />}
     </div>

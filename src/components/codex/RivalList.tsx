@@ -1,7 +1,7 @@
 import { RivalSprite } from "~/components/RivalSprite";
 import { Label } from "~/components/ui";
 import { RIVAL_ACTIONS, type RivalAction } from "~/server/game/cats";
-import { GAUNTLET, getRival, type Rival } from "~/server/game/rival";
+import { getRival, type Rival } from "~/server/game/rival";
 
 const ACTION_LABELS: Record<RivalAction, string> = {
   bank: "Bank",
@@ -31,10 +31,18 @@ function actionText(rival: Rival, action: RivalAction): string {
   }
 }
 
-function RivalCard({ rivalId, match }: { rivalId: string; match: number }) {
+/** One rival and its deck. A rival is never locked. */
+export function RivalCard({
+  rivalId,
+  match,
+}: {
+  rivalId: string;
+  /** Which match of a run meets it, from 1. */
+  match: number;
+}) {
   const rival = getRival(rivalId);
   return (
-    <li className="piece piece-card border-ink text-ink flex flex-col gap-2.5 border-2 bg-white p-3">
+    <article className="piece piece-card border-ink text-ink flex flex-col gap-2.5 border-2 bg-white p-3">
       <div className="flex items-end gap-3">
         <RivalSprite
           rivalId={rivalId}
@@ -100,17 +108,6 @@ function RivalCard({ rivalId, match }: { rivalId: string; match: number }) {
           ? `Head start on every round goal: ${rival.goalEdge}.`
           : "No head start on round goals."}
       </p>
-    </li>
-  );
-}
-
-/** All six rivals in the order a run meets them. They are never locked. */
-export function RivalList() {
-  return (
-    <ol className="grid grid-cols-1 gap-x-3 gap-y-4 lg:grid-cols-2">
-      {GAUNTLET.map((rivalId, index) => (
-        <RivalCard key={rivalId} rivalId={rivalId} match={index + 1} />
-      ))}
-    </ol>
+    </article>
   );
 }

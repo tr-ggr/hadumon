@@ -97,6 +97,17 @@ describe("recipes", () => {
     expect(thud?.at).toBeCloseTo(0.3, 2);
   });
 
+  it("turns a page as paper: noise alone, and quieter than a played card", () => {
+    const loudest = (name: "page" | "play") =>
+      Math.max(...recipe(name).map((note) => note.gain));
+    expect(recipe("page").every((note) => note.wave === "noise")).toBe(true);
+    expect(loudest("page")).toBeLessThan(loudest("play"));
+    // The cover is a board: it has a body under the paper, and no thud of its
+    // own, which is the `settle` played as it lands.
+    expect(recipe("cover").some((note) => note.wave === "sine")).toBe(true);
+    expect(voiceSeconds(recipe("cover"))).toBeLessThan(0.3);
+  });
+
   it("gives the rival a lower voice of another timbre than a power", () => {
     const power = recipe("power", 0)[0]!;
     const rival = recipe("rivalFlip")[0]!;

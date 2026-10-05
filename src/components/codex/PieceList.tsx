@@ -29,11 +29,16 @@ function Piece({ name, text, locked, mark }: PieceProps) {
   );
 }
 
-const GRID = "grid grid-cols-1 gap-x-3 gap-y-4 sm:grid-cols-2 lg:grid-cols-3";
+interface PieceListProps {
+  /** One page's worth of a chapter. */
+  entries: readonly CodexEntry[];
+  /** The grid the page lays them out on. */
+  className: string;
+}
 
-export function RelicList({ entries }: { entries: readonly CodexEntry[] }) {
+export function RelicList({ entries, className }: PieceListProps) {
   return (
-    <ul className={GRID}>
+    <ul className={className}>
       {entries.map((entry) => {
         const relic = getRelic(entry.id);
         return (
@@ -55,9 +60,9 @@ export function RelicList({ entries }: { entries: readonly CodexEntry[] }) {
   );
 }
 
-export function ClanList({ entries }: { entries: readonly CodexEntry[] }) {
+export function ClanList({ entries, className }: PieceListProps) {
   return (
-    <ul className={GRID}>
+    <ul className={className}>
       {entries.filter(isClanEntry).map((entry) => {
         const clan = CLANS[entry.id];
         return (

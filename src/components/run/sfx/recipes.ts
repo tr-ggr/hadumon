@@ -59,6 +59,8 @@ export const SFX_NAMES = [
   "loss",
   "settle",
   "slam",
+  "page",
+  "cover",
 ] as const;
 export type SfxName = (typeof SFX_NAMES)[number];
 
@@ -274,6 +276,19 @@ export function recipe(name: SfxName, step = 0): Voice {
         tone("sine", 170, 46, 0.46, 0.22),
         noise("lowpass", 1400, 260, 0.22, 0.12),
         tone("square", 92, 80, 0.08, 0.1, 0.012),
+      ];
+    case "page":
+      // A leaf of the codex: paper through the air, and its pat as it lies down.
+      return [
+        noise("bandpass", 1400, 3800, 0.11, 0.16),
+        noise("lowpass", 900, 320, 0.1, 0.05, 0.35),
+      ];
+    case "cover":
+      // The codex's cover lifted. A board, so its thud is `settle`, played
+      // when it has come down: no voice here is long enough to hold both.
+      return [
+        noise("lowpass", 520, 1100, 0.14, 0.24),
+        tone("sine", 190, 150, 0.06, 0.2),
       ];
   }
 }

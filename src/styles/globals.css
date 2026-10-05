@@ -865,19 +865,44 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .tower-backdrop[data-moving="true"] .tower-world {
   will-change: transform;
 }
-/* The inside of the tower: a wall of deep stone, cut to at once when the
-   camera has gone in through a window, and away from at once as it leaves.
-   While it is up, the outside is not drawn. */
+/* The inside of the tower: a wall of deep stone. The camera goes in through
+   a window until the window's dark is all there is, and the room is that same
+   dark at first: the wall comes up out of it, still drifting closer, as the
+   eye would find it (`ENTER_MS` in `codex/turn.ts` is the same 640ms, and the
+   book comes up with it). It is larger than the stage, so the drift has wall
+   to show at the edges. Leaving is a cut, since the camera is already on its
+   way out. While the room is up, the outside is not drawn. */
 .tabletop .tower-room {
   position: absolute;
-  inset: 0;
+  inset: -8%;
   visibility: hidden;
   background-color: var(--color-stone-deep);
   background-size: calc(var(--px) * 32) auto;
   image-rendering: pixelated;
 }
+.tabletop .tower-room::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-stone-deep);
+  opacity: 0;
+}
 .tabletop .tower-backdrop[data-room="true"] .tower-room {
   visibility: visible;
+  animation: room-near 640ms var(--ease-out) both;
+}
+.tabletop .tower-backdrop[data-room="true"] .tower-room::after {
+  animation: room-dark 640ms ease-out both;
+}
+@keyframes room-near {
+  from {
+    transform: scale(0.88);
+  }
+}
+@keyframes room-dark {
+  from {
+    opacity: 1;
+  }
 }
 .tabletop .tower-backdrop[data-room="true"] .tower-stage {
   visibility: hidden;
@@ -941,7 +966,7 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .tower-app[data-nav="moving"] > main {
   visibility: hidden;
 }
-.tabletop .tower-app[data-nav="landed"] > .shell-page .board,
+.tabletop .tower-app[data-nav="landed"] > .shell-page .board:not(.book-page),
 .tabletop .tower-app[data-nav="landed"] > .shell-page .mat,
 .tabletop .tower-app[data-nav="landed"] > .shell-page header > .piece {
   animation: piece-land 240ms var(--ease-out) both;
@@ -1313,6 +1338,291 @@ body:has(.table-fit) [role="dialog"] {
 /* A board held up over the table: its cast falls on the dimmed room. */
 .tabletop .dialog-board {
   --board-cast: #0b1118;
+}
+/*
+ * The codex is a book on the table in the tower's room. It comes up shut
+ * out of the dark the camera came in through, and its cover opens by itself;
+ * then it lies open at one page on a phone and at a spread from 768px
+ * (`useTwoUp` reads the same width), with the chapters as tabs along its top
+ * edge, and down its left edge from 1024px.
+ *
+ * It has the page to itself. The room's column is the whole window, and the
+ * book with its pager is one screen of it: `--book-h` is what the lid, the
+ * dock and the column's own padding leave, and the spread takes whatever of
+ * that the tabs (`--book-head`) and the pager (`--book-foot`) do not. The
+ * filters are the next thing down.
+ *
+ * Every page is in the same cell of the spread's grid, so the book is as tall
+ * as its tallest page whichever pages are open. `data-leaf` says which ones
+ * are on show; the rest are hidden. Nothing here is ever set to `visibility:
+ * visible`: the shell hides the page while the camera moves, and a piece
+ * made visible would show through it.
+ *
+ * A turn is two half-turns that meet edge-on (`codex/turn.ts`). The page
+ * being left stands up about the spine and stops; the page arrived at comes
+ * down on the other side. No page is seen from behind, so there is no
+ * `preserve-3d` and no hidden backface, and the eye is put level with the
+ * spine so a page that is edge-on is not seen at all. `--leaf` is one
+ * half-turn.
+ */
+.tabletop .book-room {
+  /* What stands on the wall, not on a board, casts on stone. */
+  --cast: var(--board-cast);
+  /* A leaf swells a few pixels past the book's edge as it comes up. */
+  overflow-x: clip;
+}
+.tabletop .tower-app[data-place="room"] > .shell-page {
+  max-width: none;
+}
+@media (min-width: 48rem) {
+  .tabletop .tower-app[data-place="room"] > .shell-page {
+    padding-bottom: 1.25rem;
+  }
+}
+.tabletop .book {
+  --leaf: 220ms;
+  /* Leaves slowly and is at speed edge-on, where `--ease-give` takes over at
+     the same speed: 4.5 times the average, both. */
+  --ease-lift: cubic-bezier(0.5, 0, 0.9, 0.55);
+  /* The column pads 1.25rem above the book and 7rem under it, for the dock. */
+  --book-h: calc(100dvh - var(--lid-h) - 8.25rem);
+  --book-head: 7rem;
+  --book-foot: 6.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 30rem;
+  margin-inline: auto;
+}
+/* Coming into the room: the book comes up out of the dark with the wall,
+   drifting closer as the camera stops. `--enter` is `ENTER_MS`. */
+.tabletop .book[data-entered="true"] {
+  animation: book-enter var(--enter, 640ms) var(--ease-out) both;
+}
+@keyframes book-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+.tabletop .book-rail {
+  display: grid;
+  justify-items: start;
+  gap: 0.75rem;
+}
+.tabletop .book-tabs {
+  justify-self: stretch;
+}
+.tabletop .book-tabs > ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 8rem));
+  gap: 0.5rem;
+  padding-inline: 0.75rem;
+  /* A tab's foot is tucked under the book's edge. */
+  margin-bottom: -2px;
+}
+.tabletop .book-tabs button {
+  width: 100%;
+  padding-inline: 0.25rem;
+}
+.tabletop .book:not([data-phase="open"]) .book-tabs,
+.tabletop .book:not([data-phase="open"]) .book-pager {
+  visibility: hidden;
+}
+/* The tabs come out from behind the book once it lies open. The `li` moves,
+   since an animation on the button would hold it off its pressed place. */
+.tabletop .book[data-phase="open"] .book-tabs li {
+  animation: tab-out 220ms var(--ease-give) calc(var(--i, 0) * 40ms) backwards;
+}
+@keyframes tab-out {
+  from {
+    transform: translate(var(--tab-x, 0), var(--tab-y, 100%));
+  }
+}
+.tabletop .book-spread {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  perspective: 1800px;
+  perspective-origin: 0 50%;
+  /* A sideways swipe turns the page; up and down still scrolls. */
+  touch-action: pan-y;
+  /* Where a turn brings the book back to: under the lid, tabs showing. */
+  scroll-margin-top: calc(var(--lid-h) + 4.25rem);
+  outline-offset: 4px;
+  min-height: calc(var(--book-h) - var(--book-head) - var(--book-foot));
+}
+.tabletop .book-page,
+.tabletop .book-cover {
+  grid-row: 1;
+  grid-column: 1;
+  position: relative;
+  min-width: 0;
+  transform-origin: 0 50%;
+}
+.tabletop .book-page:not([data-leaf]) {
+  visibility: hidden;
+}
+.tabletop .book-page[data-leaf="lift"],
+.tabletop .book-page[data-leaf="lay"] {
+  z-index: 2;
+  will-change: transform;
+}
+.tabletop .book-page[data-leaf="lift"],
+.tabletop .book[data-phase="opening"] .book-cover {
+  animation: leaf-lift var(--leaf) var(--ease-lift) both;
+}
+.tabletop .book-page[data-leaf="lay"] {
+  animation: leaf-lay var(--leaf) var(--ease-give) var(--leaf-wait, 0ms) both;
+}
+@keyframes leaf-lift {
+  to {
+    transform: rotateY(var(--leaf-edge, -90deg));
+  }
+}
+@keyframes leaf-lay {
+  from {
+    transform: rotateY(var(--leaf-edge, -90deg));
+  }
+}
+/* The cover: a board in pressed cobalt, with a line let into its face. */
+.tabletop .book-cover {
+  z-index: 4;
+  display: grid;
+  padding: 0.625rem;
+  background: var(--color-cobalt-dark);
+  color: var(--color-white);
+  border: 2px solid var(--color-ink);
+  box-shadow:
+    0 5px 0 -2px var(--color-chipboard),
+    0 5px 0 0 var(--color-ink),
+    0 10px 0 -2px var(--board-cast, var(--cast-cloth));
+}
+/*
+ * A leaf is darker the further it stands from the light, and so is the page
+ * a leaf is coming down on. One flat wash of ink whose opacity is all that
+ * changes: not a gradient, and nothing is faded in by it.
+ */
+.tabletop .book-shade {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--color-ink);
+  opacity: 0;
+  pointer-events: none;
+}
+.tabletop .book-page[data-leaf="lift"] > .book-shade {
+  animation: leaf-dim var(--leaf) ease-in both;
+}
+.tabletop .book-page[data-leaf="lay"] > .book-shade {
+  animation: leaf-clear var(--leaf) ease-out var(--leaf-wait, 0ms) both;
+}
+.tabletop .book-page[data-shade="dim"] > .book-shade {
+  --shade: 0.12;
+  animation: leaf-dim var(--leaf) ease-in var(--leaf-wait, 0ms) both;
+}
+.tabletop .book-page[data-shade="clear"] > .book-shade {
+  --shade: 0.12;
+  animation: leaf-clear var(--leaf) ease-out both;
+}
+@keyframes leaf-dim {
+  to {
+    opacity: var(--shade, 0.24);
+  }
+}
+@keyframes leaf-clear {
+  from {
+    opacity: var(--shade, 0.24);
+  }
+}
+/* A spread. The right page laps the left by its border, so the spine is one
+   2px line; it is not shaded, since a shade there would be a sideways one. */
+@media (min-width: 48rem) {
+  .tabletop .book {
+    /* No dock: 1.25rem above the book and under it. A window wider than
+       this would print a line of text no one could follow across. */
+    --book-h: calc(100dvh - var(--lid-h) - 2.5rem);
+    --book-head: 7.5rem;
+    max-width: 100rem;
+  }
+  .tabletop .book-spread {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    perspective: 2800px;
+    perspective-origin: 50% 50%;
+  }
+  .tabletop .book-page[data-side="right"],
+  .tabletop .book-cover {
+    grid-column: 2;
+    margin-left: -2px;
+  }
+  .tabletop .book-page[data-side="left"] {
+    transform-origin: 100% 50%;
+    --leaf-edge: 90deg;
+  }
+  /* Shut, the book is its right half: it lies in the middle, and moves over
+     as it opens. */
+  .tabletop .book[data-phase="closed"] .book-spread {
+    transform: translateX(-25%);
+  }
+  .tabletop .book[data-phase="opening"] .book-spread {
+    animation: book-centre calc(var(--leaf) * 2) var(--ease-out) both;
+  }
+}
+@keyframes book-centre {
+  from {
+    transform: translateX(-25%);
+  }
+}
+/* Room for the chapters down the book's left edge, under its name. */
+@media (min-width: 64rem) {
+  .tabletop .book {
+    --book-head: 0px;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+  .tabletop .book-rail {
+    grid-row: 1;
+    align-self: start;
+    justify-items: stretch;
+  }
+  .tabletop .book-rail > h1 {
+    margin-right: 0.75rem;
+  }
+  .tabletop .book-spread,
+  .tabletop .book-pager,
+  .tabletop .book-filters {
+    grid-column: 2;
+  }
+  .tabletop .book-spread {
+    scroll-margin-top: calc(var(--lid-h) + 1.25rem);
+  }
+  .tabletop .book-tabs > ul {
+    grid-template-columns: none;
+    gap: 0.75rem;
+    padding: 0;
+    margin: 0 -2px 0 0;
+  }
+  .tabletop .book-tabs button {
+    padding-inline: 1rem;
+  }
+  .tabletop .book-tabs li {
+    --tab-x: 100%;
+    --tab-y: 0;
+  }
+}
+/* Reduced motion: the book is open, and a turn is a cut. The rule at the
+   foot of this sheet only shortens an animation; it would leave the second
+   half of a turn waiting edge-on for the first. */
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .book,
+  .tabletop .book-spread,
+  .tabletop .book-page,
+  .tabletop .book-cover,
+  .tabletop .book-shade,
+  .tabletop .book-tabs li,
+  .tabletop .tower-room,
+  .tabletop .tower-room::after {
+    animation: none !important;
+  }
 }
 /* A place to write: a white slot cut into the board, shaded along its top. */
 .tabletop .field {
