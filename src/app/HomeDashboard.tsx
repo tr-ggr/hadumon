@@ -382,12 +382,12 @@ function CodexProgress() {
           <Count
             have={countUnlocked(codex.data.cats)}
             of={codex.data.cats.length}
-            label="cats"
+            label="cats owned"
           />
           <Count
             have={countUnlocked(codex.data.relics)}
             of={codex.data.relics.length}
-            label="relics"
+            label="relics unlocked"
           />
         </dl>
       ) : codex.isPending ? (
@@ -403,7 +403,7 @@ function CodexProgress() {
   );
 }
 
-/** How many of something are unlocked, with the number in print. */
+/** How many of something the account has, with the number in print. */
 function Count({
   have,
   of,
@@ -415,7 +415,7 @@ function Count({
 }) {
   return (
     <div className="flex flex-col-reverse">
-      <dt className="text-ink-soft mt-1 text-xs font-bold">{label} unlocked</dt>
+      <dt className="text-ink-soft mt-1 text-xs font-bold">{label}</dt>
       <dd className="text-print text-3xl tabular-nums">
         {have}
         <span className="text-ink-soft"> / {of}</span>

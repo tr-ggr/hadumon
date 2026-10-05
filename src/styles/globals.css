@@ -2478,7 +2478,7 @@ html:has(.turn-phone) {
  * A pack is one of two sizes, both 2:3 and both drawn at their own size, so
  * a 2px line is 2px on either. `--u` is one unit of the wrapper's print and
  * one pixel of the mascot: 4px, and 6px on the pack in the middle of the row.
- * `ClanPack` sets the colours (`--ground`, `--light`), the print and the cut.
+ * `PackWrapper` sets the colours (`--ground`, `--light`), the print and the cut.
  */
 .tabletop .pack,
 .tabletop .pack-space {
@@ -2499,10 +2499,6 @@ html:has(.turn-phone) {
   --line: var(--color-ink);
   color: var(--color-ink);
   transition: transform 150ms var(--ease-give);
-}
-/* Chosen: the cut line turns cobalt. The lift and the lime tag say the rest. */
-.tabletop .pack.is-chosen {
-  --line: var(--color-cobalt);
 }
 .tabletop .pack-lean {
   position: relative;
