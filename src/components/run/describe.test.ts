@@ -124,6 +124,36 @@ describe("describeAction", () => {
     );
   });
 
+  it("says what a lane's trade was paid with", () => {
+    const view = {
+      ...kept.after,
+      hand: ["voltwhisk"],
+      tray: ["mistpaw", "duskmew", "emberkit"],
+      feeder: ["flame" as const, "mist" as const],
+      board: {
+        hunt: [],
+        den: [{ catId: "bramblepaw", yarn: 2, cached: 0, tucked: 0 }],
+        prowl: [],
+      },
+    };
+    expect(describeAction(view, { type: "hunt", dice: [0, 1], trade: 0 })).toBe(
+      "You hunted and took Beef and Fish, discarding Voltwhisk for 1 more die.",
+    );
+    const slot = { row: "den" as const, col: 0 };
+    expect(
+      describeAction(view, {
+        type: "den",
+        targets: [slot, slot, slot],
+        trade: "mist",
+      }),
+    ).toBe("You went to the Den and laid 3 yarn, spending 1 Fish for 1 more.");
+    expect(
+      describeAction(view, { type: "prowl", picks: [0, "deck"], trade: slot }),
+    ).toBe(
+      "You prowled and drew Mistpaw from the tray and 1 from the deck, spending 1 yarn from Bramblepaw for 1 more.",
+    );
+  });
+
   it("names the cat and the row of a play", () => {
     const view = { ...kept.after, hand: ["voltwhisk"] };
     expect(describeAction(view, { type: "play", hand: 0, row: "prowl" })).toBe(

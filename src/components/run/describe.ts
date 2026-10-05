@@ -137,14 +137,23 @@ export function describeAction(before: MatchView, action: Action): string {
     }
     case "hunt": {
       const faces = action.dice.flatMap((i) => before.feeder[i] ?? []);
+      const paid =
+        action.trade === undefined ? undefined : before.hand[action.trade];
+      const trade = paid
+        ? `, discarding ${getCat(paid).name} for 1 more die`
+        : "";
       return faces.length > 0
-        ? `You hunted and took ${listWords(faces.map(essenceLabel))}.`
+        ? `You hunted and took ${listWords(faces.map(essenceLabel))}${trade}.`
         : "You hunted and took nothing.";
     }
-    case "den":
+    case "den": {
+      const trade = action.trade
+        ? `, spending 1 ${essenceLabel(action.trade)} for 1 more`
+        : "";
       return action.targets.length > 0
-        ? `You went to the Den and laid ${action.targets.length} yarn.`
+        ? `You went to the Den and laid ${action.targets.length} yarn${trade}.`
         : "You went to the Den and laid no yarn.";
+    }
     case "prowl": {
       const names = action.picks.flatMap((pick) => {
         if (pick === "deck") return [];
@@ -156,8 +165,14 @@ export function describeAction(before: MatchView, action: Action): string {
         ...(names.length > 0 ? [`${listWords(names)} from the tray`] : []),
         ...(fromDeck > 0 ? [`${fromDeck} from the deck`] : []),
       ];
+      const payer = action.trade
+        ? before.board[action.trade.row][action.trade.col]
+        : undefined;
+      const trade = payer
+        ? `, spending 1 yarn from ${getCat(payer.catId).name} for 1 more`
+        : "";
       return parts.length > 0
-        ? `You prowled and drew ${listWords(parts)}.`
+        ? `You prowled and drew ${listWords(parts)}${trade}.`
         : "You prowled and drew nothing.";
     }
     case "reroll":

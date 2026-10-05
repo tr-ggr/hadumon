@@ -14,8 +14,10 @@ import { SoundButton } from "./sfx/SoundButton";
 import {
   boardYarnRoom,
   canSwapMore,
+  denLimit,
   essenceSpent,
   handSwap,
+  prowlWant,
   shortWords,
   swapOwed,
   swapTaken,
@@ -36,6 +38,8 @@ export interface TurnControls {
   confirm: () => void;
   fillDen: () => void;
   undoDen: () => void;
+  /** Pays for the Den's trade with one food, or takes it back. */
+  tradeFood: (kind: Essence) => void;
   resolve: (choice: number | null) => void;
 }
 
@@ -80,6 +84,9 @@ export function TurnPanel({
     mode.kind === "play" && playing === null && swapOwed(match, mode.hand) > 0
       ? mode
       : null;
+  // The Den's trade is paid for from the same row of food.
+  const denTrade =
+    mode.kind === "den" && playing === null && match.trades.den ? mode : null;
 
   return (
     <section
@@ -112,18 +119,28 @@ export function TurnPanel({
             className="flex flex-wrap items-center gap-x-1 gap-y-2"
           >
             {ESSENCES.map((kind) => {
-              const given = swapping ? swapTaken(swapping.swap, kind) : 0;
-              const open =
-                swapping !== null &&
-                (given > 0 ||
-                  canSwapMore(match, swapping.hand, swapping.swap, kind));
+              const given = swapping
+                ? swapTaken(swapping.swap, kind)
+                : denTrade?.trade === kind
+                  ? 1
+                  : 0;
+              const open = swapping
+                ? given > 0 ||
+                  canSwapMore(match, swapping.hand, swapping.swap, kind)
+                : denTrade !== null && match.essence[kind] > 0;
               return (
                 <EssenceToken
                   key={kind}
                   kind={kind}
                   count={match.essence[kind]}
                   given={given}
-                  onPick={open ? () => turn.swapEssence(kind) : undefined}
+                  onPick={
+                    !open
+                      ? undefined
+                      : swapping
+                        ? () => turn.swapEssence(kind)
+                        : () => turn.tradeFood(kind)
+                  }
                   disabled={busy}
                 />
               );
@@ -242,6 +259,20 @@ function Enter() {
   return <KeyHint className="h-4.5! px-1!">Enter</KeyHint>;
 }
 
+/**
+ * What a lane's prompt adds while its trade spot is open: the trade as made,
+ * or how to make it. Empty when the lane has no trade to offer.
+ */
+function tradeNote(
+  match: MatchView,
+  row: Row,
+  made: string | null,
+  how: string,
+): string {
+  if (!match.trades[row]) return "";
+  return made ? ` Trade: ${made}` : ` Trade spot open: ${how}.`;
+}
+
 function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
   const { mode, busy } = turn;
   const cancel = (
@@ -352,10 +383,16 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
         </Row2>
       );
     }
-    case "hunt":
+    case "hunt": {
+      const paid = mode.trade === null ? undefined : match.hand[mode.trade];
       return (
         <Row2
-          text={`Hunt: choose ${plural(turn.take, "die", "dice")} from the feeder. ${mode.dice.length} of ${turn.take} chosen.`}
+          text={`Hunt: choose ${plural(turn.take, "die", "dice")} from the feeder. ${mode.dice.length} of ${turn.take} chosen.${tradeNote(
+            match,
+            "hunt",
+            paid ? `${getCat(paid).name} is discarded for 1 more die.` : null,
+            "tap a cat in your hand to discard it for 1 more die",
+          )}`}
         >
           <TableButton
             disabled={busy || mode.dice.length !== turn.take}
@@ -367,18 +404,30 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
           {cancel}
         </Row2>
       );
+    }
     case "den": {
-      const limit = Math.min(match.rewards.den, boardYarnRoom(match.board));
+      const limit = Math.min(denLimit(match, mode), boardYarnRoom(match.board));
       const placed = mode.targets.length;
+      const note = tradeNote(
+        match,
+        "den",
+        mode.trade
+          ? `1 ${essenceLabel(mode.trade)} is spent for 1 more yarn, if you lay all ${limit}.`
+          : null,
+        "tap one of your food to spend it for 1 more yarn",
+      );
       return (
         <Row2
           text={
             limit === 0
               ? "Den: no cat on the board can hold yarn. Activating still fires the Den's powers and uses the turn."
-              : `Den: tap cats on the board to lay yarn. ${placed} of ${limit} placed.`
+              : `Den: tap cats on the board to lay yarn. ${placed} of ${limit} placed.${note}`
           }
         >
-          <TableButton disabled={busy} onClick={turn.confirm}>
+          <TableButton
+            disabled={busy || (mode.trade !== null && placed !== limit)}
+            onClick={turn.confirm}
+          >
             {placed > 0 ? `Lay ${placed} yarn` : "Lay none"}
             <Enter />
           </TableButton>
@@ -404,21 +453,33 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
         </Row2>
       );
     }
-    case "prowl":
+    case "prowl": {
+      const want = prowlWant(match, mode);
+      const payer = mode.trade
+        ? match.board[mode.trade.row][mode.trade.col]
+        : undefined;
       return (
         <Row2
-          text={`Prowl: draw ${plural(match.prowlPicks, "cat")} from the tray or the deck. ${mode.picks.length} of ${match.prowlPicks} chosen.`}
+          text={`Prowl: draw ${plural(want, "cat")} from the tray or the deck. ${mode.picks.length} of ${want} chosen.${tradeNote(
+            match,
+            "prowl",
+            payer
+              ? `${getCat(payer.catId).name} spends 1 yarn for 1 more cat.`
+              : null,
+            "tap a cat on your mat to spend 1 of its yarn for 1 more cat",
+          )}`}
         >
           <TableButton
-            disabled={busy || mode.picks.length !== match.prowlPicks}
+            disabled={busy || mode.picks.length !== want}
             onClick={turn.confirm}
           >
-            Draw {plural(match.prowlPicks, "cat")}
+            Draw {plural(want, "cat")}
             <Enter />
           </TableButton>
           {cancel}
         </Row2>
       );
+    }
     default:
       return (
         <Row2 text="Your turn. Play a cat from your hand, or activate a lane on the mat. Either way it is your whole turn." />

@@ -102,6 +102,35 @@ describe("buildSteps", () => {
     expect(frames[0]?.view).toBe(after);
   });
 
+  it("opens a trade with what it was paid with already spent", () => {
+    const base = dealt({ hunt: ["thornkit"], den: ["bramblepaw"] });
+    const den = base.board.den[0];
+    if (!den) throw new Error("no cat in the Den");
+    den.yarn = 2;
+    const state = { ...base, essence: { ...base.essence, mist: 1 } };
+
+    const hunt = play(state, { type: "hunt", dice: [0, 1], trade: 0 });
+    expect(hunt.frames[0]?.view.hand).toEqual(state.hand.slice(1));
+    expect(hunt.frames[0]?.view.feeder).toHaveLength(3);
+    expect(hunt.frames[0]?.cue.delta.hand).toBe(-1);
+
+    const slot = { row: "den" as const, col: 0 };
+    const laid = play(state, {
+      type: "den",
+      targets: [slot, slot, slot],
+      trade: "mist",
+    });
+    expect(laid.frames[0]?.cue.delta.food.mist).toBe(-1);
+    expect(laid.frames[0]?.cue.delta.yarn).toBe(3);
+
+    const prowled = play(
+      { ...state, board: { ...state.board, prowl: state.board.hunt } },
+      { type: "prowl", picks: [0, "deck"], trade: slot },
+    );
+    expect(prowled.frames[0]?.view.board.den[0]?.yarn).toBe(1);
+    expect(prowled.frames[0]?.cue.delta.hand).toBe(2);
+  });
+
   it("opens with the player's own move: dice leave the feeder for the pool", () => {
     const state = dealt();
     const face = state.feeder[0];

@@ -10,6 +10,7 @@ import { difficultyOf, type DifficultyId } from "./difficulty";
 import {
   canPlay,
   canReroll,
+  canTrade,
   columnYarnCost,
   goalStanding,
   playerScore,
@@ -86,6 +87,11 @@ export interface MatchView {
   canReroll: boolean;
   /** How many cats a Prowl must pick. */
   prowlPicks: number;
+  /**
+   * The rows whose trade can be made now: paid for, and one more taken than
+   * the reward. A Hunt then takes `rewards.hunt + 1` dice, and so on.
+   */
+  trades: Record<Row, boolean>;
 }
 
 export interface RunView {
@@ -153,6 +159,7 @@ export function toMatchView(state: MatchState): MatchView {
     ),
     canReroll: canReroll(state),
     prowlPicks: prowlPickCount(state),
+    trades: byRow((row) => canTrade(state, row)),
   };
 }
 

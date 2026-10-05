@@ -8,6 +8,7 @@ import { getCat, playCost, ROW_LABELS, ROWS } from "~/server/game/cats";
 import {
   ESSENCES,
   auraTotal,
+  boardYarnRoom,
   playPayment,
   swapOffer,
   type Board,
@@ -24,17 +25,32 @@ export type Mode =
   | { kind: "idle" }
   /** `swap` is the essence chosen so far to give up for pips the cat is short. */
   | { kind: "play"; hand: number; swap: Essence[] }
-  | { kind: "hunt"; dice: number[] }
-  | { kind: "den"; targets: SlotRef[] }
-  | { kind: "prowl"; picks: ("deck" | number)[] }
+  /**
+   * The three lanes. `trade` is what the lane's trade spot is paid with, once
+   * chosen: a hand card for the Hunt, a food for the Den, a cat's yarn for
+   * the Prowl. With it set the lane takes one more.
+   */
+  | { kind: "hunt"; dice: number[]; trade: number | null }
+  | { kind: "den"; targets: SlotRef[]; trade: Essence | null }
+  | { kind: "prowl"; picks: ("deck" | number)[]; trade: SlotRef | null }
   /** Answering a pending tuck: the hand card chosen so far. */
   | { kind: "tuck"; hand: number | null };
 
 export const IDLE: Mode = { kind: "idle" };
 
-/** How many dice a Hunt takes right now. */
-export function huntTake(view: MatchView): number {
-  return Math.min(view.rewards.hunt, view.feeder.length);
+/** How many dice a Hunt takes right now, one more with its trade made. */
+export function huntTake(view: MatchView, trading = false): number {
+  return Math.min(view.rewards.hunt, view.feeder.length) + (trading ? 1 : 0);
+}
+
+/** How much yarn the Den being chosen may lay. */
+export function denLimit(view: MatchView, mode: Mode): number {
+  return view.rewards.den + (mode.kind === "den" && mode.trade ? 1 : 0);
+}
+
+/** How many cats the Prowl being chosen draws. */
+export function prowlWant(view: MatchView, mode: Mode): number {
+  return view.prowlPicks + (mode.kind === "prowl" && mode.trade ? 1 : 0);
 }
 
 /** Yarn queued for one slot in a Den that has not been sent yet. */
@@ -53,19 +69,7 @@ export function yarnRoom(
   return getCat(placed.catId).yarnCap - placed.yarn - queuedYarn(targets, slot);
 }
 
-/** Total yarn the board could still take. */
-export function boardYarnRoom(board: Board): number {
-  return ROWS.reduce(
-    (sum, row) =>
-      sum +
-      board[row].reduce(
-        (rowSum, placed) =>
-          rowSum + Math.max(0, getCat(placed.catId).yarnCap - placed.yarn),
-        0,
-      ),
-    0,
-  );
-}
+export { boardYarnRoom };
 
 /** Tops `targets` up to `limit` in board order, keeping what is already chosen. */
 export function fillYarn(

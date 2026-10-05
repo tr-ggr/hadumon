@@ -26,7 +26,7 @@ import {
   WHITE,
   YarnTrack,
 } from "./pieces";
-import { queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
+import { denLimit, queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
 
 /** The thing a lane's reward is counted in, and the lane's key. */
 const LANES: Record<
@@ -96,7 +96,10 @@ export function BoardRow({
     mode.swap.length === swapOwed(match, mode.hand);
   const activating = mode.kind === row || resolving;
   const denTargets = mode.kind === "den" ? mode.targets : null;
-  const denFull = denTargets !== null && denTargets.length >= match.rewards.den;
+  const denFull =
+    denTargets !== null && denTargets.length >= denLimit(match, mode);
+  // A Prowl with its trade open is paid for with a yarn from a cat on the mat.
+  const paying = mode.kind === "prowl" && match.trades.prowl ? mode : null;
   const ladder = rewardLadder(match, row);
 
   return (
@@ -140,13 +143,21 @@ export function BoardRow({
                   <PlacedSlot
                     slot={slot}
                     placed={placed}
-                    queued={denTargets ? queuedYarn(denTargets, slot) : 0}
+                    queued={
+                      denTargets
+                        ? queuedYarn(denTargets, slot)
+                        : paying?.trade?.row === row && paying.trade.col === col
+                          ? -1
+                          : 0
+                    }
                     laying={denTargets !== null}
+                    paying={paying !== null}
                     disabled={
-                      denTargets !== null &&
-                      (busy ||
-                        denFull ||
-                        yarnRoom(match.board, denTargets, slot) <= 0)
+                      denTargets !== null
+                        ? busy ||
+                          denFull ||
+                          yarnRoom(match.board, denTargets, slot) <= 0
+                        : paying !== null && (busy || placed.yarn <= 0)
                     }
                     waiting={
                       match.pending?.slot.row === row &&
@@ -286,6 +297,7 @@ function PlacedSlot({
   placed,
   queued,
   laying,
+  paying,
   disabled,
   waiting,
   firing,
@@ -293,16 +305,21 @@ function PlacedSlot({
 }: {
   slot: SlotRef;
   placed: PlacedCat;
-  /** Yarn chosen for this cat in a Den that has not been sent. */
+  /**
+   * Yarn chosen for this cat in a Den that has not been sent, or -1 for the
+   * yarn it gives up to a Prowl's trade.
+   */
   queued: number;
   laying: boolean;
+  /** A Prowl's trade is open and this cat's yarn could pay for it. */
+  paying: boolean;
   disabled: boolean;
   waiting: boolean;
   firing: boolean;
   onClick: () => void;
 }) {
   const cat = getCat(placed.catId);
-  const yarn = placed.yarn + queued;
+  const yarn = placed.yarn + Math.max(queued, 0);
   return (
     <button
       type="button"
@@ -312,7 +329,9 @@ function PlacedSlot({
       aria-label={
         laying
           ? `Lay yarn on ${cat.name}, holding ${yarn} of ${cat.yarnCap}`
-          : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
+          : paying
+            ? `Spend 1 yarn from ${cat.name} for 1 more cat, holding ${placed.yarn}`
+            : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
       }
       // Cats tucked underneath show as a thicker edge. The left edge is the
       // cat's element, as on its card.
@@ -320,7 +339,7 @@ function PlacedSlot({
         ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px`,
         ["--element" as string]: ELEMENT_PALETTES[cat.element]["1"],
       }}
-      className={`piece cat-tile border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream relative flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : laying && !disabled ? "is-open" : ""} ${firing ? "is-firing" : ""}`}
+      className={`piece cat-tile border-ink bg-cream text-ink hover:bg-sky-soft disabled:hover:bg-cream relative flex h-full min-h-24 w-full flex-col items-center justify-center gap-1 border-2 px-0 py-1 text-center disabled:cursor-not-allowed sm:min-h-[3.75rem] lg:min-h-20 @[10.5rem]:flex-row @[10.5rem]:justify-start @[10.5rem]:gap-2 @[10.5rem]:px-1.5 @[10.5rem]:text-left ${waiting ? "is-due" : queued < 0 ? "is-chosen" : (laying || paying) && !disabled ? "is-open" : ""} ${firing ? "is-firing" : ""}`}
     >
       <span className="relative shrink-0">
         <PixelSprite
@@ -364,8 +383,8 @@ function PlacedSlot({
           {cat.name}
         </span>
         <YarnTrack
-          held={placed.yarn}
-          queued={queued}
+          held={placed.yarn + Math.min(queued, 0)}
+          queued={Math.max(queued, 0)}
           cap={cat.yarnCap}
           size={16}
           className="justify-center @[10.5rem]:justify-start"

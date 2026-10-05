@@ -36,10 +36,12 @@ import { TurnPanel, type TurnControls } from "./TurnPanel";
 import {
   canSwapMore,
   deckPicks,
+  denLimit,
   fillYarn,
   huntTake,
   IDLE,
   playBlock,
+  prowlWant,
   swapOwed,
   toggleDie,
   yarnRoom,
@@ -247,12 +249,15 @@ export function MatchBoard({
     onAct(action);
   };
 
-  const take = huntTake(match);
+  // A lane's trade, once paid for, takes one more than its reward.
+  const take = huntTake(match, mode.kind === "hunt" && mode.trade !== null);
+  const yarnLimit = denLimit(match, mode);
+  const want = prowlWant(match, mode);
   const deckAvailable = match.deckCount + match.discardCount;
   const labels: Record<Row, string> = {
     hunt: `Take ${plural(take, "die", "dice")}`,
-    den: `Lay ${match.rewards.den} yarn`,
-    prowl: `Draw ${plural(match.prowlPicks, "cat")}`,
+    den: `Lay ${yarnLimit} yarn`,
+    prowl: `Draw ${plural(want, "cat")}`,
   };
 
   const activate = (row: Row) => {
@@ -263,21 +268,21 @@ export function MatchBoard({
     }
     if (row === "hunt") {
       // Nothing to choose when the Hunt takes every die that is left.
-      if (take === match.feeder.length) {
+      if (take === match.feeder.length && !match.trades.hunt) {
         return act({ type: "hunt", dice: match.feeder.map((_, i) => i) });
       }
       playSound("click");
-      setMode({ kind: "hunt", dice: [] });
+      setMode({ kind: "hunt", dice: [], trade: null });
       return reveal(supplyRef.current);
     }
     if (row === "den") {
       playSound("click");
-      setMode({ kind: "den", targets: [] });
+      setMode({ kind: "den", targets: [], trade: null });
       return reveal(matRef.current);
     }
     if (match.prowlPicks === 0) return act({ type: "prowl", picks: [] });
     playSound("click");
-    setMode({ kind: "prowl", picks: [] });
+    setMode({ kind: "prowl", picks: [], trade: null });
     reveal(supplyRef.current);
   };
 
@@ -322,11 +327,29 @@ export function MatchBoard({
     },
     confirm: () => {
       if (mode.kind === "hunt" && mode.dice.length === take) {
-        act({ type: "hunt", dice: mode.dice });
+        act({
+          type: "hunt",
+          dice: mode.dice,
+          ...(mode.trade === null ? {} : { trade: mode.trade }),
+        });
       }
-      if (mode.kind === "den") act({ type: "den", targets: mode.targets });
-      if (mode.kind === "prowl" && mode.picks.length === match.prowlPicks) {
-        act({ type: "prowl", picks: mode.picks });
+      // A Den's trade is made only when every yarn it buys is laid.
+      if (
+        mode.kind === "den" &&
+        (mode.trade === null || mode.targets.length === yarnLimit)
+      ) {
+        act({
+          type: "den",
+          targets: mode.targets,
+          ...(mode.trade === null ? {} : { trade: mode.trade }),
+        });
+      }
+      if (mode.kind === "prowl" && mode.picks.length === want) {
+        act({
+          type: "prowl",
+          picks: mode.picks,
+          ...(mode.trade === null ? {} : { trade: mode.trade }),
+        });
       }
       if (mode.kind === "tuck" && mode.hand !== null) {
         act({ type: "resolve", choice: mode.hand });
@@ -337,19 +360,52 @@ export function MatchBoard({
       if (mode.kind !== "den") return;
       playSound("yarn");
       setMode({
-        kind: "den",
-        targets: fillYarn(match.board, mode.targets, match.rewards.den),
+        ...mode,
+        targets: fillYarn(match.board, mode.targets, yarnLimit),
       });
     },
     undoDen: () => {
       if (mode.kind !== "den") return;
       playSound("click");
-      setMode({ kind: "den", targets: mode.targets.slice(0, -1) });
+      setMode({ ...mode, targets: mode.targets.slice(0, -1) });
+    },
+    tradeFood: (kind: Essence) => {
+      if (mode.kind !== "den" || busy || !match.trades.den) return;
+      if (mode.trade === kind) {
+        // The yarn the trade bought goes back with it.
+        playSound("click");
+        return setMode({
+          ...mode,
+          trade: null,
+          targets: mode.targets.slice(0, match.rewards.den),
+        });
+      }
+      if (match.essence[kind] <= 0) return playSound("illegal");
+      playSound("pick");
+      setMode({ ...mode, trade: kind });
     },
     resolve: (choice) => act({ type: "resolve", choice }),
   };
 
   const onSlot = (slot: SlotRef) => {
+    // A Prowl with its trade open is paid for with a yarn from a cat here.
+    if (mode.kind === "prowl" && match.trades.prowl) {
+      const paying =
+        mode.trade?.row === slot.row && mode.trade.col === slot.col;
+      if (paying) {
+        playSound("click");
+        return setMode({
+          ...mode,
+          trade: null,
+          picks: mode.picks.slice(0, match.prowlPicks),
+        });
+      }
+      if ((match.board[slot.row][slot.col]?.yarn ?? 0) <= 0) {
+        return playSound("illegal");
+      }
+      playSound("pick");
+      return setMode({ ...mode, trade: slot });
+    }
     if (mode.kind !== "den") {
       const placed = match.board[slot.row][slot.col];
       if (placed) {
@@ -362,11 +418,11 @@ export function MatchBoard({
       return;
     }
     if (
-      mode.targets.length < match.rewards.den &&
+      mode.targets.length < yarnLimit &&
       yarnRoom(match.board, mode.targets, slot) > 0
     ) {
       playSound("yarn");
-      setMode({ kind: "den", targets: [...mode.targets, slot] });
+      setMode({ ...mode, targets: [...mode.targets, slot] });
     } else {
       playSound("illegal");
     }
@@ -384,6 +440,19 @@ export function MatchBoard({
       });
     }
     if (match.phase !== "turn") return;
+    // A Hunt with its trade open is paid for with a cat from the hand.
+    if (mode.kind === "hunt" && match.trades.hunt) {
+      if (mode.trade === index) {
+        playSound("click");
+        return setMode({
+          ...mode,
+          trade: null,
+          dice: mode.dice.slice(0, huntTake(match)),
+        });
+      }
+      playSound("pick");
+      return setMode({ ...mode, trade: index });
+    }
     if (mode.kind === "play" && mode.hand === index) {
       playSound("click");
       return setMode(IDLE);
@@ -398,7 +467,7 @@ export function MatchBoard({
   const onDie = (index: number) => {
     if (mode.kind !== "hunt" || match.feeder[index] === undefined) return;
     playSound(mode.dice.includes(index) ? "click" : "pick");
-    setMode({ kind: "hunt", dice: toggleDie(mode.dice, index, take) });
+    setMode({ ...mode, dice: toggleDie(mode.dice, index, take) });
   };
 
   const onTrayCard = (index: number) => {
@@ -407,13 +476,13 @@ export function MatchBoard({
     if (mode.picks.includes(index)) {
       playSound("click");
       return setMode({
-        kind: "prowl",
+        ...mode,
         picks: mode.picks.filter((pick) => pick !== index),
       });
     }
-    if (mode.picks.length < match.prowlPicks) {
+    if (mode.picks.length < want) {
       playCat(catId);
-      setMode({ kind: "prowl", picks: [...mode.picks, index] });
+      setMode({ ...mode, picks: [...mode.picks, index] });
     } else {
       playSound("illegal");
     }
@@ -422,18 +491,15 @@ export function MatchBoard({
   const changeDeckPicks = (delta: 1 | -1) => {
     if (mode.kind !== "prowl") return;
     if (delta === 1) {
-      if (
-        mode.picks.length < match.prowlPicks &&
-        deckPicks(mode.picks) < deckAvailable
-      ) {
+      if (mode.picks.length < want && deckPicks(mode.picks) < deckAvailable) {
         playSound("pick");
-        setMode({ kind: "prowl", picks: [...mode.picks, "deck"] });
+        setMode({ ...mode, picks: [...mode.picks, "deck"] });
       }
       return;
     }
     playSound("click");
     const last = mode.picks.lastIndexOf("deck");
-    setMode({ kind: "prowl", picks: mode.picks.filter((_, i) => i !== last) });
+    setMode({ ...mode, picks: mode.picks.filter((_, i) => i !== last) });
   };
 
   /** The nth cat on the mat, reading the lanes top to bottom. */
@@ -627,6 +693,7 @@ export function MatchBoard({
                 mode={mode}
                 busy={busy}
                 take={take}
+                want={want}
                 rolling={frame?.rolling ?? false}
                 onDie={onDie}
                 onTrayCard={onTrayCard}

@@ -32,6 +32,9 @@ import { toRunView, type RunView } from "~/server/game/view";
 
 const index = z.number().int().min(0).max(63);
 
+const food = z.enum([...ELEMENTS, "wild"]);
+const slot = z.object({ row: z.enum(ROWS), col: index });
+
 const actionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("keep"),
@@ -42,19 +45,22 @@ const actionSchema = z.discriminatedUnion("type", [
     type: z.literal("play"),
     hand: index,
     row: z.enum(ROWS),
-    swap: z
-      .array(z.enum([...ELEMENTS, "wild"]))
-      .max(8)
-      .optional(),
+    swap: z.array(food).max(8).optional(),
   }),
-  z.object({ type: z.literal("hunt"), dice: z.array(index).max(8) }),
+  z.object({
+    type: z.literal("hunt"),
+    dice: z.array(index).max(8),
+    trade: index.optional(),
+  }),
   z.object({
     type: z.literal("den"),
-    targets: z.array(z.object({ row: z.enum(ROWS), col: index })).max(8),
+    targets: z.array(slot).max(8),
+    trade: food.optional(),
   }),
   z.object({
     type: z.literal("prowl"),
     picks: z.array(z.union([z.literal("deck"), index])).max(8),
+    trade: slot.optional(),
   }),
   z.object({ type: z.literal("reroll") }),
   z.object({ type: z.literal("resolve"), choice: index.nullable() }),

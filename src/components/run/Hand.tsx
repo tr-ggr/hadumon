@@ -63,9 +63,15 @@ export function Hand({
   onDetail,
   className = "",
 }: HandProps) {
-  const tucking = mode.kind === "tuck";
+  // A cat is chosen to be tucked, or discarded for the Hunt's trade.
+  const tucking =
+    mode.kind === "tuck" || (mode.kind === "hunt" && match.trades.hunt);
   const chosen =
-    mode.kind === "play" || mode.kind === "tuck" ? mode.hand : null;
+    mode.kind === "play" || mode.kind === "tuck"
+      ? mode.hand
+      : mode.kind === "hunt"
+        ? mode.trade
+        : null;
   const count = match.hand.length;
 
   if (count === 0) {
@@ -97,7 +103,9 @@ export function Hand({
         const selected = chosen === index;
         // A card that cannot be played stays a choice, so the prompt can say why.
         const block =
-          match.phase === "turn" && !selected ? playBlock(match, index) : null;
+          match.phase === "turn" && !selected && !tucking
+            ? playBlock(match, index)
+            : null;
         return (
           <li
             key={`${index}-${catId}`}

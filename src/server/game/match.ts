@@ -43,6 +43,11 @@ export const ROW_REWARD: Record<Row, readonly number[]> = {
   den: [2, 2, 3, 3, 4],
   prowl: [1, 1, 2, 2, 3],
 };
+/**
+ * A row offers its trade while it holds exactly this many cats: the second
+ * and fourth columns of a Wingspan mat.
+ */
+export const TRADE_CATS: readonly number[] = [1, 3];
 export const FEEDER_DICE = 5;
 export const TRAY_SIZE = 3;
 export const SETUP_CATS = 5;
@@ -151,12 +156,21 @@ export type Action =
    * pip short, and none when nothing is short.
    */
   | { type: "play"; hand: number; row: Row; swap?: Essence[] }
-  /** Indices into `feeder` of the dice to take. */
-  | { type: "hunt"; dice: number[] }
-  /** One entry per yarn laid; a slot may repeat. */
-  | { type: "den"; targets: SlotRef[] }
-  /** Each pick is a tray index or the top of the deck. */
-  | { type: "prowl"; picks: ("deck" | number)[] }
+  /**
+   * Indices into `feeder` of the dice to take. `trade` is the hand card
+   * discarded for one die more.
+   */
+  | { type: "hunt"; dice: number[]; trade?: number }
+  /**
+   * One entry per yarn laid; a slot may repeat. `trade` is the food spent
+   * for one yarn more.
+   */
+  | { type: "den"; targets: SlotRef[]; trade?: Essence }
+  /**
+   * Each pick is a tray index or the top of the deck. `trade` is the cat
+   * that gives up a yarn for one cat more.
+   */
+  | { type: "prowl"; picks: ("deck" | number)[]; trade?: SlotRef }
   /** Free: reroll the feeder when every die shows the same face. */
   | { type: "reroll" }
   /** Answer a pending choice. `null` declines. */
@@ -487,6 +501,83 @@ export function prowlPickCount(state: MatchState): number {
   return Math.min(rowReward(state, "prowl"), available);
 }
 
+/** Total yarn the board could still take. */
+export function boardYarnRoom(board: Board): number {
+  return placedCats(board).reduce(
+    (sum, placed) =>
+      sum + Math.max(0, getCat(placed.catId).yarnCap - placed.yarn),
+    0,
+  );
+}
+
+/** True while `row` holds a number of cats that opens its trade. */
+export function tradeOpen(board: Board, row: Row): boolean {
+  return TRADE_CATS.includes(board[row].length);
+}
+
+/**
+ * True when `row`'s trade can be made right now: the row offers it, there is
+ * something to pay with, and the extra it buys can actually be taken. Nobody
+ * pays for nothing.
+ *
+ *   hunt   discard 1 cat from hand, take 1 extra die
+ *   den    spend 1 food, lay 1 extra yarn
+ *   prowl  spend 1 yarn from a cat, take 1 extra cat
+ */
+export function canTrade(state: MatchState, row: Row): boolean {
+  if (state.phase !== "turn" || !tradeOpen(state.board, row)) return false;
+  const reward = rowReward(state, row);
+  switch (row) {
+    case "hunt":
+      return state.hand.length > 0 && state.feeder.length > reward;
+    case "den":
+      return (
+        ESSENCES.some((kind) => state.essence[kind] > 0) &&
+        boardYarnRoom(state.board) > reward
+      );
+    case "prowl":
+      return (
+        totalYarn(state.board) > 0 &&
+        state.tray.length + state.deck.length + state.discard.length > reward
+      );
+  }
+}
+
+/**
+ * The food a Den trade spends when nobody chooses: what the hand needs
+ * least, and a Treat only when there is nothing else.
+ */
+export function spareFood(state: MatchState): Essence | null {
+  const reserve: Partial<Record<Essence, number>> = handReserve(
+    state.hand,
+    -1,
+    auraTotal(state.board, "discount"),
+  );
+  const free = (kind: Essence) => state.essence[kind] - (reserve[kind] ?? 0);
+  let best: Essence | null = null;
+  for (const kind of ELEMENTS) {
+    if (state.essence[kind] > 0 && (best === null || free(kind) > free(best))) {
+      best = kind;
+    }
+  }
+  return best ?? (state.essence.wild > 0 ? "wild" : null);
+}
+
+/** The cat a Prowl trade takes its yarn from when nobody chooses: the richest. */
+export function richestSlot(board: Board): SlotRef | null {
+  let best: SlotRef | null = null;
+  let most = 0;
+  for (const row of ROWS) {
+    board[row].forEach((placed, col) => {
+      if (placed.yarn > most) {
+        most = placed.yarn;
+        best = { row, col };
+      }
+    });
+  }
+  return best;
+}
+
 export function rivalBankValue(state: MatchState): number {
   return Math.max(
     1,
@@ -805,13 +896,21 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
 function hunt(ctx: Ctx, action: Extract<Action, { type: "hunt" }>): void {
   const { s } = ctx;
   const reward = rowReward(s, "hunt");
-  const take = Math.min(reward, s.feeder.length);
+  const trade = action.trade;
+  if (trade !== undefined) {
+    if (!canTrade(s, "hunt")) fail("The Hunt has no trade to make right now.");
+    if (!isIndexList([trade], s.hand.length))
+      fail("That cat is not in your hand.");
+  }
+  const take =
+    trade !== undefined ? reward + 1 : Math.min(reward, s.feeder.length);
   if (
     !isIndexList(action.dice, s.feeder.length) ||
     action.dice.length !== take
   ) {
     fail(`Take exactly ${take} dice from the feeder.`);
   }
+  if (trade !== undefined) s.discard.push(...s.hand.splice(trade, 1));
   for (const index of [...action.dice].sort((a, b) => b - a)) {
     const [face] = s.feeder.splice(index, 1);
     if (face) s.essence[face] += 1;
@@ -823,7 +922,17 @@ function hunt(ctx: Ctx, action: Extract<Action, { type: "hunt" }>): void {
 function den(ctx: Ctx, action: Extract<Action, { type: "den" }>): void {
   const { s } = ctx;
   const reward = rowReward(s, "den");
-  if (action.targets.length > reward) fail(`The Den lays ${reward} yarn.`);
+  const trade = action.trade;
+  if (trade !== undefined) {
+    if (!canTrade(s, "den")) fail("The Den has no trade to make right now.");
+    if (!ESSENCES.includes(trade) || s.essence[trade] <= 0)
+      fail("You do not hold that food.");
+    if (action.targets.length !== reward + 1)
+      fail(`A trade lays all ${reward + 1} yarn, or it is not made.`);
+    s.essence[trade] -= 1;
+  }
+  if (action.targets.length > reward + (trade !== undefined ? 1 : 0))
+    fail(`The Den lays ${reward} yarn.`);
   for (const target of action.targets) {
     const placed = ROWS.includes(target.row)
       ? s.board[target.row][target.col]
@@ -840,7 +949,18 @@ function den(ctx: Ctx, action: Extract<Action, { type: "den" }>): void {
 function prowl(ctx: Ctx, action: Extract<Action, { type: "prowl" }>): void {
   const { s } = ctx;
   const reward = rowReward(s, "prowl");
-  const want = prowlPickCount(s);
+  const trade = action.trade;
+  let want = prowlPickCount(s);
+  if (trade !== undefined) {
+    if (!canTrade(s, "prowl"))
+      fail("The Prowl has no trade to make right now.");
+    const payer = ROWS.includes(trade.row)
+      ? s.board[trade.row][trade.col]
+      : undefined;
+    if (!payer || payer.yarn <= 0) fail("That cat holds no yarn to spend.");
+    payer.yarn -= 1;
+    want += 1;
+  }
   const trayPicks = action.picks.filter((p): p is number => p !== "deck");
   const deckPicks = action.picks.length - trayPicks.length;
   if (
@@ -1071,6 +1191,11 @@ export function combinations(n: number, k: number): number[][] {
  * is listed once with automatic yarn placement; any placement that respects
  * capacity is also legal. A play that is short is listed once with the
  * default swap; any other spare essence may be given up instead.
+ *
+ * A row's trade is listed with every way to take what it buys. The Hunt's is
+ * listed for each different cat that could be discarded; the Den's and the
+ * Prowl's are listed with one way to pay (`spareFood`, `richestSlot`), and any
+ * other food held, or any other cat holding yarn, may pay instead.
  */
 export function legalActions(state: MatchState): Action[] {
   if (state.phase === "over") return [];
@@ -1122,30 +1247,49 @@ export function legalActions(state: MatchState): Action[] {
   for (const dice of combinations(state.feeder.length, take)) {
     actions.push({ type: "hunt", dice });
   }
-
-  actions.push({
-    type: "den",
-    targets: autoYarnTargets(state, rowReward(state, "den")),
-  });
-
-  const want = prowlPickCount(state);
-  const deckAvailable = state.deck.length + state.discard.length;
-  for (
-    let fromTray = 0;
-    fromTray <= Math.min(want, state.tray.length);
-    fromTray++
-  ) {
-    const fromDeck = want - fromTray;
-    if (fromDeck > deckAvailable) continue;
-    for (const combo of combinations(state.tray.length, fromTray)) {
-      actions.push({
-        type: "prowl",
-        picks: [
-          ...combo,
-          ...Array.from({ length: fromDeck }, () => "deck" as const),
-        ],
-      });
+  if (canTrade(state, "hunt")) {
+    const discards = state.hand.flatMap((catId, hand) =>
+      state.hand.indexOf(catId) === hand ? [hand] : [],
+    );
+    for (const dice of combinations(state.feeder.length, take + 1)) {
+      for (const trade of discards) actions.push({ type: "hunt", dice, trade });
     }
   }
+
+  const yarn = rowReward(state, "den");
+  actions.push({ type: "den", targets: autoYarnTargets(state, yarn) });
+  const food = canTrade(state, "den") ? spareFood(state) : null;
+  if (food !== null) {
+    actions.push({
+      type: "den",
+      targets: autoYarnTargets(state, yarn + 1),
+      trade: food,
+    });
+  }
+
+  const prowls = (want: number, trade?: SlotRef) => {
+    const deckAvailable = state.deck.length + state.discard.length;
+    for (
+      let fromTray = 0;
+      fromTray <= Math.min(want, state.tray.length);
+      fromTray++
+    ) {
+      const fromDeck = want - fromTray;
+      if (fromDeck > deckAvailable) continue;
+      for (const combo of combinations(state.tray.length, fromTray)) {
+        const picks = [
+          ...combo,
+          ...Array.from({ length: fromDeck }, () => "deck" as const),
+        ];
+        actions.push(
+          trade ? { type: "prowl", picks, trade } : { type: "prowl", picks },
+        );
+      }
+    }
+  };
+  const want = prowlPickCount(state);
+  prowls(want);
+  const payer = canTrade(state, "prowl") ? richestSlot(state.board) : null;
+  if (payer) prowls(want + 1, payer);
   return actions;
 }

@@ -12,6 +12,8 @@ export interface SupplyProps {
   busy: boolean;
   /** Dice a Hunt takes now. */
   take: number;
+  /** Cats a Prowl draws now. */
+  want: number;
   /** True on the step the feeder is rolled again. */
   rolling: boolean;
   onDie: (index: number) => void;
@@ -33,6 +35,7 @@ export function Supply({
   mode,
   busy,
   take,
+  want,
   rolling,
   onDie,
   onTrayCard,
@@ -46,7 +49,7 @@ export function Supply({
   const prowling = mode.kind === "prowl";
   const fromDeck = prowling ? deckPicks(mode.picks) : 0;
   const deckAvailable = match.deckCount + match.discardCount;
-  const full = prowling && mode.picks.length >= match.prowlPicks;
+  const full = prowling && mode.picks.length >= want;
 
   return (
     <section

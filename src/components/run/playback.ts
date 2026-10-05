@@ -229,19 +229,32 @@ function applyOwnAction(
         const [face] = view.feeder.splice(index, 1);
         if (face) view.essence[face] += 1;
       }
+      // The trade's cat leaves the hand for the discard pile.
+      if (action.trade !== undefined && view.hand[action.trade]) {
+        view.hand.splice(action.trade, 1);
+        view.discardCount += 1;
+      }
       break;
     case "den":
+      if (action.trade && view.essence[action.trade] > 0) {
+        view.essence[action.trade] -= 1;
+      }
       for (const target of action.targets) {
         const placed = view.board[target.row][target.col];
         if (placed) addYarn(placed, 1);
       }
       break;
-    case "prowl":
+    case "prowl": {
+      const payer = action.trade
+        ? view.board[action.trade.row][action.trade.col]
+        : undefined;
+      if (payer && payer.yarn > 0) payer.yarn -= 1;
       for (const pick of [...action.picks].sort().reverse()) {
         if (pick !== "deck") view.tray.splice(pick, 1);
       }
       growHand(view, after, action.picks.length);
       break;
+    }
     case "resolve": {
       const pending = before.pending;
       const placed = pending
