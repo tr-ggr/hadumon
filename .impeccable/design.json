@@ -457,6 +457,11 @@
         "purpose": "Every piece on every page: the chipboard edge, the ink line under it, and a cast that shows 3px at rest. --e is 2px for a token or tile and 3px for a card; a piece printed on a piece has none."
       },
       {
+        "name": "pack-edge",
+        "value": "five flat strips under one sawtooth mask (teeth 16px across, 8px deep, 2px steps), moved by translateY: chipboard by E, ink by E + 2px, cast by E + L + 5px; steps(2, end) over 120ms",
+        "purpose": "What a clan's booster pack has in place of the piece shadow, which cannot follow its crimped edge: the cut line and the wrapper inside it, and under the bottom crimp the edge, the ink line and the cast, read off the piece's own --e, --lift and --sink. A pack stands 8px (E), the pile of its sixteen cards; a stack of copies stands 3px plus 1px for each copy under the top one."
+      },
+      {
         "name": "mat",
         "value": "0 5px 0 -2px #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 -2px var(--mat-cast, color-mix(in srgb, #b9a47e 42%, #fff8e7))",
         "purpose": "The sky mat as a 3px board on the cloth: the match's, and the menu mat on home."
@@ -574,6 +579,41 @@
         "purpose": "Tabletop: a raised hand card leans toward a mouse held over it. Flat on touch and under reduced motion."
       },
       {
+        "name": "pack-turn",
+        "value": "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25) on the slot; pack-grow scale(0.6667) to 1 and pack-shrink scale(1.5) to 1, 220ms on the same curve, transform-origin 50% 100%; filter brightness(0.58) saturate(0.6) on a copy past the row's end, 220ms steps(2, end)",
+        "purpose": "The clan pick's row of packs turning. The row is a ring drawn as a strip of places, so every pack moves one place along and none crosses: the pack that goes off one end slides out into shadow as its copy slides in at the other. The pack that changes size is drawn at its new size at once and scaled from the old one, so the swap is hidden under one move. Nothing grows on load."
+      },
+      {
+        "name": "pack-hover",
+        "value": "translateY(-4px) for the pack in the middle, -2px at the side, 150ms on the curve with give; a press sinks 2px; lean up to 5deg as hand-lean",
+        "purpose": "A pack under a mouse. The hover is bound on the slot the pack stands in, which does not move, so a pack that rises cannot leave the pointer. Touch and reduced motion leave it flat."
+      },
+      {
+        "name": "pack-shine",
+        "value": "520ms linear, once; a 34% wide band of white at 50%, skewX(-18deg), translateX(-160%) to 360%",
+        "purpose": "The one flat band of light that crosses the pack in the middle when a mouse comes onto it: the fourth and last light on the tabletop. No gradient. Not shown under reduced motion."
+      },
+      {
+        "name": "pack-hop",
+        "value": "360ms steps(1, end), once; translateY by one pattern unit (6px) and back",
+        "purpose": "The mascot on the pack in the middle hops one of its own pixels as a mouse comes onto the pack, in whole steps, as a sprite moves."
+      },
+      {
+        "name": "stack-deal",
+        "value": "piece-land 240ms cubic-bezier(0.16, 1, 0.3, 1), 24ms apart",
+        "purpose": "A pack's stacks dealt onto the mat when its cards are opened. None under reduced motion."
+      },
+      {
+        "name": "stack-fan",
+        "value": "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25); each lower copy 2px further out and rotate(2deg) more, about the foot of the stack",
+        "purpose": "The copies under a stack's top card coming out under a mouse or on focus. Still under reduced motion."
+      },
+      {
+        "name": "card-step",
+        "value": "card-next translateX(16px) to 0, card-prev translateX(-16px) to 0; 220ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "In the pack viewer, the card turned to comes in from the side it was on. None under reduced motion."
+      },
+      {
         "name": "table-step",
         "value": "380ms for the first power, each next one 12% shorter, floor 180ms; 440ms for the player's own move, 540ms for the rival's card, 760ms for a scored goal, 1000ms for the end of a match",
         "purpose": "Tabletop: an answered turn is played back one frame at a time and a chain speeds up as it runs; any click or key skips to the end, finishing every animation and cutting every sound."
@@ -621,7 +661,7 @@
       {
         "name": "score-heat",
         "value": "opacity and scale 260ms; a deep-lime radial gradient behind the player's score, 0 at two powers into a chain and full at eight",
-        "purpose": "Match table: light that deepens behind the player's total as a chain runs. One of the three lights on the tabletop."
+        "purpose": "Match table: light that deepens behind the player's total as a chain runs. One of the four lights on the tabletop."
       },
       {
         "name": "table-shake",
@@ -636,12 +676,12 @@
       {
         "name": "card-shimmer",
         "value": "2200ms cubic-bezier(0.16, 1, 0.3, 1) infinite; one white band translated across the face",
-        "purpose": "Tabletop: a legendary in the hand catches the light while it stands up. One of the three lights; removed under reduced motion."
+        "purpose": "Tabletop: a legendary in the hand catches the light while it stands up. One of the four lights; removed under reduced motion."
       },
       {
         "name": "cloth-light",
         "value": "26s ease-in-out infinite alternate; a faint white radial patch the size of the screen, translated 16% by 9%",
-        "purpose": "The run route: a slow light drifting on the cloth, under every piece. One of the three lights; still under reduced motion; absent from the landing page."
+        "purpose": "The run route: a slow light drifting on the cloth, under every piece. One of the four lights; still under reduced motion; absent from the landing page."
       },
       {
         "name": "card-flip",
@@ -710,7 +750,7 @@
       },
       {
         "name": "reduced-motion",
-        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once with one settle sound, sets numbers at once, and skips flights, pops, floats, sparks, shakes, the hand lean, the shimmer, the cloth light and the result tally; the landing crowd's animations are removed and the demo's steps land with no delay",
+        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once with one settle sound, sets numbers at once, and skips flights, pops, floats, sparks, shakes, the hand lean, the shimmer, the cloth light and the result tally; the landing crowd's animations are removed and the demo's steps land with no delay; the clan pick's packs neither grow, lean, shine nor hop, a pack's stacks are simply on the mat and do not fan, and a card turned to is simply there",
         "purpose": "Applied under prefers-reduced-motion: reduce."
       },
       {
@@ -948,7 +988,7 @@
       "name": "Dialog",
       "kind": "card",
       "refersTo": "dialog-board",
-      "description": "A board held over the table: 448px at most, over a 50% ink scrim, casting a darker ink, with its title in print at 30px. A destructive confirm is the ink button beside a cream way back.",
+      "description": "A board held over the table: 448px at most, or 720px for the cards in a clan's pack, over a 50% ink scrim, casting a darker ink, with its title in print at 30px. A destructive confirm is the ink button beside a cream way back.",
       "html": "<div class=\"ds-scrim\"><div class=\"ds-bd ds-dlg\" role=\"dialog\" aria-label=\"Log out?\"><h2 class=\"ds-print ds-dlg-title\">Log out?</h2><p class=\"ds-dlg-copy\">A run in progress is saved. It will be where you left it when you log back in.</p><div class=\"ds-dlg-foot\"><button class=\"ds-pc ds-tb ds-tb-secondary ds-tb-md\">Stay</button><button class=\"ds-pc ds-tb ds-tb-danger ds-tb-md\">Log out</button></div></div></div>",
       "css": ".ds-scrim{display:flex;justify-content:center;padding:24px 16px 32px;background:color-mix(in srgb,#17212b 50%,#fff8e7)}.ds-bd{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);padding:20px;box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--board-cast,color-mix(in srgb, #b9a47e 42%, #fff8e7))}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}.ds-dlg{--board-cast:#0b1118;width:100%;max-width:448px;box-sizing:border-box}.ds-dlg-title{font-size:30px}.ds-dlg-copy{margin:12px 0 0;font-size:16px;line-height:1.45}.ds-dlg-foot{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;padding-bottom:4px}"
     },
@@ -1023,6 +1063,14 @@
       "description": "The landing demo while a turn lands, as tabletop pieces: the lane chip lime and pressed, a firing slot lime and pressed with its line in the power list filled lime, the rival's last card coral, and the confirm lime, pressed, reading Hunting. Hover a slot or the last card to see the state.",
       "html": "<div class=\"ds-demo\"><div class=\"ds-demo-mat\"><div class=\"ds-dpiece ds-chip\"><b>Hunt</b><span>Take 2 dice</span></div><ol class=\"ds-slots\"><li class=\"ds-dpiece ds-slot\"><span class=\"ds-fire-mark\">Fires 2nd</span><b>Flameclaw</b></li><li class=\"ds-dpiece ds-slot ds-slot-firing\"><span class=\"ds-fire-mark\">Fires 1st</span><b>Burrfang</b></li><li class=\"ds-space\">2 yarn</li></ol><ol class=\"ds-powers\"><li class=\"ds-power-firing\"><b>Burrfang.</b> When activated: gain 1 Dry food.</li><li><b>Flameclaw.</b> When activated: gain 1 Beef.</li></ol></div><div class=\"ds-dpiece ds-last\"><b>Alley Tom banks a cat worth 2</b><span>Flips one card after each of your turns.</span></div><button class=\"ds-dpiece ds-hunting\" disabled>Hunting</button></div>",
       "css": ".ds-demo{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:grid;gap:14px;max-width:440px;padding:14px 14px 20px;color:var(--color-ink,#17212b);background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-dpiece{--e:2px;--sink:0px;--cast:var(--color-sky-deep,#73bde4);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-demo-mat{display:grid;gap:10px;padding:10px 10px 14px;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px color-mix(in srgb,#b9a47e 42%,#fff8e7)}.ds-chip{--sink:2px;transform:translateY(2px);justify-self:start;display:flex;flex-direction:column;gap:4px;min-height:48px;box-sizing:border-box;justify-content:center;padding:6px 16px 6px 10px;background:var(--color-lime,#d8ff4f)}.ds-chip b{font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-size:20px;font-weight:400;letter-spacing:.01em;line-height:1}.ds-chip span{font-size:12px;font-weight:700;line-height:1}.ds-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.ds-slot{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:112px;box-sizing:border-box;padding:4px 0 6px;background:var(--color-cream,#fff8e7);font-size:11px;font-weight:900;text-align:center}.ds-slot b{margin-top:auto}.ds-slot:hover,.ds-slot-firing{--sink:2px;transform:translateY(2px);background:var(--color-lime,#d8ff4f);transition-duration:0ms}.ds-fire-mark{align-self:flex-start;margin-left:2px;padding:0 4px;background:#fff;border:1px solid var(--color-ink,#17212b);font-size:11px;font-weight:700;line-height:16px}.ds-space{display:grid;place-items:center;min-height:112px;box-sizing:border-box;border:2px dashed rgb(23 33 43 / .55);background:rgb(255 255 255 / .45);font-size:11px;font-weight:700}.ds-powers{margin:0;padding:0;list-style:none;font-size:12px;line-height:1.375}.ds-powers li{padding:1px 4px}.ds-powers b{font-weight:900}.ds-power-firing{background:var(--color-lime,#d8ff4f);box-shadow:inset 0 0 0 2px var(--color-ink,#17212b)}.ds-last{--e:3px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);display:flex;flex-direction:column;padding:6px 10px;background:var(--color-coral,#ff7163)}.ds-last:hover{background:var(--color-cream,#fff8e7)}.ds-last b{font-size:14px;font-weight:900;line-height:1.375}.ds-last span{font-size:11px;font-weight:600;line-height:1.375}.ds-hunting{--sink:2px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);transform:translateY(2px);justify-self:start;min-height:48px;min-width:128px;padding:0 16px;background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b);font-family:inherit;font-size:14px;font-weight:900;line-height:1.25;cursor:not-allowed}@media (prefers-reduced-motion:reduce){.ds-dpiece{transition-duration:.01ms}}"
+    },
+    {
+      "name": "Clan Pack and Card Stack",
+      "kind": "custom",
+      "refersTo": "clan-pack",
+      "description": "A clan's starter deck as a sealed booster pack: the wrapper in its element's tone, crimped top and bottom in a 2px-stepped sawtooth, standing 8px, with the clan's name on a cream plate and its 16 cards on a count tag. Beside it, the copies of one cat as a stack: the card on top, 6px of each copy under it, an edge a pixel thicker for each, and the count on a tag. A locked clan's wrapper is the same two tones dulled toward grey and ink, under a white \"Locked\" strap. Hover the pack to see it lift, press it to see it sink, and hover the stack to see its copies come out.",
+      "html": "<div class=\"ds-packs\"><button type=\"button\" class=\"ds-pack\"><span class=\"ds-pack-fin ds-pack-top\"><i></i><i class=\"ds-pack-face\"></i></span><span class=\"ds-pack-body\"><span class=\"ds-pack-band\"></span><span class=\"ds-pack-front\"><span class=\"ds-pack-plate\">Cinder</span></span><span class=\"ds-pack-band\"></span></span><span class=\"ds-pack-fin ds-pack-bottom\"><i class=\"ds-pack-cast\"></i><i class=\"ds-pack-under\"></i><i class=\"ds-pack-edge\"></i><i></i><i class=\"ds-pack-face\"></i></span><span class=\"ds-pack-count\">16</span></button><div class=\"ds-stack\"><span class=\"ds-stack-under\" style=\"--k:2\"></span><span class=\"ds-stack-under\" style=\"--k:1\"></span><span class=\"ds-stack-top\"><b>2</b><em>Flameclaw</em></span><span class=\"ds-pack-count ds-stack-count\">×3</span></div></div>",
+      "css": ".ds-packs{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;align-items:flex-end;gap:28px;padding:20px 20px 30px;color:var(--color-ink,#17212b);background:var(--color-cream,#fff8e7);--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7)}.ds-pack{--e:8px;--lift:0px;--sink:0px;position:relative;display:flex;flex-direction:column;width:128px;height:184px;padding:0;border:0;background:none;isolation:isolate;cursor:pointer;transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25)}.ds-pack:hover{--lift:2px;transform:translateY(-2px)}.ds-pack:active{--lift:0px;--sink:2px;transform:translateY(2px)}.ds-pack-fin{position:relative;height:8px;flex:none}.ds-pack-fin i{position:absolute;inset:0;background:var(--color-ink,#17212b);-webkit-mask-repeat:repeat-x;mask-repeat:repeat-x;-webkit-mask-size:16px 8px;mask-size:16px 8px;transition:transform 120ms steps(2,end)}.ds-pack-top i{-webkit-mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1'/%3E%3Crect x='2' y='1' width='4' height='1'/%3E%3Crect x='1' y='2' width='6' height='1'/%3E%3Crect x='0' y='3' width='8' height='1'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' shape-rendering='crispEdges'%3E%3Crect x='3' y='0' width='2' height='1'/%3E%3Crect x='2' y='1' width='4' height='1'/%3E%3Crect x='1' y='2' width='6' height='1'/%3E%3Crect x='0' y='3' width='8' height='1'/%3E%3C/svg%3E\")}.ds-pack-bottom i{-webkit-mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='1'/%3E%3Crect x='1' y='1' width='6' height='1'/%3E%3Crect x='2' y='2' width='4' height='1'/%3E%3Crect x='3' y='3' width='2' height='1'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='4' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='1'/%3E%3Crect x='1' y='1' width='6' height='1'/%3E%3Crect x='2' y='2' width='4' height='1'/%3E%3Crect x='3' y='3' width='2' height='1'/%3E%3C/svg%3E\")}.ds-pack-fin .ds-pack-face{background:#ffd36b;clip-path:inset(0 2px)}.ds-pack-top .ds-pack-face{transform:translateY(2px)}.ds-pack-bottom .ds-pack-face{transform:translateY(-2px)}.ds-pack-bottom .ds-pack-cast,.ds-pack-bottom .ds-pack-under,.ds-pack-bottom .ds-pack-edge{top:-12px;z-index:-1;-webkit-mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='10' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='7'/%3E%3Crect x='1' y='7' width='6' height='1'/%3E%3Crect x='2' y='8' width='4' height='1'/%3E%3Crect x='3' y='9' width='2' height='1'/%3E%3C/svg%3E\");mask-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='10' shape-rendering='crispEdges'%3E%3Crect x='0' y='0' width='8' height='7'/%3E%3Crect x='1' y='7' width='6' height='1'/%3E%3Crect x='2' y='8' width='4' height='1'/%3E%3Crect x='3' y='9' width='2' height='1'/%3E%3C/svg%3E\");-webkit-mask-size:16px 20px;mask-size:16px 20px}.ds-pack-bottom .ds-pack-cast{background:var(--cast);clip-path:inset(0 2px);transform:translateY(calc(var(--e) - var(--sink) + var(--lift) + 5px))}.ds-pack-bottom .ds-pack-under{transform:translateY(calc(var(--e) - var(--sink) + 2px))}.ds-pack-bottom .ds-pack-edge{background:var(--color-chipboard,#b9a47e);clip-path:inset(0 2px);transform:translateY(calc(var(--e) - var(--sink)))}.ds-pack-body{display:flex;flex:1;flex-direction:column;border-inline:2px solid var(--color-ink,#17212b);background:var(--color-flame,#f07b4d)}.ds-pack-band{height:8px;flex:none;background:#ffd36b}.ds-pack-front{display:flex;flex:1;align-items:center;justify-content:center}.ds-pack-plate{padding:2px 8px;border:2px solid var(--color-ink,#17212b);background:var(--color-cream,#fff8e7);font-family:var(--font-pixel),var(--font-display);font-size:20px;line-height:1}.ds-pack-count{position:absolute;top:-6px;right:-6px;min-width:20px;padding:0 2px;border:2px solid var(--color-ink,#17212b);background:#fff;font-size:12px;font-weight:800;line-height:16px;text-align:center}.ds-stack{position:relative;width:96px;padding-top:12px;--rarity:#9aa9b7;--element:var(--color-flame,#f07b4d)}.ds-stack-under,.ds-stack-top{border:2px solid var(--color-ink,#17212b);background:var(--color-cream,#fff8e7);box-shadow:inset 0 3px 0 var(--rarity),inset 4px 0 0 var(--element)}.ds-stack-under{position:absolute;inset:12px 0 0;transform:translateY(calc(var(--k) * -6px));transform-origin:50% 100%;transition:transform 220ms cubic-bezier(0.2,0.9,0.3,1.25)}.ds-stack:hover .ds-stack-under{transform:translateY(calc(var(--k) * -8px)) rotate(calc(var(--k) * 2deg))}.ds-stack-top{position:relative;display:flex;height:128px;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:6px 4px 4px 8px;box-shadow:inset 0 3px 0 var(--rarity),inset 4px 0 0 var(--element),0 7px 0 -2px var(--color-chipboard,#b9a47e),0 7px 0 0 var(--color-ink,#17212b),0 12px 0 -2px var(--cast)}.ds-stack-top b{padding:0 4px;border:2px solid var(--color-ink,#17212b);background:var(--color-lime,#d8ff4f);font-size:12px;line-height:16px}.ds-stack-top em{width:100%;font-size:11px;font-style:normal;font-weight:800;text-align:center}.ds-stack-count{top:6px;right:-4px}@media (prefers-reduced-motion: reduce){.ds-pack,.ds-pack-fin i,.ds-stack-under{transition:none}.ds-stack:hover .ds-stack-under{transform:translateY(calc(var(--k) * -6px))}}"
     }
   ],
   "narrative": {
@@ -1062,7 +1110,7 @@
       },
       {
         "name": "The Element Stays On The Cat Rule",
-        "body": "Element hues colour sprites, food icons, element marks, and dice, the left edge of a cat's own card and tile, and the mark a charm holds. Boards, buttons, and headings never take an element colour. The sky behind the tower is the one place an element's colours are a ground.",
+        "body": "Element hues colour sprites, food icons, element marks, and dice, the left edge of a cat's own card and tile, and the mark a charm holds. Boards, buttons, and headings never take an element colour. The sky behind the tower is the one place an element's colours are a ground, and a clan's pack is the one piece whose face they are.",
         "section": "colors"
       },
       {
@@ -1087,12 +1135,12 @@
       },
       {
         "name": "The One Thickness Rule",
-        "body": "Every piece on every page has its edge and its cast, straight down and unblurred: on home, in the codex, at sign-in, in a dialog and in a notice as at the table. A piece printed on a piece has none of its own. A board is not a piece: it has a board's edge and cast, and the pieces on it keep theirs. No piece anywhere takes a blurred shadow or a sideways offset.",
+        "body": "Every piece on every page has its edge and its cast, straight down and unblurred: on home, in the codex, at sign-in, in a dialog and in a notice as at the table. A piece printed on a piece has none of its own. A board is not a piece: it has a board's edge and cast, and the pieces on it keep theirs. No piece anywhere takes a blurred shadow or a sideways offset. One piece's outline is not four straight lines: a clan's pack, crimped in a sawtooth along its top and bottom. Its edge and its cast follow the cut, and are still straight down and unblurred.",
         "section": "elevation"
       },
       {
         "name": "The Frame Means State Rule",
-        "body": "A piece's state is its border: cobalt border for open to pick, cobalt border with a 2px cobalt inner line for chosen, cobalt border with a 2px cobalt and a 2px lime inner line for waiting on the player. A chosen piece is also lifted. No ring is drawn outside a piece's border.",
+        "body": "A piece's state is its border: cobalt border for open to pick, cobalt border with a 2px cobalt inner line for chosen, cobalt border with a 2px cobalt and a 2px lime inner line for waiting on the player. A chosen piece is also lifted. No ring is drawn outside a piece's border. A chosen pack says the same with what a crimped edge can carry: its cut line turns cobalt, it is lifted, and it wears a lime \"Chosen\" tag on its corner. It has no inner line, which would not follow the cut.",
         "section": "elevation"
       },
       {
@@ -1129,7 +1177,7 @@
     ],
     "donts": [
       "Don't round a corner anywhere, or draw a pill, a 1px hairline border, or a blurred shadow. The build has none.",
-      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. A piece has only the straight-down edge and cast. The only light on the tabletop is the three named under Motion: score heat, a raised legendary's shimmer, and the drift on a run's cloth.",
+      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. A piece has only the straight-down edge and cast. The only light on the tabletop is the four named under Motion: score heat, a raised legendary's shimmer, the drift on a run's cloth, and the one flat band that crosses a pack under a mouse.",
       "Don't give a board the `piece` class or lay a board on a board. A board is not a piece, and the pieces on it keep their own edge.",
       "Don't bring back page chrome: no white panel, no side rail, no floating bar, no second kind of button.",
       "Don't draw a ring outside a piece's border to show state.",
@@ -1137,15 +1185,15 @@
       "Don't set the pixel face at any size but 20px and 30px, or 40px for a page's one heading, or use it for rules text, a sentence of copy, or anything typed.",
       "Don't set readable text below 10px, or below 11px on a piece from 640px up.",
       "Don't move a cardboard piece in steps, or a pixel sprite smoothly: pieces ease and spring, sprites hop a whole pixel at a time. The climb's camera moves the whole picture and is the one thing that eases a sprite across the screen. Don't fade pieces in.",
-      "Don't animate anything on the table but `transform` and `opacity`, ease a shadow, or shake the table itself; a shake belongs to the mat, the supply and the climb's tower.",
+      "Don't animate anything on the table but `transform` and `opacity` (the shadow on a pack past the end of its row is stepped, not animated), ease a shadow, or shake the table itself; a shake belongs to the mat, the supply and the climb's tower.",
       "Don't put anything over the climb's picture but its bars, its subtitle, its title card and Skip, or give two cats the same pitch.",
       "Don't fit the match or the climb, add a quarter step to the fit, or use `xl:` and wider breakpoints on a column screen: a fitted screen is 1120px wide to itself whatever the window says.",
       "Don't play a tune on the landing page, login or signup, mount the sound rig or the menu tune a second time, play an effect that the player's own action, a turn's playback, a beat of the climb or a page landing did not cause, write a note of music louder than 0.14, or ship an audio file.",
-      "Don't use gradients or emoji anywhere. The three lights named under Motion are the only gradients, and each is a light, never a fill. The sky behind the tower is a dither, not a gradient.",
+      "Don't use gradients or emoji anywhere. Three of the four lights named under Motion are the only gradients (score heat, the legendary's shimmer, the cloth light), and each is a light, never a fill; the band that crosses a pack is flat. The sky behind the tower is a dither, not a gradient.",
       "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
       "Don't use the stone greys for anything but the tower, the wall inside it and the scene it stands in, or draw a rival in any colour but coral. The clouds and the rock's top in the tower's scene are stone too. Don't zoom the tower by anything but a whole number (1, 2 and 32 are the ones in use), frame its stage, or fill it with anything but its scene.",
       "Don't put anything on the tower's side of a page that is outside, let the backdrop take a click, or show a page before the camera has stopped.",
-      "Don't use an element hue for a board, a button, or a heading. The sky behind the tower is the one ground they colour; on a cat piece the hue is a 4px edge and never the face.",
+      "Don't use an element hue for a board, a button, or a heading. The sky behind the tower is the one ground they colour and a clan's pack the one face; on a cat piece the hue is a 4px edge and never the face.",
       "Don't set text straight on the tower's scene, smooth or blur the scene, or move any part of it in anything but whole tower pixels.",
       "Don't use lime for anything the rival owns, or coral for a reward. The title ribbon, on the landing page and on home, is the only lime that is not the player's.",
       "Don't introduce currency, shop, or premium styling; nothing is for sale."
