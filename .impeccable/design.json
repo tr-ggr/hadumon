@@ -214,6 +214,21 @@
           "#f2ebd8"
         ]
       },
+      "stone": {
+        "role": "neutral",
+        "displayName": "Stone",
+        "canonical": "#9aa9b7",
+        "tonalRamp": [
+          "#0e141b",
+          "#232d38",
+          "#3a4857",
+          "#54657a",
+          "#6e7f90",
+          "#9aa9b7",
+          "#d0dae2",
+          "#eef2f5"
+        ]
+      },
       "flame": {
         "role": "tertiary",
         "displayName": "Flame Fur",
@@ -562,6 +577,26 @@
         "purpose": "Tabletop: the rival's last card stays coral after it turns, with or without motion."
       },
       {
+        "name": "climb-step",
+        "value": "380ms per beat; 160ms between windows filling; 480ms for a window shutting or a pennant landing",
+        "purpose": "Tabletop: the climb between matches is played one frame at a time, like a turn."
+      },
+      {
+        "name": "climb-hop",
+        "value": "transform 320ms steps(4, end) between ledges, with the crowd's hop (360ms steps(1, end)) on landing",
+        "purpose": "Tabletop: Hadu goes up one floor of the tower."
+      },
+      {
+        "name": "climb-window",
+        "value": "transform 240ms steps(3, end); translateY 100% dark, 37.5% looking over the sill, 0 out",
+        "purpose": "Tabletop: a rival slides up into its window."
+      },
+      {
+        "name": "climb-rest",
+        "value": "1400ms; 2200ms under reduced motion, where only the last frame is shown",
+        "purpose": "Tabletop: the last frame of a climb rests, then gives way to the next screen. Any click or key leaves at once."
+      },
+      {
         "name": "crowd-bob",
         "value": "1600ms steps(1, end) infinite; translateY(0) then translateY(-2px); animation-delay calc(var(--i) * -290ms)",
         "purpose": "Landing page: each crowd cat and oversized icon idles on a 2px two-step bob, staggered so no two move together."
@@ -716,7 +751,7 @@
   ],
   "narrative": {
     "northStar": "Pieces on a Cream Table",
-    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.\n\nThe pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.\n\nThe match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface. It is the tabletop at page scale, laid out as the front of the game's box, with no app shell and no white panel. From the top: an ink lid strip with the two account buttons; a full-bleed sky mat printed with paws and yarn; on it a cream title plaque with the wordmark and Hadu perched on top, a lime ribbon carrying the h1, and a thick cobalt stage frame holding one playable Hunt round run by the real match engine; a crowd of cats standing around the frame; then one cream board on the cloth, folded into four panels (the lead, the cats, the rows, the rivals); a sky closing band; and an ink footer. It is built from the table's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, turn cubes, score tokens, table buttons) and adds only what the match table has no use for: the lid strip, the plaque and ribbon, the stage frame, the folded board, and the crowd.",
+    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.\n\nThe pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the climb between matches, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.\n\nThe match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). The six rivals are sprites too, all in the rival coral, met at the windows of the grey pixel tower a run climbs between matches. Sprites, these icons and the tower are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface. It is the tabletop at page scale, laid out as the front of the game's box, with no app shell and no white panel. From the top: an ink lid strip with the two account buttons; a full-bleed sky mat printed with paws and yarn; on it a cream title plaque with the wordmark and Hadu perched on top, a lime ribbon carrying the h1, and a thick cobalt stage frame holding one playable Hunt round run by the real match engine; a crowd of cats standing around the frame; then one cream board on the cloth, folded into four panels (the lead, the cats, the rows, the rivals); a sky closing band; and an ink footer. It is built from the table's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, turn cubes, score tokens, table buttons) and adds only what the match table has no use for: the lid strip, the plaque and ribbon, the stage frame, the folded board, and the crowd.",
     "keyCharacteristics": [
       "Warm cream canvas; sky blue for the board and the home hero.",
       "Two materials: rounded white chrome, square 2px-ink game pieces.",

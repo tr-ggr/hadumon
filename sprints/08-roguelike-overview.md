@@ -48,6 +48,7 @@ Gacha, banners and pity; idle expeditions and zones; auto-battle; levels, XP and
 ### Run
 
 - Pick a clan, then 6 matches. Matches 3 and 6 are bosses.
+- On screen the run is a tower of six floors, a rival at each window. Hadu walks in at the foot, goes up a floor after each win, and stands on the roof when the run is won. It is a picture of the gauntlet and changes no rule.
 - After a win: add 1 of 3 offered cats (or skip), and optionally trim one card from the deck (never below 12). After matches 1, 3 and 5: also choose 1 of 3 relics.
 - Every clan starts with its own relic.
 - Losing a match ends the run. One active run per account.

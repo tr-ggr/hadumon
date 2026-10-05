@@ -7,7 +7,7 @@ related_targets: ["src/app/run/RunView.tsx","src/components/run/ClanPick.tsx","s
 
 # Match table — surface brief
 
-Scope: `/run`, every screen of a run (clan pick, opening hand, the match, match result, reward pick, run summary). Visitor mode: Operate. Audience: roguelike and engine-builder players, many of whom know Wingspan. Job: read the whole table at a glance, take one action a turn, and see the engine fire. Every number printed on the board comes from `src/server/game/*`. Home, codex, login and landing are out of scope and must not change.
+Scope: `/run`, every screen of a run (clan pick, opening hand, the match, match result, reward pick, the climb between matches, run summary). Visitor mode: Operate. Audience: roguelike and engine-builder players, many of whom know Wingspan. Job: read the whole table at a glance, take one action a turn, and see the engine fire. Every number printed on the board comes from `src/server/game/*`. Home, codex, login and landing are out of scope and must not change.
 
 ## Direction contract
 
@@ -63,6 +63,9 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 - Bringing a zone into view is a cut, not a smooth scroll.
 - Every die keeps two lines for its name, so the dice in a row are one shape.
 - A placed cat's dialog lists the cats tucked under it, face up, wherever they came from.
+- A run is climbed. Between matches the whole run is shown as a grey ribbed tower, a floor per match, with Hadu on a ledge and a coral rival sprite at every window still to be passed. It plays at three points: walking in when a run starts, going up a floor once a reward is confirmed, and reaching the roof when the last match is won. It asks for nothing, rests 1.4 seconds on its last frame and moves on; any click or key leaves in one press. A loss does not climb.
+- The climb is held on the client only (`useRunController`), beside the last turn's playback, so a reload lands on the screen the run is really on. It is stepped from `RunView`, which outlives it, so the press that skips is swallowed and never reaches the next screen.
+- The tower is the one piece of scenery, and grey is its colour alone. It is pixel rows at the sprites' own pixel size, with windows cut as holes so a rival behind one is clipped to its shape. Hadu is the climber for every clan.
 
 ## Keys
 
@@ -70,5 +73,6 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 
 ## Unresolved
 
-- Drag-and-drop and habitat scenery are deferred.
+- Drag-and-drop and habitat scenery on the match table are deferred.
+- Rival sprites are only on the tower so far: the nameplate, the landing page's rival fan and the codex still name a rival without drawing it.
 - The die-cut material is scoped to `.tabletop`; home, codex and landing keep the flat piece.

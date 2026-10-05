@@ -16,6 +16,10 @@ colors:
   chipboard: "#b9a47e"
   sky-deep: "#73bde4"
   cloth: "#f4ead4"
+  stone: "#9aa9b7"
+  stone-light: "#d0dae2"
+  stone-rib: "#6e7f90"
+  stone-deep: "#3a4857"
   flame: "#f07b4d"
   mist: "#8acbe7"
   volt: "#f5c84c"
@@ -430,11 +434,11 @@ components:
 
 HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.
 
-The pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.
+The pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the climb between matches, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.
 
 The match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.
 
-The cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron, and home, book and exit for the table's corner buttons), the seven food icons (beef, fish, chicken, dry food, pork, a treat, and a question mark for a cost any food pays), and the five element marks (flame, drop, bolt, leaf, crescent). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.
+The cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron, and home, book and exit for the table's corner buttons), the seven food icons (beef, fish, chicken, dry food, pork, a treat, and a question mark for a cost any food pays), and the five element marks (flame, drop, bolt, leaf, crescent). The six rivals are sprites too, on the cats' grid and all in the rival coral, each told apart by what it wears; they are met at the windows of the tower a run climbs, which is drawn in the same pixels in four stone greys. Sprites, these icons and the tower are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.
 
 Density follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.
 
@@ -445,7 +449,7 @@ The public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` 
 - Two materials: rounded white chrome, square 2px-ink game pieces.
 - Pieces are flat on home, the codex, auth, and in dialogs, and die-cut cardboard with a straight-down edge inside the tabletop (the run route and the landing page).
 - Cobalt is the action, lime is the player's, coral is the rival's.
-- 16x16 pixel cats and 8x8 pixel icons as inline SVG, the only imagery.
+- 16x16 pixel cats and rivals, 8x8 pixel icons and one grey pixel tower as inline SVG, the only imagery.
 - One rounded bold type voice, plus a pixel print face on the tabletop at 20px and 30px, and at 40px for a heading on the landing page.
 - The landing page is the front of the box: lid strip, sky mat, title plaque, lime ribbon, cobalt stage frame, a crowd of cats, one folded cream board.
 - Every state has a border, fill, or height change, never colour alone on text.
@@ -482,6 +486,7 @@ Tabletop only:
 - **Chipboard** (`chipboard`): the cut edge under every piece, the outline of an empty yarn space, the paw on a face-up pile, and the edge under the landing wordmark's letters. Mixed into cream (42%) or white (34%) it is the cast shadow on the cloth and on the docked edge.
 - **Deep Sky** (`sky-deep`): the cast shadow of a piece lying on the mat, the printed lines between lanes, the outline of a printed empty space, and a spent turn cube. On the landing page it is also the paws and yarn printed on the sky bands.
 - **Cloth** (`cloth`): the weave of the tabletop (a 16x8px brick of 4x2px marks on cream), the floor of a tray well, and the rival's card space before any card has turned.
+- **Stone** (`stone`, `stone-light`, `stone-rib`, `stone-deep`): the tower a run climbs, and nothing else. Stone is its body, light stone the lit left side, the ledges and the roof, rib the grooves and the shaded right side, deep stone the dark inside a window. They are the only greys in the system; the first two are the common rarity's pair.
 
 ### Named Rules
 **The Lime Is Yours Rule.** Lime marks something the player chose, holds, or won. It is never decoration and never the rival's. One exception is named: the ribbon under the landing wordmark, which carries the page's h1, is lime although it is nothing the player chose, holds, or won. No other surface takes it.
@@ -553,7 +558,7 @@ Mobile-first, and it must hold at 375px.
 - **The match on a phone.** Under 1024px it is one column: the gauntlet strip beside the corner buttons, the rival (nameplate and score token on one row, piles and last card on the next), the round tiles (only the current one below 640px), the mat, the supply, then the score sheet, relics, and log (capped at 320px). When a choice or a firing chain happens off screen, the zone it happens in is brought just clear of the docked edge in one cut, not a glide, and a lane comes with the whole mat when the gap can hold it.
 - **A lane.** From 640px the activate tile sits in a 152px column to the left of four spaces and an end cap (44px), 6px apart, each at least 60px tall. Below 640px the tile sits above; the spaces are at least 96px tall and the end cap is 28px.
 - **The docked edge.** Under 1024px the player's edge of the table sticks to the bottom of the viewport as a dock: white, a 2px ink line along its top. It holds the turn block (prompt, actions, then the food beside the lime score token) and under it the fan; from 640px the turn block is a 272px column beside the fan. Below 640px cards are 152 by 216px with 120px showing, and a strip of a card is never thinner than 44px: a hand too big to fit runs off the side and is panned. The dock grows to hold a chosen card whole.
-- **Other run screens.** A centered column, maximum 1120px, 12px side padding rising to 20px at 640px, 56px above (clear of the corner buttons) and 32px below. Clan pick, the opening hand, and reward pick end in a rail docked to the bottom the same way: one sentence saying what will happen, and one cobalt confirm, stacked on a phone and side by side from 640px. The run summary has no rail; its two actions sit at the end of the column.
+- **Other run screens.** A centered column, maximum 1120px, 12px side padding rising to 20px at 640px, 56px above (clear of the corner buttons) and 32px below. Clan pick, the opening hand, and reward pick end in a rail docked to the bottom the same way: one sentence saying what will happen, and one cobalt confirm, stacked on a phone and side by side from 640px. The climb uses the same rail for its caption and a cream "Skip", with the tower centred in the column above it and the met rival's nameplate to its right. The run summary has no rail; its two actions sit at the end of the column.
 - **Grids.** Card grids outside a run are one column, two from 640px, three from 1024px, with a 12px gap. On the table, offers are three across from 640px, the opening hand five across from 1024px, clans two across from 1024px. The feeder is always five dice across.
 - **Targets.** Pill buttons are 40, 48, or 56px tall; chips 44px; nav items 48px; dice 64px; table buttons 40, 48, or 56px; the corner buttons 40px square; a hand card's strip the height of the card and at least 44px wide on a phone; a lane's activate tile 48px (60px from 640px); lane spaces 60px (96px on a phone). The Info control on a card is 24px tall with its hit area extended 8px on every side.
 - **Keys.** On the match table the keys do what the pieces do: 1 to 9 pick a hand card (or a die, a tray card, or a placed cat while one of those is being chosen; 0 takes one more from the deck), H, D, and P activate a lane or play the chosen card into it, Enter confirms, Esc goes back. Each key is shown as a small hint on its piece, and only where the pointer is fine and can hover.
@@ -708,6 +713,15 @@ Three tiles, one per round: stacked in the match's rail, across the cloth above 
 ### Gauntlet Track and Run Strip
 Six markers, 28px wide, numbered in print at 20px: a lime tile for a rival beaten, a coral tile for the one across the table (lifted) or the one that ended the run, a dashed outline for those to come. Bosses stand taller (36px). Beside it, the clan and deck size in 12px soft ink, and "Abandon run" as an underlined text link that opens a confirm dialog. In the match's rail the strip is the track and the link alone.
 
+### Tower and Climb
+Between matches the run is shown as a tower, whole, with no camera: a grey ribbed cat condo of six floors, the first match at the bottom, under a roof slab and on a foot with a flat cast on the cloth. It is not a piece: it has no chipboard edge and takes no clicks. It is drawn as pixel rows in `src/components/sprites/tower.ts`, at the sprites' own pixel size (2px, or 3px from 640px wide and 800px tall), so a 16x16 sprite stands on it unscaled.
+- **Floor:** 28 pixels tall with a stepped round window; a boss's floor is 36 tall with a larger square window under a lintel, as a boss's marker stands taller on the gauntlet track. Each floor has a ledge to the left for Hadu.
+- **Window:** a hole through the tower, deep stone inside. A rival still to be met looks over the sill (its top ten rows showing); the rival of the floor Hadu is on sits in it whole. A floor that has been won is dark and empty.
+- **Hadu** is always the climber, whatever the clan. He stands on the ledge of the current floor, at the foot before the first match, and on the roof after the last.
+- **Pennant:** the 8x8 goal icon in lime, planted on the ledge of every floor won and on the roof when the run is won. It is the only lime on the tower.
+- **Nameplate:** the met rival's coral nameplate with its flavor line lands beside its floor on the last beat.
+- **Rival sprites** (`src/components/RivalSprite.tsx`, data in `src/components/sprites/rivals.ts`): Alley Tom (a bitten ear and a plaster), The Dockside Twins (two small cats, one in a striped cap), Madame Mittens (a feathered hat, pearls, white paws), The Rooftop Syndicate (a flat cap, two more heads behind), The Archivist (white spectacles and an index card), Old Nine Lives (a crown, one eye shut, white whiskers). Only a boss's sprite reaches the top row.
+
 ### Other Run Screens
 - **Clan pick:** each clan in a tray well: its name in print at 20px, what it does, a cobalt "Choose" tile (lime and pressed once chosen, white for a locked clan), its relic tile, and its starting deck spread out as small tiles (sprite, count, name).
 - **Opening hand:** the rival's nameplate with flavor, the round tiles on a mat, the hand five across to keep from, five food tiles to keep from (white; lime, framed, and lifted when kept), then the feeder, piles, and tray as they will be on the table.
@@ -805,6 +819,7 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 - **The firing chain:** an answered turn is played back one step every 380ms before the table takes input again. The played card or the taken dice travel to where they land (300ms in 6 steps). Each cat in the lane fires from right to left: its tile turns lime and presses (300ms in 3 steps), its line lands in the event log, its counters settle, and the tile returns to cream over 700ms in 6 steps. A token that arrives drops 6px into place (200ms in 3 steps); rerolled dice tumble in (280ms in 4 steps). Then the rival's card turns edge-on and back (360ms in 6 steps) and stays coral for about 1.4 seconds, and the prompt line in the turn block takes a coral marker for that step.
 - **During the chain** the prompt says what is happening in a sentence, and its only action is a cream "Skip". Any click or key skips to the end. The last frame is always the server's own view.
 - **Reduced motion:** the whole turn lands at once, nothing travels, and the rival's card still colours for a moment so the flip is seen.
+- **The climb:** plays when a run starts (Hadu lands at the foot, the windows fill from the bottom up in pairs 160ms apart, he goes up to floor 1), after a reward is confirmed (the window of the floor won goes dark and its pennant lands, he goes up one floor, the next rival comes out), and after the last match is won (he goes up to the roof and a pennant lands there). Beats are 380ms, 480ms for a window shutting or a pennant landing. Hadu moves between ledges in 320ms of 4 steps and hops as he lands (the crowd's hop); a rival slides up into its window in 240ms of 3 steps; the nameplate and pennants drop in as any token does. The last frame rests 1.4 seconds and then gives way to the next screen by itself. Any click or key leaves at once, in one press, and that press does nothing on the screen that follows; a key still held from the confirm does not count. Under reduced motion only the last frame is shown, for 2.2 seconds. A lost match does not climb, and a reload skips the climb as it skips a turn's playback.
 
 ## Do's and Don'ts
 
@@ -812,7 +827,7 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 - **Do** decide which material a new element is before styling it. In play: square, 2px ink border, flat fill. Around play: rounded, white, hairline, soft shadow.
 - **Do** decide which scope a piece is in. Inside the tabletop (`TableSurface` on the run route, the landing page's own root) it is cardboard: give it the `piece` class and let the tabletop add the edge. Anywhere else it stays flat.
 - **Do** pick one of the three heights for a new thing on the table: print, token or tile (2px), card (3px).
-- **Do** render every cat through `src/components/PixelSprite.tsx` at a whole-pixel multiple of 16 where the layout allows, and every mark on a piece through `src/components/PixelIcon.tsx` at a multiple of 8.
+- **Do** render every cat through `src/components/PixelSprite.tsx` and every rival through `src/components/RivalSprite.tsx` at a whole-pixel multiple of 16 where the layout allows, and every mark on a piece through `src/components/PixelIcon.tsx` at a multiple of 8.
 - **Do** use ink text on lime, coral, sky, and cream; white text only on cobalt.
 - **Do** show state on the table with the frame (cobalt border, cobalt inner line, lime inner line) and with height (lifted 4px, pressed 2px), and reinforce a chosen token with a lime fill.
 - **Do** end every choice in a run in the turn block or a rail, with a sentence saying what will happen and one cobalt table button.
@@ -839,6 +854,7 @@ On the tabletop motion is stepped, never eased smooth, and nothing fades in on l
 - **Don't** ease tabletop motion smoothly or fade pieces in; lifts, presses, flips, and rolls move in steps.
 - **Don't** use gradients or emoji anywhere.
 - **Don't** use raster or smoothed creature art; a cat is its 16x16 sprite.
+- **Don't** use the stone greys for anything but the tower, or draw a rival in any colour but coral.
 - **Don't** use an element hue for a panel, a button, or a heading.
 - **Don't** use lime for anything the rival owns, or coral for a reward. The landing ribbon is the only lime that is not the player's.
 - **Don't** introduce currency, shop, or premium styling; nothing is for sale.

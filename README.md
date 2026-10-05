@@ -6,7 +6,9 @@ A run is a gauntlet of **six short matches** against scripted rivals. In a match
 you play pixel-art cats into three habitat rows and activate a row to take its
 reward and fire every cat's power in it, right to left, in the manner of
 base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
-and the run is over. Only unlocks carry between runs.
+and the run is over. Only unlocks carry between runs. Between matches the run
+is shown as a grey tower of six floors: Hadu climbs one for every win, past a
+rival at each window, to the roof.
 
 There is no gacha, no idle play, no currency and no multiplayer.
 
@@ -143,13 +145,14 @@ src/
   app/
     page.tsx              Landing (signed out) or home (HomeDashboard.tsx)
     login/  signup/       Auth forms (render without the app shell)
-    run/                  The game: clan pick, match, reward, summary
+    run/                  The game: clan pick, match, reward, the climb, summary
     codex/                Every cat, relic, clan and rival; locked or not
   components/
     AppShell.tsx          Sidebar, top bar and mobile nav (not on /run, which has its own corner buttons)
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
+    RivalSprite.tsx       The same renderer for the six rivals, in coral
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
-    sprites/              Sprite and icon grids, element/rarity palettes
+    sprites/              Cat, rival, icon and tower grids, and their palettes
     cats/                 CatCard, the food icons (EssencePip) and ElementMark
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components

@@ -16,6 +16,8 @@ Goal: `/run` is the whole game, playable start to finish on a phone and on a des
 2. **`match.phase === "setup"`** → `SetupKeep`. The five dealt cats and five essence (one per element). The player toggles what to keep; the confirm button is enabled only at exactly 5 and says how many are chosen. Introduce the rival here: name, flavor, trait.
 3. **`match.phase === "turn"` or `"pending"`** → the board (below).
 4. **`run.phase === "reward"`** → `MatchResult` then `RewardPick`: the score breakdown against the rival, then pick 1 of the offered cats or skip, pick a relic when `reward.relics` is not empty, and optionally trim one card when `reward.canTrim`. One confirm sends `chooseReward`.
+Before three of these screens comes the **climb** (`Climb`): the tower of six floors with Hadu on a ledge and a rival at each window. It plays when `start` answers (before the first `SetupKeep`), when `chooseReward` answers (before the next `SetupKeep`), and when the turn that wins match 6 has finished playing back (before `RunSummary`). A lost match does not climb. It is client state only, like the turn being played back, so a reload skips it; any click or key skips it too.
+
 5. **Run over** → `RunSummary` from the final `RunUpdate` held in component state: outcome, each match's score, what was unlocked (names, not ids), and a button to start again. `run.current` is `null` by now, so this screen lives only as long as the component; a reload shows `ClanPick`.
 
 ## The board
