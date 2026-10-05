@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button } from "~/components/ui";
+import { TableButton } from "~/components/ui";
 import { api } from "~/trpc/react";
 
 export interface AuthFormProps {
@@ -173,14 +173,14 @@ export function AuthForm({ mode }: AuthFormProps) {
                 ) : null}
               </div>
 
-              <Button
+              <TableButton
                 type="submit"
                 disabled={pending}
                 className="w-full"
                 size="lg"
               >
                 {pending ? copy.pending : copy.submit}
-              </Button>
+              </TableButton>
 
               {mode === "login" ? (
                 <button

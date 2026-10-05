@@ -7,7 +7,6 @@ import { ELEMENT_LABELS, ELEMENTS } from "~/server/game/elements";
 import { ROUND_TURNS, SLOTS } from "~/server/game/match";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLAN_LIST, REWARD_CATS, starterDeck } from "~/server/game/run";
-import { pixelFont } from "~/styles/fonts";
 
 import { CastShowcase } from "./CastShowcase";
 import { CornerCats, CrowdCat, HeroCrowd, MarginCrowd } from "./Crowd";
@@ -63,12 +62,10 @@ export function LandingPage() {
   const first = getRival(GAUNTLET[0] ?? "");
 
   return (
-    // The tabletop scope is opened here and not through `TableSurface`, which
+    // Laid straight on the app's cloth and not through `TableSurface`, which
     // also carries the signed-in ways off a run's table.
-    <div
-      className={`tabletop landing text-ink ${pixelFont.variable} flex min-h-dvh min-w-0 flex-col`}
-    >
-      <header className="lid bg-ink text-cream">
+    <div className="landing text-ink flex min-h-dvh min-w-0 flex-col">
+      <header className="lid on-ink bg-ink text-cream">
         <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-3 px-3 pt-1 pb-2 sm:px-5">
           <p className="text-xs font-bold sm:text-sm">
             Free. <span className="max-sm:hidden">Nothing to install. </span>
@@ -291,7 +288,7 @@ export function LandingPage() {
         </section>
       </main>
 
-      <footer className="lid bg-ink text-cream">
+      <footer className="lid on-ink bg-ink text-cream">
         <div className="mx-auto flex w-full max-w-[1400px] flex-wrap items-center justify-between gap-2 px-3 py-4 text-sm sm:px-5">
           <p>HaduMon. Small cats, short matches.</p>
           <Link

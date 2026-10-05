@@ -1,8 +1,6 @@
-import Link from "next/link";
-import type { ButtonHTMLAttributes, ReactNode } from "react";
-
 import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
+import { KeyHint } from "~/components/ui/table";
 import { difficultyOf, type DifficultyId } from "~/server/game/difficulty";
 import type { Essence } from "~/server/game/match";
 import { getRelic } from "~/server/game/relics";
@@ -19,18 +17,16 @@ export const COBALT = "#1557d8";
 export const WHITE = "#ffffff";
 export const CHIPBOARD = "#b9a47e";
 
-/** Small caps-free label above a group of game pieces. */
-export function Label({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <p className={`text-ink-soft text-xs font-bold ${className}`}>{children}</p>
-  );
-}
+// The table's own controls live with the rest of the shared pieces now; they
+// are still part of a run's kit.
+export {
+  KeyHint,
+  Label,
+  TableButton,
+  TableLink,
+  tableButtonClass,
+  type TableButtonProps,
+} from "~/components/ui/table";
 
 export interface DieProps {
   face: Essence;
@@ -76,94 +72,6 @@ export function Die({
     >
       {body}
     </button>
-  );
-}
-
-const TABLE_BUTTON = {
-  primary: "bg-cobalt hover:bg-cobalt-dark text-white",
-  secondary: "bg-cream hover:bg-sky-soft text-ink",
-};
-const TABLE_BUTTON_SIZE = {
-  sm: "min-h-10 px-2.5 text-xs",
-  md: "min-h-12 px-4 text-sm",
-  lg: "min-h-14 px-6 text-base",
-  /** A square that holds one pixel icon. */
-  icon: "h-10 w-10 px-0",
-};
-
-/** The table action's dress, for a control that is not a `TableButton`. */
-export function tableButtonClass(
-  variant: keyof typeof TABLE_BUTTON,
-  size: keyof typeof TABLE_BUTTON_SIZE,
-  className = "",
-): string {
-  return `piece border-ink inline-flex items-center justify-center gap-1.5 border-2 text-center leading-tight font-black disabled:cursor-not-allowed disabled:opacity-45 ${TABLE_BUTTON[variant]} ${TABLE_BUTTON_SIZE[size]} ${className}`;
-}
-
-export interface TableButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  /** Cobalt for the one confirm, cream for everything else. */
-  variant?: keyof typeof TABLE_BUTTON;
-  size?: keyof typeof TABLE_BUTTON_SIZE;
-}
-
-/**
- * An action on the table, cut from the same card as everything else: ink
- * outline, square corners, an edge that sinks when it is pressed. The cobalt
- * one is the way forward, and is heard as that (`sfx/ClickSound.tsx`).
- */
-export function TableButton({
-  variant = "primary",
-  size = "sm",
-  className = "",
-  type = "button",
-  ...props
-}: TableButtonProps) {
-  return (
-    <button
-      type={type}
-      data-sfx={variant === "primary" ? "confirm" : undefined}
-      className={tableButtonClass(variant, size, className)}
-      {...props}
-    />
-  );
-}
-
-/** A link that leaves the table, dressed as a table action. */
-export function TableLink({
-  href,
-  children,
-  variant = "secondary",
-  size = "md",
-  className = "",
-}: {
-  href: string;
-  children: ReactNode;
-  variant?: keyof typeof TABLE_BUTTON;
-  size?: keyof typeof TABLE_BUTTON_SIZE;
-  className?: string;
-}) {
-  return (
-    <Link href={href} className={tableButtonClass(variant, size, className)}>
-      {children}
-    </Link>
-  );
-}
-
-/** The key that does the same as the control it sits on. */
-export function KeyHint({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
-  return (
-    <kbd
-      aria-hidden
-      className={`key-hint border-ink/60 text-ink h-4 min-w-4 place-items-center border bg-white px-0.5 font-sans text-[10px] leading-none font-bold ${className}`}
-    >
-      {children}
-    </kbd>
   );
 }
 

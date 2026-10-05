@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { Button, Modal } from "~/components/ui";
+import { Modal, TableButton } from "~/components/ui";
 import { api } from "~/trpc/react";
 
 /**
@@ -34,21 +34,23 @@ export function LogoutDialog({
       title="Log out?"
       footer={
         <>
-          <Button
+          <TableButton
+            size="md"
             variant="secondary"
             data-autofocus
             disabled={logout.isPending}
             onClick={onClose}
           >
             Stay
-          </Button>
-          <Button
+          </TableButton>
+          <TableButton
+            size="md"
             variant="danger"
             disabled={logout.isPending}
             onClick={() => logout.mutate()}
           >
             {logout.isPending ? "Logging out…" : "Log out"}
-          </Button>
+          </TableButton>
         </>
       }
     >

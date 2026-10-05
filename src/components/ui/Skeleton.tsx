@@ -1,21 +1,16 @@
-import { Panel } from "./Panel";
+import { Board } from "./Board";
 
 export interface SkeletonProps {
   /** Tailwind height class, e.g. `h-4`. */
   className?: string;
 }
 
-/** A single shimmering placeholder bar. */
+/** A blank of chipboard where something is still to be printed. */
 export function Skeleton({ className = "h-4 w-full" }: SkeletonProps) {
-  return (
-    <span
-      aria-hidden
-      className={`bg-panel-hi block animate-pulse border border-[color:var(--color-edge)] ${className}`}
-    />
-  );
+  return <span aria-hidden className={`blank block ${className}`} />;
 }
 
-export interface PanelSkeletonProps {
+export interface BoardSkeletonProps {
   title?: string;
   /** How many placeholder rows to draw. */
   lines?: number;
@@ -23,16 +18,16 @@ export interface PanelSkeletonProps {
 }
 
 /**
- * Panel-shaped loading state. Every page uses this instead of bare "Loading…"
+ * Board-shaped loading state. Every page uses this instead of bare "Loading…"
  * text so the layout does not jump once the query resolves.
  */
-export function PanelSkeleton({
+export function BoardSkeleton({
   title = "Loading",
   lines = 3,
   className = "",
-}: PanelSkeletonProps) {
+}: BoardSkeletonProps) {
   return (
-    <Panel title={title} className={className}>
+    <Board title={title} className={className}>
       <div
         role="status"
         aria-busy="true"
@@ -47,24 +42,30 @@ export function PanelSkeleton({
           />
         ))}
       </div>
-    </Panel>
+    </Board>
   );
 }
 
-/** Grid of card-shaped placeholders, for boards of cats. */
+/** Grid of card-shaped printed spaces, for boards of cats. */
 export function CardGridSkeleton({ count = 4 }: { count?: number }) {
   return (
     <ul
       role="status"
       aria-busy="true"
-      className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4"
+      className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
     >
       <span className="sr-only">Loading…</span>
       {Array.from({ length: count }, (_, index) => (
-        <li key={index} className="panel-flat space-y-2 p-3">
-          <Skeleton className="mx-auto h-16 w-16" />
-          <Skeleton className="h-3 w-3/4" />
-          <Skeleton className="h-3 w-1/2" />
+        <li
+          key={index}
+          className="border-ink/30 flex gap-3 border-2 border-dashed p-3"
+        >
+          <Skeleton className="h-16 w-16 shrink-0" />
+          <span className="flex-1 space-y-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+            <Skeleton className="h-3 w-full" />
+          </span>
         </li>
       ))}
     </ul>

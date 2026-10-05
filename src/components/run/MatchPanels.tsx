@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import { Button, Modal } from "~/components/ui";
+import { Modal, TableButton } from "~/components/ui";
 import { getGoal } from "~/server/game/goals";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
@@ -135,9 +135,9 @@ export function GoalNotice({
       onClose={onClose}
       title={goal ? `Round ${goal.round + 1} scored` : ""}
       footer={
-        <Button data-autofocus onClick={onClose}>
+        <TableButton size="md" data-autofocus onClick={onClose}>
           Carry on
-        </Button>
+        </TableButton>
       }
     >
       {goal ? (

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { ElementMark } from "~/components/cats/CatCard";
 import { countUnlocked } from "~/components/codex/entries";
 import { PixelSprite } from "~/components/PixelSprite";
-import { Button, ButtonLink, Panel, Skeleton } from "~/components/ui";
+import { Board, Skeleton, TableButton, TableLink } from "~/components/ui";
 import { difficultyOf } from "~/server/game/difficulty";
 import type { Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
@@ -97,9 +97,14 @@ function NextStep({
       <p className="text-ink mt-3 text-lg">{detail}</p>
       {children}
       <div className="mt-6">
-        <ButtonLink href="/run" size="lg" className="w-full sm:w-auto">
+        <TableLink
+          href="/run"
+          variant="primary"
+          size="lg"
+          className="w-full sm:w-auto"
+        >
           {action}
-        </ButtonLink>
+        </TableLink>
       </div>
     </>
   );
@@ -132,12 +137,12 @@ function NextStepError({
         It is saved either way. Ask again, or go and look for yourself.
       </p>
       <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-        <Button size="lg" disabled={retrying} onClick={onRetry}>
+        <TableButton size="lg" disabled={retrying} onClick={onRetry}>
           {retrying ? "Asking…" : "Try again"}
-        </Button>
-        <ButtonLink href="/run" size="lg" variant="secondary">
+        </TableButton>
+        <TableLink href="/run" size="lg">
           Go to Play
-        </ButtonLink>
+        </TableLink>
       </div>
     </div>
   );
@@ -224,7 +229,7 @@ function RecentRuns() {
   const [now] = useState(() => Date.now());
 
   return (
-    <Panel title="Recent runs">
+    <Board title="Recent runs">
       {history.isPending ? (
         <div role="status" aria-busy="true" className="grid gap-2">
           <span className="sr-only">Loading recent runs…</span>
@@ -235,14 +240,14 @@ function RecentRuns() {
       ) : history.error ? (
         <div role="alert" className="flex flex-col items-start gap-3">
           <p className="text-ink">The record book would not open.</p>
-          <Button
+          <TableButton
             variant="secondary"
             size="sm"
             disabled={history.isFetching}
             onClick={() => void history.refetch()}
           >
             {history.isFetching ? "Trying…" : "Try again"}
-          </Button>
+          </TableButton>
         </div>
       ) : history.data.length === 0 ? (
         <p className="text-ink-soft">
@@ -256,7 +261,7 @@ function RecentRuns() {
           ))}
         </ol>
       )}
-    </Panel>
+    </Board>
   );
 }
 

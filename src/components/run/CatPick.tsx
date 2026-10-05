@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
 import { Habitats } from "~/components/cats/Habitats";
-import { Button, Modal } from "~/components/ui";
+import { Modal, TableButton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 
 import { plural } from "./describe";
@@ -144,9 +144,14 @@ export function CatDetail({
       onClose={onClose}
       title={name}
       footer={
-        <Button variant="secondary" data-autofocus onClick={onClose}>
+        <TableButton
+          size="md"
+          variant="secondary"
+          data-autofocus
+          onClick={onClose}
+        >
           Close
-        </Button>
+        </TableButton>
       }
     >
       {catId ? <CatCard catId={catId} variant="full" /> : null}

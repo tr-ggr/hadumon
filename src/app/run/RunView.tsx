@@ -15,7 +15,7 @@ import { TableArea, TableSurface } from "~/components/run/TableSurface";
 import { useClimb } from "~/components/run/useClimb";
 import { useRunController } from "~/components/run/useRunController";
 import { TableButton } from "~/components/run/pieces";
-import { Button, Modal, Skeleton } from "~/components/ui";
+import { Modal, Skeleton } from "~/components/ui";
 
 const NO_FLOORS: readonly string[] = [];
 
@@ -223,15 +223,17 @@ export function RunView() {
         title="Abandon this run?"
         footer={
           <>
-            <Button
+            <TableButton
+              size="md"
               variant="secondary"
               data-autofocus
               disabled={run.busy}
               onClick={() => setAbandoning(false)}
             >
               Keep playing
-            </Button>
-            <Button
+            </TableButton>
+            <TableButton
+              size="md"
               variant="danger"
               disabled={run.busy}
               onClick={() => {
@@ -240,7 +242,7 @@ export function RunView() {
               }}
             >
               Abandon run
-            </Button>
+            </TableButton>
           </>
         }
       >

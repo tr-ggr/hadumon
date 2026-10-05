@@ -3,9 +3,11 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 
 import { AppShell } from "~/components/AppShell";
+import { SoundRig } from "~/components/SoundRig";
 import { ToastProvider } from "~/components/ui";
 import { env } from "~/env";
 import { getCurrentUser } from "~/server/auth/session";
+import { pixelFont } from "~/styles/fonts";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const TITLE = "HaduMon — a roguelike engine-builder about cats";
@@ -49,7 +51,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body>
+      {/* The whole app is one tabletop: every page is laid on the cloth, and a
+          dialog drawn on the body is cardboard like the rest. */}
+      <body className={`tabletop ${pixelFont.variable}`}>
+        <SoundRig />
         <TRPCReactProvider>
           <ToastProvider>
             <AppShell authenticated={user !== null}>{children}</AppShell>

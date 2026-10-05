@@ -1,19 +1,14 @@
 import type { ReactNode, Ref } from "react";
 
-import { pixelFont } from "~/styles/fonts";
-
 import { Label, TableButton } from "./pieces";
-import { ClickSound } from "./sfx/ClickSound";
-import { HoverSound } from "./sfx/HoverSound";
 import { TableNav } from "./TableNav";
 
 /**
- * The cloth every screen of a run is laid on. It opens the `.tabletop`
- * scope, inside which a piece gains its cardboard thickness and the pixel
- * face is available for print. The ways off the table sit in its top right
- * corner on every screen but the climb, which has the whole screen to
- * itself; a slow light drifts on the cloth under it all, and every press on
- * it is heard, as is a mouse coming onto anything that can be pressed.
+ * The cloth every screen of a run is laid on, edge to edge. It is a tabletop
+ * of its own inside the app's, so a fitted screen can be magnified whole and
+ * an effect can find the table it is on. The ways off the table sit in its
+ * top right corner on every screen but the climb, which has the whole screen
+ * to itself, and a slow light drifts on the cloth under it all.
  *
  * A screen laid in one column is `fit`: on a window with room to spare it is
  * magnified whole, to the largest step of the `--fit` ladder the window
@@ -34,11 +29,9 @@ export function TableSurface({
 }) {
   return (
     <div
-      className={`tabletop ${fit ? "table-fit" : ""} ${pixelFont.variable} relative isolate flex min-w-0 flex-1 flex-col ${className}`}
+      className={`tabletop ${fit ? "table-fit" : ""} relative isolate flex min-w-0 flex-1 flex-col ${className}`}
     >
       <span aria-hidden className="cloth-light" />
-      <ClickSound />
-      <HoverSound />
       {nav ? (
         <TableNav className="absolute top-2 right-2 z-30 sm:right-3" />
       ) : null}

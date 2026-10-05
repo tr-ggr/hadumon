@@ -25,7 +25,7 @@ const TOAST_MS = 4000;
 const ToastContext = createContext<Notify | null>(null);
 
 /**
- * App-wide ephemeral notice stack, pinned above the mobile bottom nav.
+ * App-wide ephemeral notice stack, pinned above the phone's nav dock.
  *
  * Mounted once in the root layout, so every page reports mutation errors and
  * successes the same way.
@@ -43,7 +43,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={notify}>
       {children}
-      <div className="pointer-events-none fixed inset-x-0 bottom-16 z-50 flex flex-col items-center gap-2 px-3 md:bottom-4">
+      <div className="toast-stack pointer-events-none fixed inset-x-0 z-50 flex flex-col items-center gap-3 px-3">
         {toasts.map((toast) => (
           <Toast
             key={toast.id}
@@ -77,17 +77,15 @@ function Toast({ toast, onDone }: { toast: ToastItem; onDone: () => void }) {
   return (
     <output
       aria-live="polite"
-      className={`panel-flat pointer-events-auto flex max-w-sm items-center gap-3 px-3 py-2 text-base shadow-[0_12px_24px_rgb(23_33_43_/_0.14)] ${
-        toast.tone === "error"
-          ? "border-pink text-pink"
-          : "border-mint text-mint"
+      className={`piece border-ink anim-land pointer-events-auto flex max-w-sm items-center gap-3 border-2 px-3 py-2 text-sm font-semibold ${
+        toast.tone === "error" ? "bg-ink text-cream" : "text-ink bg-white"
       }`}
     >
       <span className="leading-tight">{toast.text}</span>
       <button
         type="button"
         onClick={onDone}
-        className="text-pixel shrink-0 text-[8px] uppercase underline"
+        className="shrink-0 text-xs font-black underline underline-offset-2"
       >
         Ok
       </button>

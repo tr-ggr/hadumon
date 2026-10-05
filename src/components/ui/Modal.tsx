@@ -25,8 +25,9 @@ const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * The app's one dialog. Closes on Escape and on a backdrop click, keeps Tab
- * inside while it is open, and hands focus back to whatever opened it.
+ * The app's one dialog: a board held over the table. Closes on Escape and on
+ * a backdrop click, keeps Tab inside while it is open, and hands focus back
+ * to whatever opened it.
  *
  * Focus starts on the first `[data-autofocus]` element, or on the dialog
  * itself when there is none. Portalled to `<body>` so a blurred or transformed
@@ -110,7 +111,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="bg-ink/40 fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-6"
+      className="bg-ink/50 fixed inset-0 z-50 flex items-end justify-center p-3 pb-5 sm:items-center sm:p-6"
       onMouseDown={closeOnBackdrop}
     >
       <div
@@ -119,14 +120,14 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`panel max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto p-5 outline-none sm:p-6 ${className}`}
+        className={`board dialog-board text-ink max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto p-4 outline-none sm:p-5 ${className}`}
       >
-        <h2 id={titleId} className="text-pixel text-ink text-xl sm:text-2xl">
+        <h2 id={titleId} className="text-print text-3xl">
           {title}
         </h2>
-        {children ? <div className="text-ink-soft mt-3">{children}</div> : null}
+        {children ? <div className="mt-3">{children}</div> : null}
         {footer ? (
-          <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+          <div className="mt-5 flex flex-col-reverse gap-3 pb-1 sm:flex-row sm:justify-end">
             {footer}
           </div>
         ) : null}

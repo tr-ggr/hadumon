@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 import { CatCard, ElementMark } from "~/components/cats/CatCard";
-import { Button, Modal } from "~/components/ui";
+import { Modal, TableButton } from "~/components/ui";
 import {
   getCat,
   RARITIES,
@@ -72,9 +72,9 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
           <p className="text-ink">
             No cat is both of those things. Several have tried.
           </p>
-          <Button variant="secondary" size="sm" onClick={clearFilters}>
+          <TableButton variant="secondary" size="sm" onClick={clearFilters}>
             Clear filters
-          </Button>
+          </TableButton>
         </div>
       ) : (
         <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -107,13 +107,14 @@ export function CatsSection({ entries }: { entries: readonly CodexEntry[] }) {
         onClose={() => setOpenId(null)}
         title={openId ? getCat(openId).name : ""}
         footer={
-          <Button
+          <TableButton
+            size="md"
             variant="secondary"
             data-autofocus
             onClick={() => setOpenId(null)}
           >
             Close
-          </Button>
+          </TableButton>
         }
       >
         {openId ? <CatCard catId={openId} variant="full" /> : null}

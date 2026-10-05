@@ -2,14 +2,14 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 import { PixelSprite } from "~/components/PixelSprite";
-import { Panel } from "~/components/ui";
+import { Board } from "~/components/ui";
 
 export const metadata: Metadata = { title: "Lost — HaduMon" };
 
 export default function NotFound() {
   return (
     <div className="page-wrap">
-      <Panel title="404 — nothing here">
+      <Board title="404 — nothing here">
         <div className="flex flex-col items-center gap-3 py-4 text-center">
           <PixelSprite catId="flameclaw" size={96} label="A lost cat" />
           <p className="text-ink text-lg font-bold">This alley is empty.</p>
@@ -23,7 +23,7 @@ export default function NotFound() {
             Back home
           </Link>
         </div>
-      </Panel>
+      </Board>
     </div>
   );
 }

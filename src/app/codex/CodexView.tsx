@@ -7,10 +7,10 @@ import { progressText } from "~/components/codex/entries";
 import { ClanList, RelicList } from "~/components/codex/PieceList";
 import { RivalList } from "~/components/codex/RivalList";
 import {
-  Button,
+  Board,
+  BoardSkeleton,
   CardGridSkeleton,
-  Panel,
-  PanelSkeleton,
+  TableButton,
 } from "~/components/ui";
 import { GAUNTLET } from "~/server/game/rival";
 import { api } from "~/trpc/react";
@@ -37,7 +37,7 @@ function Section({
   const label = SECTIONS.find((section) => section.id === id)?.label ?? id;
   return (
     <div id={id} className="scroll-mt-20">
-      <Panel
+      <Board
         title={label}
         action={
           count ? (
@@ -48,7 +48,7 @@ function Section({
         }
       >
         {children}
-      </Panel>
+      </Board>
     </div>
   );
 }
@@ -97,13 +97,14 @@ export function CodexView() {
               regardless; they never needed permission.
             </p>
             <p className="text-ink-soft text-sm">{codex.error.message}</p>
-            <Button
+            <TableButton
+              size="md"
               variant="secondary"
               disabled={codex.isFetching}
               onClick={() => void codex.refetch()}
             >
               {codex.isFetching ? "Trying…" : "Try again"}
-            </Button>
+            </TableButton>
           </div>
         </Section>
       ) : (
@@ -112,10 +113,10 @@ export function CodexView() {
             <CardGridSkeleton count={6} />
           </Section>
           <div id="relics" className="scroll-mt-20">
-            <PanelSkeleton title="Relics" lines={3} />
+            <BoardSkeleton title="Relics" lines={3} />
           </div>
           <div id="clans" className="scroll-mt-20">
-            <PanelSkeleton title="Clans" lines={2} />
+            <BoardSkeleton title="Clans" lines={2} />
           </div>
         </>
       )}
