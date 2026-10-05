@@ -264,7 +264,8 @@ export function LandingPage() {
               Start a run
             </TableLink>
             <p className="mt-6 text-base font-bold">
-              Free. There is no currency, no shop and nothing to install.
+              Free, with nothing to install. The packs in the shop cost coins,
+              and coins are only ever won at the table.
             </p>
           </div>
         </section>

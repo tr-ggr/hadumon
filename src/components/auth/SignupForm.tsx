@@ -136,7 +136,8 @@ export function SignupForm() {
         <div className="tray-well p-3">
           <p className="text-sm font-extrabold">Nothing is for sale</p>
           <p className="mt-1 text-sm">
-            No currency, no shop. An account only saves your run.
+            The game takes no money. Coins are won at the table, and an account
+            keeps your cards, your deck and your run.
           </p>
         </div>
       </form>
