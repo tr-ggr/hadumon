@@ -3,6 +3,10 @@
  * press or key (a browser will not start one sooner), behind a master gain
  * and a limiter so a long chain cannot clip. Everything here is a no-op on
  * the server, in a background tab, and while the sound is muted.
+ *
+ * The music (`../music/player.ts`) plays through the same context, into a
+ * bus of its own under the master. Its notes are not voices: the cap and
+ * `stopSound` leave them alone, so a skip never chops the tune.
  */
 
 import {
@@ -16,6 +20,8 @@ import { VOLUME_GAIN, volumeSetting } from "./settings";
 
 /** Voices sounding at once. One past this, the oldest is cut short. */
 export const VOICE_CAP = 14;
+/** How loud the music's bus is under the master. */
+export const MUSIC_GAIN = 0.8;
 
 interface Live {
   bus: GainNode;
@@ -23,9 +29,11 @@ interface Live {
   ends: number;
 }
 
-interface Rig {
+export interface Rig {
   ctx: AudioContext;
   master: GainNode;
+  /** Where the music goes: under the master, apart from the effects. */
+  music: GainNode;
   noise: AudioBuffer;
 }
 
@@ -49,11 +57,19 @@ function build(): Rig | null {
   const master = ctx.createGain();
   master.gain.value = VOLUME_GAIN[volumeSetting.read()];
   master.connect(limiter).connect(ctx.destination);
+  const music = ctx.createGain();
+  music.gain.value = MUSIC_GAIN;
+  music.connect(master);
 
   const noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const samples = noise.getChannelData(0);
   for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
-  return { ctx, master, noise };
+  return { ctx, master, music, noise };
+}
+
+/** The rig, once a gesture has started it and while it is running. */
+export function soundRig(): Rig | null {
+  return rig?.ctx.state === "running" ? rig : null;
 }
 
 /** Starts the context, or wakes it. Only works from inside a gesture. */
@@ -103,7 +119,8 @@ function cut(voice: Live, ctx: AudioContext): void {
   live.delete(voice);
 }
 
-function schedule(
+/** Schedules one note into `bus`, `note.at` seconds after `start`. */
+export function schedule(
   { ctx, noise }: Rig,
   bus: GainNode,
   note: Note,

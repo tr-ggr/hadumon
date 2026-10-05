@@ -3,6 +3,7 @@
 import type { CSSProperties, PointerEvent } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
+import { Habitats } from "~/components/cats/Habitats";
 import { getCat } from "~/server/game/cats";
 import { auraTotal } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
@@ -13,7 +14,7 @@ import { hasFinePointer, prefersCalm } from "./fx/dom";
 import { fanLayout } from "./hand";
 import { KeyHint } from "./pieces";
 import { playSound } from "./sfx/engine";
-import { PLAY_BLOCK_LABELS, playBlock, rowsLabel, type Mode } from "./turn";
+import { PLAY_BLOCK_LABELS, playBlock, type Mode } from "./turn";
 
 /** How far a raised card leans toward the pointer, in degrees. */
 const LEAN = 5;
@@ -143,15 +144,17 @@ export function Hand({
             ) : null}
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
               <InfoButton name={cat.name} onClick={() => onDetail(catId)} />
-              <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
-                {selected ? (
-                  <span className="text-cobalt">Chosen</span>
-                ) : block ? (
-                  PLAY_BLOCK_LABELS[block]
-                ) : (
-                  rowsLabel(cat.rows)
-                )}
-              </span>
+              {selected || block ? (
+                <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
+                  {selected ? (
+                    <span className="text-cobalt">Chosen</span>
+                  ) : block ? (
+                    PLAY_BLOCK_LABELS[block]
+                  ) : null}
+                </span>
+              ) : (
+                <Habitats rows={cat.rows} className="justify-end" />
+              )}
             </div>
           </li>
         );

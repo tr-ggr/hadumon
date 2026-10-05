@@ -100,11 +100,126 @@ describe("buildClimb", () => {
     expect(frames.at(-1)?.hadu).toBe(3);
   });
 
-  it("lays the nameplate only on the last frame, and never on the roof", () => {
+  it("puts the title card up on the last two beats only, and names nobody on the roof", () => {
     for (const [kind, to] of CLIMBS) {
       const frames = buildClimb(kind, to, GAUNTLET);
-      for (const frame of frames.slice(0, -1)) expect(frame.plate).toBeNull();
-      expect(frames.at(-1)?.plate).toBe(kind === "summit" ? null : to);
+      const where = `${kind} ${to}`;
+      for (const frame of frames.slice(0, -2)) {
+        expect(frame.title, where).toBe(false);
+        expect(frame.plate, where).toBeNull();
+      }
+      for (const frame of frames.slice(-2)) {
+        expect(frame.title, where).toBe(true);
+        expect(frame.plate, where).toBe(kind === "summit" ? null : to);
+      }
+    }
+  });
+
+  it("opens every climb on the whole tower, with no bars across it", () => {
+    for (const [kind, to] of CLIMBS) {
+      const frames = buildClimb(kind, to, GAUNTLET);
+      expect(frames[0]?.shot, `${kind} ${to}`).toEqual({
+        on: "tower",
+        close: false,
+      });
+      expect(frames[0]?.bars, `${kind} ${to}`).toBe(false);
+    }
+  });
+
+  it("brings the bars in for a close shot, and takes them out for a wide one", () => {
+    for (const [kind, to] of CLIMBS) {
+      const frames = buildClimb(kind, to, GAUNTLET);
+      for (const frame of frames) {
+        expect(frame.bars, `${kind} ${to}`).toBe(frame.shot.close);
+      }
+      expect(
+        frames.some((frame) => frame.bars),
+        `${kind} ${to}`,
+      ).toBe(true);
+    }
+  });
+
+  it("pulls back from the roof before its card comes down", () => {
+    const frames = buildClimb("summit", ROOF, GAUNTLET);
+    const back = frames.findIndex(
+      (frame) => frame.roofFlag && !frame.shot.close,
+    );
+    expect(back).toBeGreaterThan(0);
+    expect(frames[back]?.title).toBe(false);
+    expect(frames[back - 1]?.shot).toEqual({ on: "roof", close: true });
+  });
+
+  it("rests close on the floor arrived at, and far back at the roof", () => {
+    expect(restingFrame("ascend", 3, GAUNTLET)?.shot).toEqual({
+      on: "floor",
+      floor: 3,
+      close: true,
+    });
+    expect(restingFrame("enter", 0, GAUNTLET)?.shot.close).toBe(true);
+    expect(restingFrame("summit", ROOF, GAUNTLET)?.shot.close).toBe(false);
+  });
+
+  it("frames only floors the tower has", () => {
+    for (const [kind, to] of CLIMBS) {
+      for (const { shot } of buildClimb(kind, to, GAUNTLET)) {
+        expect(shot.floor === undefined, `${kind} ${to}`).toBe(
+          shot.on !== "floor",
+        );
+        if (shot.floor === undefined) continue;
+        expect(shot.floor).toBeGreaterThanOrEqual(0);
+        expect(shot.floor).toBeLessThan(GAUNTLET.length);
+      }
+    }
+  });
+
+  it("follows Hadu up the wall, and tilts up the tower before he walks in", () => {
+    for (const [kind, to] of CLIMBS) {
+      for (const frame of buildClimb(kind, to, GAUNTLET)) {
+        if (!frame.hop) continue;
+        expect(frame.shot.close, `${kind} ${to}`).toBe(true);
+        expect(["hadu", "roof"], `${kind} ${to}`).toContain(frame.shot.on);
+      }
+    }
+    const tilt = buildClimb("enter", 0, GAUNTLET)
+      .filter((frame) => frame.hadu === "away" && frame.shot.on === "floor")
+      .map((frame) => frame.shot.floor);
+    expect(tilt).toEqual(GAUNTLET.map((_, floor) => floor));
+  });
+
+  it("holds a beat longer on a boss's dark window, and lands harder", () => {
+    const plain = buildClimb("ascend", 1, GAUNTLET);
+    const boss = buildClimb("ascend", 2, GAUNTLET);
+    expect(boss.length).toBe(plain.length + 1);
+    expect(boss.some((frame) => frame.windows[2] === "dark")).toBe(true);
+    expect(plain.some((frame) => frame.windows[1] === "dark")).toBe(false);
+    expect(boss.some((frame) => frame.shake === "hard")).toBe(true);
+    expect(plain.some((frame) => frame.shake === "hard")).toBe(false);
+  });
+
+  it("is heard: paws on the wall, a landing, the card coming down", () => {
+    for (const [kind, to] of CLIMBS) {
+      const frames = buildClimb(kind, to, GAUNTLET);
+      const heard = frames.flatMap((frame) =>
+        frame.sounds.map((sound) => sound.name),
+      );
+      expect(heard, `${kind} ${to}`).toContain("tick");
+      expect(heard, `${kind} ${to}`).toContain("settle");
+      expect(
+        heard.filter((name) => name === "slam"),
+        `${kind} ${to}`,
+      ).toHaveLength(1);
+      expect(heard.includes("goalWon"), `${kind} ${to}`).toBe(
+        kind === "summit",
+      );
+      // The first frame and the rest are silent, so a skip lands quietly.
+      expect(frames[0]?.sounds).toEqual([]);
+      expect(frames.at(-1)?.sounds).toEqual([]);
+      expect(frames.at(-1)?.shake).toBe("none");
+      for (const frame of frames) {
+        for (const sound of frame.sounds) {
+          expect(sound.delay * 1000, `${kind} ${to}`).toBeLessThan(frame.ms);
+        }
+      }
     }
   });
 
@@ -165,13 +280,18 @@ describe("buildClimb", () => {
     }
   });
 
-  it("is over in four seconds", () => {
+  it("is over in its time, the rest included", () => {
+    const budget: Record<ClimbKind, number> = {
+      ascend: 4500,
+      enter: 6500,
+      summit: 6000,
+    };
     for (const [kind, to] of CLIMBS) {
       const total = buildClimb(kind, to, GAUNTLET).reduce(
         (sum, frame) => sum + frame.ms,
         0,
       );
-      expect(total, `${kind} ${to}`).toBeLessThanOrEqual(4000);
+      expect(total, `${kind} ${to}`).toBeLessThanOrEqual(budget[kind]);
     }
   });
 
@@ -182,9 +302,9 @@ describe("buildClimb", () => {
     expect(restingFrame("ascend", 2, GAUNTLET)?.text).toBe(
       "Floor 3 of 6: Madame Mittens, at the window. A boss.",
     );
-    expect(buildClimb("ascend", 3, GAUNTLET)[1]?.text).toBe(
-      "Floor 3 is yours. The window shuts.",
-    );
+    expect(
+      buildClimb("ascend", 3, GAUNTLET).map((frame) => frame.text),
+    ).toContain("Floor 3 is yours. The window shuts.");
   });
 
   it("has no frames for a climb that cannot happen", () => {

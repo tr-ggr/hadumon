@@ -4,13 +4,7 @@
  * decides what is legal.
  */
 
-import {
-  getCat,
-  playCost,
-  ROW_LABELS,
-  ROWS,
-  type Row,
-} from "~/server/game/cats";
+import { getCat, playCost, ROW_LABELS, ROWS } from "~/server/game/cats";
 import {
   ESSENCES,
   auraTotal,
@@ -203,8 +197,4 @@ export function toggleDie(dice: readonly number[], die: number, take: number) {
 
 export function deckPicks(picks: readonly ("deck" | number)[]): number {
   return picks.filter((pick) => pick === "deck").length;
-}
-
-export function rowsLabel(rows: readonly Row[]): string {
-  return rows.map((row) => ROW_LABELS[row]).join(" · ");
 }

@@ -9,6 +9,7 @@ import type { MatchView } from "~/server/game/view";
 import { yarnCostLabel } from "./BoardRow";
 import { essenceLabel, listWords, plural } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
+import { MusicButton } from "./music/MusicButton";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
 import { SoundButton } from "./sfx/SoundButton";
 import {
@@ -86,8 +87,8 @@ export function TurnPanel({
       aria-label="Your turn"
       className={`min-w-0 flex-col gap-2 px-3 pt-2.5 pb-3 ${className}`}
     >
-      {/* A phone's match keeps its sound button here: the corner has no
-          room for it beside the gauntlet track. */}
+      {/* A phone's match keeps its sound and music buttons here: the corner
+          has no room for them beside the gauntlet track. */}
       <div className="flex items-start gap-2 lg:contents">
         <div className="min-w-0 flex-1 lg:contents">
           {playing === null ? (
@@ -100,7 +101,10 @@ export function TurnPanel({
             </Row2>
           )}
         </div>
-        <SoundButton className="shrink-0 sm:hidden" />
+        <div className="flex shrink-0 gap-1.5 sm:hidden">
+          <SoundButton />
+          <MusicButton />
+        </div>
       </div>
       <div className="mt-auto flex items-center justify-between gap-3 lg:contents">
         <div className="flex min-w-0 flex-col gap-1">

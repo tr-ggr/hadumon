@@ -757,8 +757,8 @@
     animation: none;
   }
 }
-/* A phone's match has no room for a fourth corner piece beside the track;
-   its sound button is in the turn dock. */
+/* A phone's match has room for three corner pieces beside the track; its
+   sound and music buttons are in the turn dock. */
 @media (max-width: 39.99rem) {
   .tabletop:has([data-match]) .corner-sound {
     display: none;
@@ -767,9 +767,15 @@
 
 /*
  * The climb between matches. `--px` is one pixel of the tower and of every
- * sprite on it, so a cat is 16 of them wherever it stands. Hadu goes from
- * ledge to ledge in steps and hops as it lands; a rival slides up into its
- * window from under the sill.
+ * sprite on it, so a cat is 16 of them wherever it stands.
+ *
+ * The tower is a world inside a stage, and a camera looks at it: the stage
+ * is a clipped box, and the world is moved and scaled under it so the point
+ * (`--cam-x`, `--cam-y`), in tower pixels, sits at the middle of the stage
+ * and `--focus` of the way down it. `--zoom` is a whole number, so a pixel
+ * at rest is still square. The component sets all of them once a frame and
+ * the move takes that frame's own time. The camera eases; the sprites it
+ * looks at still move in whole steps.
  */
 .tabletop .climb {
   --px: 2px;
@@ -778,6 +784,67 @@
   .tabletop .climb {
     --px: 3px;
   }
+}
+.tabletop .climb-stage {
+  container-type: size;
+}
+.tabletop .climb-world {
+  transform-origin: 0 0;
+  transform: translate(
+      calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)),
+      calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom))
+    )
+    scale(var(--zoom));
+  transition: transform var(--cam-ms, 400ms) cubic-bezier(0.45, 0, 0.2, 1);
+  will-change: transform;
+}
+/* Where it can, the camera comes to rest on a whole pixel of the screen. */
+@supports (width: round(1.5px, 1px)) {
+  .tabletop .climb-world {
+    transform: translate(
+        round(calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)), 1px),
+        round(calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom)), 1px)
+      )
+      scale(var(--zoom));
+  }
+}
+/* The bars of a wide picture, in from the stage's top and bottom edges. */
+.tabletop .climb-bar {
+  position: absolute;
+  inset-inline: 0;
+  z-index: 20;
+  height: 11cqh;
+  background: var(--color-ink);
+  transition: transform 320ms var(--ease-out);
+}
+.tabletop .climb-bar[data-edge="top"] {
+  top: 0;
+  transform: translateY(-101%);
+}
+.tabletop .climb-bar[data-edge="bottom"] {
+  bottom: 0;
+  transform: translateY(101%);
+}
+.tabletop .climb-bar[data-in="true"] {
+  transform: translateY(0);
+}
+/* The title card comes down like a token, from higher and with more give. */
+@keyframes title-slam {
+  0% {
+    transform: translateY(-36px) scale(1.12);
+  }
+  55% {
+    transform: translateY(3px) scale(0.985);
+  }
+  78% {
+    transform: translateY(-1px) scale(1.005);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+.tabletop .climb-title > .piece {
+  animation: title-slam 340ms var(--ease-out) both;
 }
 .tabletop .climb-sprite {
   display: block;
@@ -791,15 +858,82 @@
 .tabletop .climb-cast {
   background: var(--cast-cloth);
 }
+/* Hadu goes from ledge to ledge in steps, scrabbling a pixel left and right
+   on the way, and hops as he lands with a puff of dust at his feet. */
 .tabletop .climb-hadu {
+  --scramble: 560ms;
   transform: translate(
     calc(var(--x, 0) * var(--px)),
     calc(var(--rise, 0) * var(--px) * -1)
   );
-  transition: transform 320ms steps(4, end);
+  transition: transform var(--scramble) steps(8, end);
 }
-.tabletop .climb-hop {
-  animation: crowd-hop 360ms steps(1, end) 1;
+@keyframes climb-scrabble {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(calc(var(--px) * -1));
+  }
+  75% {
+    transform: translateX(var(--px));
+  }
+}
+.tabletop .climb-scramble {
+  animation:
+    climb-scrabble 140ms steps(1, end) 4,
+    crowd-hop 360ms steps(1, end) var(--scramble) 1;
+}
+@keyframes climb-walk {
+  from {
+    transform: translateX(calc(var(--px) * -20));
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+.tabletop .climb-walk {
+  animation: climb-walk 360ms steps(5, end) both;
+}
+@keyframes climb-dust {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+      calc(var(--px) * 3 * var(--side)),
+      calc(var(--px) * -2)
+    );
+  }
+}
+.tabletop .climb-dust::before,
+.tabletop .climb-dust::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: var(--px);
+  height: var(--px);
+  background: var(--color-white);
+  opacity: 0;
+}
+.tabletop .climb-dust::before {
+  --side: -1;
+  left: calc(var(--px) * 2);
+}
+.tabletop .climb-dust::after {
+  --side: 1;
+  right: calc(var(--px) * 2);
+}
+.tabletop .climb-scramble .climb-dust::before,
+.tabletop .climb-scramble .climb-dust::after {
+  animation: climb-dust 280ms steps(3, end) var(--scramble) 1;
+}
+.tabletop .climb-walk .climb-dust::before,
+.tabletop .climb-walk .climb-dust::after {
+  animation: climb-dust 280ms steps(3, end) 360ms 1;
 }
 .tabletop .climb-rival {
   transform: translateY(100%);
@@ -810,6 +944,23 @@
 }
 .tabletop .climb-rival[data-state="out"] {
   transform: translateY(0);
+}
+/* Reduced motion: the one frame it shows is simply there. The camera is
+   already where it rests, the bars are in, the card is down. */
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .climb-world,
+  .tabletop .climb-bar,
+  .tabletop .climb-hadu,
+  .tabletop .climb-rival {
+    transition: none;
+  }
+  .tabletop .climb-title > .piece,
+  .tabletop .climb-scramble,
+  .tabletop .climb-walk,
+  .tabletop .climb-dust::before,
+  .tabletop .climb-dust::after {
+    animation: none;
+  }
 }
 
 /*

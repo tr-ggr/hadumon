@@ -2,7 +2,7 @@
 
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
-import type { IconName } from "~/components/sprites/icons";
+import { ROW_ICONS, type IconName } from "~/components/sprites/icons";
 import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
 import {
   columnYarnCost,
@@ -21,14 +21,14 @@ export function yarnCostLabel(cost: number): string {
   return cost === 0 ? "Free" : `${cost} yarn`;
 }
 
-/** The lane's own icon, the thing its reward is counted in, and its key. */
+/** The thing a lane's reward is counted in, and the lane's key. */
 const LANES: Record<
   Row,
-  { icon: IconName; unit: IconName; one: string; many: string; key: string }
+  { unit: IconName; one: string; many: string; key: string }
 > = {
-  hunt: { icon: "paw", unit: "die", one: "die", many: "dice", key: "H" },
-  den: { icon: "den", unit: "yarn", one: "yarn", many: "yarn", key: "D" },
-  prowl: { icon: "card", unit: "card", one: "cat", many: "cats", key: "P" },
+  hunt: { unit: "die", one: "die", many: "dice", key: "H" },
+  den: { unit: "yarn", one: "yarn", many: "yarn", key: "D" },
+  prowl: { unit: "card", one: "cat", many: "cats", key: "P" },
 };
 
 /**
@@ -106,7 +106,7 @@ export function BoardRow({
         className={`piece border-ink relative flex min-h-12 items-center gap-2.5 self-start border-2 px-2.5 py-1.5 text-left disabled:cursor-not-allowed sm:min-h-[3.75rem] sm:self-stretch lg:min-h-20 ${resolving ? "" : "disabled:opacity-55"} ${activating ? "bg-lime text-ink is-pressed" : "bg-cobalt hover:bg-cobalt-dark text-white"}`}
       >
         <PixelIcon
-          name={lane.icon}
+          name={ROW_ICONS[row]}
           size={24}
           fill={activating ? WHITE : LIME}
           ink={activating ? INK : row === "hunt" ? WHITE : INK}

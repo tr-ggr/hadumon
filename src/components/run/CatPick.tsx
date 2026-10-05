@@ -3,12 +3,12 @@
 import type { ReactNode } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
+import { Habitats } from "~/components/cats/Habitats";
 import { Button, Modal } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 
 import { plural } from "./describe";
 import { KeyHint } from "./pieces";
-import { rowsLabel } from "./turn";
 
 export interface CatPickProps {
   catId: string;
@@ -80,13 +80,13 @@ export function CatPick({
         card
       )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5 pl-2">
-        <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
-          {selected ? (
-            <span className="text-cobalt">Chosen</span>
-          ) : (
-            (note ?? rowsLabel(cat.rows))
-          )}
-        </span>
+        {selected || (note !== undefined && note !== null) ? (
+          <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
+            {selected ? <span className="text-cobalt">Chosen</span> : note}
+          </span>
+        ) : (
+          <Habitats rows={cat.rows} />
+        )}
         <span className="flex shrink-0 items-center gap-1.5">
           {hint ? <KeyHint>{hint}</KeyHint> : null}
           <InfoButton name={cat.name} onClick={onDetail} />

@@ -3,6 +3,8 @@
  * one character per pixel, resolved to colours by `PixelIcon`.
  */
 
+import type { Row } from "~/server/game/cats";
+
 /** What each grid character means. */
 export const ICON_LEGEND = {
   ".": "transparent",
@@ -314,8 +316,37 @@ export const ICONS = {
     "..oo....",
     "...o....",
   ],
+  /** Music on: two notes under one beam. */
+  note: [
+    "..ooooo.",
+    "..o111o.",
+    "..ooooo.",
+    "..o...o.",
+    "..o...o.",
+    "ooo.ooo.",
+    "o1o.o1o.",
+    "ooo.ooo.",
+  ],
+  /** Music off: one note, crossed out. */
+  noteOff: [
+    "..ooo...",
+    "..o1o...",
+    "..ooo...",
+    "..o..o.o",
+    "..o...o.",
+    "ooo..o.o",
+    "o1o.....",
+    "ooo.....",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICONS;
 
 export const ICON_NAMES = Object.keys(ICONS) as IconName[];
+
+/** The mark a lane goes by: on its own tile, and on every cat that lives there. */
+export const ROW_ICONS: Record<Row, IconName> = {
+  hunt: "paw",
+  den: "den",
+  prowl: "card",
+};

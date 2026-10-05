@@ -3,14 +3,13 @@
 import { useState } from "react";
 
 import { PixelIcon } from "~/components/PixelIcon";
-import type { IconName } from "~/components/sprites/icons";
+import { ROW_ICONS, type IconName } from "~/components/sprites/icons";
 import { plural } from "~/components/run/describe";
 import { COBALT, INK, LIME, WHITE } from "~/components/run/pieces";
 import { ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
 import { COLUMN_YARN_COST, ROW_REWARD, SLOTS } from "~/server/game/match";
 
 interface Lane {
-  icon: IconName;
   unit: IconName;
   /** What activating the lane says it gives, for a count. */
   gives: (n: number) => string;
@@ -20,21 +19,18 @@ interface Lane {
 
 const LANES: Record<Row, Lane> = {
   hunt: {
-    icon: "paw",
     unit: "die",
     gives: (n) => `Take ${plural(n, "die", "dice")}`,
     pays: (empty, full) =>
       `takes food from the feeder: ${empty} from an empty row, ${full} from a full one. Food is what cats cost.`,
   },
   den: {
-    icon: "den",
     unit: "yarn",
     gives: (n) => `Lay ${n} yarn`,
     pays: (empty, full) =>
       `lays yarn on your cats: ${empty} from an empty row, ${full} from a full one. Each yarn is a point, and yarn pays for a row's later spaces.`,
   },
   prowl: {
-    icon: "card",
     unit: "card",
     gives: (n) => `Draw ${plural(n, "cat")}`,
     pays: (empty, full) =>
@@ -76,7 +72,7 @@ export function LaneShowcase() {
                 className={`piece border-ink flex min-h-12 items-center gap-2.5 border-2 px-2.5 py-1.5 text-left ${on ? "bg-lime text-ink is-pressed" : "bg-cobalt hover:bg-cobalt-dark liftable text-white"}`}
               >
                 <PixelIcon
-                  name={lane.icon}
+                  name={ROW_ICONS[id]}
                   size={24}
                   fill={on ? WHITE : LIME}
                   ink={on ? INK : id === "hunt" ? WHITE : INK}

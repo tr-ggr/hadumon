@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ClanPick } from "~/components/run/ClanPick";
 import { Climb } from "~/components/run/Climb";
 import { MatchBoard } from "~/components/run/MatchBoard";
+import { trackFor, type MusicScreen } from "~/components/run/music/tracks";
+import { useMusic } from "~/components/run/music/useMusic";
 import { RewardPick } from "~/components/run/RewardPick";
 import { RunStrip } from "~/components/run/RunStrip";
 import { RunSummary } from "~/components/run/RunSummary";
@@ -63,6 +65,25 @@ export function RunView() {
     window.scrollTo({ top: 0 });
   }, [screen]);
 
+  // Every screen has its own tune, and every rival its own theme. A table
+  // still loading, or one that failed to, has none.
+  const rivalId = view?.gauntlet[view.matchIndex];
+  const scene: MusicScreen | null =
+    climb && climbing.frame
+      ? { on: "climb", summit: climb.kind === "summit" }
+      : run.final && !landing
+        ? { on: "summary", won: run.final.view.outcome === "won" }
+        : run.loading || run.error
+          ? null
+          : !view
+            ? { on: "clans" }
+            : !landing && view.phase === "reward"
+              ? { on: "reward" }
+              : !landing && match?.phase === "setup"
+                ? { on: "setup", rivalId }
+                : { on: "match", rivalId };
+  useMusic(scene ? trackFor(scene) : null);
+
   if (climb && climbing.frame && view) {
     return (
       <TableSurface>
@@ -70,6 +91,7 @@ export function RunView() {
           key={climb.id}
           climb={climb}
           frame={climbing.frame}
+          beat={climbing.beat}
           gauntlet={view.gauntlet}
           onSkip={climbing.skip}
         />

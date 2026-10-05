@@ -56,6 +56,7 @@ export const SFX_NAMES = [
   "win",
   "loss",
   "settle",
+  "slam",
 ] as const;
 export type SfxName = (typeof SFX_NAMES)[number];
 
@@ -250,6 +251,13 @@ export function recipe(name: SfxName, step = 0): Voice {
       return [
         tone("sine", 210, 120, 0.22, 0.09),
         tone("sine", 900, 820, 0.05, 0.03, 0.01),
+      ];
+    case "slam":
+      // A title card coming down on the tower: the thud, and the board under it.
+      return [
+        tone("sine", 170, 46, 0.46, 0.22),
+        noise("lowpass", 1400, 260, 0.22, 0.12),
+        tone("square", 92, 80, 0.08, 0.1, 0.012),
       ];
   }
 }

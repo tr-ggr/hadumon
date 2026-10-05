@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { Fragment, type CSSProperties } from "react";
 
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
@@ -22,6 +22,8 @@ import {
   TREAT_LABEL,
   type Element,
 } from "~/server/game/elements";
+
+import { HabitatIcon } from "./Habitats";
 
 const FOOD_ICONS: Record<CostPip | "wild", IconName> = {
   flame: "beef",
@@ -209,8 +211,19 @@ export function CatCard({
       {full ? (
         <p className="text-ink-soft text-xs">
           {RARITY_LABELS[cat.rarity]} · {ELEMENT_LABELS[cat.element]} · lives in{" "}
-          {cat.rows.map((row) => ROW_LABELS[row]).join(" or ")} · holds{" "}
-          {cat.yarnCap} yarn
+          {cat.rows.map((row, index) => (
+            <Fragment key={row}>
+              {index > 0 ? " or " : null}
+              <span className="whitespace-nowrap">
+                <HabitatIcon
+                  row={row}
+                  className="mr-1 inline-block align-[-3px]"
+                />
+                {ROW_LABELS[row]}
+              </span>
+            </Fragment>
+          ))}{" "}
+          · holds {cat.yarnCap} yarn
         </p>
       ) : null}
 
