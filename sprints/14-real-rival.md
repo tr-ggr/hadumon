@@ -44,3 +44,12 @@ The scripted rival was re-measured with trades in the game, 200 runs of each bot
 | One-step, Stray | 84.5% | 86.0% | 1.76 | 1.83 |
 | One-step, Apex | 74.5% | 75.0% | 1.31 | 1.33 |
 | Random, Kitten | 10.0% | 6.0% | 0.10 | 0.06 |
+
+## Phase 2 — Seats (done)
+
+A refactor of `match.ts` with no change in behaviour: the same seeds play the same 800 simulated runs to the same results, and no test changed.
+
+- `Side` is everything one seat owns: board, hand, deck, discard, tray, setup, food, relics, mods and turns left. `Table` is what seats share: phase, round, feeder, goals, goal results, the power queue and the pending choice.
+- The match against the scripted rival is still one flat object. `MatchState extends Side, Table`, so it is its own seat and its own table, and every stored run reads as before.
+- The turn pieces (`keep`, `play`, `hunt`, `den`, `prowl`, `resolve`, `firePower`, `drain`, `fireAuras`, `drawCard`, `refillTray`) take a context of one table and one seat and send their events through it. None of them knows who else is sitting at the table.
+- The queries take a seat: `rowReward(side, row)`, `canPlay(side, hand, row)`, `prowlPickCount(side)`, `autoYarnTargets(side, n)`, `spareFood(side)`, and a goal's `count(side)`. `tradeOffered(side, feeder, row)` is the trade test without the phase; `canTrade(state, row)` adds it. `seatActions(table, side)` lists a seat's actions and `legalActions(state)` calls it.
