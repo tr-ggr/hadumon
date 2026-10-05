@@ -212,9 +212,10 @@ export function LandingPage() {
                       {word(rivals, true)} rivals. {word(bosses, true)} bosses.
                     </h2>
                     <p className={`${COPY} mt-4`}>
-                      A rival plays from a deck of {word(first.deck.length)}{" "}
-                      cards and flips one after each of your turns. You can
-                      always see what is left in it.
+                      A rival sits across the table with its own cats, its own
+                      deck and your rules. Nobody gets a head start: further up
+                      the tower they only think further ahead, and you can open
+                      their board at any time.
                     </p>
                     <p className={`${COPY} mt-3`}>
                       <strong className="font-extrabold">

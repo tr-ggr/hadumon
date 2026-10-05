@@ -28,14 +28,13 @@ import {
   WHITE,
 } from "~/components/run/pieces";
 import { toggleDie } from "~/components/run/turn";
-import { describePower, getCat, type RivalAction } from "~/server/game/cats";
+import { rivalPolicy } from "~/server/game/bot";
+import { describePower, getCat } from "~/server/game/cats";
+import { advance, openMatch } from "~/server/game/duel";
 import {
-  applyAction,
   COLUMN_YARN_COST,
-  createMatch,
   ESSENCES,
-  playerScore,
-  rivalScore,
+  sideScore,
   ROUND_TURNS,
   ROW_REWARD,
   rowReward,
@@ -44,6 +43,7 @@ import {
   type MatchState,
 } from "~/server/game/match";
 import { GAUNTLET, getRival } from "~/server/game/rival";
+import { rivalDeck } from "~/server/game/rivalDecks";
 import { starterDeck } from "~/server/game/run";
 import { toMatchView } from "~/server/game/view";
 
@@ -58,29 +58,41 @@ const ORDINALS = ["1st", "2nd", "3rd", "4th"];
  * already built and the round's goal is one a Hunt row can win.
  */
 function deal(n: number): MatchState {
-  const base = createMatch({
-    seed: `landing-${n}`,
-    deck: starterDeck("flame"),
-    relics: [],
-    rivalId: RIVAL_ID,
-  });
+  const base = openMatch(
+    {
+      seed: `landing-${n}`,
+      rivalId: RIVAL_ID,
+      level: 0,
+      player: { deck: starterDeck("flame"), relics: [] },
+      rival: { deck: rivalDeck(RIVAL_ID, 0, []), relics: [] },
+    },
+    rivalPolicy,
+  ).state;
+  const { player, rival } = base.sides;
   return {
     ...base,
     phase: "turn",
-    turnsLeft: ROUND_TURNS[0],
-    setup: [],
-    discard: base.setup,
+    active: "player",
     goals: ["pantry", ...base.goals.filter((goal) => goal !== "pantry")],
-    board: {
-      hunt: ROW.map((catId) => ({ catId, yarn: 0, cached: 0, tucked: 0 })),
-      den: [],
-      prowl: [],
+    sides: {
+      rival: { ...rival, turnsLeft: ROUND_TURNS[0] },
+      player: {
+        ...player,
+        turnsLeft: ROUND_TURNS[0],
+        setup: [],
+        discard: player.setup,
+        board: {
+          hunt: ROW.map((catId) => ({ catId, yarn: 0, cached: 0, tucked: 0 })),
+          den: [],
+          prowl: [],
+        },
+      },
     },
   };
 }
 
 function takeCount(state: MatchState): number {
-  return Math.min(rowReward(state, "hunt"), state.feeder.length);
+  return Math.min(rowReward(state.sides.player, "hunt"), state.feeder.length);
 }
 
 function firstDice(state: MatchState): number[] {
@@ -93,8 +105,8 @@ interface Step {
   tone: LogTone;
   /** The Hunt slot whose power this step is, if any. */
   col: number | null;
-  /** The card the rival flipped, if this step is the rival's. */
-  rival: RivalAction | null;
+  /** True if this step is the rival's turn. */
+  rival: boolean;
   /** The match as it stands once this step has landed. */
   frame: MatchState;
 }
@@ -108,61 +120,65 @@ function turnSteps(
   before: MatchState,
   action: Extract<Action, { type: "hunt" }>,
 ): Step[] {
-  const { state: after, events } = applyAction(before, action);
+  // The rival answers for real: the same bot a run's first match plays.
+  const { state: after, events, trail } = advance(before, action, rivalPolicy);
   const beforeView = toMatchView(before);
   const lines = describeEvents(beforeView, toMatchView(after), events);
 
   let frame = structuredClone(before);
   for (const index of [...action.dice].sort((a, b) => b - a)) {
     const [face] = frame.feeder.splice(index, 1);
-    if (face) frame.essence[face] += 1;
+    if (face) frame.sides.player.essence[face] += 1;
   }
   const steps: Step[] = [
     {
       text: describeAction(beforeView, action),
       tone: "note",
       col: null,
-      rival: null,
+      rival: false,
       frame,
     },
   ];
 
   let line = 0;
+  let rivalMoves = 0;
   for (const event of events) {
     if (
-      event.type !== "power" &&
-      event.type !== "feeder" &&
-      event.type !== "rival" &&
-      event.type !== "goal" &&
-      event.type !== "over"
+      event.type === "kept" ||
+      event.type === "played" ||
+      event.type === "activated" ||
+      (event.type === "move" && event.side === "player")
     ) {
       continue;
     }
     const described = lines[line++];
     if (!described || event.type === "goal") continue;
 
-    frame = structuredClone(frame);
-    if (event.type === "feeder") frame.feeder = [...event.faces];
-    if (event.type === "rival") {
-      frame.rival = after.rival;
-      frame.feeder = after.feeder;
+    if (event.type === "move") {
+      // The table as it stood once the rival's action had resolved.
+      rivalMoves += 1;
+      frame = structuredClone(trail[rivalMoves] ?? after);
+    } else {
+      frame = structuredClone(frame);
     }
-    if (event.type === "power") {
+    if (event.type === "feeder") frame.feeder = [...event.faces];
+    if (event.type === "power" && event.side === "player") {
       const effect = getCat(event.catId).power?.effect;
-      const slot = frame.board.hunt[event.col];
-      const settled = after.board.hunt[event.col];
-      if (effect?.kind === "essence") frame.essence[effect.element] += effect.n;
+      const mine = frame.sides.player;
+      const slot = mine.board.hunt[event.col];
+      const settled = after.sides.player.board.hunt[event.col];
+      if (effect?.kind === "essence") mine.essence[effect.element] += effect.n;
       if (slot && settled) slot.tucked = settled.tucked;
     }
     steps.push({
       text: described.text,
       tone: described.tone,
-      col: event.type === "power" ? event.col : null,
-      rival: event.type === "rival" ? event.action : null,
+      col: event.type === "power" && event.side === "player" ? event.col : null,
+      rival: event.type === "move",
       frame,
     });
   }
-  steps.push({ text: "", tone: "note", col: null, rival: null, frame: after });
+  steps.push({ text: "", tone: "note", col: null, rival: false, frame: after });
   return steps;
 }
 
@@ -216,9 +232,9 @@ export function HuntDemo() {
     .find((step) => step.tone === "rival");
   const rivalFlash = current?.tone === "rival";
   const goal = state.goalResults[0];
-  const cats = view.board.hunt;
-  const score = playerScore(view).total;
-  const rivalTotal = rivalScore(view);
+  const cats = view.sides.player.board.hunt;
+  const score = sideScore(view, "player").total;
+  const rivalTotal = sideScore(view, "rival").total;
 
   const hunt = () => {
     setSteps(turnSteps(state, { type: "hunt", dice }));
@@ -235,7 +251,7 @@ export function HuntDemo() {
     setShown(0);
   };
 
-  const turnsLeft = done ? 0 : view.turnsLeft;
+  const turnsLeft = done ? 0 : view.sides.player.turnsLeft;
   const takeLabel = `Take ${plural(take, "die", "dice")}`;
 
   return (
@@ -435,12 +451,10 @@ export function HuntDemo() {
             className={`piece piece-card border-ink border-2 px-2.5 py-1.5 ${rivalFlash ? "bg-coral anim-flip" : rivalLine ? "bg-cream" : "bg-cloth"}`}
           >
             <p className="text-sm leading-snug font-black" aria-live="polite">
-              {rivalLine ? rivalLine.text : "Has not flipped a card yet"}
+              {rivalLine ? rivalLine.text : "Yet to move"}
             </p>
             <p className="text-[11px] leading-snug font-semibold">
-              {rivalLine?.rival === "burn"
-                ? "Burned from the tray, not from your row."
-                : "Flips one card after each of your turns."}
+              Plays the same game on a board of its own, turn about with you.
             </p>
           </div>
 
@@ -488,7 +502,7 @@ export function HuntDemo() {
                 <EssenceToken
                   key={kind}
                   kind={kind}
-                  count={view.essence[kind]}
+                  count={view.sides.player.essence[kind]}
                 />
               ))}
             </ul>

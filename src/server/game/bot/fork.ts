@@ -7,10 +7,10 @@
 
 import { ROWS } from "../cats";
 import {
-  stepDuel,
+  stepMatch,
   type Action,
   type Board,
-  type DuelState,
+  type MatchState,
   type Side,
 } from "../match";
 
@@ -41,7 +41,7 @@ function copySide(side: Side): Side {
 }
 
 /** A copy that shares nothing the reducer writes to. */
-export function fork(state: DuelState): DuelState {
+export function fork(state: MatchState): MatchState {
   return {
     ...state,
     feeder: [...state.feeder],
@@ -69,11 +69,11 @@ export const meter = { steps: 0 };
 
 /** Plays `action` on a fork the caller owns, and counts it. */
 export function tryMove(
-  state: DuelState,
+  state: MatchState,
   action: Action,
   budget: Budget,
 ): void {
   budget.left -= 1;
   meter.steps += 1;
-  stepDuel(state, action);
+  stepMatch(state, action);
 }

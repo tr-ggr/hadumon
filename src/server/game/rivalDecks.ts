@@ -4,23 +4,13 @@
  * each match already played. Each of those picks is held to the rarity a
  * player has typically taken by then, and comes from the cats the player has
  * unlocked, so an account never meets a cat it could not own. A rival holds
- * no relics.
+ * one relic, its clan's charm.
  */
 
 import { getCat, RARITIES, type Rarity } from "./cats";
 import type { Element } from "./elements";
-import { GAUNTLET } from "./rival";
-import { starterDeck } from "./run";
-
-/** The clan each rival's deck is built around. */
-export const RIVAL_THEMES: Record<string, Element> = {
-  "alley-tom": "thorn",
-  "dockside-twins": "mist",
-  "madame-mittens": "flame",
-  "rooftop-syndicate": "volt",
-  "the-archivist": "thorn",
-  "old-nine-lives": "shade",
-};
+import { GAUNTLET, getRival } from "./rival";
+import { CLANS, starterDeck } from "./clans";
 
 /**
  * The rarest cat the pick after each won match may be: the rarity the best
@@ -36,9 +26,16 @@ export const PICK_CAPS: readonly Rarity[] = [
 ];
 
 export function themeOf(rivalId: string): Element {
-  const theme = RIVAL_THEMES[rivalId];
-  if (!theme) throw new Error(`No deck theme for rival: ${rivalId}`);
-  return theme;
+  return getRival(rivalId).theme;
+}
+
+/**
+ * The relics a rival holds: its clan's charm, as a player starts a run with
+ * theirs, and no other. The relics a player picks up along the way are the
+ * reward for winning.
+ */
+export function rivalRelics(rivalId: string): string[] {
+  return [CLANS[themeOf(rivalId)].relicId];
 }
 
 /**

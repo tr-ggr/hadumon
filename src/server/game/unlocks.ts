@@ -22,6 +22,14 @@ export interface UnlockRule extends Unlock {
   test(run: RunSummary): boolean;
 }
 
+/**
+ * The two scores an unlock asks for. They were measured against the rivals
+ * as they play now: a careful player on a new account reaches the first in
+ * about two runs of five and the second in about one of fifty.
+ */
+export const HIGH_SCORE = 38;
+export const TOP_SCORE = 45;
+
 const wins = (n: number) => (run: RunSummary) => run.matchesWon >= n;
 const scored = (n: number) => (run: RunSummary) => run.bestMatchScore >= n;
 const won = (run: RunSummary) => run.won;
@@ -79,8 +87,8 @@ export const UNLOCK_RULES: UnlockRule[] = [
   {
     kind: "cat",
     key: "verdantmane",
-    hint: "Score 35 in a single match.",
-    test: scored(35),
+    hint: `Score ${HIGH_SCORE} in a single match.`,
+    test: scored(HIGH_SCORE),
   },
   {
     kind: "cat",
@@ -91,8 +99,8 @@ export const UNLOCK_RULES: UnlockRule[] = [
   {
     kind: "cat",
     key: "infernomane",
-    hint: "Score 42 in a single match.",
-    test: scored(42),
+    hint: `Score ${TOP_SCORE} in a single match.`,
+    test: scored(TOP_SCORE),
   },
   {
     kind: "cat",
@@ -123,8 +131,8 @@ export const UNLOCK_RULES: UnlockRule[] = [
   {
     kind: "relic",
     key: "hoarders-basket",
-    hint: "Score 35 in a single match.",
-    test: scored(35),
+    hint: `Score ${HIGH_SCORE} in a single match.`,
+    test: scored(HIGH_SCORE),
   },
   {
     kind: "relic",

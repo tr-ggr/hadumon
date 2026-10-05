@@ -8,15 +8,15 @@ import { getCat, ROWS } from "../cats";
 import { ELEMENTS } from "../elements";
 import {
   canPlay,
-  duelScore,
-  duelStanding,
+  sideScore,
+  goalStanding,
   emptyPool,
   otherSide,
   payCost,
   placedCats,
   ROUND_TURNS,
   type Action,
-  type DuelState,
+  type MatchState,
   type Essence,
   type Side,
   type SideId,
@@ -66,7 +66,7 @@ export function tilted(tilt: Partial<Weights>): Weights {
 }
 
 /** Turns a seat still has in the match, this round's included. */
-export function turnsAhead(state: DuelState, who: SideId): number {
+export function turnsAhead(state: MatchState, who: SideId): number {
   if (state.phase === "over") return 0;
   return ROUND_TURNS.slice(state.round + 1).reduce<number>(
     (sum, turns) => sum + turns,
@@ -119,16 +119,16 @@ function prospects(side: Side, ahead: number, w: Weights): number {
 }
 
 /** The points a seat has on the table now. */
-export function pointsLead(state: DuelState, me: SideId): number {
-  return duelScore(state, me).total - duelScore(state, otherSide(me)).total;
+export function pointsLead(state: MatchState, me: SideId): number {
+  return sideScore(state, me).total - sideScore(state, otherSide(me)).total;
 }
 
 /** The table's worth to `me`, in points ahead of the other seat. */
-export function evaluate(state: DuelState, me: SideId, w: Weights): number {
+export function evaluate(state: MatchState, me: SideId, w: Weights): number {
   const them = otherSide(me);
   const lead = pointsLead(state, me);
   if (state.phase === "over") return lead;
-  const goal = duelStanding(state);
+  const goal = goalStanding(state);
   const share = goal
     ? me === "player"
       ? goal.playerPoints - goal.rivalPoints

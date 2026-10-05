@@ -415,8 +415,7 @@ export function soundsFor(cue: Cue): Sound[] {
     case "rival":
       return [
         ...one("rivalFlip"),
-        ...(cue.rivalAction === "raid" ? one("raid", 0.2) : []),
-        ...(cue.rivalAction === "burn" ? one("burn", 0.2) : []),
+        ...(cue.rivalMove === "hunt" ? one("raid", 0.2) : []),
       ];
     case "goal":
       return cue.won === true

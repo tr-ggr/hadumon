@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { GOAL_IDS, getGoal } from "./goals";
-import { createMatch } from "./match";
+import { ELEMENTS } from "./elements";
+import { emptyPool } from "./match";
 import { combineMods, NO_MODS, RELIC_LIST, relicScore } from "./relics";
 import { GAUNTLET, getRival, RIVAL_LIST } from "./rival";
-import { starterDeck } from "./run";
 
 const placed = (catId: string, yarn = 0) => ({
   catId,
@@ -26,10 +26,11 @@ describe("relics", () => {
   });
 
   it("lays extra mods over the relics'", () => {
-    expect(combineMods([], { rivalStartYarn: 2 })).toEqual({
+    expect(combineMods([], { goalBonus: 2 })).toEqual({
       ...NO_MODS,
-      rivalStartYarn: 2,
+      goalBonus: 2,
     });
+    expect(combineMods(["loud-bell"]).refillTreat).toBe(1);
     expect(combineMods(["warm-saucer"], { startWild: 1 }).startWild).toBe(2);
   });
 
@@ -55,19 +56,17 @@ describe("relics", () => {
 });
 
 describe("goals", () => {
-  it("counts from zero on an empty board and has a par for each round", () => {
-    const match = createMatch({
-      seed: "g",
-      deck: starterDeck("mist"),
-      relics: [],
-      rivalId: "alley-tom",
-    });
+  it("count from zero for a seat with nothing", () => {
+    const bare = {
+      board: { hunt: [], den: [], prowl: [] },
+      hand: [],
+      essence: emptyPool(),
+    };
     expect(GOAL_IDS.length).toBeGreaterThanOrEqual(3);
     for (const id of GOAL_IDS) {
       const goal = getGoal(id);
-      expect(goal.count(match)).toBe(0);
-      expect(goal.par).toHaveLength(3);
-      expect(goal.par.every((n) => n >= 1)).toBe(true);
+      expect(goal.count(bare)).toBe(0);
+      expect(goal).not.toHaveProperty("par");
     }
   });
 });
@@ -85,11 +84,14 @@ describe("rivals", () => {
     ]);
   });
 
-  it("gives every rival a ten-card deck that can score", () => {
+  it("gives a rival a clan and a manner, and no numbers", () => {
     for (const rival of RIVAL_LIST) {
-      expect(rival.deck).toHaveLength(10);
-      expect(rival.deck).toContain("bank");
-      expect(rival.bankPoints).toBeGreaterThan(0);
+      expect(Object.keys(rival).sort()).toEqual(
+        ["boss", "flavor", "id", "name", "theme", "trait"].sort(),
+      );
+      expect(ELEMENTS).toContain(rival.theme);
+      expect(rival.trait.length).toBeGreaterThan(0);
     }
+    expect(new Set(RIVAL_LIST.map((r) => r.trait)).size).toBe(6);
   });
 });

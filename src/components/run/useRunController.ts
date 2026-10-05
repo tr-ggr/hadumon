@@ -7,7 +7,7 @@ import type { DifficultyId } from "~/server/game/difficulty";
 import type { Element } from "~/server/game/elements";
 import type { Action, MatchEvent } from "~/server/game/match";
 import type { RewardChoice } from "~/server/game/run";
-import type { MatchView } from "~/server/game/view";
+import type { MatchView, RivalBeat } from "~/server/game/view";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 import { climbAfter, climbFits, type ClimbRecord } from "./climb";
@@ -37,7 +37,9 @@ export interface TurnRecord {
   after: MatchView;
   action: Action;
   events: MatchEvent[];
-  /** What the rival's card read before this turn. */
+  /** The rival's seat after each of its actions in `events`. */
+  beats: RivalBeat[];
+  /** What the rival had last done before this turn. */
   rivalBefore: RivalNews | null;
   /** Powers the activation had landed before this turn answered a choice. */
   chainStart: number;
@@ -47,7 +49,7 @@ interface Recap {
   /** The run and match the recap belongs to; anything else is stale. */
   key: string;
   log: LogEntry[];
-  /** The rival's last card with its details, which a reload cannot recover. */
+  /** The rival's last turn in words. */
   rival: RivalNews | null;
   /** A goal that was just scored and has not been acknowledged. */
   goal: GoalEvent | null;
@@ -149,7 +151,7 @@ export function useRunController() {
           title: describeAction(before, variables.action),
           lines: describeEvents(before, after, update.events),
         };
-        const rivalText = latestRivalText(after, update.events);
+        const rivalText = latestRivalText(update.events);
         const rival = rivalText ? { id: entry.id, text: rivalText } : null;
         // The last round's goal is shown by the result screen instead.
         const goal = after.phase === "over" ? null : findGoal(update.events);
@@ -179,6 +181,7 @@ export function useRunController() {
               after,
               action: variables.action,
               events: update.events,
+              beats: update.beats,
               rivalBefore: base.rival,
               chainStart,
             },

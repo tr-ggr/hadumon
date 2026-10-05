@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 
-import { applyAction, type Action, type MatchState } from "~/server/game/match";
+import { rivalPolicy } from "~/server/game/bot";
+import { advance } from "~/server/game/duel";
+import type { Action, MatchState } from "~/server/game/match";
 import { startRun } from "~/server/game/run";
 import { poolFromUnlocks, STARTING_UNLOCKS } from "~/server/game/unlocks";
 import { toMatchView } from "~/server/game/view";
@@ -13,7 +15,8 @@ import {
   latestRivalText,
   listWords,
   plural,
-  rivalActionText,
+  moveText,
+  tiebreakText,
 } from "./describe";
 import {
   boardYarnRoom,
@@ -29,6 +32,8 @@ import {
   yarnRoom,
 } from "./turn";
 
+const lowered = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
+
 function newMatch(): MatchState {
   const run = startRun({
     seed: "describe-test",
@@ -43,7 +48,8 @@ function newMatch(): MatchState {
 /** Applies an action and returns everything the UI would have to hand. */
 function step(state: MatchState, action: Action) {
   const before = toMatchView(state);
-  const result = applyAction(state, action);
+  // The rival answers, as it does when the action comes from the table.
+  const result = advance(state, action, rivalPolicy);
   const after = toMatchView(result.state);
   return { before, after, events: result.events, state: result.state };
 }
@@ -66,32 +72,78 @@ describe("words", () => {
   });
 });
 
-describe("rivalActionText", () => {
-  it("names what was taken when the event says", () => {
-    expect(rivalActionText("alley-tom", "raid", ["flame", "wild"], 2)).toBe(
-      "Raided 2 dice: Beef and Treat",
-    );
-    expect(rivalActionText("alley-tom", "burn", ["bramblepaw"], 2)).toBe(
-      "Burned Bramblepaw",
-    );
-    expect(rivalActionText("alley-tom", "burn", [], 2)).toBe(
-      "Found nothing in the tray to burn",
+describe("moveText", () => {
+  it("says what a seat did, with no subject", () => {
+    expect(
+      moveText({ type: "play", catId: "bramblepaw", row: "den", col: 0 }),
+    ).toBe("Played Bramblepaw into the Den");
+    expect(
+      moveText({ type: "hunt", faces: ["flame", "wild"], discarded: null }),
+    ).toBe("Hunted and took Beef and Treat");
+    expect(
+      moveText({
+        type: "den",
+        targets: [
+          { row: "den", col: 0 },
+          { row: "den", col: 0 },
+        ],
+        spent: null,
+      }),
+    ).toBe("Went to the Den and laid 2 yarn");
+    expect(moveText({ type: "reroll" })).toBe("Rerolled the feeder");
+  });
+
+  it("names what it took from its tray and only counts its deck", () => {
+    expect(
+      moveText({ type: "prowl", tray: ["mistpaw"], deck: 2, payer: null }),
+    ).toBe("Prowled and drew Mistpaw from the tray and 2 from the deck");
+    expect(moveText({ type: "prowl", tray: [], deck: 0, payer: null })).toBe(
+      "Prowled and drew nothing",
     );
   });
 
-  it("stays general when only the card is known", () => {
-    expect(rivalActionText("madame-mittens", "raid", null, 3)).toBe(
-      "Raided 2 dice",
-    );
-    expect(rivalActionText("rooftop-syndicate", "burn", null, 3)).toBe(
-      "Burned 2 tray cards",
-    );
-    expect(rivalActionText("alley-tom", "bank", null, 2)).toBe(
-      "Banked a cat, worth 2",
-    );
-    expect(rivalActionText("dockside-twins", "stash", null, 2)).toBe(
-      "Stashed 2 yarn",
-    );
+  it("says what a trade was paid with", () => {
+    expect(
+      moveText({
+        type: "hunt",
+        faces: ["mist", "mist"],
+        discarded: "emberkit",
+      }),
+    ).toBe("Hunted and took Fish and Fish, discarding Emberkit for 1 more die");
+    expect(
+      moveText({
+        type: "den",
+        targets: [{ row: "hunt", col: 0 }],
+        spent: "volt",
+      }),
+    ).toBe("Went to the Den and laid 1 yarn, spending 1 Chicken for 1 more");
+    expect(
+      moveText({
+        type: "prowl",
+        tray: [],
+        deck: 2,
+        payer: { row: "den", col: 1 },
+      }),
+    ).toBe("Prowled and drew 2 from the deck, spending 1 yarn for 1 more");
+  });
+
+  it("keeps a tucked cat face down", () => {
+    const slot = { row: "prowl" as const, col: 0 };
+    expect(
+      moveText({ type: "resolve", kind: "tuckHand", slot, took: true }),
+    ).toBe("Tucked a cat from its hand");
+    expect(
+      moveText({ type: "resolve", kind: "trade", slot, took: false }),
+    ).toBe("Kept its yarn");
+  });
+});
+
+describe("tiebreakText", () => {
+  it("says what settled a level match, and nothing for one that was not", () => {
+    expect(tiebreakText(null)).toBeNull();
+    expect(tiebreakText("food")).toContain("more food left");
+    expect(tiebreakText("cats")).toContain("more cats");
+    expect(tiebreakText("seat")).toContain("goes to you");
   });
 });
 
@@ -208,14 +260,17 @@ describe("describeEvents", () => {
     const hunted = step(kept.state, { type: "hunt", dice: [0] });
     const lines = describeEvents(hunted.before, hunted.after, hunted.events);
     const rival = lines.filter((line) => line.tone === "rival");
-    expect(rival).toHaveLength(1);
+    expect(rival.length).toBeGreaterThanOrEqual(1);
     expect(rival[0]?.text).toMatch(/^Alley Tom .+\.$/);
-    expect(latestRivalText(hunted.after, hunted.events)).not.toBeNull();
+    expect(rival[0]?.text).toBe(
+      `Alley Tom ${lowered(latestRivalText(hunted.events) ?? "")}.`,
+    );
+    expect(hunted.after.rival.last).not.toBeNull();
   });
 
   it("reports nothing for the keep itself", () => {
     expect(describeEvents(kept.before, kept.after, kept.events)).toEqual([]);
-    expect(latestRivalText(kept.after, kept.events)).toBeNull();
+    expect(latestRivalText(kept.events)).toBeNull();
   });
 
   it("reports a scored goal at the end of a round", () => {

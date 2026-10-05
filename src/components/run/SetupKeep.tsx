@@ -102,9 +102,9 @@ export function SetupKeep({
         {step === "rival" ? (
           <section className="fitted:my-auto space-y-3">
             <StepHeading title="Meet the rival" headingRef={heading}>
-              Three rounds of {listWords(turns.map(String))} turns. The rival
-              flips one card after each of your turns. Score more than the rival
-              to win.
+              Three rounds of {listWords(turns.map(String))} turns each. The
+              rival plays the same game on a board of its own, turn about with
+              you. Score more than the rival to win.
             </StepHeading>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
               <Nameplate

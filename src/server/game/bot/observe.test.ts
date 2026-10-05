@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { ROWS } from "../cats";
 import {
-  applyDuel,
-  createDuel,
-  duelActions,
+  applyAction,
+  createMatch,
+  legalActions,
   otherSide,
   SIDES,
-  type DuelState,
+  type MatchState,
   type SideId,
 } from "../match";
 import { createRng } from "../rng";
@@ -18,8 +18,8 @@ import { styleOf } from "./styles";
 
 const SEED = "top-secret-seed";
 
-function deal(seed = SEED): DuelState {
-  return createDuel({
+function deal(seed = SEED): MatchState {
+  return createMatch({
     seed,
     rivalId: "madame-mittens",
     level: 3,
@@ -29,13 +29,13 @@ function deal(seed = SEED): DuelState {
 }
 
 /** Positions from all through a match played at random. */
-function positions(seed = SEED): DuelState[] {
+function positions(seed = SEED): MatchState[] {
   const rng = createRng(`${seed}:walk`);
-  const seen: DuelState[] = [];
+  const seen: MatchState[] = [];
   let state = deal(seed);
   for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
     seen.push(state);
-    state = applyDuel(state, rng.pick(duelActions(state))).state;
+    state = applyAction(state, rng.pick(legalActions(state))).state;
   }
   return seen;
 }
@@ -45,7 +45,7 @@ function positions(seed = SEED): DuelState[] {
  * in another order, the other seat's hidden cats moved between its hand, its
  * deck, its discard pile and under its cats, and another seed.
  */
-function reshuffled(state: DuelState, me: SideId, salt: string): DuelState {
+function reshuffled(state: MatchState, me: SideId, salt: string): MatchState {
   const rng = createRng(`reshuffle:${salt}`);
   const next = structuredClone(state);
   const mine = next.sides[me];
@@ -214,7 +214,7 @@ describe("imagine", () => {
     const rng = createRng("play-on");
     let state = imagine(observe(all[8]!, "rival"), rng);
     for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
-      state = applyDuel(state, rng.pick(duelActions(state))).state;
+      state = applyAction(state, rng.pick(legalActions(state))).state;
     }
     expect(state.phase).toBe("over");
   });

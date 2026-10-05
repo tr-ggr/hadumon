@@ -1,35 +1,15 @@
 import { RivalSprite } from "~/components/RivalSprite";
 import { Label } from "~/components/ui";
-import { RIVAL_ACTIONS, type RivalAction } from "~/server/game/cats";
-import { getRival, type Rival } from "~/server/game/rival";
-
-const ACTION_LABELS: Record<RivalAction, string> = {
-  bank: "Bank",
-  stash: "Stash",
-  raid: "Raid",
-  burn: "Burn",
-  push: "Push",
-};
-
-function plural(n: number, one: string, many: string): string {
-  return `${n} ${n === 1 ? one : many}`;
-}
-
-/** What one flip of each action card does, in this rival's numbers. */
-function actionText(rival: Rival, action: RivalAction): string {
-  switch (action) {
-    case "bank":
-      return `Banks a cat worth ${plural(rival.bankPoints, "point", "points")}`;
-    case "stash":
-      return `Gains ${rival.stashYarn} yarn, a point each`;
-    case "raid":
-      return `Takes ${plural(rival.raidDice, "die", "dice")} from the feeder`;
-    case "burn":
-      return `Discards ${plural(rival.burnCards, "tray cat", "tray cats")}`;
-    case "push":
-      return "Adds 1 to its goal tally";
-  }
-}
+import {
+  DIFFICULTY_LIST,
+  LEVEL_COUNT,
+  rivalLevel,
+} from "~/server/game/difficulty";
+import { ELEMENT_LABELS } from "~/server/game/elements";
+import { getRelic } from "~/server/game/relics";
+import { getRival } from "~/server/game/rival";
+import { rivalRelics } from "~/server/game/rivalDecks";
+import { CLANS } from "~/server/game/run";
 
 /** One rival and its deck. A rival is never locked. */
 export function RivalCard({
@@ -64,49 +44,43 @@ export function RivalCard({
       </div>
 
       <p className="text-sm italic">{rival.flavor}</p>
-      <p className="text-sm font-bold">
-        {rival.trait ?? "No tricks. Just the deck."}
-      </p>
+      <p className="text-sm font-bold">{rival.trait}</p>
 
       <table className="border-ink w-full border-t-2 text-left text-xs">
         <caption className="sr-only">
-          {rival.name}: action cards, how many are in the deck, and what each
-          does
+          {rival.name}: the level it plays at on each tier
         </caption>
         <thead className="sr-only">
           <tr>
-            <th scope="col">Card</th>
-            <th scope="col">In deck</th>
-            <th scope="col">Effect</th>
+            <th scope="col">Tier</th>
+            <th scope="col">Level</th>
           </tr>
         </thead>
         <tbody>
-          {RIVAL_ACTIONS.map((action) => {
-            const count = rival.deck.filter((card) => card === action).length;
-            return (
-              <tr
-                key={action}
-                className={`border-ink/15 border-b-2 border-dashed align-top ${count === 0 ? "text-ink-soft" : ""}`}
-              >
-                <th scope="row" className="w-14 py-1.5 pr-2 font-extrabold">
-                  {ACTION_LABELS[action]}
-                </th>
-                <td className="w-12 py-1.5 pr-2 whitespace-nowrap tabular-nums">
-                  {count === 0 ? "none" : `×${count}`}
-                </td>
-                <td className="py-1.5 leading-snug">
-                  {actionText(rival, action)}
-                </td>
-              </tr>
-            );
-          })}
+          {DIFFICULTY_LIST.map((tier) => (
+            <tr
+              key={tier.id}
+              className="border-ink/15 border-b-2 border-dashed align-top"
+            >
+              <th scope="row" className="w-16 py-1.5 pr-2 font-extrabold">
+                {tier.name}
+              </th>
+              <td className="py-1.5 leading-snug tabular-nums">
+                Plays at level {rivalLevel(match - 1, tier.id) + 1} of{" "}
+                {LEVEL_COUNT}
+              </td>
+            </tr>
+          ))}
         </tbody>
       </table>
 
-      <p className="text-xs">
-        {rival.goalEdge > 0
-          ? `Head start on every round goal: ${rival.goalEdge}.`
-          : "No head start on round goals."}
+      <p className="text-xs leading-snug">
+        A {CLANS[rival.theme].name} deck of {15 + match} cards, built around{" "}
+        {ELEMENT_LABELS[rival.theme]} cats. Holds the{" "}
+        {rivalRelics(rivalId)
+          .map((id) => getRelic(id).name)
+          .join(" and ")}{" "}
+        and no other relic. No head start.
       </p>
     </article>
   );

@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import { advance, openMatch } from "../duel";
 import {
-  applyDuel,
-  createDuel,
-  duelActions,
+  applyAction,
+  createMatch,
+  legalActions,
   type Action,
-  type DuelConfig,
-  type DuelState,
+  type MatchConfig,
+  type MatchState,
 } from "../match";
 import { GAUNTLET } from "../rival";
 import { rivalDeck } from "../rivalDecks";
 import { createRng } from "../rng";
 import { CLANS, starterDeck } from "../run";
 import { CAT_LIST } from "../cats";
-import { playDuel } from "./arena";
+import { playMatch } from "./arena";
 import { NEUTRAL, TILT_LIMIT } from "./eval";
 import { meter } from "./fork";
 import { act, rivalPolicy, standIn } from "./index";
@@ -27,7 +27,7 @@ const POOL = CAT_LIST.map((cat) => cat.id);
 /** The match a run has at `matchIndex` on the tier that adds `rank`. */
 function gauntletMatch(matchIndex: number, rank: number, seed: string) {
   const rivalId = GAUNTLET[matchIndex] ?? "alley-tom";
-  const config: DuelConfig = {
+  const config: MatchConfig = {
     seed,
     rivalId,
     level: matchIndex + rank,
@@ -38,13 +38,13 @@ function gauntletMatch(matchIndex: number, rank: number, seed: string) {
 }
 
 /** Positions from all through a match played at random. */
-function positions(seed: string, every = 1): DuelState[] {
+function positions(seed: string, every = 1): MatchState[] {
   const rng = createRng(`${seed}:walk`);
-  const seen: DuelState[] = [];
-  let state = createDuel(gauntletMatch(3, 0, seed));
+  const seen: MatchState[] = [];
+  let state = createMatch(gauntletMatch(3, 0, seed));
   for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
     if (guard % every === 0) seen.push(state);
-    state = applyDuel(state, rng.pick(duelActions(state))).state;
+    state = applyAction(state, rng.pick(legalActions(state))).state;
   }
   return seen;
 }
@@ -78,7 +78,7 @@ describe("levels", () => {
     for (let level = 0; level <= TOP_LEVEL; level++) {
       const bot = botAt(level, styleOf("dockside-twins"));
       for (const state of positions(`legal-${level}`, 4)) {
-        expect(() => applyDuel(state, act(state, bot))).not.toThrow();
+        expect(() => applyAction(state, act(state, bot))).not.toThrow();
       }
     }
   });
@@ -106,7 +106,7 @@ describe("level 0", () => {
   it("plays a cat whenever it can pay for one", () => {
     for (const state of positions("rote-plays")) {
       if (state.phase !== "turn") continue;
-      const playable = duelActions(state).some((a) => a.type === "play");
+      const playable = legalActions(state).some((a) => a.type === "play");
       const action = act(state, rote);
       expect(action.type === "play").toBe(playable);
     }
@@ -137,11 +137,13 @@ describe("styles", () => {
     }
   });
 
-  it("give every rival of the gauntlet a line of its own", () => {
-    const lines = GAUNTLET.map((rivalId) => STYLES[rivalId]?.line);
-    expect(lines.every((line) => line && line.length > 0)).toBe(true);
-    expect(new Set(lines).size).toBe(GAUNTLET.length);
+  it("give every rival of the gauntlet a manner, and the last one none", () => {
+    for (const rivalId of GAUNTLET) expect(STYLES).toHaveProperty(rivalId);
     expect(STYLES["old-nine-lives"]?.weights).toEqual(NEUTRAL);
+    const tilted = GAUNTLET.filter(
+      (id) => JSON.stringify(STYLES[id]?.weights) !== JSON.stringify(NEUTRAL),
+    );
+    expect(tilted).toHaveLength(5);
   });
 });
 
@@ -155,7 +157,7 @@ describe("the rival of a run", () => {
         const rng = createRng(`${seed}:player`);
         let { state } = openMatch(config, rivalPolicy);
         for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
-          const pick = duelActions(state).filter((a) => a.type !== "reroll");
+          const pick = legalActions(state).filter((a) => a.type !== "reroll");
           state = advance(state, rng.pick(pick), rivalPolicy).state;
         }
         expect(state.phase).toBe("over");
@@ -170,6 +172,6 @@ describe("the rival of a run", () => {
       player: standIn(1),
       rival: botAt(3, styleOf(config.rivalId)),
     };
-    expect(playDuel(config, bots)).toEqual(playDuel(config, bots));
+    expect(playMatch(config, bots)).toEqual(playMatch(config, bots));
   });
 });

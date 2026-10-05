@@ -1,19 +1,26 @@
 /**
- * The match engine: one game against one rival.
+ * The match engine: one game between the player and a rival.
  *
- * A match is a state machine over plain JSON. `applyAction` never mutates its
- * input; it returns the next state plus the events that happened, in order,
- * for the client to animate. All randomness comes from an RNG seeded by
- * `${seed}:${step}`, so a state and an action always give the same result.
+ * Both seats own a board, a hand, a deck, a tray and food. They share the
+ * feeder and the round goals, and take the same actions under the same
+ * rules. A match is a state machine over plain JSON. `applyAction` never
+ * mutates its input; it returns the next state plus the events that
+ * happened, in order, for the client to animate. All randomness comes from
+ * an RNG seeded by `${seed}:${step}`, so a state and an action always give
+ * the same result. The reducer applies one action for whoever is to act and
+ * knows nothing of what decides it: a person, a bot or a test.
  *
  * Phases
- *   setup    the player keeps 5 of the 5 cats and 5 essence they were dealt
- *   turn     the player takes one action (reroll is free)
- *   pending  a power is waiting on a player choice
+ *   setup    the rival keeps its opening hand, then the player keeps theirs
+ *   turn     the seats alternate, the round's leader first; each takes 5, 4
+ *            and 3 turns in the three rounds, and the lead changes hands
+ *            every round, the player leading the first (a reroll is free)
+ *   pending  a power of the acting seat is waiting on its choice
  *   over     the result is final
  *
- * After every player turn the rival flips one card. After the last turn of a
- * round, end-of-round powers fire and the round's goal is scored.
+ * After a seat's turn the other seat's "between turns" powers react to what
+ * it did. After the last turn of a round, end-of-round powers fire on both
+ * boards and the goal is scored on both sides' real counts.
  */
 
 import {
@@ -23,14 +30,12 @@ import {
   type Aura,
   type CostPip,
   type Effect,
-  type RivalAction,
   type Row,
+  type Watched,
 } from "./cats";
-import { difficultyOf, type DifficultyId } from "./difficulty";
 import { ELEMENTS, type Element } from "./elements";
 import { GOAL_IDS, getGoal } from "./goals";
 import { combineMods, relicScore, type Mods } from "./relics";
-import { getRival } from "./rival";
 import { createRng, type Rng } from "./rng";
 
 export const SLOTS = 4;
@@ -101,23 +106,6 @@ export interface ScoreBreakdown {
   total: number;
 }
 
-export interface MatchResult {
-  player: ScoreBreakdown;
-  rival: number;
-  won: boolean;
-}
-
-export interface RivalState {
-  deck: RivalAction[];
-  discard: RivalAction[];
-  banked: number;
-  yarn: number;
-  /** Goal pushes made this round. */
-  pushes: number;
-  goalPoints: number;
-  last: RivalAction | null;
-}
-
 export type MatchPhase = "setup" | "turn" | "pending" | "over";
 
 export const SIDES = ["player", "rival"] as const;
@@ -154,18 +142,6 @@ export interface Table {
   /** Powers still to fire in the current activation. */
   queue: SlotRef[];
   pending: Pending | null;
-}
-
-/**
- * A match against the scripted rival: one seat and its table laid flat, plus
- * the rival's card deck and counters.
- */
-export interface MatchState extends Side, Table {
-  seed: string;
-  step: number;
-  rivalId: string;
-  rival: RivalState;
-  result: MatchResult | null;
 }
 
 export type Action =
@@ -212,17 +188,6 @@ export type TurnEvent =
   | { type: "aura"; catId: string; row: Row; col: number }
   | { type: "feeder"; faces: Essence[] };
 
-export type MatchEvent =
-  | TurnEvent
-  | { type: "rival"; action: RivalAction; removed: string[] }
-  | ({ type: "goal"; round: number } & GoalResult)
-  | { type: "over"; won: boolean; player: number; rival: number };
-
-export interface ActionResult {
-  state: MatchState;
-  events: MatchEvent[];
-}
-
 export class IllegalAction extends Error {
   constructor(message: string) {
     super(message);
@@ -248,62 +213,12 @@ interface Ctx {
   onRoll?: () => void;
 }
 
-export interface MatchConfig {
-  seed: string;
-  /** Cat ids; shuffled here. Needs at least 8 cards. */
-  deck: readonly string[];
-  relics: readonly string[];
-  rivalId: string;
-  /** The run's tier; its mods are laid over the relics'. Kitten if left out. */
-  difficulty?: DifficultyId;
-}
-
 export function emptyPool(): EssencePool {
   return { flame: 0, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 };
 }
 
 function rollDice(rng: Rng): Essence[] {
   return Array.from({ length: FEEDER_DICE }, () => rng.pick(ESSENCES));
-}
-
-export function createMatch(config: MatchConfig): MatchState {
-  const rng = createRng(`${config.seed}:0`);
-  const deck = rng.shuffle(config.deck);
-  const setup = deck.splice(0, SETUP_CATS);
-  const tray = deck.splice(0, TRAY_SIZE);
-  const mods = combineMods(config.relics, difficultyOf(config.difficulty).mods);
-  return {
-    seed: config.seed,
-    step: 0,
-    rivalId: config.rivalId,
-    relics: [...config.relics],
-    mods,
-    phase: "setup",
-    round: 0,
-    turnsLeft: 0,
-    board: { hunt: [], den: [], prowl: [] },
-    hand: [],
-    deck,
-    discard: [],
-    tray,
-    setup,
-    essence: emptyPool(),
-    feeder: rollDice(rng),
-    goals: rng.shuffle(GOAL_IDS).slice(0, ROUND_TURNS.length),
-    goalResults: [],
-    rival: {
-      deck: rng.shuffle(getRival(config.rivalId).deck),
-      discard: [],
-      banked: 0,
-      yarn: mods.rivalStartYarn,
-      pushes: 0,
-      goalPoints: 0,
-      last: null,
-    },
-    queue: [],
-    pending: null,
-    result: null,
-  };
 }
 
 /* ------------------------------------------------------------- queries */
@@ -590,11 +505,6 @@ export function tradeOffered(
   }
 }
 
-/** True when `row`'s trade can be made right now. */
-export function canTrade(state: MatchState, row: Row): boolean {
-  return state.phase === "turn" && tradeOffered(state, state.feeder, row);
-}
-
 /**
  * The food a Den trade spends when nobody chooses: what the hand needs
  * least, and a Treat only when there is nothing else.
@@ -632,13 +542,6 @@ export function richestSlot(board: Board): SlotRef | null {
   return best;
 }
 
-export function rivalBankValue(state: MatchState): number {
-  return Math.max(
-    1,
-    getRival(state.rivalId).bankPoints + state.mods.rivalBankDelta,
-  );
-}
-
 /**
  * What a board scores. It takes the three things a score is made of and not
  * the whole state, so the client can score a board it has rebuilt. `who` says
@@ -668,43 +571,6 @@ export function scoreBoard(
     goals,
     relics,
     total: cats + yarn + cached + tucked + goals + relics,
-  };
-}
-
-export function playerScore(state: MatchState): ScoreBreakdown {
-  return scoreBoard(state.board, state.goalResults, state.relics);
-}
-
-export function rivalScore(state: MatchState): number {
-  const { banked, yarn, goalPoints } = state.rival;
-  return banked * rivalBankValue(state) + yarn + goalPoints;
-}
-
-/**
- * The current round's goal as it would score right now: the player's count
- * against the rival's tally (par, plus its edge, plus this round's pushes).
- * A player with nothing towards the goal scores nothing.
- */
-export function goalStanding(state: MatchState): GoalResult | null {
-  const goalId = state.goals[state.round];
-  if (!goalId || state.phase === "over") return null;
-  const goal = getGoal(goalId);
-  const base = goal.count(state);
-  const player = base > 0 ? base + state.mods.goalBonus : 0;
-  const rival =
-    (goal.par[state.round] ?? 0) +
-    getRival(state.rivalId).goalEdge +
-    state.rival.pushes;
-  const win = GOAL_WIN_POINTS[state.round] ?? 0;
-  const lose = GOAL_LOSE_POINTS[state.round] ?? 0;
-  const split = Math.floor((win + lose) / 2);
-  return {
-    goalId,
-    player,
-    rival,
-    playerPoints:
-      player === 0 ? 0 : player > rival ? win : player < rival ? lose : split,
-    rivalPoints: player > rival ? lose : player < rival ? win : split,
   };
 }
 
@@ -1128,139 +994,6 @@ function endTurn(ctx: Ctx): void {
   ctx.side.turnsLeft -= 1;
 }
 
-/* ------------------------------------------------- the scripted rival */
-
-function rivalTurn(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
-  const rival = getRival(s.rivalId);
-  const r = s.rival;
-  if (r.deck.length === 0) {
-    r.deck = ctx.rng.shuffle(r.discard);
-    r.discard = [];
-  }
-  const card = r.deck.shift();
-  if (!card) return;
-  r.discard.push(card);
-  r.last = card;
-
-  const removed: string[] = [];
-  switch (card) {
-    case "bank":
-      r.banked += 1;
-      break;
-    case "stash":
-      r.yarn += rival.stashYarn;
-      break;
-    case "raid":
-      for (let i = 0; i < rival.raidDice && s.feeder.length > 0; i++) {
-        const [face] = s.feeder.splice(ctx.rng.int(0, s.feeder.length - 1), 1);
-        if (face) removed.push(face);
-      }
-      break;
-    case "burn":
-      for (let i = 0; i < rival.burnCards && s.tray.length > 0; i++) {
-        const best = s.tray.reduce(
-          (top, catId, index) =>
-            getCat(catId).points > getCat(s.tray[top] ?? catId).points
-              ? index
-              : top,
-          0,
-        );
-        const [burned] = s.tray.splice(best, 1);
-        if (burned) {
-          s.discard.push(burned);
-          removed.push(burned);
-        }
-      }
-      break;
-    case "push":
-      r.pushes += 1;
-      break;
-  }
-  events.push({ type: "rival", action: card, removed });
-  if (s.feeder.length === 0) rollFeeder(ctx);
-  refillTray(ctx);
-
-  fireTimed(
-    ctx,
-    (cat) =>
-      cat.power?.timing === "between" &&
-      (cat.power.on === "any" || cat.power.on === card),
-  );
-}
-
-function endRound(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
-  fireTimed(ctx, (cat) => cat.power?.timing === "roundEnd");
-
-  const result = goalStanding(s);
-  if (result) {
-    s.goalResults.push(result);
-    s.rival.goalPoints += result.rivalPoints;
-    events.push({ type: "goal", round: s.round, ...result });
-  }
-  s.rival.pushes = 0;
-
-  s.round += 1;
-  const turns = ROUND_TURNS[s.round];
-  if (turns !== undefined) {
-    s.turnsLeft = turns;
-    return;
-  }
-  const player = playerScore(s);
-  const rival = rivalScore(s);
-  s.phase = "over";
-  s.result = { player, rival, won: player.total > rival };
-  events.push({
-    type: "over",
-    won: s.result.won,
-    player: player.total,
-    rival,
-  });
-}
-
-/** Finishes the action: once no choice is pending, hand the turn to the rival. */
-function settle(s: MatchState, ctx: Ctx, events: MatchEvent[]): void {
-  if (s.pending) {
-    s.phase = "pending";
-    return;
-  }
-  s.phase = "turn";
-  endTurn(ctx);
-  rivalTurn(s, ctx, events);
-  if (s.turnsLeft <= 0) endRound(s, ctx, events);
-}
-
-export function applyAction(state: MatchState, action: Action): ActionResult {
-  const s = structuredClone(state);
-  s.step += 1;
-  const events: MatchEvent[] = [];
-  // The one seat and its table are the same object here.
-  const ctx: Ctx = {
-    t: s,
-    side: s,
-    rng: createRng(`${s.seed}:${s.step}`),
-    emit: (event) => events.push(event),
-  };
-
-  if (s.phase === "over") fail("The match is over.");
-  if (s.phase === "setup") {
-    if (action.type !== "keep") fail("Choose what to keep first.");
-    keep(ctx, action);
-    s.phase = "turn";
-    s.round = 0;
-    s.turnsLeft = ROUND_TURNS[0] + s.mods.extraTurns;
-    return { state: s, events };
-  }
-  if (s.phase === "pending") {
-    if (action.type !== "resolve") fail("Answer the pending choice first.");
-    resolve(ctx, action.choice);
-    drain(ctx);
-    settle(s, ctx, events);
-    return { state: s, events };
-  }
-  if (takeTurn(ctx, action)) settle(s, ctx, events);
-  return { state: s, events };
-}
-
 /* ------------------------------------------------------- legal actions */
 
 /** Every way to choose `k` of the indices `0..n-1`. */
@@ -1392,31 +1125,7 @@ export function seatActions(
   return actions;
 }
 
-/** The actions available now in a match against the scripted rival. */
-export function legalActions(state: MatchState): Action[] {
-  return seatActions(state, state);
-}
-
-/* ------------------------------------------------------ the two seats */
-
-/*
- * The same game with a second seat in place of the scripted rival. Both
- * sides own a board, a hand, a deck, a tray and food, share the feeder and
- * the round goals, and take the same actions under the same rules. The
- * reducer applies one action for whoever is to act and knows nothing of what
- * decides it: a person, a bot or a test.
- *
- *   setup    the rival keeps its opening hand, then the player keeps theirs
- *   turn     the seats alternate, the round's leader first; each takes 5, 4
- *            and 3 turns in the three rounds, and the lead changes hands
- *            every round, the player leading the first
- *   pending  a power of the acting seat is waiting on its choice
- *   over     the result is final
- *
- * After a seat's turn the other seat's "between turns" powers react to what
- * it did. After the last turn of a round, end-of-round powers fire on both
- * boards and the goal is scored on both sides' real counts.
- */
+/* ---------------------------------------------------------- the match */
 
 /**
  * What a seat did, as far as the other seat may see: the cats it drew from
@@ -1433,7 +1142,7 @@ export type Move =
 /** A move that is a seat's whole turn. */
 export type TurnMove = Exclude<Move, { type: "reroll" | "resolve" }>;
 
-export type DuelEvent =
+export type MatchEvent =
   | (Exclude<TurnEvent, { type: "feeder" }> & { side: SideId })
   | { type: "move"; side: SideId; move: Move }
   | { type: "feeder"; faces: Essence[] }
@@ -1454,7 +1163,7 @@ export type DuelEvent =
  */
 export type Tiebreak = "food" | "cats" | "seat";
 
-export interface DuelResult {
+export interface MatchResult {
   player: ScoreBreakdown;
   rival: ScoreBreakdown;
   won: boolean;
@@ -1462,7 +1171,7 @@ export interface DuelResult {
   tiebreak: Tiebreak | null;
 }
 
-export interface DuelState extends Table {
+export interface MatchState extends Table {
   v: 2;
   seed: string;
   step: number;
@@ -1476,7 +1185,7 @@ export interface DuelState extends Table {
   lead: SideId;
   /** The last whole turn each seat took. */
   last: Record<SideId, TurnMove | null>;
-  result: DuelResult | null;
+  result: MatchResult | null;
 }
 
 export interface SeatConfig {
@@ -1485,7 +1194,7 @@ export interface SeatConfig {
   relics: readonly string[];
 }
 
-export interface DuelConfig {
+export interface MatchConfig {
   seed: string;
   rivalId: string;
   level: number;
@@ -1493,9 +1202,9 @@ export interface DuelConfig {
   rival: SeatConfig;
 }
 
-export interface DuelActionResult {
-  state: DuelState;
-  events: DuelEvent[];
+export interface ActionResult {
+  state: MatchState;
+  events: MatchEvent[];
 }
 
 function dealSeat(config: SeatConfig, rng: Rng): Side {
@@ -1516,7 +1225,7 @@ function dealSeat(config: SeatConfig, rng: Rng): Side {
   };
 }
 
-export function createDuel(config: DuelConfig): DuelState {
+export function createMatch(config: MatchConfig): MatchState {
   const rng = createRng(`${config.seed}:0`);
   return {
     v: 2,
@@ -1545,11 +1254,11 @@ export function createDuel(config: DuelConfig): DuelState {
 }
 
 /** The seat whose action is awaited. */
-export function activeSide(state: DuelState): Side {
+export function activeSide(state: MatchState): Side {
   return state.sides[state.active];
 }
 
-export function duelScore(state: DuelState, who: SideId): ScoreBreakdown {
+export function sideScore(state: MatchState, who: SideId): ScoreBreakdown {
   const side = state.sides[who];
   return scoreBoard(side.board, state.goalResults, side.relics, who);
 }
@@ -1564,7 +1273,7 @@ function goalCount(side: Side, goalId: string): number {
  * The current round's goal as it would score right now, each side's real
  * count against the other's. A side with nothing towards it scores nothing.
  */
-export function duelStanding(state: DuelState): GoalResult | null {
+export function goalStanding(state: MatchState): GoalResult | null {
   const goalId = state.goals[state.round];
   if (!goalId || state.phase === "over") return null;
   const player = goalCount(state.sides.player, goalId);
@@ -1583,16 +1292,9 @@ export function duelStanding(state: DuelState): GoalResult | null {
   };
 }
 
-/** The rows a "between turns" power answers to, by what the old cards said. */
-const REACTS_TO: Partial<Record<RivalAction | "any", TurnMove["type"]>> = {
-  raid: "hunt",
-  bank: "den",
-  burn: "prowl",
-};
-
 /** True if a "between turns" power fires when the other seat makes `move`. */
-export function reactsTo(on: RivalAction | "any", move: TurnMove["type"]) {
-  return on === "any" || REACTS_TO[on] === move;
+export function reactsTo(on: Watched, move: TurnMove["type"]): boolean {
+  return on === "any" || on === move;
 }
 
 /** The public face of an action, read before it is applied. */
@@ -1645,12 +1347,12 @@ function moveOf(t: Table, side: Side, action: Action): Move | null {
   }
 }
 
-/** A context for one seat of a duel; its events carry the seat's name. */
+/** A context for one seat; its events carry the seat's name. */
 function seatCtx(
-  s: DuelState,
+  s: MatchState,
   who: SideId,
   rng: Rng,
-  events: DuelEvent[] | null,
+  events: MatchEvent[] | null,
 ): Ctx {
   return {
     t: s,
@@ -1683,10 +1385,10 @@ export function foodLeft(side: Pick<Side, "essence">): number {
  * its board; a match level on all three goes to the player.
  */
 function verdict(
-  s: DuelState,
+  s: MatchState,
   player: number,
   rival: number,
-): Pick<DuelResult, "won" | "tiebreak"> {
+): Pick<MatchResult, "won" | "tiebreak"> {
   if (player !== rival) return { won: player > rival, tiebreak: null };
   const { player: mine, rival: theirs } = s.sides;
   const food = foodLeft(mine) - foodLeft(theirs);
@@ -1696,7 +1398,7 @@ function verdict(
   return { won: true, tiebreak: "seat" };
 }
 
-function startRound(s: DuelState): void {
+function startRound(s: MatchState): void {
   for (const who of SIDES) {
     const side = s.sides[who];
     side.turnsLeft =
@@ -1706,7 +1408,7 @@ function startRound(s: DuelState): void {
   s.active = s.sides[s.lead].turnsLeft > 0 ? s.lead : otherSide(s.lead);
 }
 
-function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
+function endRound(s: MatchState, rng: Rng, events: MatchEvent[] | null) {
   // End-of-round powers, the round's leader first.
   for (const who of [s.lead, otherSide(s.lead)]) {
     fireTimed(
@@ -1714,7 +1416,7 @@ function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
       (cat) => cat.power?.timing === "roundEnd",
     );
   }
-  const result = duelStanding(s);
+  const result = goalStanding(s);
   if (result) {
     s.goalResults.push(result);
     events?.push({ type: "goal", round: s.round, ...result });
@@ -1726,8 +1428,8 @@ function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
     startRound(s);
     return;
   }
-  const player = duelScore(s, "player");
-  const rival = duelScore(s, "rival");
+  const player = sideScore(s, "player");
+  const rival = sideScore(s, "rival");
   s.phase = "over";
   s.result = { player, rival, ...verdict(s, player.total, rival.total) };
   events?.push({
@@ -1740,15 +1442,15 @@ function endDuelRound(s: DuelState, rng: Rng, events: DuelEvent[] | null) {
 }
 
 /**
- * Applies one action for the acting seat, in place. `applyDuel` is the safe
+ * Applies one action for the acting seat, in place. `applyAction` is the safe
  * way in; this is for callers that own the state they pass, such as a bot
  * playing a position out. An illegal action throws and leaves the state
  * half changed. Pass `null` for `events` to skip collecting them.
  */
-export function stepDuel(
-  s: DuelState,
+export function stepMatch(
+  s: MatchState,
   action: Action,
-  events: DuelEvent[] | null = null,
+  events: MatchEvent[] | null = null,
 ): void {
   if (s.phase === "over") fail("The match is over.");
   s.step += 1;
@@ -1798,17 +1500,17 @@ export function stepDuel(
   }
 
   if (s.sides[other].turnsLeft > 0) s.active = other;
-  else if (s.sides[who].turnsLeft <= 0) endDuelRound(s, rng, events);
+  else if (s.sides[who].turnsLeft <= 0) endRound(s, rng, events);
 }
 
-export function applyDuel(state: DuelState, action: Action): DuelActionResult {
+export function applyAction(state: MatchState, action: Action): ActionResult {
   const s = structuredClone(state);
-  const events: DuelEvent[] = [];
-  stepDuel(s, action, events);
+  const events: MatchEvent[] = [];
+  stepMatch(s, action, events);
   return { state: s, events };
 }
 
 /** The actions the acting seat has now. */
-export function duelActions(state: DuelState): Action[] {
+export function legalActions(state: MatchState): Action[] {
   return seatActions(state, activeSide(state));
 }

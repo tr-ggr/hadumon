@@ -16,18 +16,11 @@ export interface Mods {
   prowlBonus: number;
   /** Yarn taken off every column cost, never below zero. */
   yarnDiscount: number;
-  /** Added to the points of each cat the rival banks (negative helps you). */
-  rivalBankDelta: number;
   /** Added to your count on every round goal you have at least 1 of. */
   goalBonus: number;
   /** Extra turns in the first round. */
   extraTurns: number;
-  /** Yarn the rival holds when a match starts, a point each. */
-  rivalStartYarn: number;
-  /**
-   * Treats gained whenever the feeder is rolled again. Only the two-seat
-   * game reads it; against the scripted rival it does nothing.
-   */
+  /** Treats gained whenever the feeder is rolled again, whoever emptied it. */
   refillTreat: number;
 }
 
@@ -37,10 +30,8 @@ export const NO_MODS: Mods = {
   denBonus: 0,
   prowlBonus: 0,
   yarnDiscount: 0,
-  rivalBankDelta: 0,
   goalBonus: 0,
   extraTurns: 0,
-  rivalStartYarn: 0,
   refillTreat: 0,
 };
 
@@ -119,9 +110,8 @@ export const RELICS: Record<string, Relic> = Object.fromEntries(
       {
         id: "loud-bell",
         name: "Loud Bell",
-        text: "Each cat the rival banks is worth 1 less.",
-        // The second is its effect at a table with two seats.
-        mods: { rivalBankDelta: -1, refillTreat: 1 },
+        text: "Whenever the feeder is refilled, gain 1 Treat.",
+        mods: { refillTreat: 1 },
       },
       {
         id: "hoarders-basket",
@@ -147,7 +137,7 @@ export function getRelic(relicId: string): Relic {
   return relic;
 }
 
-/** The relics' mods summed, with `extra` (a difficulty's, say) laid on top. */
+/** The relics' mods summed, with `extra` laid on top. */
 export function combineMods(
   relicIds: readonly string[],
   extra: Partial<Mods> = {},

@@ -14,7 +14,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import {
   emptyTally,
   faceOff,
-  playDuel,
+  playMatch,
   playGauntlet,
   type GauntletConfig,
   record,
@@ -35,8 +35,8 @@ import { ELEMENTS } from "~/server/game/elements";
 import {
   ESSENCES,
   placedCats,
-  type DuelConfig,
-  type DuelState,
+  type MatchConfig,
+  type MatchState,
   type SideId,
 } from "~/server/game/match";
 import { RELIC_LIST } from "~/server/game/relics";
@@ -63,7 +63,7 @@ const round = (n: number, places = 3) => Number(n.toFixed(places));
 const elementAt = (i: number) => ELEMENTS[i % ELEMENTS.length] ?? "flame";
 
 /** A plain match on two starter decks. */
-function plain(seed: string, game: number, relics: string[] = []): DuelConfig {
+function plain(seed: string, game: number, relics: string[] = []): MatchConfig {
   return {
     seed,
     rivalId: "",
@@ -131,9 +131,9 @@ const planned = () => climb(PLANNED, "planned");
 
 /* -------------------------------------------------------------- seats */
 
-const food = (state: DuelState, who: SideId) =>
+const food = (state: MatchState, who: SideId) =>
   ESSENCES.reduce((sum, kind) => sum + state.sides[who].essence[kind], 0);
-const cats = (state: DuelState, who: SideId) =>
+const cats = (state: MatchState, who: SideId) =>
   placedCats(state.sides[who].board).length;
 
 /**
@@ -149,7 +149,7 @@ function seats() {
     const left = { food: 0, cats: 0, foodThenCats: 0 };
     const games = pairsFor(level) * 2;
     for (let game = 0; game < games; game++) {
-      const state = playDuel(plain(`seats-${level}-${game}`, game), {
+      const state = playMatch(plain(`seats-${level}-${game}`, game), {
         player: bot,
         rival: bot,
       });
@@ -203,7 +203,7 @@ function relics() {
     const tally = emptyTally();
     for (let game = 0; game < games; game++) {
       const config = plain(`relic-${game}`, clan ?? game, held);
-      record(tally, playDuel(config, { player: bot, rival: bot }), "player");
+      record(tally, playMatch(config, { player: bot, rival: bot }), "player");
     }
     return { label, ...report(tally) };
   };
@@ -327,16 +327,16 @@ function gauntlet() {
 
 /**
  * The same runs under rules the game does not have, to show what each would
- * do to the table above: every rival two levels up, a rival that holds its
- * clan's charm as the player does, and a rival that holds relics on the
- * player's whole budget (the charm, and one more after matches 1, 3 and 5).
+ * do to the table above: every rival two levels up, a rival with no relic at
+ * all, and a rival that holds relics on the player's whole budget (its
+ * charm, and one more after matches 1, 3 and 5).
  */
 function whatIf() {
   const extra = ["bent-whisker", "ball-of-twine", "night-map"];
   const charm = (rivalId: string) => CLANS[themeOf(rivalId)].relicId;
   const variants: Record<string, WhatIf> = {
     twoLevelsUp: { levelShift: 2 },
-    rivalCharm: { rivalRelics: (rivalId) => [charm(rivalId)] },
+    noRivalRelics: { rivalRelics: () => [] },
     rivalRelics: {
       rivalRelics: (rivalId, matchIndex) => [
         charm(rivalId),

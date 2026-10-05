@@ -17,7 +17,7 @@ import {
   rowReward,
   SETUP_KEEP,
   type Action,
-  type DuelState,
+  type MatchState,
   type Essence,
   type Side,
 } from "../match";
@@ -111,7 +111,7 @@ export function quickKeep(setup: readonly string[]): Action {
 }
 
 /** A sensible move for whoever is to act on `state`, found without trying any. */
-export function quickMove(state: DuelState): Action {
+export function quickMove(state: MatchState): Action {
   const who = state.active;
   const side = state.sides[who];
   if (state.phase === "setup") return quickKeep(side.setup);

@@ -1,24 +1,24 @@
 /**
- * What the client is allowed to see. The stored state holds the deck order,
- * the rival's deck and the seed; none of them may leave the server. The view
+ * What the client is allowed to see. The stored state holds both decks in
+ * order, the rival's hand and the seed; none of them may leave the server.
+ * The player's own seat is laid flat on the view, as the table shows it, and
+ * the rival's seat is the part of it that shows across the table. The view
  * also carries the few derived facts the UI needs to offer legal moves, so
  * the client never has to run the engine on state it does not have.
  */
 
-import { ROWS, type RivalAction, type Row } from "./cats";
+import { ROWS, type Row } from "./cats";
 import { difficultyOf, type DifficultyId } from "./difficulty";
 import {
   canPlay,
   canReroll,
-  canTrade,
   columnYarnCost,
   goalStanding,
-  playerScore,
   prowlPickCount,
-  rivalBankValue,
-  rivalScore,
   rowReward,
+  sideScore,
   SLOTS,
+  tradeOffered,
   type Board,
   type Essence,
   type EssencePool,
@@ -28,6 +28,8 @@ import {
   type MatchState,
   type Pending,
   type ScoreBreakdown,
+  type SideId,
+  type TurnMove,
 } from "./match";
 import type { Mods } from "./relics";
 import { GAUNTLET } from "./rival";
@@ -40,17 +42,31 @@ import type {
 } from "./run";
 import type { Element } from "./elements";
 
+/** The rival's seat, as far as it shows across the table. */
 export interface RivalView {
-  banked: number;
-  bankValue: number;
-  yarn: number;
-  pushes: number;
-  goalPoints: number;
-  score: number;
-  last: RivalAction | null;
-  /** Cards already flipped since the rival last shuffled. */
-  seen: RivalAction[];
+  /** How well it plays, 0 the least. */
+  level: number;
+  /** Its cats, with the ones tucked under them counted and not named. */
+  board: Board;
+  tray: string[];
+  essence: EssencePool;
+  relics: string[];
+  handCount: number;
   deckCount: number;
+  discardCount: number;
+  turnsLeft: number;
+  score: ScoreBreakdown;
+  /** The last whole turn it took. */
+  last: TurnMove | null;
+}
+
+/**
+ * The shared table after one of the rival's actions, for a turn's playback
+ * to stop at on its way to the finished view.
+ */
+export interface RivalBeat {
+  rival: RivalView;
+  feeder: Essence[];
 }
 
 export interface MatchView {
@@ -58,7 +74,10 @@ export interface MatchView {
   rivalId: string;
   phase: MatchPhase;
   round: number;
+  /** Turns the player still has this round. */
   turnsLeft: number;
+  /** Who takes the first turn of this round. */
+  lead: SideId;
   board: Board;
   hand: string[];
   tray: string[];
@@ -113,53 +132,80 @@ function byRow<T>(fn: (row: Row) => T): Record<Row, T> {
   return { hunt: fn("hunt"), den: fn("den"), prowl: fn("prowl") };
 }
 
+/** A board with its tucked cats turned face down. */
+function faceDown(board: Board): Board {
+  return byRow((row) =>
+    board[row].map(({ catId, yarn, cached, tucked }) => ({
+      catId,
+      yarn,
+      cached,
+      tucked,
+    })),
+  );
+}
+
+export function toRivalView(state: MatchState): RivalView {
+  const rival = state.sides.rival;
+  return {
+    level: state.level,
+    board: faceDown(rival.board),
+    tray: rival.tray,
+    essence: rival.essence,
+    relics: rival.relics,
+    handCount: rival.hand.length + rival.setup.length,
+    deckCount: rival.deck.length,
+    discardCount: rival.discard.length,
+    turnsLeft: rival.turnsLeft,
+    score: sideScore(state, "rival"),
+    last: state.last.rival,
+  };
+}
+
+export function toRivalBeat(state: MatchState): RivalBeat {
+  return { rival: toRivalView(state), feeder: state.feeder };
+}
+
 export function toMatchView(state: MatchState): MatchView {
-  const turn = state.phase === "turn";
+  const player = state.sides.player;
+  // The driver hands the match back only when the player is to act.
+  const mine = state.active === "player";
+  const turn = mine && state.phase === "turn";
   return {
     step: state.step,
     rivalId: state.rivalId,
     phase: state.phase,
     round: state.round,
-    turnsLeft: state.turnsLeft,
-    board: state.board,
-    hand: state.hand,
-    tray: state.tray,
-    setup: state.setup,
-    essence: state.essence,
+    turnsLeft: player.turnsLeft,
+    lead: state.lead,
+    board: player.board,
+    hand: player.hand,
+    tray: player.tray,
+    setup: player.setup,
+    essence: player.essence,
     feeder: state.feeder,
     goals: state.goals,
     goalResults: state.goalResults,
-    pending: state.pending,
+    pending: mine ? state.pending : null,
     result: state.result,
-    mods: state.mods,
-    relics: state.relics,
-    deckCount: state.deck.length,
-    discardCount: state.discard.length,
-    rival: {
-      banked: state.rival.banked,
-      bankValue: rivalBankValue(state),
-      yarn: state.rival.yarn,
-      pushes: state.rival.pushes,
-      goalPoints: state.rival.goalPoints,
-      score: rivalScore(state),
-      last: state.rival.last,
-      seen: state.rival.discard,
-      deckCount: state.rival.deck.length,
-    },
-    score: playerScore(state),
+    mods: player.mods,
+    relics: player.relics,
+    deckCount: player.deck.length,
+    discardCount: player.discard.length,
+    rival: toRivalView(state),
+    score: sideScore(state, "player"),
     standing: goalStanding(state),
-    rewards: byRow((row) => rowReward(state, row)),
+    rewards: byRow((row) => rowReward(player, row)),
     yarnCosts: byRow((row) =>
-      state.board[row].length >= SLOTS
+      player.board[row].length >= SLOTS
         ? null
-        : columnYarnCost(state.mods, state.board[row].length),
+        : columnYarnCost(player.mods, player.board[row].length),
     ),
-    playable: state.hand.map((_, hand) =>
-      turn ? ROWS.filter((row) => canPlay(state, hand, row)) : [],
+    playable: player.hand.map((_, hand) =>
+      turn ? ROWS.filter((row) => canPlay(player, hand, row)) : [],
     ),
-    canReroll: canReroll(state),
-    prowlPicks: prowlPickCount(state),
-    trades: byRow((row) => canTrade(state, row)),
+    canReroll: mine && canReroll(state),
+    prowlPicks: prowlPickCount(player),
+    trades: byRow((row) => turn && tradeOffered(player, state.feeder, row)),
   };
 }
 

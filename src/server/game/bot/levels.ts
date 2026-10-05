@@ -34,7 +34,7 @@ import {
   SLOTS,
   swapOffer,
   type Action,
-  type DuelState,
+  type MatchState,
   type Essence,
   type SideId,
   type SlotRef,
@@ -287,7 +287,7 @@ function wantsReroll(seen: Observation): boolean {
 }
 
 /** More ways to make a Den or a trade than the engine lists by default. */
-function widen(state: DuelState, me: SideId, actions: Action[]): Action[] {
+function widen(state: MatchState, me: SideId, actions: Action[]): Action[] {
   const side = state.sides[me];
   const out = [...actions];
   const slots: SlotRef[] = ROWS.flatMap((row) =>
@@ -357,7 +357,7 @@ function widen(state: DuelState, me: SideId, actions: Action[]): Action[] {
 }
 
 /** The moves worth weighing for `me`, who is to act on `state`. */
-function movesFor(state: DuelState, me: SideId, wide: boolean): Action[] {
+function movesFor(state: MatchState, me: SideId, wide: boolean): Action[] {
   const listed = seatActions(state, state.sides[me]).filter(
     (action) => action.type !== "reroll",
   );
@@ -368,17 +368,17 @@ interface Thinking {
   style: Style;
   budget: Budget;
   /** Scores a table for a seat. */
-  value: (state: DuelState, who: SideId) => number;
+  value: (state: MatchState, who: SideId) => number;
 }
 
 /** Answers every choice `who` owes on `state`, each the way that looks best. */
-function settleChoices(state: DuelState, who: SideId, mind: Thinking): void {
+function settleChoices(state: MatchState, who: SideId, mind: Thinking): void {
   for (
     let guard = 0;
     guard < 8 && state.phase === "pending" && state.active === who;
     guard++
   ) {
-    let best: DuelState | null = null;
+    let best: MatchState | null = null;
     let bestValue = -Infinity;
     for (const action of movesFor(state, who, false)) {
       if (mind.budget.left <= 0 && best) break;
@@ -399,12 +399,12 @@ interface Ranked {
   action: Action;
   value: number;
   /** The table after the move, once for each deal. */
-  after: DuelState[];
+  after: MatchState[];
 }
 
 /** Every move for `me`, played on each deal and scored, best first. */
 function rank(
-  deals: readonly DuelState[],
+  deals: readonly MatchState[],
   me: SideId,
   mind: Thinking,
   wide: boolean,
@@ -421,7 +421,7 @@ function rank(
   for (const action of movesFor(first, me, wide)) {
     if (mind.budget.left <= 0 && ranked.length > 0) break;
     let total = 0;
-    const after: DuelState[] = [];
+    const after: MatchState[] = [];
     for (const deal of deals) {
       const next = fork(deal);
       tryMove(next, action, mind.budget);
@@ -576,7 +576,7 @@ function byValue(
 const WIN_MARGIN = 3;
 
 /** Plays a fork on with `quickMove` for both seats until it should stop. */
-function playOut(state: DuelState, until: Playouts["until"], budget: Budget) {
+function playOut(state: MatchState, until: Playouts["until"], budget: Budget) {
   const round = state.round;
   for (let guard = 0; guard < 80 && state.phase !== "over"; guard++) {
     if (until === "round" && state.round !== round) return;
@@ -612,7 +612,7 @@ function byPlayouts(
   if (!top) return byRote(seen);
   if (running.length === 1) return top.action;
 
-  const score = (state: DuelState): number => {
+  const score = (state: MatchState): number => {
     if (plan.by === "value") return mind.value(state, me);
     const lead = pointsLead(state, me);
     if (plan.by === "points") return lead;

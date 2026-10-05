@@ -30,7 +30,7 @@ const cue = (extra: Partial<Cue> = {}): Cue => ({
   slot: null,
   chain: 0,
   fizzled: false,
-  rivalAction: null,
+  rivalMove: null,
   won: null,
   delta: delta(),
   ...extra,
@@ -226,17 +226,16 @@ describe("soundsFor", () => {
     ).toEqual(["tuck"]);
   });
 
-  it("keeps the rival's card apart, and louder when it takes something", () => {
-    expect(names(cue({ kind: "rival", rivalAction: "bank" }))).toEqual([
+  it("keeps the rival's move apart, and louder when it takes from the feeder", () => {
+    expect(names(cue({ kind: "rival", rivalMove: "play" }))).toEqual([
       "rivalFlip",
     ]);
-    expect(names(cue({ kind: "rival", rivalAction: "raid" }))).toEqual([
+    expect(names(cue({ kind: "rival", rivalMove: "hunt" }))).toEqual([
       "rivalFlip",
       "raid",
     ]);
-    expect(names(cue({ kind: "rival", rivalAction: "burn" }))).toEqual([
+    expect(names(cue({ kind: "rival", rivalMove: "prowl" }))).toEqual([
       "rivalFlip",
-      "burn",
     ]);
   });
 

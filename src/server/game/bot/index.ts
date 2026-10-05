@@ -5,7 +5,7 @@
  */
 
 import type { Policy } from "../duel";
-import type { Action, DuelState } from "../match";
+import type { Action, MatchState } from "../match";
 import { createRng } from "../rng";
 import { botAt, type Bot } from "./levels";
 import { observe } from "./observe";
@@ -19,7 +19,7 @@ export { PLAIN, STYLES, styleOf, type Style } from "./styles";
  * Has `bot` choose for whoever is to act. The bot's RNG is seeded from the
  * match and the step, so the same position always gets the same answer.
  */
-export function act(state: DuelState, bot: Bot): Action {
+export function act(state: MatchState, bot: Bot): Action {
   return bot(
     observe(state, state.active),
     createRng(`${state.seed}:${state.step}:bot`),

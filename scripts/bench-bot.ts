@@ -10,7 +10,7 @@
 import { act, botAt, standIn, STEP_CAP, TOP_LEVEL } from "~/server/game/bot";
 import { meter } from "~/server/game/bot/fork";
 import { CAT_LIST } from "~/server/game/cats";
-import { applyDuel, createDuel, type DuelState } from "~/server/game/match";
+import { applyAction, createMatch, type MatchState } from "~/server/game/match";
 import { GAUNTLET } from "~/server/game/rival";
 import { rivalDeck } from "~/server/game/rivalDecks";
 import { CLANS, starterDeck } from "~/server/game/run";
@@ -20,13 +20,13 @@ const MATCHES = Number(process.argv[2] ?? 12);
 const POOL = CAT_LIST.map((cat) => cat.id);
 
 /** Every position the rival answers in a match against a steady player. */
-function rivalPositions(level: number, game: number): DuelState[] {
+function rivalPositions(level: number, game: number): MatchState[] {
   const matchIndex = Math.min(level, GAUNTLET.length - 1);
   const rivalId = GAUNTLET[matchIndex] ?? "alley-tom";
   const player = standIn(4);
   const rival = botAt(level, styleOf(rivalId));
-  const seen: DuelState[] = [];
-  let state = createDuel({
+  const seen: MatchState[] = [];
+  let state = createMatch({
     seed: `bench-${level}-${game}`,
     rivalId,
     level,
@@ -36,7 +36,7 @@ function rivalPositions(level: number, game: number): DuelState[] {
   for (let guard = 0; guard < 600 && state.phase !== "over"; guard++) {
     if (state.active === "rival") seen.push(state);
     const bot = state.active === "rival" ? rival : player;
-    state = applyDuel(state, act(state, bot)).state;
+    state = applyAction(state, act(state, bot)).state;
   }
   return seen;
 }

@@ -4,17 +4,17 @@
  */
 
 import { getCat, RARITIES } from "../cats";
-import { DIFFICULTY, type DifficultyId } from "../difficulty";
+import { rivalLevel, type DifficultyId } from "../difficulty";
 import { ELEMENTS, type Element } from "../elements";
 import {
-  createDuel,
-  stepDuel,
-  type DuelConfig,
-  type DuelState,
+  createMatch,
+  stepMatch,
+  type MatchConfig,
+  type MatchState,
   type SideId,
 } from "../match";
 import { GAUNTLET } from "../rival";
-import { rivalDeck } from "../rivalDecks";
+import { rivalDeck, rivalRelics } from "../rivalDecks";
 import { createRng } from "../rng";
 import {
   chooseReward,
@@ -28,18 +28,18 @@ import { botAt, TOP_LEVEL, type Bot } from "./levels";
 import { styleOf } from "./styles";
 
 /** Plays a match to its end, each seat chosen for by its own bot. */
-export function playDuel(
-  config: DuelConfig,
+export function playMatch(
+  config: MatchConfig,
   bots: Record<SideId, Bot>,
-): DuelState {
-  const state = createDuel(config);
+): MatchState {
+  const state = createMatch(config);
   for (let guard = 0; guard < 600 && state.phase !== "over"; guard++) {
     const who = state.active;
     const action = bots[who](
       observe(state, who),
       createRng(`${state.seed}:${state.step}:bot`),
     );
-    stepDuel(state, action);
+    stepMatch(state, action);
   }
   if (state.phase !== "over") throw new Error("Match did not terminate");
   return state;
@@ -60,7 +60,7 @@ export function emptyTally(): Tally {
 }
 
 /** Adds one finished match to `tally`, seen from `who`'s seat. */
-export function record(tally: Tally, state: DuelState, who: SideId): void {
+export function record(tally: Tally, state: MatchState, who: SideId): void {
   const result = state.result;
   if (!result) return;
   const mine = who === "player" ? result.player.total : result.rival.total;
@@ -86,7 +86,7 @@ export function winRate(tally: Tally): number {
 export function faceOff(a: Bot, b: Bot, games: number, label: string): Tally {
   const tally = emptyTally();
   for (let game = 0; game < games; game++) {
-    const config: DuelConfig = {
+    const config: MatchConfig = {
       seed: `${label}-${game}`,
       rivalId: "",
       level: 0,
@@ -99,15 +99,10 @@ export function faceOff(a: Bot, b: Bot, games: number, label: string): Tally {
         relics: [],
       },
     };
-    record(tally, playDuel(config, { player: a, rival: b }), "player");
-    record(tally, playDuel(config, { player: b, rival: a }), "rival");
+    record(tally, playMatch(config, { player: a, rival: b }), "player");
+    record(tally, playMatch(config, { player: b, rival: a }), "rival");
   }
   return tally;
-}
-
-/** The level the rival at `matchIndex` plays at on a tier. */
-export function rivalLevel(matchIndex: number, tier: DifficultyId): number {
-  return matchIndex + DIFFICULTY[tier].rank;
 }
 
 export interface GauntletMatch {
@@ -133,7 +128,8 @@ export interface GauntletConfig {
 
 /**
  * A whole run with a bot in the player's seat: six rivals in order, each on
- * its own deck at the level the tier asks, until one of them wins. After a
+ * its own deck with its clan's charm, at the level the tier asks, until one
+ * of them wins. After a
  * win the stand-in takes the rarest cat offered and the first relic, as a
  * run's reward screen would let it.
  */
@@ -153,7 +149,7 @@ export function playGauntlet(
       TOP_LEVEL,
       rivalLevel(matchIndex, config.tier) + (config.levelShift ?? 0),
     );
-    const state = playDuel(
+    const state = playMatch(
       {
         seed: `${config.seed}:m${matchIndex}`,
         rivalId,
@@ -161,7 +157,8 @@ export function playGauntlet(
         player: { deck: run.deck, relics: run.relics },
         rival: {
           deck: rivalDeck(rivalId, matchIndex, config.pool.cats),
-          relics: config.rivalRelics?.(rivalId, matchIndex) ?? [],
+          relics:
+            config.rivalRelics?.(rivalId, matchIndex) ?? rivalRelics(rivalId),
         },
       },
       { player, rival: botAt(level, styleOf(rivalId)) },

@@ -34,6 +34,7 @@ export function usePlayback(
             turn.action,
             turn.events,
             turn.chainStart,
+            turn.beats,
           )
         : [],
     [turn],

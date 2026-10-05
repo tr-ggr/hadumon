@@ -6,12 +6,12 @@ import { GAUNTLET } from "./rival";
 import {
   gauntletDeck,
   PICK_CAPS,
-  RIVAL_THEMES,
   rivalDeck,
   rivalPicks,
+  rivalRelics,
   themeOf,
 } from "./rivalDecks";
-import { makeOffer, starterDeck, startRun } from "./run";
+import { CLANS, makeOffer, starterDeck, startRun } from "./run";
 import { poolFromUnlocks, STARTING_UNLOCKS } from "./unlocks";
 
 const EVERY_CAT = CAT_LIST.map((cat) => cat.id);
@@ -23,7 +23,14 @@ describe("rival decks", () => {
     for (const rivalId of GAUNTLET) {
       expect(ELEMENTS).toContain(themeOf(rivalId));
     }
-    expect(Object.keys(RIVAL_THEMES).sort()).toEqual([...GAUNTLET].sort());
+    expect(GAUNTLET.map(themeOf)).toEqual([
+      "thorn",
+      "mist",
+      "flame",
+      "volt",
+      "thorn",
+      "shade",
+    ]);
   });
 
   it("are a run deck's size at the same match: 16 cards and one a match", () => {
@@ -71,6 +78,12 @@ describe("rival decks", () => {
       "flameclaw",
     ]);
     expect(rivalPicks("old-nine-lives", 5, [])).toEqual([]);
+  });
+
+  it("come with the rival's clan charm and no other relic", () => {
+    for (const rivalId of GAUNTLET) {
+      expect(rivalRelics(rivalId)).toEqual([CLANS[themeOf(rivalId)].relicId]);
+    }
   });
 
   it("are the same deck every time", () => {

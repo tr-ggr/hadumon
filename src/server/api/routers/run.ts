@@ -15,7 +15,8 @@ import {
   abandonRun,
   actInRun,
   chooseReward,
-  loadRun,
+  isCurrentRun,
+  retireRun,
   startRun,
   summarizeRun,
   type RunState,
@@ -28,7 +29,12 @@ import {
   type Unlock,
   type UnlockKind,
 } from "~/server/game/unlocks";
-import { toRunView, type RunView } from "~/server/game/view";
+import {
+  toRivalBeat,
+  toRunView,
+  type RivalBeat,
+  type RunView,
+} from "~/server/game/view";
 
 const index = z.number().int().min(0).max(63);
 
@@ -77,16 +83,17 @@ export interface RunSnapshot {
 
 export interface RunUpdate extends RunSnapshot {
   events: MatchEvent[];
+  /**
+   * The rival's seat and the feeder after each of the rival's actions in
+   * `events`, in order, for the table to play its turn back.
+   */
+  beats: RivalBeat[];
   /** What the run unlocked, set once when it ends. */
   unlocked: Unlock[];
 }
 
 function snapshot(run: Pick<Run, "id" | "version" | "state">): RunSnapshot {
-  return {
-    id: run.id,
-    version: run.version,
-    view: toRunView(loadRun(run.state)),
-  };
+  return { id: run.id, version: run.version, view: toRunView(run.state) };
 }
 
 function isUnlockKind(value: string): value is UnlockKind {
@@ -125,13 +132,63 @@ async function lockActiveRun(
       message: "You have no run in progress.",
     });
   }
+  // A run from an older game is closed the next time the page asks for it.
+  if (!isCurrentRun(run.state)) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message:
+        "That run was saved by an older version of the game. Reload to start a new one.",
+    });
+  }
   if (run.version !== expected) {
     throw new TRPCError({
       code: "CONFLICT",
       message: "The run moved on in another tab. Reload to catch up.",
     });
   }
-  return { ...run, state: loadRun(run.state) };
+  return run;
+}
+
+/**
+ * Closes a run this game cannot read: abandoned, keeping the unlocks its won
+ * matches earned, which is what abandoning it would have done.
+ */
+async function retireStaleRun(
+  tx: Transaction,
+  run: Pick<Run, "id" | "userId" | "version" | "state">,
+): Promise<void> {
+  const summary = retireRun(run.state);
+  await tx
+    .update(runs)
+    .set({
+      version: run.version + 1,
+      matchesWon: summary.matchesWon,
+      score: summary.totalScore,
+      status: "abandoned",
+      endedAt: new Date(),
+    })
+    .where(eq(runs.id, run.id));
+  const unlocked = earnedUnlocks(summary, await heldUnlocks(tx, run.userId));
+  if (unlocked.length > 0) {
+    await tx
+      .insert(unlocks)
+      .values(unlocked.map((unlock) => ({ userId: run.userId, ...unlock })))
+      .onConflictDoNothing();
+  }
+}
+
+/** The account's active run, if it has one; an unreadable one is closed first. */
+async function activeRun(tx: Transaction, userId: string) {
+  const [run] = await tx
+    .select()
+    .from(runs)
+    .where(and(eq(runs.userId, userId), eq(runs.status, "active")))
+    .limit(1)
+    .for("update");
+  if (!run) return null;
+  if (isCurrentRun(run.state)) return run;
+  await retireStaleRun(tx, run);
+  return null;
 }
 
 /** Runs an engine call, turning a rules violation into a client error. */
@@ -152,6 +209,7 @@ async function persist(
   run: Run,
   state: RunState,
   events: MatchEvent[],
+  beats: RivalBeat[] = [],
 ): Promise<RunUpdate> {
   const summary = summarizeRun(state);
   const ended = state.phase === "over" && state.outcome !== null;
@@ -185,6 +243,7 @@ async function persist(
     version: nextVersion,
     view: toRunView(state),
     events,
+    beats,
     unlocked,
   };
 }
@@ -198,7 +257,11 @@ export const runRouter = createTRPCRouter({
         .from(runs)
         .where(and(eq(runs.userId, ctx.user.id), eq(runs.status, "active")))
         .limit(1);
-      return run ? snapshot(run) : null;
+      if (!run) return null;
+      if (isCurrentRun(run.state)) return snapshot(run);
+      // Saved by an older game: close it, and the account starts clean.
+      await ctx.db.transaction((tx) => activeRun(tx, ctx.user.id));
+      return null;
     },
   ),
 
@@ -224,6 +287,8 @@ export const runRouter = createTRPCRouter({
             message: "You have not unlocked that clan.",
           });
         }
+        // An unreadable run left active would refuse the new one below.
+        await activeRun(tx, ctx.user.id);
         const seed = randomBytes(16).toString("hex");
         const state = startRun({
           seed,
@@ -259,7 +324,9 @@ export const runRouter = createTRPCRouter({
       return ctx.db.transaction(async (tx) => {
         const run = await lockActiveRun(tx, ctx.user.id, input.version);
         const result = engine(() => actInRun(run.state, input.action));
-        return persist(tx, run, result.run, result.events);
+        // The first state on the trail is the player's own action.
+        const beats = result.trail.slice(1).map(toRivalBeat);
+        return persist(tx, run, result.run, result.events, beats);
       });
     }),
 

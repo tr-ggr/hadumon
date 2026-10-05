@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  applyDuel,
-  createDuel,
-  duelActions,
+  applyAction,
+  createMatch,
+  legalActions,
   otherSide,
-  type DuelEvent,
-  type DuelState,
+  type MatchEvent,
+  type MatchState,
 } from "./match";
 import { createRng } from "./rng";
 import { starterDeck } from "./run";
 
 /** The same table seen from the other chair. */
-function mirror(state: DuelState): DuelState {
+function mirror(state: MatchState): MatchState {
   return {
     ...state,
     sides: { player: state.sides.rival, rival: state.sides.player },
@@ -36,7 +36,7 @@ function mirror(state: DuelState): DuelState {
   };
 }
 
-function mirrorEvent(event: DuelEvent): DuelEvent {
+function mirrorEvent(event: MatchEvent): MatchEvent {
   switch (event.type) {
     case "feeder":
       return event;
@@ -63,8 +63,8 @@ function mirrorEvent(event: DuelEvent): DuelEvent {
 
 const RELICS = ["loud-bell", "early-riser", "lucky-collar", "ball-of-twine"];
 
-function deal(seed: string): DuelState {
-  return createDuel({
+function deal(seed: string): MatchState {
+  return createMatch({
     seed,
     rivalId: "alley-tom",
     level: 0,
@@ -80,9 +80,9 @@ describe("the two seats", () => {
       const rng = createRng(`mirror-${game}`);
       let state = deal(`symmetry-${game}`);
       for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
-        const action = rng.pick(duelActions(state));
-        const straight = applyDuel(state, action);
-        const swapped = applyDuel(mirror(state), action);
+        const action = rng.pick(legalActions(state));
+        const straight = applyAction(state, action);
+        const swapped = applyAction(mirror(state), action);
         expect(swapped.state).toEqual(mirror(straight.state));
         expect(swapped.events).toEqual(straight.events.map(mirrorEvent));
         state = straight.state;
@@ -97,8 +97,8 @@ describe("the two seats", () => {
     const rng = createRng("mirror-actions");
     let state = deal("symmetry-actions");
     for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
-      expect(duelActions(mirror(state))).toEqual(duelActions(state));
-      state = applyDuel(state, rng.pick(duelActions(state))).state;
+      expect(legalActions(mirror(state))).toEqual(legalActions(state));
+      state = applyAction(state, rng.pick(legalActions(state))).state;
     }
   });
 });

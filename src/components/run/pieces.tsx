@@ -2,10 +2,15 @@ import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import { RelicIcon } from "~/components/RelicIcon";
 import { KeyHint } from "~/components/ui/table";
-import { difficultyOf, type DifficultyId } from "~/server/game/difficulty";
+import {
+  difficultyOf,
+  LEVEL_COUNT,
+  rivalLevel,
+  type DifficultyId,
+} from "~/server/game/difficulty";
 import type { Essence } from "~/server/game/match";
 import { getRelic } from "~/server/game/relics";
-import { getRival } from "~/server/game/rival";
+import { GAUNTLET, getRival } from "~/server/game/rival";
 
 import { essenceLabel, plural, yarnCostLabel } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
@@ -335,9 +340,9 @@ export function RelicTiles({
 }
 
 /**
- * The rival's coral nameplate: name, boss mark and the trait that sets it
- * apart. On a tier above Kitten it also carries the tier and the head start
- * the tier gave it.
+ * The rival's coral nameplate: name, boss mark and its manner of play.
+ * Across the table in a run it also carries the level it plays at there,
+ * which is all a tier changes.
  */
 export function Nameplate({
   rivalId,
@@ -354,7 +359,11 @@ export function Nameplate({
 }) {
   const rival = getRival(rivalId);
   const tier = difficultyOf(difficulty);
-  const ahead = tier.mods.rivalStartYarn ?? 0;
+  // Counted from 1, as a player counts.
+  const level =
+    difficulty === undefined
+      ? null
+      : rivalLevel(GAUNTLET.indexOf(rivalId), difficulty) + 1;
   return (
     <div
       className={`piece border-ink bg-coral text-ink flex flex-col justify-center border-2 px-2.5 py-1 ${className}`}
@@ -366,20 +375,16 @@ export function Nameplate({
             Boss
           </span>
         ) : null}
-        {ahead > 0 ? (
+        {level !== null ? (
           <span className="border-ink border bg-white px-1 text-[11px] leading-4 font-black">
-            {tier.name}
+            {tier.name}, level {level} of {LEVEL_COUNT}
           </span>
         ) : null}
       </div>
       {flavor ? (
         <p className="mt-1 text-sm leading-snug italic">{rival.flavor}</p>
       ) : null}
-      <p className="mt-0.5 text-xs leading-snug font-bold">
-        {rival.trait ??
-          "No tricks: banks, stashes, raids, burns and pushes like anyone."}
-        {ahead > 0 ? ` Started ${ahead} points ahead, as ${ahead} yarn.` : ""}
-      </p>
+      <p className="mt-0.5 text-xs leading-snug font-bold">{rival.trait}</p>
     </div>
   );
 }

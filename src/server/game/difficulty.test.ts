@@ -7,8 +7,10 @@ import {
   difficultyOf,
   isAtLeast,
   isDifficulty,
+  LEVEL_COUNT,
+  rivalLevel,
 } from "./difficulty";
-import { combineMods, NO_MODS } from "./relics";
+import { LEVELS } from "./bot/levels";
 
 describe("difficulty", () => {
   it("lists three tiers, easiest first", () => {
@@ -21,28 +23,30 @@ describe("difficulty", () => {
     for (const id of DIFFICULTIES) expect(DIFFICULTY[id].id).toBe(id);
   });
 
-  it("leaves Kitten as the game with no mods at all", () => {
-    expect(DIFFICULTY.kitten.mods).toEqual({});
-    expect(combineMods([], DIFFICULTY.kitten.mods)).toEqual(NO_MODS);
-  });
-
-  it("gives the rival a head start that grows with the tier", () => {
-    expect(DIFFICULTY.stray.mods).toEqual({ rivalStartYarn: 2 });
-    expect(DIFFICULTY.apex.mods).toEqual({ rivalStartYarn: 4 });
-  });
-
-  it("prints the number it applies", () => {
+  it("gives no tier a thing but its rank", () => {
     for (const tier of DIFFICULTY_LIST) {
-      const yarn = tier.mods.rivalStartYarn ?? 0;
-      if (yarn > 0) expect(tier.text).toContain(`${yarn} points`);
-      expect(tier.text.length).toBeLessThan(60);
+      expect(Object.keys(tier).sort()).toEqual(["id", "name", "rank", "text"]);
     }
   });
 
-  it("only changes mods the engine knows", () => {
+  it("moves every rival up the table of levels by the tier's rank", () => {
+    const levels = (tier: string) =>
+      [0, 1, 2, 3, 4, 5].map((i) => rivalLevel(i, tier));
+    expect(levels("kitten")).toEqual([0, 1, 2, 3, 4, 5]);
+    expect(levels("stray")).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(levels("apex")).toEqual([2, 3, 4, 5, 6, 7]);
+    expect(levels("nonsense")).toEqual(levels("kitten"));
+    expect(rivalLevel(5, "apex")).toBe(LEVEL_COUNT - 1);
+    expect(LEVEL_COUNT).toBe(LEVELS.length);
+  });
+
+  it("prints the levels it asks for, counted from one", () => {
+    expect(DIFFICULTY.kitten.text).toContain("levels 1 to 6 of 8");
+    expect(DIFFICULTY.stray.text).toContain("levels 2 to 7 of 8");
+    expect(DIFFICULTY.apex.text).toContain("levels 3 to 8 of 8");
     for (const tier of DIFFICULTY_LIST) {
-      for (const key of Object.keys(tier.mods))
-        expect(NO_MODS).toHaveProperty(key);
+      expect(tier.text).toContain("head start");
+      expect(tier.text.length).toBeLessThan(80);
     }
   });
 

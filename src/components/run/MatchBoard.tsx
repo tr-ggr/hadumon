@@ -27,6 +27,7 @@ import { useFrameFx } from "./fx/useFrameFx";
 import { EventLog, GoalNotice } from "./MatchPanels";
 import { RelicTiles } from "./pieces";
 import { Hand } from "./Hand";
+import { RivalMat } from "./RivalMat";
 import { RivalSide } from "./RivalSide";
 import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
@@ -203,6 +204,7 @@ export function MatchBoard({
     playCat(catId);
     setDetail({ catId });
   };
+  const [rivalMat, setRivalMat] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const matRef = useRef<HTMLElement>(null);
   const supplyRef = useRef<HTMLDivElement>(null);
@@ -607,9 +609,14 @@ export function MatchBoard({
     );
   }, [chosenHand, chosenLane]);
 
-  // Until the rival's card turns over, its last one is still face up.
+  // Until the rival moves, what it did last turn still stands; while it is
+  // moving, the step being shown is the news.
   const shownNews =
-    playing && !frame?.flipped ? (turn?.rivalBefore ?? null) : news;
+    playing && !frame?.flipped
+      ? (turn?.rivalBefore ?? null)
+      : playing && frame?.flipping && turn
+        ? { id: turn.id, text: frame.text }
+        : news;
 
   const turnPanel = {
     match,
@@ -648,6 +655,7 @@ export function MatchBoard({
             difficulty={run.difficulty}
             news={shownNews}
             flipping={frame?.flipping ?? false}
+            onOpenMat={() => setRivalMat(true)}
           />
           <RoundBoard match={match} rail />
         </div>
@@ -745,6 +753,11 @@ export function MatchBoard({
         catId={detail?.catId ?? null}
         tucked={detail?.tucked}
         onClose={() => setDetail(null)}
+      />
+      <RivalMat
+        match={match}
+        open={rivalMat}
+        onClose={() => setRivalMat(false)}
       />
       <GoalNotice
         match={served}

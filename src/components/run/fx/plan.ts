@@ -163,7 +163,8 @@ export function planFx(
     case "rival":
       float({ on: "rival" }, delta.rival, "coral");
       if (delta.rival !== 0) punch({ on: "rival" });
-      if (cue.rivalAction === "raid" || cue.rivalAction === "burn") {
+      // A rival's Hunt takes dice off the shared feeder.
+      if (cue.rivalMove === "hunt") {
         out.push({ kind: "shake", strength: 1, delay: 0 });
       }
       break;

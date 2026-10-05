@@ -1,21 +1,28 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  applyAction,
-  canTrade,
-  createMatch,
   emptyPool,
   IllegalAction,
-  legalActions,
   rowReward,
+  tradeOffered,
   tradeOpen,
   type Action,
   type Essence,
-  type MatchState,
   type PlacedCat,
 } from "./match";
 import { starterDeck } from "./run";
+import {
+  lift,
+  soloActions as legalActions,
+  soloApply as applyAction,
+  soloMatch,
+  type Solo as MatchState,
+} from "./solo";
 import { toMatchView } from "./view";
+
+/** A trade is on offer in a turn, and never outside one. */
+const canTrade = (state: MatchState, row: "hunt" | "den" | "prowl") =>
+  state.phase === "turn" && tradeOffered(state, state.feeder, row);
 
 const FACES: Essence[] = ["flame", "mist", "volt", "thorn", "shade"];
 
@@ -29,11 +36,10 @@ const placed = (catId: string, extra: Partial<PlacedCat> = {}): PlacedCat => ({
 });
 
 function turnState(overrides: Partial<MatchState> = {}): MatchState {
-  const base = createMatch({
+  const base = soloMatch({
     seed: "trade",
     deck: starterDeck("flame"),
     relics: [],
-    rivalId: "alley-tom",
   });
   return {
     ...base,
@@ -241,13 +247,13 @@ describe("trades in the list of legal actions", () => {
   });
 
   it("are told to the client row by row", () => {
-    expect(toMatchView(state).trades).toEqual({
+    expect(toMatchView(lift(state)).trades).toEqual({
       hunt: true,
       den: true,
       prowl: true,
     });
     const none = turnState();
-    expect(toMatchView(none).trades).toEqual({
+    expect(toMatchView(lift(none)).trades).toEqual({
       hunt: false,
       den: false,
       prowl: false,

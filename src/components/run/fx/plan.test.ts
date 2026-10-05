@@ -28,7 +28,7 @@ const cue = (extra: Partial<Cue> = {}): Cue => ({
   slot: { row: "den", col: 2 },
   chain: 0,
   fizzled: false,
-  rivalAction: null,
+  rivalMove: null,
   won: null,
   delta: delta(),
   ...extra,
@@ -196,7 +196,7 @@ describe("planFx", () => {
       cue({
         kind: "rival",
         slot: null,
-        rivalAction: "bank",
+        rivalMove: "play",
         delta: delta({ rival: 3 }),
       }),
     );
@@ -210,14 +210,13 @@ describe("planFx", () => {
       },
       { kind: "punch", at: { on: "rival" }, delay: 0 },
     ]);
-    for (const rivalAction of ["raid", "burn"] as const) {
-      expect(planFx(cue({ kind: "rival", slot: null, rivalAction }))).toEqual([
-        { kind: "shake", strength: 1, delay: 0 },
-      ]);
-    }
+    // A Hunt of the rival's takes dice off the shared feeder.
     expect(
-      planFx(cue({ kind: "rival", slot: null, rivalAction: "push" })),
-    ).toEqual([]);
+      planFx(cue({ kind: "rival", slot: null, rivalMove: "hunt" })),
+    ).toEqual([{ kind: "shake", strength: 1, delay: 0 }]);
+    for (const rivalMove of ["den", "prowl", "resolve"] as const) {
+      expect(planFx(cue({ kind: "rival", slot: null, rivalMove }))).toEqual([]);
+    }
   });
 
   it("pays a goal to both sides and celebrates only a win", () => {

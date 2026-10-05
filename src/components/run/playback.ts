@@ -6,19 +6,16 @@
  *
  * Only what the client can know is rebuilt (essence, yarn, the hand, the
  * feeder, and the score they add up to). Anything else waits for the last
- * frame, which is always the server's own view.
+ * frame, which is always the server's own view. The rival's turn is not
+ * rebuilt at all: the server sends its seat as it stood after each of its
+ * actions (a beat), and each action is one frame.
  *
  * Each frame also carries a cue: what kind of moment it is and what it
  * changed. Sound and effects are worked out from the cue alone, so neither
  * has to read the table.
  */
 
-import {
-  getCat,
-  ROWS,
-  type Effect,
-  type RivalAction,
-} from "~/server/game/cats";
+import { getCat, ROWS, type Effect } from "~/server/game/cats";
 import {
   auraTotal,
   columnYarnCost,
@@ -28,10 +25,11 @@ import {
   type Action,
   type Essence,
   type MatchEvent,
+  type Move,
   type PlacedCat,
   type SlotRef,
 } from "~/server/game/match";
-import type { MatchView } from "~/server/game/view";
+import type { MatchView, RivalBeat } from "~/server/game/view";
 
 import { describeAction, describeEvents, type LogTone } from "./describe";
 
@@ -82,8 +80,8 @@ export interface Cue {
   chain: number;
   /** A power that fired and changed nothing: a full cat, an empty deck. */
   fizzled: boolean;
-  /** The card the rival turned over. */
-  rivalAction: RivalAction | null;
+  /** The kind of move the rival made. */
+  rivalMove: Move["type"] | null;
   /** Who a goal or the match went to; `null` for a split goal. */
   won: boolean | null;
   delta: Delta;
@@ -95,9 +93,9 @@ export interface Frame {
   cue: Cue;
   /** The slot whose power is firing. */
   firing: SlotRef | null;
-  /** True on the frame the rival flips its card. */
+  /** True on a frame the rival makes a move. */
   flipping: boolean;
-  /** True from the frame the rival flips its card onwards. */
+  /** True from the rival's first move of the turn onwards. */
   flipped: boolean;
   /** True on the frame the feeder is rolled again. */
   rolling: boolean;
@@ -145,7 +143,7 @@ function diff(prev: MatchView, now: MatchView): Delta {
   }
   delta.hand = now.hand.length - prev.hand.length;
   delta.score = now.score.total - prev.score.total;
-  delta.rival = now.rival.score - prev.rival.score;
+  delta.rival = now.rival.score.total - prev.rival.score.total;
   return delta;
 }
 
@@ -325,32 +323,40 @@ function applyPower(
   }
 }
 
-function applyRival(
-  view: MatchView,
-  after: MatchView,
-  event: Extract<MatchEvent, { type: "rival" }>,
-): void {
-  // A goal scored at the end of this turn is not the rival's card's doing.
-  const scored = after.rival.goalPoints - view.rival.goalPoints;
+/** The rival's score with `points` of goal taken off, or put on. */
+function shiftRivalGoals(view: MatchView, points: number): void {
+  const score = view.rival.score;
   view.rival = {
-    ...after.rival,
-    goalPoints: view.rival.goalPoints,
-    score: after.rival.score - scored,
-    pushes: view.rival.pushes + (event.action === "push" ? 1 : 0),
+    ...view.rival,
+    score: {
+      ...score,
+      goals: score.goals + points,
+      total: score.total + points,
+    },
   };
-  if (event.action === "raid") {
-    for (const face of event.removed) removeFirst(view.feeder, face);
-    // The event names the faces taken, not which dice; when the same faces
-    // are left, the finished feeder says what order they sit in.
-    const left = [...view.feeder].sort().join();
-    if (left === [...after.feeder].sort().join()) {
-      view.feeder = [...after.feeder];
-    }
+}
+
+/**
+ * One action of the rival's. Its seat is what the server says it was once
+ * the action had resolved. A beat taken as a round closes already counts
+ * that round's goal, which has a frame of its own to come: `goalToCome` is
+ * held back until then.
+ */
+function applyRivalMove(
+  view: MatchView,
+  move: Move,
+  beat: RivalBeat | undefined,
+  goalToCome: number,
+): void {
+  if (beat) {
+    view.rival = beat.rival;
+    shiftRivalGoals(view, -goalToCome);
   }
-  view.tray = [...after.tray];
-  view.deckCount = after.deckCount;
-  view.discardCount = after.discardCount;
-  view.turnsLeft = Math.max(0, view.turnsLeft - 1);
+  if (move.type === "hunt") {
+    // The dice it took leave the feeder; a roll that follows is a frame of
+    // its own.
+    for (const face of move.faces) removeFirst(view.feeder, face);
+  }
 }
 
 /** A goal scored at the end of a round, paid to both sides. */
@@ -363,19 +369,16 @@ function applyGoal(
     ...view.goalResults,
     { goalId, player, rival, playerPoints, rivalPoints },
   ];
-  view.rival = {
-    ...view.rival,
-    goalPoints: view.rival.goalPoints + rivalPoints,
-    score: view.rival.score + rivalPoints,
-  };
+  shiftRivalGoals(view, rivalPoints);
 }
 
 /**
  * The frames of one turn, in the order things happened. The first shows the
- * player's own move, then one per power, feeder roll, rival card and scored
- * goal; the last is `after` untouched. `chainStart` is how many powers the
- * activation had already landed when this action answers a choice in the
- * middle of it.
+ * player's own move, then one per power of theirs, feeder roll, action of
+ * the rival's and scored goal; the last is `after` untouched. `chainStart`
+ * is how many powers the activation had already landed when this action
+ * answers a choice in the middle of it. `beats` is the rival's seat after
+ * each of its actions, in order.
  */
 export function buildSteps(
   before: MatchView,
@@ -383,6 +386,7 @@ export function buildSteps(
   action: Action,
   events: readonly MatchEvent[],
   chainStart = 0,
+  beats: readonly RivalBeat[] = [],
 ): Frame[] {
   const lines = describeEvents(before, after, events);
   const closing = (chain: number): Frame => ({
@@ -393,7 +397,7 @@ export function buildSteps(
       slot: null,
       chain,
       fizzled: false,
-      rivalAction: null,
+      rivalMove: null,
       won: null,
       delta: noDelta(),
     },
@@ -427,7 +431,7 @@ export function buildSteps(
               : null,
         chain,
         fizzled: false,
-        rivalAction: null,
+        rivalMove: null,
         won: null,
         delta: diff(before, view),
       },
@@ -443,27 +447,68 @@ export function buildSteps(
 
   let line = 0;
   let flipped = false;
+  let rivalMoves = 0;
+  /** The goal a rival's action is about to close its round with, if any. */
+  const goalAfter = (at: number): number => {
+    for (let i = at + 1; i < events.length; i++) {
+      const next = events[i];
+      if (next?.type === "move") return 0;
+      if (next?.type === "goal") return next.rivalPoints;
+    }
+    return 0;
+  };
   events.forEach((event, at) => {
     if (
       event.type === "kept" ||
       event.type === "played" ||
-      event.type === "activated"
+      event.type === "activated" ||
+      (event.type === "move" && event.side === "player")
     ) {
       return;
     }
     const described = lines[line++];
+    // What the rival's cats do shows on its own side of the table, which
+    // comes whole with its move: the line lands with the frame already up.
+    if (event.type !== "move" && "side" in event && event.side === "rival") {
+      const last = frames[frames.length - 1];
+      if (!last) return;
+      last.lines = line;
+      // With no move of the rival's still to come, nothing else will bring
+      // its seat up to date: a cat of its own answering the player's turn
+      // has changed it, so the frame takes the seat as it ends up.
+      const moving = events
+        .slice(at + 1)
+        .some((next) => next.type === "move" && next.side === "rival");
+      if (!moving) {
+        const was = view.rival.score.total;
+        view.rival = after.rival;
+        const unpaid = events
+          .slice(at + 1)
+          .reduce(
+            (sum, next) => sum + (next.type === "goal" ? next.rivalPoints : 0),
+            0,
+          );
+        shiftRivalGoals(view, -unpaid);
+        last.cue.delta.rival += view.rival.score.total - was;
+      }
+      return;
+    }
     const prev = view;
     view = structuredClone(view);
+    if (event.type === "move") {
+      // The rival moving means the player's own turn has closed.
+      if (!flipped) view.turnsLeft = Math.max(0, view.turnsLeft - 1);
+      applyRivalMove(view, event.move, beats[rivalMoves], goalAfter(at));
+      rivalMoves += 1;
+      flipped = true;
+    }
     if (event.type === "power") applyPower(view, after, event);
     if (event.type === "aura") {
       const aura = getCat(event.catId).aura;
       if (aura?.kind === "treat") view.essence.wild += aura.n;
     }
+    if (event.type === "refill") view.essence.wild += event.treats;
     if (event.type === "feeder") view.feeder = [...event.faces];
-    if (event.type === "rival") {
-      applyRival(view, after, event);
-      flipped = true;
-    }
     if (event.type === "goal") applyGoal(view, event);
     rescore(view);
 
@@ -485,12 +530,18 @@ export function buildSteps(
     frames.push({
       view,
       cue: {
-        kind: event.type,
+        // A relic paying out is heard and seen as a legendary's is.
+        kind:
+          event.type === "move"
+            ? "rival"
+            : event.type === "refill"
+              ? "aura"
+              : event.type,
         effect: event.type === "power" ? event.effect : null,
         slot,
         chain,
         fizzled,
-        rivalAction: event.type === "rival" ? event.action : null,
+        rivalMove: event.type === "move" ? event.move.type : null,
         won:
           event.type === "over"
             ? event.won
@@ -500,7 +551,7 @@ export function buildSteps(
         delta,
       },
       firing: slot,
-      flipping: event.type === "rival",
+      flipping: event.type === "move",
       flipped,
       rolling: event.type === "feeder",
       lines: line,
@@ -510,6 +561,11 @@ export function buildSteps(
     if (fires && !fizzled) chain += 1;
   });
 
+  // What no event says of the rival's seat, such as the turns a new round
+  // deals it, is there by the last step.
+  if (view.rival.score.total === after.rival.score.total) {
+    view.rival = after.rival;
+  }
   frames.push(closing(chain));
   return frames;
 }
@@ -522,6 +578,7 @@ export function chainEnd(
   events: readonly MatchEvent[],
   chainStart = 0,
 ): number {
+  // The rival's actions never add to the player's chain, so no beats.
   const frames = buildSteps(before, after, action, events, chainStart);
   return frames[frames.length - 1]?.cue.chain ?? chainStart;
 }

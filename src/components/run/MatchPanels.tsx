@@ -10,7 +10,7 @@ import type { MatchView } from "~/server/game/view";
 import {
   goalText,
   plural,
-  rivalActionText,
+  moveText,
   type GoalEvent,
   type LogEntry,
   type LogTone,
@@ -28,15 +28,10 @@ export function useFlash(key: number | null, ms = 1400): boolean {
   return key !== null && key !== seen;
 }
 
+/** The rival's last turn in words; a reload reads it off the table. */
 export function rivalLastText(match: MatchView, news: RivalNews | null) {
   if (news) return news.text;
-  if (!match.rival.last) return "Has not flipped a card yet";
-  return rivalActionText(
-    match.rivalId,
-    match.rival.last,
-    null,
-    match.rival.bankValue,
-  );
+  return match.rival.last ? moveText(match.rival.last) : "Yet to move";
 }
 
 const LINE_TONES: Record<LogTone, string> = {
@@ -147,7 +142,7 @@ export function GoalNotice({
           </p>
           <p className="text-ink text-sm">
             The score is you {match.score.total}, {getRival(match.rivalId).name}{" "}
-            {match.rival.score}.
+            {match.rival.score.total}.
           </p>
           {nextGoal ? (
             <p className="text-ink text-sm">

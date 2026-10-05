@@ -1,47 +1,65 @@
 import { describe, expect, it } from "vitest";
 
+import { act, standIn } from "./bot";
 import { getCat } from "./cats";
+import { rivalLevel } from "./difficulty";
 import { IllegalAction } from "./match";
-import type { Mods } from "./relics";
 import { GAUNTLET } from "./rival";
-import { createRng } from "./rng";
+import { rivalDeck, rivalRelics } from "./rivalDecks";
 import {
   abandonRun,
   actInRun,
   chooseReward,
   CLANS,
-  loadRun,
+  isCurrentRun,
   makeOffer,
   MIN_DECK,
   offerWeights,
   relicDue,
+  retireRun,
+  RUN_VERSION,
   starterDeck,
   startRun,
   summarizeRun,
   type RunState,
 } from "./run";
-import { greedyBot } from "./sim";
 import { poolFromUnlocks, STARTING_UNLOCKS } from "./unlocks";
 
 const pool = poolFromUnlocks(STARTING_UNLOCKS);
 const newRun = (seed = "r") => startRun({ seed, clanId: "flame", pool });
+const player = standIn(1);
 
-/** Plays the current match to its last turn, then rigs the rival's score. */
+/**
+ * Plays the current match to the player's last turn, then rigs the score
+ * with a goal nobody played for, so the match ends the way a test needs.
+ */
 function finishMatch(start: RunState, win: boolean): RunState {
-  const rng = createRng("bot");
   let run = start;
   for (let guard = 0; guard < 300; guard++) {
     const match = run.match;
     if (!match) throw new Error("no match");
-    if (match.phase === "turn" && match.round === 2 && match.turnsLeft === 1) {
+    const last =
+      match.phase === "turn" &&
+      match.round === 2 &&
+      match.sides.player.turnsLeft === 1;
+    if (last) {
       const rigged = {
         ...match,
-        rival: { ...match.rival, banked: win ? 0 : 99, yarn: 0, goalPoints: 0 },
+        goalResults: [
+          ...match.goalResults,
+          {
+            goalId: "crowd",
+            player: 0,
+            rival: 0,
+            playerPoints: win ? 500 : 0,
+            rivalPoints: win ? 0 : 500,
+          },
+        ],
       };
       return actInRun({ ...run, match: rigged }, { type: "den", targets: [] })
         .run;
     }
-    run = actInRun(run, greedyBot(match, rng)).run;
+    run = actInRun(run, act(match, player)).run;
   }
   throw new Error("match never reached its last turn");
 }
@@ -62,13 +80,30 @@ describe("starter deck", () => {
 describe("startRun", () => {
   it("opens the first match with the clan's deck and relic", () => {
     const run = newRun();
+    expect(run.v).toBe(RUN_VERSION);
     expect(run.phase).toBe("match");
     expect(run.matchIndex).toBe(0);
     expect(run.relics).toEqual([CLANS.flame.relicId]);
     expect(run.match?.rivalId).toBe(GAUNTLET[0]);
-    expect(run.match?.relics).toEqual(run.relics);
+    expect(run.match?.sides.player.relics).toEqual(run.relics);
     expect(run.deck).toHaveLength(16);
     expect(newRun("x")).toEqual(newRun("x"));
+  });
+
+  it("seats the rival on its own deck with its clan's charm, already kept", () => {
+    const match = newRun().match!;
+    const rival = match.sides.rival;
+    expect(match.phase).toBe("setup");
+    expect(match.active).toBe("player");
+    expect(rival.setup).toEqual([]);
+    expect(rival.relics).toEqual(rivalRelics("alley-tom"));
+    const cards = [
+      ...rival.hand,
+      ...rival.deck,
+      ...rival.tray,
+      ...rival.discard,
+    ];
+    expect(cards.sort()).toEqual(rivalDeck("alley-tom", 0, pool.cats).sort());
   });
 });
 
@@ -78,67 +113,107 @@ describe("difficulty", () => {
 
   it("is Kitten unless the run says otherwise", () => {
     expect(newRun().difficulty).toBe("kitten");
-    expect(newRun().match?.rival.yarn).toBe(0);
+    expect(newRun().match?.level).toBe(0);
     expect(onTier("kitten")).toEqual(newRun());
     expect(summarizeRun(newRun()).difficulty).toBe("kitten");
   });
 
-  it("gives the rival its head start and changes nothing else", () => {
-    const stray = onTier("stray");
-    const apex = onTier("apex");
-    expect(stray.match?.rival.yarn).toBe(2);
-    expect(apex.match?.rival.yarn).toBe(4);
-    expect(stray.match?.mods.rivalStartYarn).toBe(2);
-    expect(summarizeRun(apex).difficulty).toBe("apex");
-    // The same seed deals the same table on every tier.
-    const kitten = newRun();
-    expect({
-      ...stray.match,
-      mods: kitten.match?.mods,
-      rival: kitten.match?.rival,
-    }).toEqual(kitten.match);
+  it("raises the rival's level and gives it nothing else", () => {
+    const kitten = newRun().match!;
+    const stray = onTier("stray").match!;
+    const apex = onTier("apex").match!;
+    expect(stray.level).toBe(1);
+    expect(apex.level).toBe(2);
+    expect(summarizeRun(onTier("apex")).difficulty).toBe("apex");
+    // The same seed deals the same table on every tier: the player's seat,
+    // the feeder, the goals, and the cats the rival holds between its hand,
+    // its deck and what it chose not to keep.
+    for (const match of [stray, apex]) {
+      expect(match.sides.player).toEqual(kitten.sides.player);
+      expect(match.feeder).toEqual(kitten.feeder);
+      expect(match.goals).toEqual(kitten.goals);
+      expect(match.sides.rival.tray).toEqual(kitten.sides.rival.tray);
+      expect(match.sides.rival.relics).toEqual(kitten.sides.rival.relics);
+      expect(match.sides.rival.mods).toEqual(kitten.sides.rival.mods);
+    }
   });
 
-  it("carries the head start into every match of the run", () => {
+  it("carries the tier into every match of the run", () => {
     let run = finishMatch(onTier("apex"), true);
     run = chooseReward(run, { cat: null, relic: null, trim: null });
     expect(run.matchIndex).toBe(1);
-    expect(run.match?.rival.yarn).toBe(4);
+    expect(run.match?.level).toBe(rivalLevel(1, "apex"));
+    expect(run.match?.level).toBe(3);
     expect(run.difficulty).toBe("apex");
   });
 
-  it("reads a run saved before tiers existed as Kitten", () => {
+  it("reads a run with no tier as Kitten", () => {
     const old = finishMatch(newRun(), true);
     delete old.difficulty;
     const next = chooseReward(old, { cat: null, relic: null, trim: null });
-    expect(next.match?.rival.yarn).toBe(0);
+    expect(next.match?.level).toBe(1);
     expect(summarizeRun(next).difficulty).toBe("kitten");
   });
 });
 
-describe("loadRun", () => {
-  it("fills in a mod the stored match never had", () => {
-    const run = startRun({ seed: "r", clanId: "flame", pool });
-    const oldMods: Partial<Mods> = { ...run.match!.mods };
-    delete oldMods.rivalStartYarn;
-    const stored = {
-      ...run,
-      match: { ...run.match!, mods: oldMods },
-    } as RunState;
-    expect(stored.match?.mods.rivalStartYarn).toBeUndefined();
-    expect(loadRun(stored)).toEqual(run);
+describe("a run saved by an older game", () => {
+  // The shape a run had while the rival was a deck of action cards: no
+  // version, and a match with one seat laid flat beside the rival's counters.
+  const old = {
+    seed: "old",
+    clanId: "mist",
+    difficulty: "stray",
+    pool: { cats: [], relics: [] },
+    deck: starterDeck("mist"),
+    relics: ["tide-charm"],
+    matchIndex: 2,
+    phase: "match",
+    match: {
+      seed: "old:m2",
+      step: 9,
+      rivalId: "madame-mittens",
+      phase: "turn",
+      board: { hunt: [], den: [], prowl: [] },
+      hand: ["mistpaw"],
+      rival: { deck: ["bank"], discard: [], banked: 2, yarn: 2, pushes: 0 },
+    },
+    reward: null,
+    results: [
+      { rivalId: "alley-tom", player: 31, rival: 22, won: true },
+      { rivalId: "dockside-twins", player: 36, rival: 30, won: true },
+    ],
+    outcome: null,
+  };
+
+  it("is told apart from one this game can read", () => {
+    expect(isCurrentRun(old)).toBe(false);
+    expect(isCurrentRun(null)).toBe(false);
+    expect(isCurrentRun({ v: 1 })).toBe(false);
+    expect(isCurrentRun(newRun())).toBe(true);
   });
 
-  it("keeps the mods a match was dealt", () => {
-    const run = startRun({
-      seed: "r",
-      clanId: "flame",
-      pool,
-      difficulty: "apex",
+  it("retires as abandoned, keeping what its won matches earned", () => {
+    expect(retireRun(old)).toEqual({
+      clanId: "mist",
+      difficulty: "stray",
+      matchesWon: 2,
+      won: false,
+      bestMatchScore: 36,
+      totalScore: 67,
     });
-    expect(loadRun(run)).toEqual(run);
-    const between = { ...run, match: null };
-    expect(loadRun(between)).toBe(between);
+  });
+
+  it("retires cleanly whatever is left of it", () => {
+    expect(retireRun({})).toEqual({
+      clanId: "flame",
+      difficulty: "kitten",
+      matchesWon: 0,
+      won: false,
+      bestMatchScore: 0,
+      totalScore: 0,
+    });
+    expect(retireRun(null).matchesWon).toBe(0);
+    expect(retireRun({ clanId: "dog", results: "none" }).clanId).toBe("flame");
   });
 });
 
@@ -200,7 +275,7 @@ describe("chooseReward", () => {
     expect(next.deck.at(-1)).toBe(offer.cats[0]);
     expect(next.relics).toEqual([CLANS.flame.relicId, offer.relics[0]]);
     expect(next.match?.rivalId).toBe(GAUNTLET[1]);
-    expect(next.match?.relics).toEqual(next.relics);
+    expect(next.match?.sides.player.relics).toEqual(next.relics);
     expect(next.match?.phase).toBe("setup");
     // The previous run state is untouched.
     expect(won.deck).toHaveLength(16);

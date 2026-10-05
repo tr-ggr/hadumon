@@ -1,48 +1,42 @@
 /**
- * Difficulty: how far ahead every rival of a run starts. A tier is a handful
- * of mods laid over the run's relics, so it bends the rules the same way a
- * relic does and nothing else in the engine knows it is there. Kitten is the
- * game with no tier at all, and a run saved before tiers existed is a Kitten
- * run.
+ * Difficulty: how well every rival of a run plays. A tier gives the rival
+ * nothing: no points, no cards, no food. It only moves each rival up the
+ * table of levels in `bot/levels.ts`, so on a harder tier the same six
+ * rivals think further ahead. Kitten is the gauntlet as it stands, and a run
+ * saved before tiers existed is a Kitten run.
  */
-
-import type { Mods } from "./relics";
 
 export const DIFFICULTIES = ["kitten", "stray", "apex"] as const;
 export type DifficultyId = (typeof DIFFICULTIES)[number];
+
+/** Rivals in a run, and so levels a tier spans. */
+const MATCHES = 6;
+/** How many levels a rival can play at; the top tier's last rival is the best. */
+export const LEVEL_COUNT = 8;
 
 export interface Difficulty {
   id: DifficultyId;
   name: string;
   /** The exact rule, in one line. */
   text: string;
-  mods: Partial<Mods>;
-  /** 0 for the easiest; a harder tier ranks higher. */
+  /** 0 for the easiest; added to every rival's level. */
   rank: number;
 }
 
-function headStart(
-  id: DifficultyId,
-  name: string,
-  rank: number,
-  yarn: number,
-): Difficulty {
+function tier(id: DifficultyId, name: string, rank: number): Difficulty {
   return {
     id,
     name,
     rank,
-    text:
-      yarn === 0
-        ? "No head start. Every rival begins at 0."
-        : `Every rival starts ${yarn} points ahead, as ${yarn} yarn.`,
-    mods: yarn === 0 ? {} : { rivalStartYarn: yarn },
+    // Levels are printed from 1, as a player counts them.
+    text: `Rivals play at levels ${rank + 1} to ${rank + MATCHES} of ${LEVEL_COUNT}. Nobody gets a head start.`,
   };
 }
 
 export const DIFFICULTY: Record<DifficultyId, Difficulty> = {
-  kitten: headStart("kitten", "Kitten", 0, 0),
-  stray: headStart("stray", "Stray", 1, 2),
-  apex: headStart("apex", "Apex", 2, 4),
+  kitten: tier("kitten", "Kitten", 0),
+  stray: tier("stray", "Stray", 1),
+  apex: tier("apex", "Apex", 2),
 };
 
 export const DIFFICULTY_LIST: Difficulty[] = DIFFICULTIES.map(
@@ -64,4 +58,9 @@ export function difficultyOf(value: unknown): Difficulty {
 /** True when `value` is `tier` or harder. */
 export function isAtLeast(value: unknown, tier: DifficultyId): boolean {
   return difficultyOf(value).rank >= DIFFICULTY[tier].rank;
+}
+
+/** The level the rival at `matchIndex` plays at on a tier, 0 the least. */
+export function rivalLevel(matchIndex: number, tier: unknown): number {
+  return Math.min(LEVEL_COUNT - 1, matchIndex + difficultyOf(tier).rank);
 }

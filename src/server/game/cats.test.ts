@@ -72,7 +72,22 @@ describe("cat catalogue", () => {
       "When activated: gain 1 Beef.",
     );
     expect(describePower(getCat("brumefang").power!)).toBe(
-      "Between turns: when the rival raids the feeder, gain 1 Fish.",
+      "Between turns: when the rival hunts, gain 1 Fish.",
+    );
+  });
+
+  it("has its watchers answer the rival's Hunt, Den, Prowl and every turn", () => {
+    const watched = CAT_LIST.flatMap((cat) =>
+      cat.power?.timing === "between" ? [[cat.id, cat.power.on]] : [],
+    );
+    expect(Object.fromEntries(watched)).toEqual({
+      brumefang: "hunt",
+      shadewhisker: "prowl",
+      gloomtail: "den",
+      nyxaroth: "any",
+    });
+    expect(describePower(getCat("nyxaroth").power!)).toBe(
+      "Between turns: after each of the rival's turns, lay 1 yarn on this cat.",
     );
   });
 

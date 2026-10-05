@@ -1,17 +1,25 @@
 import { describe, expect, it } from "vitest";
 
+import { rivalPolicy } from "~/server/game/bot";
 import { CAT_LIST, getCat } from "~/server/game/cats";
+import { advance, openMatch } from "~/server/game/duel";
 import {
-  applyAction,
-  createMatch,
   legalActions,
   ROUND_TURNS,
   type Action,
-  type MatchState,
+  type MatchState as Match,
 } from "~/server/game/match";
+import { rivalDeck } from "~/server/game/rivalDecks";
 import { createRng } from "~/server/game/rng";
 import { starterDeck } from "~/server/game/run";
-import { toMatchView } from "~/server/game/view";
+import {
+  flatten,
+  lift,
+  soloActions,
+  soloMatch,
+  type Solo as MatchState,
+} from "~/server/game/solo";
+import { toMatchView, toRivalBeat } from "~/server/game/view";
 
 import { describeEvents } from "./describe";
 import { FLIGHT_MS } from "./flight";
@@ -25,16 +33,19 @@ import {
   type Frame,
 } from "./playback";
 
-/** A match already in play, with these cats on the board. */
+/**
+ * A table already in play, with these cats on the player's board. The
+ * player's seat is laid flat, as these tests read it; a real rival sits
+ * opposite and answers every turn.
+ */
 function dealt(
   board: Partial<Record<"hunt" | "den" | "prowl", string[]>> = {},
   relics: string[] = [],
 ): MatchState {
-  const base = createMatch({
+  const base = soloMatch({
     seed: "playback-test",
     deck: starterDeck("flame"),
     relics,
-    rivalId: "alley-tom",
   });
   const place = (ids: string[] = []) =>
     ids.map((catId) => ({ catId, yarn: 0, cached: 0, tucked: 0 }));
@@ -52,17 +63,46 @@ function dealt(
   };
 }
 
-function play(state: MatchState, action: Action, chainStart = 0) {
-  const { state: next, events } = applyAction(state, action);
-  const before = toMatchView(state);
+/** One action of the player's and the rival's answer, as the table plays it. */
+function turnOf(match: Match, action: Action, chainStart = 0) {
+  const { state: next, events, trail } = advance(match, action, rivalPolicy);
+  const before = toMatchView(match);
   const after = toMatchView(next);
+  const beats = trail.slice(1).map(toRivalBeat);
   return {
     next,
     before,
     after,
     events,
-    frames: buildSteps(before, after, action, events, chainStart),
+    beats,
+    frames: buildSteps(before, after, action, events, chainStart, beats),
   };
+}
+
+function play(state: MatchState, action: Action, chainStart = 0) {
+  const rivalTurns = state.phase === "setup" ? 0 : state.turnsLeft;
+  const turn = turnOf(lift(state, rivalTurns), action, chainStart);
+  return { ...turn, next: flatten(turn.next) };
+}
+
+/** A whole match against a rival of the gauntlet, dealt and waiting on a keep. */
+function matchAgainst(
+  seed: string,
+  rivalId = "alley-tom",
+  level = 0,
+  relics: string[] = [],
+  clan: "flame" | "shade" = "flame",
+): Match {
+  return openMatch(
+    {
+      seed,
+      rivalId,
+      level,
+      player: { deck: starterDeck(clan), relics },
+      rival: { deck: rivalDeck(rivalId, 0, []), relics: [] },
+    },
+    rivalPolicy,
+  ).state;
 }
 
 function last(frames: Frame[]): Frame {
@@ -87,11 +127,10 @@ describe("buildSteps", () => {
   });
 
   it("is a single frame for the setup keep", () => {
-    const state = createMatch({
+    const state = soloMatch({
       seed: "playback-keep",
       deck: starterDeck("flame"),
       relics: [],
-      rivalId: "alley-tom",
     });
     const { after, frames } = play(state, {
       type: "keep",
@@ -149,7 +188,7 @@ describe("buildSteps", () => {
       ...state,
       essence: { flame: 3, mist: 3, volt: 3, thorn: 3, shade: 3, wild: 3 },
     };
-    const action = legalActions(state).find((a) => a.type === "play");
+    const action = soloActions(state).find((a) => a.type === "play");
     if (action?.type !== "play") throw new Error("nothing to play");
     const catId = state.hand[action.hand];
     const { before, frames } = play(state, action);
@@ -209,7 +248,7 @@ describe("buildSteps", () => {
       const cats = ACTIVATED.filter((id) => getCat(id).rows.includes(lane));
       if (cats.length < 2) continue;
       const state = dealt({ [lane]: cats.slice(0, 3) });
-      const action = legalActions(state).find((a) => a.type === lane);
+      const action = soloActions(state).find((a) => a.type === lane);
       if (!action) throw new Error(`cannot activate ${lane}`);
       const { frames, events } = play(state, action);
       const fired = frames.flatMap((f) => (f.firing ? [f.firing.col] : []));
@@ -302,15 +341,10 @@ describe("buildSteps", () => {
   it("agrees with the server on what the table holds, over whole matches", () => {
     for (const seed of ["a", "b", "c", "d"]) {
       const rng = createRng(`playback-${seed}`);
-      let state = createMatch({
-        seed: `playback-${seed}`,
-        deck: starterDeck("flame"),
-        relics: [],
-        rivalId: "alley-tom",
-      });
+      let state = matchAgainst(`playback-${seed}`);
       for (let guard = 0; guard < 200 && state.phase !== "over"; guard++) {
         const action = rng.pick(legalActions(state));
-        const { next, after, frames } = play(state, action);
+        const { next, after, frames } = turnOf(state, action);
         const settled = frames[frames.length - 2]?.view;
         if (settled && after.phase !== "over") {
           const where = `${seed} ${JSON.stringify(action)}`;
@@ -329,20 +363,17 @@ describe("buildSteps", () => {
 /** Random play through whole matches, with the frames of every action. */
 function eachTurn(
   relics: string[],
-  visit: (turn: ReturnType<typeof play>, where: string) => void,
+  visit: (turn: ReturnType<typeof turnOf>, where: string) => void,
 ): void {
   for (const seed of ["a", "b", "c", "d", "e", "f"]) {
     const rng = createRng(`cue-${seed}`);
-    let state = createMatch({
-      seed: `cue-${seed}`,
-      deck: starterDeck(seed < "d" ? "flame" : "shade"),
-      relics,
-      rivalId: seed < "d" ? "alley-tom" : "the-archivist",
-      difficulty: seed < "d" ? "kitten" : "apex",
-    });
+    let state =
+      seed < "d"
+        ? matchAgainst(`cue-${seed}`, "alley-tom", 0, relics)
+        : matchAgainst(`cue-${seed}`, "the-archivist", 6, relics, "shade");
     for (let guard = 0; guard < 200 && state.phase !== "over"; guard++) {
       const action = rng.pick(legalActions(state));
-      const turn = play(state, action);
+      const turn = turnOf(state, action);
       visit(turn, `${seed} step ${state.step} ${JSON.stringify(action)}`);
       state = turn.next;
     }
@@ -360,13 +391,13 @@ describe("the score through a turn", () => {
         if (frames.length < 2) return;
         const settled = frames[frames.length - 2]!.view;
         expect(settled.score, where).toEqual(after.score);
-        expect(settled.rival.score, where).toBe(after.rival.score);
-        expect(settled.rival.goalPoints, where).toBe(after.rival.goalPoints);
+        expect(settled.rival.score, where).toEqual(after.rival.score);
+        expect(settled.rival, where).toEqual(after.rival);
         expect(settled.goalResults, where).toEqual(after.goalResults);
         if (after.result) {
           ended += 1;
           expect(settled.score, where).toEqual(after.result.player);
-          expect(settled.rival.score, where).toBe(after.result.rival);
+          expect(settled.rival.score, where).toEqual(after.result.rival);
         }
       },
     );
@@ -381,9 +412,10 @@ describe("the score through a turn", () => {
         expect(frame.view.score.total - prev.score.total, where).toBe(
           delta.score,
         );
-        expect(frame.view.rival.score - prev.rival.score, where).toBe(
-          delta.rival,
-        );
+        expect(
+          frame.view.rival.score.total - prev.rival.score.total,
+          where,
+        ).toBe(delta.rival);
         expect(frame.view.hand.length - prev.hand.length, where).toBe(
           delta.hand,
         );
@@ -434,10 +466,10 @@ describe("the score through a turn", () => {
           ? null
           : event.playerPoints > event.rivalPoints,
       );
-      // The rival's card before it paid no goal points.
-      const flip = frames.find((f) => f.cue.kind === "rival")!;
-      expect(flip.view.rival.goalPoints, where).toBe(
-        prev.view.rival.goalPoints,
+      // The rival's move that closed the round paid it no goal points:
+      // those land with the goal's own frame.
+      expect(prev.view.rival.score.goals, where).toBe(
+        frame.view.rival.score.goals - event.rivalPoints,
       );
     });
     expect(goals).toBe(18);
@@ -518,7 +550,7 @@ describe("cues", () => {
     ]);
     expect(last(frames).cue.chain).toBe(8);
     const rival = frames.find((frame) => frame.cue.kind === "rival");
-    expect(rival?.cue.rivalAction).not.toBeNull();
+    expect(rival?.cue.rivalMove).not.toBeNull();
     expect(rival?.cue.chain).toBe(8);
   });
 
@@ -585,13 +617,14 @@ describe("cues", () => {
     ).toBe(0);
   });
 
-  it("says who a rival card and the end of the match belong to", () => {
+  it("says who a rival's move and the end of the match belong to", () => {
     let overs = 0;
     eachTurn([], ({ frames, after }, where) => {
       const flips = frames.filter((frame) => frame.cue.kind === "rival");
       for (const flip of flips) {
-        expect(flip.cue.rivalAction, where).toBe(flip.view.rival.last);
+        expect(flip.cue.rivalMove, where).not.toBeNull();
         expect(flip.flipping, where).toBe(true);
+        expect(flip.tone, where).toBe("rival");
       }
       const over = frames.find((frame) => frame.cue.kind === "over");
       if (!over) return;

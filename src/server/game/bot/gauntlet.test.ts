@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import { CAT_LIST } from "../cats";
-import type { DifficultyId } from "../difficulty";
+import { rivalLevel, type DifficultyId } from "../difficulty";
 import { ELEMENTS } from "../elements";
 import { GAUNTLET } from "../rival";
 import { RELIC_LIST } from "../relics";
 import { poolFromUnlocks, STARTING_UNLOCKS } from "../unlocks";
-import { playGauntlet, rivalLevel, type GauntletMatch } from "./arena";
+import { playGauntlet, type GauntletMatch } from "./arena";
 import { standIn } from "./index";
 import { LEVELS, TOP_LEVEL } from "./levels";
 
@@ -79,7 +79,7 @@ describe("simulated runs", () => {
   });
 
   it("make the first rival beatable by careful play", () => {
-    expect(careful.firstMatch).toBeGreaterThan(0.85);
+    expect(careful.firstMatch).toBeGreaterThan(0.75);
   });
 
   it("reward thinking: each better stand-in climbs higher", () => {

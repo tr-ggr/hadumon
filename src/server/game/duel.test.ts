@@ -2,19 +2,19 @@ import { describe, expect, it } from "vitest";
 
 import { advance, openMatch, type Policy } from "./duel";
 import {
-  applyDuel,
-  createDuel,
-  duelActions,
-  duelScore,
-  duelStanding,
+  applyAction,
+  createMatch,
+  legalActions,
+  sideScore,
+  goalStanding,
   emptyPool,
   IllegalAction,
   reactsTo,
-  stepDuel,
+  stepMatch,
   type Action,
-  type DuelConfig,
-  type DuelEvent,
-  type DuelState,
+  type MatchConfig,
+  type MatchEvent,
+  type MatchState,
   type Essence,
   type PlacedCat,
   type Side,
@@ -26,7 +26,7 @@ import { starterDeck } from "./run";
 
 const FACES: Essence[] = ["flame", "mist", "volt", "thorn", "shade"];
 
-const config = (seed = "duel", relics: string[] = []): DuelConfig => ({
+const config = (seed = "duel", relics: string[] = []): MatchConfig => ({
   seed,
   rivalId: "alley-tom",
   level: 0,
@@ -53,10 +53,10 @@ const KEEP: Action = {
 function turn(
   who: SideId,
   sides: Partial<Record<SideId, Partial<Side>>> = {},
-  table: Partial<DuelState> = {},
+  table: Partial<MatchState> = {},
   relics: string[] = [],
-): DuelState {
-  const base = createDuel(config("duel", relics));
+): MatchState {
+  const base = createMatch(config("duel", relics));
   const seat = (id: SideId): Side => ({
     ...base.sides[id],
     setup: [],
@@ -80,7 +80,7 @@ const board = (extra: Partial<Side["board"]>) => ({
   ...extra,
 });
 
-const powers = (events: DuelEvent[], side: SideId) =>
+const powers = (events: MatchEvent[], side: SideId) =>
   events.flatMap((e) =>
     e.type === "power" && e.side === side ? [e.catId] : [],
   );
@@ -89,12 +89,12 @@ const powers = (events: DuelEvent[], side: SideId) =>
 function randomPolicy(seed: string): Policy {
   const rng = createRng(seed);
   return (state) =>
-    rng.pick(duelActions(state).filter((action) => action.type !== "reroll"));
+    rng.pick(legalActions(state).filter((action) => action.type !== "reroll"));
 }
 
-describe("createDuel", () => {
+describe("createMatch", () => {
   it("deals both seats and one shared table", () => {
-    const state = createDuel(config());
+    const state = createMatch(config());
     expect(state.phase).toBe("setup");
     for (const side of [state.sides.player, state.sides.rival]) {
       expect(side.setup).toHaveLength(5);
@@ -107,8 +107,8 @@ describe("createDuel", () => {
   });
 
   it("deals each seat from its own stream", () => {
-    const one = createDuel(config());
-    const two = createDuel({
+    const one = createMatch(config());
+    const two = createMatch({
       ...config(),
       rival: { deck: starterDeck("shade"), relics: [] },
     });
@@ -117,7 +117,7 @@ describe("createDuel", () => {
   });
 
   it("gives the player's relics to the player alone", () => {
-    const state = createDuel(config("duel", ["bent-whisker"]));
+    const state = createMatch(config("duel", ["bent-whisker"]));
     expect(state.sides.player.mods.huntBonus).toBe(1);
     expect(state.sides.rival.mods.huntBonus).toBe(0);
   });
@@ -125,9 +125,9 @@ describe("createDuel", () => {
 
 describe("setup", () => {
   it("has the rival keep first, then the player, then starts round one", () => {
-    const dealt = createDuel(config());
+    const dealt = createMatch(config());
     expect(dealt.active).toBe("rival");
-    const kept = applyDuel(dealt, KEEP);
+    const kept = applyAction(dealt, KEEP);
     expect(kept.state.phase).toBe("setup");
     expect(kept.state.active).toBe("player");
     expect(kept.events).toEqual([
@@ -136,7 +136,7 @@ describe("setup", () => {
     expect(kept.state.sides.rival.hand).toHaveLength(3);
     expect(kept.state.sides.player.hand).toHaveLength(0);
 
-    const { state } = applyDuel(kept.state, KEEP);
+    const { state } = applyAction(kept.state, KEEP);
     expect(state.phase).toBe("turn");
     expect(state.active).toBe("player");
     expect(state.sides.player.turnsLeft).toBe(5);
@@ -145,13 +145,13 @@ describe("setup", () => {
 
   it("refuses anything but a keep", () => {
     expect(() =>
-      applyDuel(createDuel(config()), { type: "den", targets: [] }),
+      applyAction(createMatch(config()), { type: "den", targets: [] }),
     ).toThrow(IllegalAction);
   });
 
   it("gives Early Riser's turn to the seat that holds it", () => {
-    const dealt = createDuel(config("duel", ["early-riser", "warm-saucer"]));
-    const { state } = applyDuel(applyDuel(dealt, KEEP).state, KEEP);
+    const dealt = createMatch(config("duel", ["early-riser", "warm-saucer"]));
+    const { state } = applyAction(applyAction(dealt, KEEP).state, KEEP);
     expect(state.sides.player.turnsLeft).toBe(6);
     expect(state.sides.rival.turnsLeft).toBe(5);
     expect(state.sides.player.essence.wild).toBe(1);
@@ -163,11 +163,11 @@ describe("turn order", () => {
   /** Who acted on each whole turn of a match, round by round. */
   function order(relics: string[] = []): SideId[][] {
     const rounds: SideId[][] = [[], [], []];
-    let state = createDuel(config("order", relics));
-    state = applyDuel(applyDuel(state, KEEP).state, KEEP).state;
+    let state = createMatch(config("order", relics));
+    state = applyAction(applyAction(state, KEEP).state, KEEP).state;
     while (state.phase !== "over") {
       rounds[state.round]?.push(state.active);
-      state = applyDuel(state, { type: "den", targets: [] }).state;
+      state = applyAction(state, { type: "den", targets: [] }).state;
     }
     return rounds;
   }
@@ -192,7 +192,7 @@ describe("turn order", () => {
 
   it("does not pass the turn on a free reroll", () => {
     const state = turn("player", {}, { feeder: ["mist", "mist", "mist"] });
-    const { state: next, events } = applyDuel(state, { type: "reroll" });
+    const { state: next, events } = applyAction(state, { type: "reroll" });
     expect(next.active).toBe("player");
     expect(next.sides.player.turnsLeft).toBe(5);
     expect(events[0]).toEqual({
@@ -209,10 +209,10 @@ describe("turn order", () => {
         hand: ["emberkit"],
       },
     });
-    const hunted = applyDuel(state, { type: "hunt", dice: [0] });
+    const hunted = applyAction(state, { type: "hunt", dice: [0] });
     expect(hunted.state.phase).toBe("pending");
     expect(hunted.state.active).toBe("rival");
-    const { state: next } = applyDuel(hunted.state, {
+    const { state: next } = applyAction(hunted.state, {
       type: "resolve",
       choice: 0,
     });
@@ -225,7 +225,7 @@ describe("turn order", () => {
 describe("a shared table", () => {
   it("has one feeder: a die one seat takes is gone for the other", () => {
     const state = turn("rival");
-    const { state: next } = applyDuel(state, { type: "hunt", dice: [1] });
+    const { state: next } = applyAction(state, { type: "hunt", dice: [1] });
     expect(next.feeder).toEqual(["flame", "volt", "thorn", "shade"]);
     expect(next.sides.rival.essence.mist).toBe(1);
     expect(next.sides.player.essence).toEqual(emptyPool());
@@ -236,7 +236,7 @@ describe("a shared table", () => {
       rival: { hand: ["dewhisker"], essence: { ...emptyPool(), volt: 1 } },
     });
     const before = state.sides.player;
-    const { state: next, events } = applyDuel(state, {
+    const { state: next, events } = applyAction(state, {
       type: "play",
       hand: 0,
       row: "den",
@@ -262,7 +262,10 @@ describe("a shared table", () => {
       },
     });
     const tray = state.sides.rival.tray;
-    const { events } = applyDuel(state, { type: "prowl", picks: [0, "deck"] });
+    const { events } = applyAction(state, {
+      type: "prowl",
+      picks: [0, "deck"],
+    });
     expect(events[0]).toEqual({
       type: "move",
       side: "rival",
@@ -278,18 +281,18 @@ describe("cats that watch the other seat", () => {
   });
 
   it("answer to the kind of turn it took", () => {
-    expect(reactsTo("raid", "hunt")).toBe(true);
-    expect(reactsTo("bank", "den")).toBe(true);
-    expect(reactsTo("burn", "prowl")).toBe(true);
-    expect(reactsTo("raid", "den")).toBe(false);
+    expect(reactsTo("hunt", "hunt")).toBe(true);
+    expect(reactsTo("den", "den")).toBe(true);
+    expect(reactsTo("prowl", "prowl")).toBe(true);
+    expect(reactsTo("hunt", "den")).toBe(false);
     expect(reactsTo("any", "play")).toBe(true);
-    expect(reactsTo("stash", "play")).toBe(false);
+    expect(reactsTo("den", "play")).toBe(false);
   });
 
   it("fire on the player's board when the rival acts", () => {
     const state = turn("rival", { player: { board: watchers } });
     const fired = (action: Action) =>
-      powers(applyDuel(state, action).events, "player");
+      powers(applyAction(state, action).events, "player");
     expect(fired({ type: "hunt", dice: [0] })).toEqual([
       "brumefang",
       "nyxaroth",
@@ -306,7 +309,7 @@ describe("cats that watch the other seat", () => {
 
   it("pay the seat that owns them", () => {
     const state = turn("rival", { player: { board: watchers } });
-    const { state: next } = applyDuel(state, { type: "hunt", dice: [0] });
+    const { state: next } = applyAction(state, { type: "hunt", dice: [0] });
     expect(next.sides.player.essence.mist).toBe(1);
     expect(next.sides.player.board.den[2]?.yarn).toBe(1);
     expect(next.sides.rival.essence.mist).toBe(0);
@@ -317,10 +320,10 @@ describe("cats that watch the other seat", () => {
       rival: { board: watchers },
       player: { hand: ["emberkit"], essence: { ...emptyPool(), flame: 1 } },
     });
-    const played = applyDuel(state, { type: "play", hand: 0, row: "hunt" });
+    const played = applyAction(state, { type: "play", hand: 0, row: "hunt" });
     expect(powers(played.events, "rival")).toEqual(["nyxaroth"]);
     expect(powers(played.events, "player")).toEqual(["emberkit"]);
-    const hunted = applyDuel(state, { type: "hunt", dice: [0] });
+    const hunted = applyAction(state, { type: "hunt", dice: [0] });
     expect(powers(hunted.events, "rival")).toEqual(["brumefang", "nyxaroth"]);
     expect(hunted.state.sides.rival.essence.mist).toBe(1);
   });
@@ -333,9 +336,12 @@ describe("cats that watch the other seat", () => {
         hand: ["emberkit"],
       },
     });
-    const hunted = applyDuel(state, { type: "hunt", dice: [0] });
+    const hunted = applyAction(state, { type: "hunt", dice: [0] });
     expect(powers(hunted.events, "player")).toEqual([]);
-    const resolved = applyDuel(hunted.state, { type: "resolve", choice: null });
+    const resolved = applyAction(hunted.state, {
+      type: "resolve",
+      choice: null,
+    });
     expect(powers(resolved.events, "player")).toEqual([
       "brumefang",
       "nyxaroth",
@@ -344,7 +350,7 @@ describe("cats that watch the other seat", () => {
 
   it("stay quiet on their own seat's turn", () => {
     const state = turn("player", { player: { board: watchers } });
-    const { events } = applyDuel(state, { type: "hunt", dice: [0] });
+    const { events } = applyAction(state, { type: "hunt", dice: [0] });
     expect(powers(events, "player")).toEqual([]);
   });
 });
@@ -354,9 +360,9 @@ describe("relics at a table with two seats", () => {
     const state = turn("player", {
       player: { board: board({ den: [placed("hadu")] }) },
     });
-    const mine = applyDuel(state, { type: "prowl", picks: ["deck"] });
+    const mine = applyAction(state, { type: "prowl", picks: ["deck"] });
     expect(mine.state.sides.player.essence.wild).toBe(1);
-    const theirs = applyDuel(mine.state, { type: "den", targets: [] });
+    const theirs = applyAction(mine.state, { type: "den", targets: [] });
     expect(theirs.state.sides.player.essence.wild).toBe(1);
     expect(theirs.state.sides.rival.essence.wild).toBe(0);
   });
@@ -364,7 +370,7 @@ describe("relics at a table with two seats", () => {
   it("rings the Loud Bell whenever the feeder is rolled again", () => {
     const bell = ["loud-bell"];
     const emptied = turn("rival", {}, { feeder: ["flame"] }, bell);
-    const hunted = applyDuel(emptied, { type: "hunt", dice: [0] });
+    const hunted = applyAction(emptied, { type: "hunt", dice: [0] });
     expect(hunted.state.feeder).toHaveLength(5);
     expect(hunted.state.sides.player.essence.wild).toBe(1);
     expect(hunted.state.sides.rival.essence.wild).toBe(0);
@@ -375,10 +381,10 @@ describe("relics at a table with two seats", () => {
     });
 
     const same = turn("player", {}, { feeder: ["mist", "mist"] }, bell);
-    const rerolled = applyDuel(same, { type: "reroll" });
+    const rerolled = applyAction(same, { type: "reroll" });
     expect(rerolled.state.sides.player.essence.wild).toBe(1);
 
-    const quiet = applyDuel(turn("rival", {}, {}, bell), {
+    const quiet = applyAction(turn("rival", {}, {}, bell), {
       type: "hunt",
       dice: [0],
     });
@@ -409,14 +415,14 @@ describe("round goals", () => {
       },
       rival: { board: board({ hunt: [placed("thornkit")] }) },
     });
-    expect(duelStanding(state)).toEqual({
+    expect(goalStanding(state)).toEqual({
       goalId: "hunting-party",
       player: 2,
       rival: 1,
       playerPoints: 4,
       rivalPoints: 1,
     });
-    const { state: next, events } = applyDuel(state, {
+    const { state: next, events } = applyAction(state, {
       type: "den",
       targets: [],
     });
@@ -436,16 +442,16 @@ describe("round goals", () => {
   it("score nothing for a side with nothing, whichever side it is", () => {
     const ahead = board({ hunt: [placed("thornkit")] });
     const rivalBare = lastTurn("hunting-party", { player: { board: ahead } });
-    expect(duelStanding(rivalBare)).toMatchObject({
+    expect(goalStanding(rivalBare)).toMatchObject({
       playerPoints: 4,
       rivalPoints: 0,
     });
     const playerBare = lastTurn("hunting-party", { rival: { board: ahead } });
-    expect(duelStanding(playerBare)).toMatchObject({
+    expect(goalStanding(playerBare)).toMatchObject({
       playerPoints: 0,
       rivalPoints: 4,
     });
-    expect(duelStanding(lastTurn("hunting-party", {}))).toMatchObject({
+    expect(goalStanding(lastTurn("hunting-party", {}))).toMatchObject({
       playerPoints: 0,
       rivalPoints: 0,
     });
@@ -457,7 +463,7 @@ describe("round goals", () => {
       player: { board: one },
       rival: { board: one },
     });
-    expect(duelStanding(tied)).toMatchObject({
+    expect(goalStanding(tied)).toMatchObject({
       playerPoints: 2,
       rivalPoints: 2,
     });
@@ -466,7 +472,7 @@ describe("round goals", () => {
       { player: { board: one }, rival: { board: one } },
       ["lucky-collar"],
     );
-    expect(duelStanding(collared)).toMatchObject({
+    expect(goalStanding(collared)).toMatchObject({
       player: 2,
       rival: 1,
       playerPoints: 4,
@@ -479,7 +485,7 @@ describe("round goals", () => {
       player: { board: board({ den: [placed("verdantmane")] }) },
       rival: { board: board({ den: [placed("nimbustail")] }) },
     });
-    const { state: next, events } = applyDuel(state, {
+    const { state: next, events } = applyAction(state, {
       type: "den",
       targets: [],
     });
@@ -516,7 +522,7 @@ describe("the end of a match", () => {
         hand: ["mistpaw", "mistpaw"],
       },
     });
-    const { state: over, events } = applyDuel(state, {
+    const { state: over, events } = applyAction(state, {
       type: "den",
       targets: [],
     });
@@ -534,7 +540,7 @@ describe("the end of a match", () => {
       relics: 0,
     });
     expect(over.result?.won).toBe(false);
-    expect(duelScore(over, "rival").total).toBe(12);
+    expect(sideScore(over, "rival").total).toBe(12);
     expect(events[events.length - 1]).toEqual({
       type: "over",
       won: false,
@@ -542,15 +548,15 @@ describe("the end of a match", () => {
       rival: 12,
       tiebreak: null,
     });
-    expect(() => applyDuel(over, { type: "den", targets: [] })).toThrow(
+    expect(() => applyAction(over, { type: "den", targets: [] })).toThrow(
       IllegalAction,
     );
-    expect(duelActions(over)).toEqual([]);
+    expect(legalActions(over)).toEqual([]);
   });
 
   it("breaks a tie on food left, then on cats, then for the player", () => {
     const end = (sides: Partial<Record<SideId, Partial<Side>>>) =>
-      applyDuel(closing(sides), { type: "den", targets: [] }).state.result;
+      applyAction(closing(sides), { type: "den", targets: [] }).state.result;
     const cat = board({ den: [placed("sparkmew")] });
     // Two bare boards: level on points, on food and on cats.
     expect(end({})).toMatchObject({ won: true, tiebreak: "seat" });
@@ -604,7 +610,7 @@ describe("the driver", () => {
   });
 
   it("refuses to act for the player out of turn", () => {
-    const dealt = createDuel(config());
+    const dealt = createMatch(config());
     expect(() => advance(dealt, KEEP, rival)).toThrow(IllegalAction);
   });
 
@@ -621,18 +627,18 @@ describe("engine guarantees", () => {
   it("never mutates the state it is given", () => {
     const state = turn("player");
     const copy = structuredClone(state);
-    applyDuel(state, { type: "hunt", dice: [0] });
+    applyAction(state, { type: "hunt", dice: [0] });
     expect(state).toEqual(copy);
   });
 
   it("steps in place to the same state it returns a copy of", () => {
     const rng = createRng("in-place");
-    let state = createDuel(config("in-place"));
+    let state = createMatch(config("in-place"));
     for (let guard = 0; guard < 400 && state.phase !== "over"; guard++) {
-      const action = rng.pick(duelActions(state));
+      const action = rng.pick(legalActions(state));
       const stepped = structuredClone(state);
-      stepDuel(stepped, action);
-      state = applyDuel(state, action).state;
+      stepMatch(stepped, action);
+      state = applyAction(state, action).state;
       expect(stepped).toEqual(state);
     }
   });

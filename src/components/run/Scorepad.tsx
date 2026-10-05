@@ -9,7 +9,6 @@ import type { MatchView } from "~/server/game/view";
 
 import type { ReactNode } from "react";
 
-import { plural } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
 
 function Line({
@@ -39,21 +38,23 @@ function Line({
   );
 }
 
-/** Both score sheets, line by line. `player` defaults to the live score. */
+/**
+ * Both score sheets, line by line: the same lines, since both sides are
+ * scored the same way. Each defaults to the live score.
+ */
 export function ScoreSheets({
   match,
   player = match.score,
-  rivalTotal = match.rival.score,
+  rivalScore = match.rival.score,
   note,
 }: {
   match: MatchView;
   player?: ScoreBreakdown;
-  rivalTotal?: number;
-  /** A line under the rival's shorter sheet. */
+  rivalScore?: ScoreBreakdown;
+  /** A line under both sheets. */
   note?: ReactNode;
 }) {
   const rival = getRival(match.rivalId);
-  const { banked, bankValue, yarn, goalPoints } = match.rival;
   return (
     <div className="text-ink grid grid-cols-2 gap-3">
       <dl>
@@ -72,15 +73,15 @@ export function ScoreSheets({
         <p className="border-ink bg-coral mb-1 inline-block max-w-full truncate border-2 px-1 align-bottom text-xs leading-5 font-black">
           {rival.name}
         </p>
-        <Line
-          label={`${plural(banked, "cat")} × ${bankValue}`}
-          value={banked * bankValue}
-        />
-        <Line label="Yarn" value={yarn} />
-        <Line label="Goals" value={goalPoints} />
-        <Line label="Total" value={rivalTotal} total />
-        {note}
+        <Line label="Cats" value={rivalScore.cats} />
+        <Line label="Yarn" value={rivalScore.yarn} />
+        <Line label="Cached" value={rivalScore.cached} />
+        <Line label="Tucked" value={rivalScore.tucked} />
+        <Line label="Goals" value={rivalScore.goals} />
+        <Line label="Relics" value={rivalScore.relics} />
+        <Line label="Total" value={rivalScore.total} total />
       </dl>
+      {note ? <div className="col-span-2">{note}</div> : null}
     </div>
   );
 }
@@ -106,11 +107,8 @@ export function Scorepad({
       <ScoreSheets
         match={match}
         note={
-          <p className="text-ink-soft mt-1.5 text-[11px] leading-snug">
+          <p className="text-ink-soft text-[11px] leading-snug">
             A tied goal splits the points. A count of 0 takes nothing.
-            {match.rival.pushes > 0
-              ? ` The rival's count includes ${plural(match.rival.pushes, "push", "pushes")}.`
-              : ""}
           </p>
         }
       />

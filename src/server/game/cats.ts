@@ -56,9 +56,11 @@ export const ROW_LABELS: Record<Row, string> = {
 /** One pip of a cat's food cost. `any` is paid with any food. */
 export type CostPip = Element | "any";
 
-/** What the rival just did; "between turns" powers react to these. */
-export const RIVAL_ACTIONS = ["bank", "stash", "raid", "burn", "push"] as const;
-export type RivalAction = (typeof RIVAL_ACTIONS)[number];
+/**
+ * What a "between turns" power watches the other seat for: the row it
+ * activates, or any turn at all, a played cat included.
+ */
+export type Watched = Row | "any";
 
 export type Effect =
   /** Gain essence of one element from the supply. */
@@ -86,7 +88,7 @@ export type Effect =
 
 export type Power =
   | { timing: "played" | "activated" | "roundEnd"; effect: Effect }
-  | { timing: "between"; on: RivalAction | "any"; effect: Effect };
+  | { timing: "between"; on: Watched; effect: Effect };
 
 export type Timing = Power["timing"];
 
@@ -257,7 +259,7 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
         yarnCap: 4,
         power: {
           timing: "between",
-          on: "raid",
+          on: "hunt",
           effect: { kind: "essence", element: "mist", n: 1 },
         },
       },
@@ -423,7 +425,7 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
         yarnCap: 2,
         power: {
           timing: "between",
-          on: "burn",
+          on: "prowl",
           effect: { kind: "draw", n: 1 },
         },
       },
@@ -457,7 +459,7 @@ export const CATS: Record<string, Cat> = Object.fromEntries(
         yarnCap: 4,
         power: {
           timing: "between",
-          on: "bank",
+          on: "den",
           effect: { kind: "yarnSelf", n: 1 },
         },
       },
@@ -616,13 +618,11 @@ const TIMING_PREFIX: Record<Timing, string> = {
   roundEnd: "End of round",
 };
 
-const RIVAL_ACTION_TEXT: Record<RivalAction | "any", string> = {
-  any: "whenever the rival acts",
-  bank: "when the rival banks a cat",
-  stash: "when the rival stashes yarn",
-  raid: "when the rival raids the feeder",
-  burn: "when the rival burns a tray card",
-  push: "when the rival pushes a goal",
+const WATCHED_TEXT: Record<Watched, string> = {
+  any: "after each of the rival's turns",
+  hunt: "when the rival hunts",
+  den: "when the rival goes to the Den",
+  prowl: "when the rival prowls",
 };
 
 function plural(n: number, word: string): string {
@@ -660,7 +660,7 @@ export function describeEffect(effect: Effect): string {
 export function describePower(power: Power): string {
   const effect = describeEffect(power.effect);
   if (power.timing === "between") {
-    return `${TIMING_PREFIX.between}: ${RIVAL_ACTION_TEXT[power.on]}, ${effect}.`;
+    return `${TIMING_PREFIX.between}: ${WATCHED_TEXT[power.on]}, ${effect}.`;
   }
   return `${TIMING_PREFIX[power.timing]}: ${effect}.`;
 }

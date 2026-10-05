@@ -1,48 +1,44 @@
 import { describe, expect, it } from "vitest";
 
-import { getCat, type RivalAction } from "./cats";
+import { getCat } from "./cats";
 import {
-  applyAction,
   auraTotal,
   canPlay,
   canReroll,
-  createMatch,
   emptyPool,
-  goalStanding,
   IllegalAction,
   defaultSwap,
-  legalActions,
   payCost,
   playPayment,
-  playerScore,
-  rivalScore,
   rowReward,
   swapOffer,
   type Essence,
-  type MatchEvent,
-  type MatchState,
   type PlacedCat,
 } from "./match";
 import { createRng } from "./rng";
 import { starterDeck } from "./run";
-import { randomBot } from "./sim";
+import {
+  soloActions as legalActions,
+  soloApply as applyAction,
+  soloMatch,
+  soloScore as playerScore,
+  type Solo as MatchState,
+  type SoloEvent as MatchEvent,
+} from "./solo";
 
 const ALL_FACES: Essence[] = ["flame", "mist", "volt", "thorn", "shade"];
 
+/**
+ * These are the rules of one seat's turn, tested at a table where the seat
+ * opposite never has a turn to take (`solo.ts`). What two seats do to each
+ * other is in `duel.test.ts`.
+ */
 function fresh(seed = "t", relics: string[] = []): MatchState {
-  return createMatch({
-    seed,
-    deck: starterDeck("flame"),
-    relics,
-    rivalId: "alley-tom",
-  });
+  return soloMatch({ seed, deck: starterDeck("flame"), relics });
 }
 
-/** A mid-turn state whose rival will flip `rivalCard` next. */
-function turnState(
-  overrides: Partial<MatchState> = {},
-  rivalCard: RivalAction = "bank",
-): MatchState {
+/** A table in the middle of a round, the player to act. */
+function turnState(overrides: Partial<MatchState> = {}): MatchState {
   const base = fresh();
   return {
     ...base,
@@ -50,7 +46,6 @@ function turnState(
     setup: [],
     turnsLeft: 5,
     feeder: [...ALL_FACES],
-    rival: { ...base.rival, deck: Array.from({ length: 10 }, () => rivalCard) },
     ...overrides,
   };
 }
@@ -81,7 +76,6 @@ describe("createMatch", () => {
     expect(state.deck).toHaveLength(8);
     expect(state.feeder).toHaveLength(5);
     expect(new Set(state.goals).size).toBe(3);
-    expect(state.rival.deck).toHaveLength(10);
   });
 
   it("is deterministic for a seed and varies across seeds", () => {
@@ -90,39 +84,6 @@ describe("createMatch", () => {
       ["a", "b", "c", "d"].map((seed) => fresh(seed).deck.join(",")),
     );
     expect(orders.size).toBeGreaterThan(1);
-  });
-
-  it("starts the rival with the tier's yarn, which scores from turn one", () => {
-    const on = (difficulty?: "kitten" | "stray" | "apex") =>
-      createMatch({
-        seed: "t",
-        deck: starterDeck("flame"),
-        relics: [],
-        rivalId: "alley-tom",
-        difficulty,
-      });
-    expect(on()).toEqual(fresh());
-    expect(on("kitten")).toEqual(fresh());
-    expect(rivalScore(on("kitten"))).toBe(0);
-    expect(on("stray").rival.yarn).toBe(2);
-    expect(rivalScore(on("stray"))).toBe(2);
-    expect(rivalScore(on("apex"))).toBe(4);
-    expect(playerScore(on("apex")).total).toBe(0);
-    // No dice were rolled for it: the rest of the deal is the same.
-    expect({ ...on("apex"), mods: fresh().mods, rival: fresh().rival }).toEqual(
-      fresh(),
-    );
-  });
-
-  it("lays the tier over the relics' mods", () => {
-    const state = createMatch({
-      seed: "t",
-      deck: starterDeck("flame"),
-      relics: ["warm-saucer"],
-      rivalId: "alley-tom",
-      difficulty: "stray",
-    });
-    expect(state.mods).toMatchObject({ startWild: 1, rivalStartYarn: 2 });
   });
 });
 
@@ -139,8 +100,6 @@ describe("setup", () => {
     expect(next.essence).toEqual(pool({ flame: 1, mist: 1 }));
     expect(next.phase).toBe("turn");
     expect(next.turnsLeft).toBe(5);
-    // Keeping is not a turn: the rival has not acted.
-    expect(next.rival.deck).toHaveLength(10);
   });
 
   it("rejects anything but exactly five", () => {
@@ -331,7 +290,7 @@ describe("a play that is short", () => {
 });
 
 describe("play", () => {
-  it("pays the cost, places the cat, and hands the turn to the rival", () => {
+  it("pays the cost, places the cat, and uses the turn", () => {
     const state = turnState({
       hand: ["flameclaw"],
       essence: pool({ flame: 1 }),
@@ -345,8 +304,7 @@ describe("play", () => {
     expect(next.hand).toEqual([]);
     expect(next.essence.flame).toBe(0);
     expect(next.turnsLeft).toBe(4);
-    expect(next.rival.banked).toBe(1);
-    expect(events.map((e) => e.type)).toEqual(["played", "rival"]);
+    expect(events.map((e) => e.type)).toEqual(["played"]);
   });
 
   it("rejects the wrong row, an unpaid cost, and a full row", () => {
@@ -494,7 +452,6 @@ describe("reroll", () => {
     const { state: next } = applyAction(state, { type: "reroll" });
     expect(next.feeder).toHaveLength(5);
     expect(next.turnsLeft).toBe(state.turnsLeft);
-    expect(next.rival.deck).toHaveLength(10);
   });
 });
 
@@ -649,14 +606,14 @@ describe("encore", () => {
     const second = applyAction(first, { type: "resolve", choice: 0 }).state;
     expect(second.phase).toBe("pending");
     expect(second.pending?.slot).toEqual({ row: "prowl", col: 0 });
-    // The rival still waits, and so does Hadu's treat.
-    expect(second.rival.banked).toBe(0);
+    // The turn is still open, and Hadu's treat waits for it to close.
+    expect(second.turnsLeft).toBe(5);
     expect(second.essence.wild).toBe(0);
 
     const done = applyAction(second, { type: "resolve", choice: 0 }).state;
     expect(done.phase).toBe("turn");
     expect(done.board.prowl[0]?.under).toEqual(["flameclaw", "burrfang"]);
-    expect(done.rival.banked).toBe(1);
+    expect(done.turnsLeft).toBe(4);
     expect(done.essence.wild).toBe(1);
   });
 });
@@ -750,8 +707,8 @@ describe("pending choices", () => {
       slot: { row: "prowl", col: 0 },
       draw: 1,
     });
-    // The rival waits for the answer.
-    expect(paused.rival.banked).toBe(0);
+    // The turn waits for the answer.
+    expect(paused.turnsLeft).toBe(5);
     expect(() => applyAction(paused, { type: "hunt", dice: [0] })).toThrow(
       IllegalAction,
     );
@@ -762,7 +719,7 @@ describe("pending choices", () => {
     expect(tucked.board.prowl[0]?.under).toEqual(["flameclaw"]);
     expect(tucked.hand).toHaveLength(2);
     expect(tucked.hand).not.toContain("flameclaw");
-    expect(tucked.rival.banked).toBe(1);
+    expect(tucked.turnsLeft).toBe(4);
   });
 
   it("keeps the cats tucked from the deck, in the order they went under", () => {
@@ -847,77 +804,6 @@ describe("pending choices", () => {
   });
 });
 
-describe("the rival", () => {
-  it("acts once after every turn and reshuffles its deck", () => {
-    let state = turnState();
-    state = {
-      ...state,
-      rival: { ...state.rival, deck: ["stash"], discard: [] },
-    };
-    state = applyAction(state, { type: "den", targets: [] }).state;
-    expect(state.rival.yarn).toBe(1);
-    expect(state.rival.deck).toEqual([]);
-    state = applyAction(state, { type: "den", targets: [] }).state;
-    expect(state.rival.yarn).toBe(2);
-  });
-
-  it("raids dice and burns the best tray card", () => {
-    const raided = applyAction(turnState({}, "raid"), {
-      type: "den",
-      targets: [],
-    });
-    expect(raided.state.feeder).toHaveLength(4);
-
-    const state = turnState(
-      { tray: ["emberkit", "bramblepaw", "flameclaw"] },
-      "burn",
-    );
-    const burned = applyAction(state, { type: "den", targets: [] });
-    expect(burned.state.discard).toContain("bramblepaw");
-    expect(burned.state.tray).toHaveLength(3);
-    expect(burned.events).toContainEqual({
-      type: "rival",
-      action: "burn",
-      removed: ["bramblepaw"],
-    });
-  });
-
-  it("triggers between-turn powers that match its action", () => {
-    const board = {
-      hunt: [],
-      den: [placed("gloomtail"), placed("brumefang")],
-      prowl: [],
-    };
-    const banked = applyAction(turnState({ board }, "bank"), {
-      type: "hunt",
-      dice: [0],
-    }).state;
-    expect(banked.board.den[0]?.yarn).toBe(1);
-    expect(banked.essence.mist).toBe(0);
-
-    const raided = applyAction(turnState({ board }, "raid"), {
-      type: "prowl",
-      picks: ["deck"],
-    }).state;
-    expect(raided.board.den[0]?.yarn).toBe(0);
-    expect(raided.essence.mist).toBe(1);
-  });
-
-  it("scores banked cats, yarn and goals, and Loud Bell cheapens banks", () => {
-    const state = turnState();
-    const scored = {
-      ...state,
-      rival: { ...state.rival, banked: 3, yarn: 2, goalPoints: 5 },
-    };
-    expect(rivalScore(scored)).toBe(3 * 2 + 2 + 5);
-    const belled = {
-      ...scored,
-      mods: fresh("t", ["loud-bell", "loud-bell"]).mods,
-    };
-    expect(rivalScore(belled)).toBe(3 * 1 + 2 + 5);
-  });
-});
-
 describe("rounds and goals", () => {
   it("ends the round after the last turn and fires end-of-round powers", () => {
     const state = turnState({
@@ -936,47 +822,6 @@ describe("rounds and goals", () => {
     expect(events.at(-1)?.type).toBe("goal");
   });
 
-  it("scores a goal by comparing the player's count with the rival's tally", () => {
-    const base = turnState({ goals: ["crowd", "pantry", "pawful"] });
-    const cats = (n: number) => ({
-      hunt: Array.from({ length: n }, () => placed("flameclaw")),
-      den: [],
-      prowl: [],
-    });
-    // Par for Crowd in round one is 2; Alley Tom has no edge.
-    expect(goalStanding(base)).toMatchObject({
-      player: 0,
-      rival: 2,
-      playerPoints: 0,
-      rivalPoints: 4,
-    });
-    expect(goalStanding({ ...base, board: cats(1) })).toMatchObject({
-      playerPoints: 1,
-      rivalPoints: 4,
-    });
-    expect(goalStanding({ ...base, board: cats(2) })).toMatchObject({
-      playerPoints: 2,
-      rivalPoints: 2,
-    });
-    expect(goalStanding({ ...base, board: cats(3) })).toMatchObject({
-      playerPoints: 4,
-      rivalPoints: 1,
-    });
-
-    const pushed = {
-      ...base,
-      board: cats(3),
-      rival: { ...base.rival, pushes: 2 },
-    };
-    expect(goalStanding(pushed)).toMatchObject({ rival: 4, playerPoints: 1 });
-    const collar = {
-      ...base,
-      board: cats(2),
-      mods: fresh("t", ["lucky-collar"]).mods,
-    };
-    expect(goalStanding(collar)).toMatchObject({ player: 3, playerPoints: 4 });
-  });
-
   it("finishes after the third round and refuses further actions", () => {
     const state = turnState({
       round: 2,
@@ -993,9 +838,9 @@ describe("rounds and goals", () => {
     });
     expect(over.phase).toBe("over");
     expect(over.result?.player.total).toBe(playerScore(over).total);
-    expect(over.result?.won).toBe(
-      over.result!.player.total > over.result!.rival,
-    );
+    // Flameclaw, its yarn, its cache and its tuck against a bare board.
+    expect(over.result?.won).toBe(true);
+    expect(over.result?.rival.total).toBe(0);
     expect(events.at(-1)?.type).toBe("over");
     expect(() => applyAction(over, { type: "den", targets: [] })).toThrow(
       IllegalAction,
@@ -1061,19 +906,19 @@ describe("engine guarantees", () => {
     for (let seed = 0; seed < 12; seed++) {
       const rng = createRng(`walk-${seed}`);
       let state = fresh(`walk-${seed}`);
-      let rivalTurns = 0;
+      let turns = 0;
       for (let guard = 0; guard < 300 && state.phase !== "over"; guard++) {
         const actions = legalActions(state);
         expect(actions.length).toBeGreaterThan(0);
         for (const action of actions) {
           expect(() => applyAction(state, action)).not.toThrow();
         }
-        const result = applyAction(state, randomBot(state, rng));
-        rivalTurns += result.events.filter((e) => e.type === "rival").length;
-        state = result.state;
+        const action = rng.pick(actions);
+        if (state.phase === "turn" && action.type !== "reroll") turns += 1;
+        state = applyAction(state, action).state;
       }
       expect(state.phase).toBe("over");
-      expect(rivalTurns).toBe(12);
+      expect(turns).toBeGreaterThanOrEqual(12);
       expect(state.goalResults).toHaveLength(3);
     }
   });

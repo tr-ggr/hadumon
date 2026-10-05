@@ -162,8 +162,8 @@ export function TurnPanel({
           <ScoreToken
             side="rival"
             label="Rival"
-            said={`Rival score ${match.rival.score}`}
-            value={match.rival.score}
+            said={`Rival score ${match.rival.score.total}`}
+            value={match.rival.score.total}
             className="bg-coral"
             wrapClassName="max-lg:hidden"
           />

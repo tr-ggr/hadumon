@@ -5,8 +5,10 @@ import { RELIC_LIST, RELICS } from "./relics";
 import { CLAN_LIST, CLANS, isClanId, type RunSummary } from "./run";
 import {
   earnedUnlocks,
+  HIGH_SCORE,
   poolFromUnlocks,
   STARTING_UNLOCKS,
+  TOP_SCORE,
   UNLOCK_RULES,
   unlockId,
 } from "./unlocks";
@@ -73,7 +75,7 @@ describe("unlocks", () => {
     ).toEqual([]);
 
     const high = earnedUnlocks(
-      summary({ bestMatchScore: 35 }),
+      summary({ bestMatchScore: HIGH_SCORE }),
       STARTING_UNLOCKS,
     );
     expect(high.map(unlockId)).toContain("cat:verdantmane");
@@ -143,7 +145,7 @@ describe("unlocks", () => {
 
     it("pays every rule that does not name a tier on all three", () => {
       const untiered = (difficulty: RunSummary["difficulty"]) =>
-        earned({ matchesWon: 5, bestMatchScore: 42, difficulty }).filter(
+        earned({ matchesWon: 5, bestMatchScore: TOP_SCORE, difficulty }).filter(
           (id) => id !== "relic:loud-bell",
         );
       expect(untiered("stray")).toEqual(untiered("kitten"));

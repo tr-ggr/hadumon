@@ -13,7 +13,7 @@ import { ROWS } from "../cats";
 import {
   otherSide,
   type Board,
-  type DuelState,
+  type MatchState,
   type Essence,
   type EssencePool,
   type GoalResult,
@@ -93,7 +93,7 @@ function faceDown(board: Board): Board {
   return { hunt: hide("hunt"), den: hide("den"), prowl: hide("prowl") };
 }
 
-export function observe(state: DuelState, me: SideId): Observation {
+export function observe(state: MatchState, me: SideId): Observation {
   const own = state.sides[me];
   const other = state.sides[otherSide(me)];
   return structuredClone({
@@ -150,7 +150,7 @@ export function observe(state: DuelState, me: SideId): Observation {
  * seed is drawn from `rng`, so nothing rolled here is rolled at the real
  * table.
  */
-export function imagine(seen: Observation, rng: Rng): DuelState {
+export function imagine(seen: Observation, rng: Rng): MatchState {
   const { own, other } = structuredClone(seen);
   const pool = rng.shuffle(other.unseen);
   const take = (n: number) => pool.splice(0, n);

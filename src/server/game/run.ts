@@ -1,79 +1,41 @@
 /**
  * Run state: one gauntlet attempt. Stored as jsonb on the `runs` row.
  *
- * A run is six matches against the rivals in `GAUNTLET`. The board resets
- * every match; the deck and relics carry through. Winning a match opens a
+ * A run is six matches against the rivals in `GAUNTLET`, each on its own
+ * deck and played by the bot at the level the tier asks. The board resets
+ * every match; the player's deck and relics carry through. Winning a match opens a
  * reward, losing one ends the run. Like the match engine, every function here
  * is pure and returns a new state.
  */
 
-import { CAT_LIST, getCat, type Rarity } from "./cats";
-import { difficultyOf, type DifficultyId } from "./difficulty";
-import { ELEMENT_LABELS, type Element } from "./elements";
+import { rivalPolicy } from "./bot";
+import { getCat, type Rarity } from "./cats";
+import { CLANS, starterDeck } from "./clans";
+import { difficultyOf, rivalLevel, type DifficultyId } from "./difficulty";
+import { advance, openMatch } from "./duel";
+import type { Element } from "./elements";
 import {
-  applyAction,
-  createMatch,
   IllegalAction,
   type Action,
   type MatchEvent,
   type MatchState,
 } from "./match";
-import { getRelic, NO_MODS } from "./relics";
 import { GAUNTLET } from "./rival";
+import { rivalDeck, rivalRelics } from "./rivalDecks";
 import { createRng, type Rng } from "./rng";
+
+export { CLAN_LIST, CLANS, isClanId, starterDeck, type Clan } from "./clans";
+
+/**
+ * The shape of a stored run. A run saved under an older one cannot be read
+ * by this game; it is closed as abandoned (`retireRun`).
+ */
+export const RUN_VERSION = 2;
 
 /** A deck can be trimmed down to this many cards and no further. */
 export const MIN_DECK = 12;
 export const REWARD_CATS = 3;
 export const REWARD_RELICS = 3;
-
-export interface Clan {
-  id: Element;
-  name: string;
-  /** The relic every run with this clan starts with. */
-  relicId: string;
-  text: string;
-}
-
-function clan(id: Element, name: string, relicId: string): Clan {
-  return {
-    id,
-    name,
-    relicId,
-    text: `A deck built around ${ELEMENT_LABELS[id]} cats. Starts with the ${getRelic(relicId).name}.`,
-  };
-}
-
-export const CLANS: Record<Element, Clan> = {
-  flame: clan("flame", "Cinder Clan", "ember-charm"),
-  mist: clan("mist", "Tide Clan", "tide-charm"),
-  volt: clan("volt", "Static Clan", "spark-charm"),
-  thorn: clan("thorn", "Bramble Clan", "briar-charm"),
-  shade: clan("shade", "Dusk Clan", "dusk-charm"),
-};
-
-export const CLAN_LIST: Clan[] = Object.values(CLANS);
-
-export function isClanId(value: string): value is Element {
-  return value in CLANS;
-}
-
-/**
- * 16 cards: three of each of the clan's commons, two of its uncommon, and one
- * of every other common.
- */
-export function starterDeck(clanId: Element): string[] {
-  const deck: string[] = [];
-  for (const cat of CAT_LIST) {
-    const own = cat.element === clanId;
-    if (cat.rarity === "common") {
-      deck.push(...Array.from({ length: own ? 3 : 1 }, () => cat.id));
-    } else if (cat.rarity === "uncommon" && own) {
-      deck.push(cat.id, cat.id);
-    }
-  }
-  return deck;
-}
 
 /** What rewards can be offered: the player's unlocks when the run began. */
 export interface RunPool {
@@ -108,6 +70,7 @@ export type RunPhase = "match" | "reward" | "over";
 export type RunOutcome = "won" | "lost" | "abandoned";
 
 export interface RunState {
+  v: typeof RUN_VERSION;
   seed: string;
   clanId: Element;
   /** Missing on a run saved before tiers existed, which is a Kitten run. */
@@ -135,17 +98,25 @@ export interface RunConfig {
 function matchFor(run: RunState): MatchState {
   const rivalId = GAUNTLET[run.matchIndex];
   if (!rivalId) throw new Error(`No rival for match ${run.matchIndex}`);
-  return createMatch({
-    seed: `${run.seed}:m${run.matchIndex}`,
-    deck: run.deck,
-    relics: run.relics,
-    rivalId,
-    difficulty: difficultyOf(run.difficulty).id,
-  });
+  // The rival keeps its opening hand as the match is dealt.
+  return openMatch(
+    {
+      seed: `${run.seed}:m${run.matchIndex}`,
+      rivalId,
+      level: rivalLevel(run.matchIndex, run.difficulty),
+      player: { deck: run.deck, relics: run.relics },
+      rival: {
+        deck: rivalDeck(rivalId, run.matchIndex, run.pool.cats),
+        relics: rivalRelics(rivalId),
+      },
+    },
+    rivalPolicy,
+  ).state;
 }
 
 export function startRun(config: RunConfig): RunState {
   const run: RunState = {
+    v: RUN_VERSION,
     seed: config.seed,
     clanId: config.clanId,
     difficulty: difficultyOf(config.difficulty).id,
@@ -163,16 +134,32 @@ export function startRun(config: RunConfig): RunState {
   return run;
 }
 
+/** True if a stored run is one this game can read. */
+export function isCurrentRun(stored: unknown): stored is RunState {
+  return (
+    typeof stored === "object" &&
+    stored !== null &&
+    (stored as { v?: unknown }).v === RUN_VERSION
+  );
+}
+
 /**
- * A stored run brought up to date. A match in flight keeps the mods it was
- * dealt, so one saved before a mod existed has no value for it; it is given
- * the mod's default, and no reader ever meets `undefined`.
+ * What a run saved by an older game comes to when it is closed: abandoned,
+ * with the matches it had won still counting towards unlocks. Only the
+ * fields every version has written are read.
  */
-export function loadRun(run: RunState): RunState {
-  if (!run.match) return run;
+export function retireRun(stored: unknown): RunSummary {
+  const old = (stored ?? {}) as Partial<
+    Pick<RunState, "clanId" | "difficulty" | "results">
+  >;
+  const results = Array.isArray(old.results) ? old.results : [];
   return {
-    ...run,
-    match: { ...run.match, mods: { ...NO_MODS, ...run.match.mods } },
+    clanId: old.clanId && old.clanId in CLANS ? old.clanId : "flame",
+    difficulty: difficultyOf(old.difficulty).id,
+    matchesWon: results.filter((r) => r?.won === true).length,
+    won: false,
+    bestMatchScore: Math.max(0, ...results.map((r) => Number(r?.player) || 0)),
+    totalScore: results.reduce((sum, r) => sum + (Number(r?.player) || 0), 0),
   };
 }
 
@@ -235,23 +222,33 @@ export function makeOffer(run: RunState): RewardOffer {
 export interface RunActionResult {
   run: RunState;
   events: MatchEvent[];
+  /**
+   * The match after each action the call applied: the player's, then each
+   * of the rival's. See `Advance` in `duel.ts`.
+   */
+  trail: MatchState[];
 }
 
-/** Applies a match action and, when the match ends, moves the run on. */
+/**
+ * Applies the player's action and every rival action that follows it, and
+ * when the match ends, moves the run on.
+ */
 export function actInRun(run: RunState, action: Action): RunActionResult {
   if (run.phase !== "match" || !run.match) {
     throw new IllegalAction("There is no match in progress.");
   }
-  const { state, events } = applyAction(run.match, action);
+  const { state, events, trail } = advance(run.match, action, rivalPolicy);
   const next: RunState = { ...run, match: state };
-  if (state.phase !== "over" || !state.result) return { run: next, events };
+  if (state.phase !== "over" || !state.result) {
+    return { run: next, events, trail };
+  }
 
   next.results = [
     ...run.results,
     {
       rivalId: state.rivalId,
       player: state.result.player.total,
-      rival: state.result.rival,
+      rival: state.result.rival.total,
       won: state.result.won,
     },
   ];
@@ -265,7 +262,7 @@ export function actInRun(run: RunState, action: Action): RunActionResult {
     next.phase = "reward";
     next.reward = makeOffer(next);
   }
-  return { run: next, events };
+  return { run: next, events, trail };
 }
 
 export function chooseReward(run: RunState, choice: RewardChoice): RunState {

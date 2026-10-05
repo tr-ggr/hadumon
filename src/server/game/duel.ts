@@ -6,14 +6,13 @@
  */
 
 import {
-  applyDuel,
-  createDuel,
+  applyAction,
+  createMatch,
   IllegalAction,
   type Action,
-  type DuelActionResult,
-  type DuelConfig,
-  type DuelEvent,
-  type DuelState,
+  type ActionResult,
+  type MatchConfig,
+  type MatchState,
 } from "./match";
 
 /**
@@ -21,35 +20,39 @@ import {
  * driver has nothing else; a bot narrows it to what its seat may see before
  * it thinks (see `bot/observe.ts`).
  */
-export type Policy = (state: DuelState) => Action;
+export type Policy = (state: MatchState) => Action;
 
 /** More rival actions in a row than any rules allow: a policy gone wrong. */
 const RIVAL_LIMIT = 64;
 
+export interface Advance extends ActionResult {
+  /**
+   * The table after each action this call applied, in order: the player's
+   * own first (when there was one), then each of the rival's. An action's
+   * events start with its `move` or `kept`, so the two line up.
+   */
+  trail: MatchState[];
+}
+
 /** Plays the rival until the player is to act, or the match is over. */
-function playRival(
-  start: DuelState,
-  policy: Policy,
-  events: DuelEvent[],
-): DuelState {
+function playRival(start: MatchState, policy: Policy, out: Advance): void {
   let state = start;
   for (let n = 0; state.phase !== "over" && state.active === "rival"; n++) {
     if (n >= RIVAL_LIMIT) throw new Error("The rival never finished its turn");
-    const result = applyDuel(state, policy(state));
+    const result = applyAction(state, policy(state));
     state = result.state;
-    events.push(...result.events);
+    out.events.push(...result.events);
+    out.trail.push(state);
   }
-  return state;
+  out.state = state;
 }
 
 /** Deals a match and has the rival keep its opening hand. */
-export function openMatch(
-  config: DuelConfig,
-  policy: Policy,
-): DuelActionResult {
-  const events: DuelEvent[] = [];
-  const state = playRival(createDuel(config), policy, events);
-  return { state, events };
+export function openMatch(config: MatchConfig, policy: Policy): Advance {
+  const state = createMatch(config);
+  const out: Advance = { state, events: [], trail: [] };
+  playRival(state, policy, out);
+  return out;
 }
 
 /**
@@ -57,14 +60,19 @@ export function openMatch(
  * The state that comes back is waiting on the player, or over.
  */
 export function advance(
-  state: DuelState,
+  state: MatchState,
   action: Action,
   policy: Policy,
-): DuelActionResult {
+): Advance {
   if (state.phase !== "over" && state.active !== "player") {
     throw new IllegalAction("It is not your turn.");
   }
-  const result = applyDuel(state, action);
-  const events = [...result.events];
-  return { state: playRival(result.state, policy, events), events };
+  const result = applyAction(state, action);
+  const out: Advance = {
+    state: result.state,
+    events: [...result.events],
+    trail: [result.state],
+  };
+  playRival(result.state, policy, out);
+  return out;
 }

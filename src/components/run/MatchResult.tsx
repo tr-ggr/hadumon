@@ -7,6 +7,7 @@ import type { ScoreBreakdown } from "~/server/game/match";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
+import { tiebreakText } from "./describe";
 import { runFx } from "./fx/effects";
 import { clearEnded, justEnded } from "./fx/ended";
 import type { Intent } from "./fx/plan";
@@ -123,7 +124,8 @@ export function MatchResult({
   if (!result) return null;
   const rival = getRival(match.rivalId);
   const { player } = result;
-  const margin = Math.abs(player.total - result.rival);
+  const margin = Math.abs(player.total - result.rival.total);
+  const settled = tiebreakText(result.tiebreak);
 
   return (
     <section
@@ -142,15 +144,14 @@ export function MatchResult({
           <span
             className={`border-ink mr-1.5 border-2 px-1 font-black tabular-nums ${result.won ? "bg-lime" : "bg-coral"}`}
           >
-            {player.total} to {result.rival}
+            {player.total} to {result.rival.total}
           </span>
-          {result.won
-            ? margin <= 3
-              ? "Close, and it still counts."
-              : "Not close."
-            : margin === 0
-              ? "A tie goes to the rival."
-              : `Short by ${margin}.`}
+          {settled ??
+            (result.won
+              ? margin <= 3
+                ? "Close, and it still counts."
+                : "Not close."
+              : `Short by ${margin}.`)}
         </p>
       </div>
 
@@ -158,7 +159,7 @@ export function MatchResult({
         <ScoreSheets
           match={match}
           player={tallied(player, counted)}
-          rivalTotal={result.rival}
+          rivalScore={result.rival}
         />
 
         <ol className="space-y-1.5">
