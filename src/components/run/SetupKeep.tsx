@@ -11,6 +11,7 @@ import { CatDetail, CatPick } from "./CatPick";
 import { plural } from "./describe";
 import { Die, Label, Nameplate, Pile, RelicTiles, TableButton } from "./pieces";
 import { RoundBoard, roundTurns } from "./RoundBoard";
+import { playCat, playSound } from "./sfx/engine";
 import { TableArea, TableRail } from "./TableSurface";
 
 function toggle<T>(list: readonly T[], item: T): T[] {
@@ -39,6 +40,10 @@ export function SetupKeep({
   const [cats, setCats] = useState<number[]>([]);
   const [essence, setEssence] = useState<Element[]>([]);
   const [detail, setDetail] = useState<string | null>(null);
+  const showCard = (catId: string) => {
+    playCat(catId);
+    setDetail(catId);
+  };
 
   const chosen = cats.length + essence.length;
   const ready = chosen === SETUP_KEEP;
@@ -91,8 +96,13 @@ export function SetupKeep({
                   verb="Keep"
                   selected={cats.includes(index)}
                   disabled={busy}
-                  onSelect={() => setCats((prev) => toggle(prev, index))}
-                  onDetail={() => setDetail(catId)}
+                  onSelect={() => {
+                    // A cat kept speaks up; one put back only clicks.
+                    if (cats.includes(index)) playSound("click");
+                    else playCat(catId);
+                    setCats((prev) => toggle(prev, index));
+                  }}
+                  onDetail={() => showCard(catId)}
                   className="h-full"
                 />
               </li>
@@ -152,7 +162,7 @@ export function SetupKeep({
                 <li key={`${index}-${catId}`}>
                   <CatPick
                     catId={catId}
-                    onDetail={() => setDetail(catId)}
+                    onDetail={() => showCard(catId)}
                     className="h-full"
                   />
                 </li>

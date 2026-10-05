@@ -86,7 +86,7 @@ export function RunView() {
 
   if (climb && climbing.frame && view) {
     return (
-      <TableSurface>
+      <TableSurface nav={false}>
         <Climb
           key={climb.id}
           climb={climb}

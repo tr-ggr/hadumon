@@ -19,6 +19,7 @@ import { api } from "~/trpc/react";
 
 import { CatDetail } from "./CatPick";
 import { Pile, RelicTile, TableButton } from "./pieces";
+import { playCat } from "./sfx/engine";
 import { stored, useStored } from "./stored";
 import { TableArea, TableRail } from "./TableSurface";
 
@@ -34,7 +35,7 @@ function unlockHint(clanId: Element): string {
   return rule ? `Locked. ${rule.hint}` : "Locked.";
 }
 
-/** One kind of cat in a deck, as a chip that opens its card. */
+/** One kind of cat in a deck, as a chip that opens its card in its own voice. */
 export function DeckChip({
   catId,
   copies,
@@ -47,7 +48,10 @@ export function DeckChip({
   return (
     <button
       type="button"
-      onClick={() => onDetail(catId)}
+      onClick={() => {
+        playCat(catId);
+        onDetail(catId);
+      }}
       aria-label={`${copies} ${getCat(catId).name}, details`}
       className="piece border-ink bg-cream text-ink hover:bg-sky-soft flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold"
     >

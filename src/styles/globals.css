@@ -766,32 +766,67 @@
 }
 
 /*
- * The climb between matches. `--px` is one pixel of the tower and of every
- * sprite on it, so a cat is 16 of them wherever it stands.
+ * The climb between matches. It has the whole screen: the stage is fixed
+ * over the window and has no fill, so the cloth shows through it.
  *
- * The tower is a world inside a stage, and a camera looks at it: the stage
+ * `--px` is one pixel of the tower and of every sprite on it, so a cat is 16
+ * of them wherever it stands. It is a whole number of screen pixels, and the
+ * largest the window has room for: the tower with a cat on its roof is 212
+ * of them tall, and has to be seen whole from far back, and it is 78 across,
+ * and a close shot, twice the size, has to hold all of that. The lengths
+ * below are in `px` because the tower's are.
+ *
+ * `--pace` is how slowly the climb plays (`CLIMB_PACE` in `climb.ts`). Every
+ * duration here is written at its own length and multiplied by it.
+ *
+ * The tower is a world inside the stage, and a camera looks at it: the stage
  * is a clipped box, and the world is moved and scaled under it so the point
  * (`--cam-x`, `--cam-y`), in tower pixels, sits at the middle of the stage
- * and `--focus` of the way down it. `--zoom` is a whole number, so a pixel
- * at rest is still square. The component sets all of them once a frame and
- * the move takes that frame's own time. The camera eases; the sprites it
- * looks at still move in whole steps.
+ * and `--focus` of the way down it. On a screen too narrow even for the
+ * smallest tower, its left edge stops at the screen's, so the ledge Hadu
+ * stands on is never out of the picture. `--zoom` is a whole number, so a pixel at rest
+ * is still square. The component sets all of them once a frame and the move
+ * takes that frame's own time. The camera eases; the sprites it looks at
+ * still move in whole steps.
  */
 .tabletop .climb {
   --px: 2px;
+  --pace: 1;
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  height: 100dvh;
 }
-@media (min-width: 40rem) and (min-height: 50rem) {
+@media (min-height: 636px) and (min-width: 468px) {
   .tabletop .climb {
     --px: 3px;
   }
 }
+@media (min-height: 848px) and (min-width: 624px) {
+  .tabletop .climb {
+    --px: 4px;
+  }
+}
+@media (min-height: 1060px) and (min-width: 780px) {
+  .tabletop .climb {
+    --px: 5px;
+  }
+}
+@media (min-height: 1272px) and (min-width: 936px) {
+  .tabletop .climb {
+    --px: 6px;
+  }
+}
 .tabletop .climb-stage {
+  position: absolute;
+  inset: 0;
+  overflow: clip;
   container-type: size;
 }
 .tabletop .climb-world {
   transform-origin: 0 0;
   transform: translate(
-      calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)),
+      max(0px, calc(50cqw - var(--cam-x) * var(--px) * var(--zoom))),
       calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom))
     )
     scale(var(--zoom));
@@ -802,20 +837,23 @@
 @supports (width: round(1.5px, 1px)) {
   .tabletop .climb-world {
     transform: translate(
-        round(calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)), 1px),
+        max(
+          0px,
+          round(calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)), 1px)
+        ),
         round(calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom)), 1px)
       )
       scale(var(--zoom));
   }
 }
-/* The bars of a wide picture, in from the stage's top and bottom edges. */
+/* The bars of a wide picture, in from the screen's top and bottom edges. */
 .tabletop .climb-bar {
   position: absolute;
   inset-inline: 0;
   z-index: 20;
   height: 11cqh;
   background: var(--color-ink);
-  transition: transform 320ms var(--ease-out);
+  transition: transform calc(320ms * var(--pace)) var(--ease-out);
 }
 .tabletop .climb-bar[data-edge="top"] {
   top: 0;
@@ -844,7 +882,19 @@
   }
 }
 .tabletop .climb-title > .piece {
-  animation: title-slam 340ms var(--ease-out) both;
+  animation: title-slam calc(340ms * var(--pace)) var(--ease-out) both;
+}
+/* What is happening, as a subtitle: on the middle of the lower bar when the
+   bars are in, and on the cloth when they are not. */
+.tabletop .climb-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 5.5cqh;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  padding-inline: 12px;
+  transform: translateY(50%);
 }
 .tabletop .climb-sprite {
   display: block;
@@ -855,13 +905,16 @@
   width: calc(var(--px) * 8);
   height: calc(var(--px) * 8);
 }
+.tabletop .climb-pennant.anim-land {
+  animation-duration: calc(240ms * var(--pace));
+}
 .tabletop .climb-cast {
   background: var(--cast-cloth);
 }
 /* Hadu goes from ledge to ledge in steps, scrabbling a pixel left and right
    on the way, and hops as he lands with a puff of dust at his feet. */
 .tabletop .climb-hadu {
-  --scramble: 560ms;
+  --scramble: calc(560ms * var(--pace));
   transform: translate(
     calc(var(--x, 0) * var(--px)),
     calc(var(--rise, 0) * var(--px) * -1)
@@ -882,8 +935,8 @@
 }
 .tabletop .climb-scramble {
   animation:
-    climb-scrabble 140ms steps(1, end) 4,
-    crowd-hop 360ms steps(1, end) var(--scramble) 1;
+    climb-scrabble calc(140ms * var(--pace)) steps(1, end) 4,
+    crowd-hop calc(360ms * var(--pace)) steps(1, end) var(--scramble) 1;
 }
 @keyframes climb-walk {
   from {
@@ -894,7 +947,7 @@
   }
 }
 .tabletop .climb-walk {
-  animation: climb-walk 360ms steps(5, end) both;
+  animation: climb-walk calc(360ms * var(--pace)) steps(5, end) both;
 }
 @keyframes climb-dust {
   0% {
@@ -929,15 +982,17 @@
 }
 .tabletop .climb-scramble .climb-dust::before,
 .tabletop .climb-scramble .climb-dust::after {
-  animation: climb-dust 280ms steps(3, end) var(--scramble) 1;
+  animation: climb-dust calc(280ms * var(--pace)) steps(3, end) var(--scramble)
+    1;
 }
 .tabletop .climb-walk .climb-dust::before,
 .tabletop .climb-walk .climb-dust::after {
-  animation: climb-dust 280ms steps(3, end) 360ms 1;
+  animation: climb-dust calc(280ms * var(--pace)) steps(3, end)
+    calc(360ms * var(--pace)) 1;
 }
 .tabletop .climb-rival {
   transform: translateY(100%);
-  transition: transform 240ms steps(3, end);
+  transition: transform calc(240ms * var(--pace)) steps(3, end);
 }
 .tabletop .climb-rival[data-state="peek"] {
   transform: translateY(37.5%);

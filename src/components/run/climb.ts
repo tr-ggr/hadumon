@@ -68,7 +68,7 @@ export interface ClimbFrame {
   shake: Shake;
   /** What is heard as the frame lands. */
   sounds: readonly Sound[];
-  /** The sentence in the rail. */
+  /** The sentence under the picture. */
   text: string;
   /**
    * How long the frame stays up, and how long the camera takes to reach its
@@ -77,28 +77,40 @@ export interface ClimbFrame {
   ms: number;
 }
 
+/**
+ * How slowly a climb plays: every move in it takes this many times its
+ * written length. The stylesheet's share of the climb reads the same number
+ * as `--pace`, so the feel of the whole thing is tuned here. The rests are
+ * not moves, and stay as they are.
+ */
+export const CLIMB_PACE = 1.25;
+
+function paced(ms: number): number {
+  return Math.round(ms * CLIMB_PACE);
+}
+
 /** Where a climb starts: the whole tower, held just long enough to be seen. */
-const POSE = 240;
+const POSE = paced(240);
 /** The camera pushing in, or crossing to a window. */
-const PUSH = 400;
+const PUSH = paced(400);
 /** A beat that should be read: a window shutting, a pennant landing. */
-const SETTLE = 400;
+const SETTLE = paced(400);
 /** Hadu going up the wall. The stylesheet's scramble is a little shorter. */
-const SCRAMBLE = 600;
+const SCRAMBLE = paced(600);
 /** Coming down on a ledge. */
-const LAND = 240;
+const LAND = paced(240);
 /** One floor of the tilt up the dark tower. */
-const TILT = 220;
+const TILT = paced(220);
 /** A boss's window, held dark before anyone comes to it. */
-const DREAD = 360;
+const DREAD = paced(360);
 /** A rival rising into its window. */
-const RISE = 420;
+const RISE = paced(420);
 /** The roof's pennant going in, and its three notes. */
-const PLANT = 480;
+const PLANT = paced(480);
 /** The camera pulling back from the roof to the whole tower. */
-const PULL = 900;
+const PULL = paced(900);
 /** The title card coming down. */
-const SLAM = 400;
+const SLAM = paced(400);
 /** The rest on the last frame, as long as a rival's card is held up. */
 export const CLIMB_REST = 1400;
 /** The rest when nothing moves, so the one still frame can be read. */
@@ -158,7 +170,7 @@ function sound(name: Sound["name"], delay = 0, step = 0): Sound {
 
 /** Paws on the wall, rising, for as long as the scramble lasts. */
 const PAWS: readonly Sound[] = [0, 1, 2, 3].map((n) =>
-  sound("tick", n * 0.13, n * 2),
+  sound("tick", n * 0.13 * CLIMB_PACE, n * 2),
 );
 
 function meeting(floor: number, gauntlet: readonly string[]): string {

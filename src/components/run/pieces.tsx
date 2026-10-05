@@ -108,7 +108,8 @@ export interface TableButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
 
 /**
  * An action on the table, cut from the same card as everything else: ink
- * outline, square corners, an edge that sinks when it is pressed.
+ * outline, square corners, an edge that sinks when it is pressed. The cobalt
+ * one is the way forward, and is heard as that (`sfx/ClickSound.tsx`).
  */
 export function TableButton({
   variant = "primary",
@@ -120,6 +121,7 @@ export function TableButton({
   return (
     <button
       type={type}
+      data-sfx={variant === "primary" ? "confirm" : undefined}
       className={tableButtonClass(variant, size, className)}
       {...props}
     />

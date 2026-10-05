@@ -282,9 +282,9 @@ describe("buildClimb", () => {
 
   it("is over in its time, the rest included", () => {
     const budget: Record<ClimbKind, number> = {
-      ascend: 4500,
-      enter: 6500,
-      summit: 6000,
+      ascend: 5500,
+      enter: 7200,
+      summit: 6200,
     };
     for (const [kind, to] of CLIMBS) {
       const total = buildClimb(kind, to, GAUNTLET).reduce(

@@ -30,7 +30,7 @@ import { Hand } from "./Hand";
 import { RivalSide } from "./RivalSide";
 import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
-import { playSound } from "./sfx/engine";
+import { playCat, playSound } from "./sfx/engine";
 import { Supply } from "./Supply";
 import { TurnPanel, type TurnControls } from "./TurnPanel";
 import {
@@ -197,7 +197,10 @@ export function MatchBoard({
     catId: string;
     tucked?: TuckedUnder;
   } | null>(null);
-  const showCard = (catId: string) => setDetail({ catId });
+  const showCard = (catId: string) => {
+    playCat(catId);
+    setDetail({ catId });
+  };
   const tableRef = useRef<HTMLDivElement>(null);
   const matRef = useRef<HTMLElement>(null);
   const supplyRef = useRef<HTMLDivElement>(null);
@@ -238,6 +241,8 @@ export function MatchBoard({
       : 0;
 
   const act = (action: Action) => {
+    // A move sent sounds the same from a key as from the button for it.
+    playSound("confirm");
     launches.current = launchesFor(tableRef.current, match, action);
     onAct(action);
   };
@@ -348,7 +353,7 @@ export function MatchBoard({
     if (mode.kind !== "den") {
       const placed = match.board[slot.row][slot.col];
       if (placed) {
-        playSound("click");
+        playCat(placed.catId);
         setDetail({
           catId: placed.catId,
           tucked: { count: placed.tucked, under: placed.under ?? [] },
@@ -368,9 +373,11 @@ export function MatchBoard({
   };
 
   const onHandCard = (index: number) => {
-    if (busy || match.hand[index] === undefined) return;
+    const catId = match.hand[index];
+    if (busy || catId === undefined) return;
     if (mode.kind === "tuck") {
-      playSound(mode.hand === index ? "click" : "pick");
+      if (mode.hand === index) playSound("click");
+      else playCat(catId);
       return setMode({
         kind: "tuck",
         hand: mode.hand === index ? null : index,
@@ -382,8 +389,9 @@ export function MatchBoard({
       return setMode(IDLE);
     }
     // A card that cannot be played is still raised, so the prompt can say
-    // why; it sounds like the refusal it is.
-    playSound(playBlock(match, index) ? "illegal" : "pick");
+    // why; it sounds like the refusal it is. One that can speaks up.
+    if (playBlock(match, index)) playSound("illegal");
+    else playCat(catId);
     setMode({ kind: "play", hand: index, swap: [] });
   };
 
@@ -394,7 +402,8 @@ export function MatchBoard({
   };
 
   const onTrayCard = (index: number) => {
-    if (mode.kind !== "prowl" || match.tray[index] === undefined) return;
+    const catId = match.tray[index];
+    if (mode.kind !== "prowl" || catId === undefined) return;
     if (mode.picks.includes(index)) {
       playSound("click");
       return setMode({
@@ -403,7 +412,7 @@ export function MatchBoard({
       });
     }
     if (mode.picks.length < match.prowlPicks) {
-      playSound("pick");
+      playCat(catId);
       setMode({ kind: "prowl", picks: [...mode.picks, index] });
     } else {
       playSound("illegal");

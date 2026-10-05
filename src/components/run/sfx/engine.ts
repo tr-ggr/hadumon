@@ -15,8 +15,10 @@ import {
   type Note,
   type SfxName,
   type Sound,
+  type Voice,
 } from "./recipes";
 import { VOLUME_GAIN, volumeSetting } from "./settings";
+import { catVoice } from "./voices";
 
 /** Voices sounding at once. One past this, the oldest is cut short. */
 export const VOICE_CAP = 14;
@@ -40,6 +42,15 @@ export interface Rig {
 let rig: Rig | null = null;
 let listening = false;
 const live = new Set<Live>();
+let requests = 0;
+
+/**
+ * How many sounds have been asked for, heard or not. Whoever wants to know
+ * if a press already made a sound reads it before and after.
+ */
+export function soundRequests(): number {
+  return requests;
+}
 
 function build(): Rig | null {
   const Ctor =
@@ -169,8 +180,9 @@ export function schedule(
   return source;
 }
 
-/** Plays one sound now, or `delay` seconds from now. */
-export function playSound(name: SfxName, step = 0, delay = 0): void {
+/** Plays one voice now, or `delay` seconds from now. */
+export function playVoice(voice: Voice, delay = 0): void {
+  requests += 1;
   if (typeof document === "undefined" || document.hidden) return;
   if (rig?.ctx.state !== "running") return;
   if (volumeSetting.read() === "muted") return;
@@ -183,7 +195,6 @@ export function playSound(name: SfxName, step = 0, delay = 0): void {
     cut(oldest, ctx);
   }
 
-  const voice = recipe(name, step);
   const bus = ctx.createGain();
   bus.connect(master);
   const start = now + Math.max(0, delay) + 0.005;
@@ -205,6 +216,16 @@ export function playSound(name: SfxName, step = 0, delay = 0): void {
       bus.disconnect();
     };
   }
+}
+
+/** Plays one of the table's sounds now, or `delay` seconds from now. */
+export function playSound(name: SfxName, step = 0, delay = 0): void {
+  playVoice(recipe(name, step), delay);
+}
+
+/** Plays a cat's own voice: the sound of choosing it, or of turning it over. */
+export function playCat(catId: string): void {
+  playVoice(catVoice(catId));
 }
 
 export function playSounds(sounds: readonly Sound[]): void {

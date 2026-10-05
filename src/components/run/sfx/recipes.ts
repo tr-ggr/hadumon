@@ -36,6 +36,7 @@ export const SFX_NAMES = [
   "hover",
   "pick",
   "click",
+  "confirm",
   "illegal",
   "play",
   "dice",
@@ -85,7 +86,8 @@ export function ladder(step: number): number {
   return LADDER_ROOT_HZ * 2 ** (semitones / 12);
 }
 
-function tone(
+/** One oscillator note, gliding from one pitch to another. */
+export function tone(
   wave: Exclude<Wave, "noise">,
   from: number,
   to: number,
@@ -148,6 +150,13 @@ export function recipe(name: SfxName, step = 0): Voice {
       return [tone("triangle", 620, 880, 0.2, 0.07)];
     case "click":
       return [tone("sine", 760, 560, 0.14, 0.045)];
+    case "confirm":
+      // The one way forward, pressed: two notes going up, brighter than a pick.
+      return [
+        tone("triangle", G5, G5, 0.2, 0.06, 0, 0.003),
+        tone("triangle", C6, C6, 0.2, 0.1, 0.06, 0.003),
+        tone("sine", C6 * 2, C6 * 2, 0.05, 0.06, 0.06, 0.003),
+      ];
     case "illegal":
       return [
         tone("square", 150, 140, 0.11, 0.07),

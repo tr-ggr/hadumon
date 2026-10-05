@@ -16,13 +16,13 @@ import { LANE, buildTower } from "~/components/sprites/tower";
 import { getRival } from "~/server/game/rival";
 
 import {
+  CLIMB_PACE,
   climbAnnouncement,
   type ClimbFrame,
   type ClimbRecord,
   type Spot,
 } from "./climb";
 import { LIME, tableButtonClass } from "./pieces";
-import { TableArea, TableRail } from "./TableSurface";
 import { Tower } from "./Tower";
 import { useClimbFx } from "./useClimb";
 
@@ -120,9 +120,10 @@ export interface ClimbProps {
 }
 
 /**
- * The way up between matches, shot like a scene: the tower on a stage, a
- * camera that pushes in on Hadu and follows him up the wall, bars across the
- * top and bottom, and a title card for whoever is at the window. It asks for
+ * The way up between matches, shot like a scene and given the whole screen:
+ * the tower on a stage, a camera that pushes in on Hadu and follows him up
+ * the wall, bars across the top and bottom, a subtitle saying what is
+ * happening, and a title card for whoever is at the window. It asks for
  * nothing; it plays, rests and gives way to the next screen, sooner if
  * anything is pressed.
  */
@@ -178,169 +179,163 @@ export function Climb({ climb, frame, beat, gauntlet, onSkip }: ClimbProps) {
   useClimbFx(stage, beat, frame);
 
   return (
-    <>
-      <TableArea className="flex flex-col justify-center">
-        <h1 className="sr-only">Climbing the tower</h1>
-        <p role="status" className="sr-only">
-          {said}
-        </p>
+    <div
+      ref={stage}
+      className="climb"
+      style={{ "--pace": CLIMB_PACE } as CSSProperties}
+    >
+      <h1 className="sr-only">Climbing the tower</h1>
+      <p role="status" className="sr-only">
+        {said}
+      </p>
 
-        <div ref={stage} aria-hidden className="climb mx-auto w-full max-w-xl">
-          {/* The jolt is on a box of its own, so it adds to the camera's
-              move and does not replace it. */}
-          <div data-shake>
-            <div
-              className="climb-stage relative overflow-clip"
-              style={
-                {
-                  height: px(height),
-                  "--focus": `${FOCUS * 100}cqh`,
-                  "--cam-x": cam.x,
-                  "--cam-y": cam.y,
-                  "--zoom": cam.zoom,
-                  "--cam-ms": `${frame.ms}ms`,
-                } as CSSProperties
-              }
-            >
-              <div
-                className="climb-world absolute top-0 left-0"
-                style={{ width: px(tower.width), height: px(height) }}
-              >
-                <span
-                  className="climb-cast absolute"
-                  style={{
-                    left: px(LANE - 4),
-                    right: px(-2),
-                    top: "100%",
-                    height: px(2),
-                  }}
-                />
+      <div
+        aria-hidden
+        className="climb-stage"
+        style={
+          {
+            "--focus": `${FOCUS * 100}cqh`,
+            "--cam-x": cam.x,
+            "--cam-y": cam.y,
+            "--zoom": cam.zoom,
+            "--cam-ms": `${frame.ms}ms`,
+          } as CSSProperties
+        }
+      >
+        {/* The jolt is on a box of its own around the world, so it adds to
+            the camera's move and does not replace it, and the bars stay at
+            the screen's edges through it. */}
+        <div data-shake className="absolute inset-0">
+          <div
+            className="climb-world absolute top-0 left-0"
+            style={{ width: px(tower.width), height: px(height) }}
+          >
+            <span
+              className="climb-cast absolute"
+              style={{
+                left: px(LANE - 4),
+                right: px(-2),
+                top: "100%",
+                height: px(2),
+              }}
+            />
 
-                {tower.floors.map((floor, index) => {
-                  const rivalId = gauntlet[index];
-                  if (rivalId === undefined) return null;
-                  return (
-                    <div
-                      key={rivalId}
-                      className="bg-stone-deep absolute overflow-clip"
-                      style={{
-                        left: px(floor.hole.x),
-                        top: px(SPRITE_SIZE + floor.hole.y),
-                        width: px(floor.hole.width),
-                        height: px(floor.hole.height),
-                      }}
-                    >
-                      <span
-                        className="climb-rival absolute bottom-0"
-                        data-state={frame.windows[index]}
-                        style={{
-                          left: px((floor.hole.width - SPRITE_SIZE) / 2),
-                        }}
-                      >
-                        <RivalSprite
-                          rivalId={rivalId}
-                          decorative
-                          className="climb-sprite"
-                        />
-                      </span>
-                    </div>
-                  );
-                })}
-
+            {tower.floors.map((floor, index) => {
+              const rivalId = gauntlet[index];
+              if (rivalId === undefined) return null;
+              return (
                 <div
-                  className="absolute bottom-0 left-0 w-full"
-                  style={{ height: px(tower.height) }}
+                  key={rivalId}
+                  className="bg-stone-deep absolute overflow-clip"
+                  style={{
+                    left: px(floor.hole.x),
+                    top: px(SPRITE_SIZE + floor.hole.y),
+                    width: px(floor.hole.width),
+                    height: px(floor.hole.height),
+                  }}
                 >
-                  <Tower tower={tower} className="block h-full w-full" />
-                </div>
-
-                {tower.floors.map((floor, index) =>
-                  frame.windows[index] === "flag" ? (
-                    <Pennant
-                      key={index}
-                      left={5}
-                      bottom={tower.height - floor.ledge}
-                      landing={first.windows[index] !== "flag"}
-                    />
-                  ) : null,
-                )}
-                {frame.roofFlag ? (
-                  <Pennant left={ROOF_PENNANT} bottom={tower.height} landing />
-                ) : null}
-
-                {frame.hadu === "away" ? null : (
                   <span
-                    className="climb-hadu absolute bottom-0 left-0 z-10"
-                    style={
-                      {
-                        "--x": frame.hadu === "roof" ? ROOF_STAND : 0,
-                        "--rise": rise(frame.hadu),
-                      } as CSSProperties
-                    }
+                    className="climb-rival absolute bottom-0"
+                    data-state={frame.windows[index]}
+                    style={{
+                      left: px((floor.hole.width - SPRITE_SIZE) / 2),
+                    }}
                   >
-                    {/* A new spot is a new sprite, so its way of arriving plays
-                    again: walking in at the foot, scrambling up to a ledge. */}
-                    <span
-                      key={String(frame.hadu)}
-                      className={`relative block ${
-                        frame.hadu === first.hadu
-                          ? ""
-                          : frame.hadu === "ground"
-                            ? "climb-walk"
-                            : "climb-scramble"
-                      }`}
-                    >
-                      <PixelSprite
-                        catId={CLIMBER}
-                        decorative
-                        className="climb-sprite"
-                      />
-                      <span className="climb-dust" />
-                    </span>
+                    <RivalSprite
+                      rivalId={rivalId}
+                      decorative
+                      className="climb-sprite"
+                    />
                   </span>
-                )}
-              </div>
+                </div>
+              );
+            })}
 
-              <span
-                className="climb-bar"
-                data-edge="top"
-                data-in={frame.bars}
-              />
-              <span
-                className="climb-bar"
-                data-edge="bottom"
-                data-in={frame.bars}
-              />
-              {frame.title ? (
-                <TitleCard
-                  rivalId={
-                    frame.plate === null ? undefined : gauntlet[frame.plate]
-                  }
-                  floor={frame.plate ?? gauntlet.length}
-                  count={gauntlet.length}
-                />
-              ) : null}
+            <div
+              className="absolute bottom-0 left-0 w-full"
+              style={{ height: px(tower.height) }}
+            >
+              <Tower tower={tower} className="block h-full w-full" />
             </div>
+
+            {tower.floors.map((floor, index) =>
+              frame.windows[index] === "flag" ? (
+                <Pennant
+                  key={index}
+                  left={5}
+                  bottom={tower.height - floor.ledge}
+                  landing={first.windows[index] !== "flag"}
+                />
+              ) : null,
+            )}
+            {frame.roofFlag ? (
+              <Pennant left={ROOF_PENNANT} bottom={tower.height} landing />
+            ) : null}
+
+            {frame.hadu === "away" ? null : (
+              <span
+                className="climb-hadu absolute bottom-0 left-0 z-10"
+                style={
+                  {
+                    "--x": frame.hadu === "roof" ? ROOF_STAND : 0,
+                    "--rise": rise(frame.hadu),
+                  } as CSSProperties
+                }
+              >
+                {/* A new spot is a new sprite, so its way of arriving plays
+              again: walking in at the foot, scrambling up to a ledge. */}
+                <span
+                  key={String(frame.hadu)}
+                  className={`relative block ${
+                    frame.hadu === first.hadu
+                      ? ""
+                      : frame.hadu === "ground"
+                        ? "climb-walk"
+                        : "climb-scramble"
+                  }`}
+                >
+                  <PixelSprite
+                    catId={CLIMBER}
+                    decorative
+                    className="climb-sprite"
+                  />
+                  <span className="climb-dust" />
+                </span>
+              </span>
+            )}
           </div>
         </div>
-      </TableArea>
 
-      <TableRail>
-        <p
-          aria-hidden
-          className="text-ink min-h-10 text-sm leading-5 font-semibold sm:min-h-0"
-        >
-          {frame.text}
-        </p>
-        <button
-          ref={skip}
-          type="button"
-          onClick={onSkip}
-          className={tableButtonClass("secondary", "md", "sm:shrink-0")}
-        >
-          Skip
-        </button>
-      </TableRail>
-    </>
+        <span className="climb-bar" data-edge="top" data-in={frame.bars} />
+        <span className="climb-bar" data-edge="bottom" data-in={frame.bars} />
+        {frame.title ? (
+          <TitleCard
+            rivalId={frame.plate === null ? undefined : gauntlet[frame.plate]}
+            floor={frame.plate ?? gauntlet.length}
+            count={gauntlet.length}
+          />
+        ) : (
+          // The card says the same thing, so the two are never up together.
+          <div className="climb-caption">
+            <p className="bg-ink text-cream max-w-md px-3 py-1.5 text-center text-sm leading-5 font-semibold">
+              {frame.text}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <button
+        ref={skip}
+        type="button"
+        onClick={onSkip}
+        className={tableButtonClass(
+          "secondary",
+          "md",
+          "absolute top-2 right-2 z-40 sm:right-3",
+        )}
+      >
+        Skip
+      </button>
+    </div>
   );
 }

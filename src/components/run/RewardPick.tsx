@@ -19,6 +19,7 @@ import { countCats } from "./ClanPick";
 import { plural } from "./describe";
 import { MatchResult } from "./MatchResult";
 import { Label, RelicTile, TableButton } from "./pieces";
+import { playCat, playSound } from "./sfx/engine";
 import { rewardSteps, type RewardStep } from "./steps";
 import { StepRail, TableArea } from "./TableSurface";
 import { useSteps } from "./useSteps";
@@ -111,6 +112,11 @@ export function RewardPick({
   const [relic, setRelic] = useState<string | null>(null);
   const [trim, setTrim] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
+  /** A cat chosen speaks up; one put back only clicks. */
+  const heard = (catId: string, chosen: boolean) => {
+    if (chosen) playSound("click");
+    else playCat(catId);
+  };
 
   const steps = rewardSteps(offer, Boolean(match?.result));
   const { step, index, count, isFirst, next, back, goTo, heading } =
@@ -163,8 +169,14 @@ export function RewardPick({
                     verb="Add"
                     selected={cat === catId}
                     disabled={busy}
-                    onSelect={() => setCat(cat === catId ? null : catId)}
-                    onDetail={() => setDetail(catId)}
+                    onSelect={() => {
+                      heard(catId, cat === catId);
+                      setCat(cat === catId ? null : catId);
+                    }}
+                    onDetail={() => {
+                      playCat(catId);
+                      setDetail(catId);
+                    }}
                     className="h-full"
                   />
                 </li>
@@ -222,7 +234,10 @@ export function RewardPick({
                       disabled={busy}
                       aria-pressed={chosen}
                       aria-label={`Trim one ${getCat(catId).name}, ${copies} in the deck`}
-                      onClick={() => setTrim(chosen ? null : catId)}
+                      onClick={() => {
+                        heard(catId, chosen);
+                        setTrim(chosen ? null : catId);
+                      }}
                       className={`${DECK_CHIP} ${chosen ? "is-chosen lift bg-white" : "bg-cream hover:bg-sky-soft liftable"}`}
                     >
                       <PixelSprite catId={catId} size={32} decorative />
