@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { ReactNode, Ref } from "react";
 
 import { pixelFont } from "~/styles/fonts";
 
@@ -80,6 +80,8 @@ export interface StepRailProps {
   onBack?: () => void;
   nextLabel: string;
   onNext: () => void;
+  /** Holds the way forward alone, for a step that is not settled yet. */
+  nextDisabled?: boolean;
   /** Holds both buttons while the last step's confirm is being sent. */
   disabled?: boolean;
 }
@@ -95,6 +97,7 @@ export function StepRail({
   onBack,
   nextLabel,
   onNext,
+  nextDisabled = false,
   disabled = false,
 }: StepRailProps) {
   return (
@@ -122,7 +125,7 @@ export function StepRail({
         ) : null}
         <TableButton
           size="md"
-          disabled={disabled}
+          disabled={disabled || nextDisabled}
           onClick={onNext}
           className="flex-1 sm:flex-none"
         >
@@ -130,5 +133,66 @@ export function StepRail({
         </TableButton>
       </div>
     </TableRail>
+  );
+}
+
+/** The heading of one step: its name in print and a line saying what it is. */
+export function StepHeading({
+  title,
+  headingRef,
+  children,
+}: {
+  title: string;
+  headingRef: Ref<HTMLHeadingElement>;
+  children: ReactNode;
+}) {
+  return (
+    <div className="max-w-[65ch]">
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-print text-ink text-3xl"
+      >
+        {title}
+      </h2>
+      <p className="text-ink mt-1 text-sm">{children}</p>
+    </div>
+  );
+}
+
+/** One choice on the recap: what was picked, and the way back to change it. */
+export function RecapRow({
+  label,
+  empty,
+  busy,
+  onChange,
+  wide = false,
+  children,
+}: {
+  label: string;
+  /** What to say when nothing was picked. */
+  empty: string;
+  busy: boolean;
+  onChange: () => void;
+  /** Lets the row run the width of the table, for a spread of cards. */
+  wide?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <li className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+      <div className={`space-y-1 ${wide ? "min-w-0 sm:flex-1" : "sm:w-80"}`}>
+        <Label>{label}</Label>
+        {children ?? <p className="text-ink text-sm">{empty}</p>}
+      </div>
+      <TableButton
+        variant="secondary"
+        disabled={busy}
+        onClick={onChange}
+        aria-label={`Change: ${label.toLowerCase()}`}
+        className="self-start sm:mt-5"
+      >
+        Change
+      </TableButton>
+    </li>
   );
 }

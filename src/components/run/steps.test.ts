@@ -5,7 +5,7 @@ import type { RewardOffer } from "~/server/game/run";
 import type { Unlock } from "~/server/game/unlocks";
 import type { MatchView, RunView } from "~/server/game/view";
 
-import { rewardSteps, summarySteps } from "./steps";
+import { rewardSteps, SETUP_STEPS, summarySteps } from "./steps";
 
 function offer(change: Partial<RewardOffer> = {}): RewardOffer {
   return {
@@ -36,6 +36,16 @@ function ended(change: Partial<RunView> & { scored?: boolean } = {}): RunView {
 }
 
 const UNLOCKS: readonly Unlock[] = [{ kind: "cat", key: "nimbustail" }];
+
+describe("SETUP_STEPS", () => {
+  it("meets the rival, reads the table, keeps a hand, then recaps", () => {
+    expect(SETUP_STEPS).toEqual(["rival", "table", "keep", "recap"]);
+  });
+
+  it("ends on the recap, which holds the confirm", () => {
+    expect(SETUP_STEPS.at(-1)).toBe("recap");
+  });
+});
 
 describe("rewardSteps", () => {
   it("shows every step when everything is on offer", () => {

@@ -2,10 +2,24 @@ import type { RewardOffer } from "~/server/game/run";
 import type { Unlock } from "~/server/game/unlocks";
 import type { RunView } from "~/server/game/view";
 
+/** The screens before a match's first turn, in the order they are shown. */
+export type SetupStep = "rival" | "table" | "keep" | "recap";
 /** The screens after a match is won, in the order they are shown. */
 export type RewardStep = "result" | "cat" | "relic" | "trim" | "recap";
 /** The screens after a run has ended, in the order they are shown. */
 export type SummaryStep = "result" | "unlocks" | "summary";
+
+/**
+ * Every match opens the same way, so the list is fixed: there is always a
+ * rival to meet, a table to read and ten things to keep five of. The recap
+ * closes it, because it holds the one confirm.
+ */
+export const SETUP_STEPS: readonly SetupStep[] = [
+  "rival",
+  "table",
+  "keep",
+  "recap",
+];
 
 /**
  * A step is there only when it has something on it: no relic step in a

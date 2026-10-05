@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode, type Ref } from "react";
+import { useState, type ReactNode } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
 import { PixelSprite } from "~/components/PixelSprite";
@@ -18,10 +18,10 @@ import { CatDetail, CatPick } from "./CatPick";
 import { countCats } from "./ClanPick";
 import { plural } from "./describe";
 import { MatchResult } from "./MatchResult";
-import { Label, RelicTile, TableButton } from "./pieces";
+import { RelicTile } from "./pieces";
 import { playCat, playSound } from "./sfx/engine";
 import { rewardSteps, type RewardStep } from "./steps";
-import { StepRail, TableArea } from "./TableSurface";
+import { RecapRow, StepHeading, StepRail, TableArea } from "./TableSurface";
 import { useSteps } from "./useSteps";
 
 export interface RewardPickProps {
@@ -38,63 +38,6 @@ export interface RewardPickProps {
 /** A card of the deck as a small tile, on the trim step and on the recap. */
 const DECK_CHIP =
   "piece border-ink text-ink flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold";
-
-function Heading({
-  title,
-  headingRef,
-  children,
-}: {
-  title: string;
-  headingRef: Ref<HTMLHeadingElement>;
-  children: ReactNode;
-}) {
-  return (
-    <div className="max-w-[65ch]">
-      <h2
-        ref={headingRef}
-        tabIndex={-1}
-        className="text-print text-ink text-3xl"
-      >
-        {title}
-      </h2>
-      <p className="text-ink mt-1 text-sm">{children}</p>
-    </div>
-  );
-}
-
-/** One choice on the recap: what was picked, and the way back to change it. */
-function RecapRow({
-  label,
-  empty,
-  busy,
-  onChange,
-  children,
-}: {
-  label: string;
-  /** What to say when nothing was picked. */
-  empty: string;
-  busy: boolean;
-  onChange: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <li className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
-      <div className="space-y-1 sm:w-80">
-        <Label>{label}</Label>
-        {children ?? <p className="text-ink text-sm">{empty}</p>}
-      </div>
-      <TableButton
-        variant="secondary"
-        disabled={busy}
-        onClick={onChange}
-        aria-label={`Change: ${label.toLowerCase()}`}
-        className="self-start sm:mt-5"
-      >
-        Change
-      </TableButton>
-    </li>
-  );
-}
 
 /**
  * After a win, one screen at a time: the result, a cat, sometimes a relic,
@@ -157,10 +100,10 @@ export function RewardPick({
 
         {step === "cat" ? (
           <section className="space-y-3">
-            <Heading title="Add a cat" headingRef={heading}>
+            <StepHeading title="Add a cat" headingRef={heading}>
               One of these joins your deck for the rest of the run. Or none: a
               smaller deck finds its best cats more often.
-            </Heading>
+            </StepHeading>
             <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
               {offer.cats.map((catId) => (
                 <li key={catId}>
@@ -187,10 +130,10 @@ export function RewardPick({
 
         {step === "relic" ? (
           <section className="space-y-3">
-            <Heading title="Take a relic" headingRef={heading}>
+            <StepHeading title="Take a relic" headingRef={heading}>
               A relic lasts the whole run. You hold{" "}
               {run.relics.map((id) => getRelic(id).name).join(", ")}.
-            </Heading>
+            </StepHeading>
             <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
               {offer.relics.map((id) => {
                 const item = getRelic(id);
@@ -220,10 +163,10 @@ export function RewardPick({
 
         {step === "trim" ? (
           <section className="space-y-3">
-            <Heading title="Trim a card" headingRef={heading}>
+            <StepHeading title="Trim a card" headingRef={heading}>
               Your deck, spread out. Remove one card for good, if you like. It
               has {run.deck.length} cards and cannot go below {MIN_DECK}.
-            </Heading>
+            </StepHeading>
             <ul className="flex flex-wrap gap-x-2 gap-y-3.5 pb-2">
               {countCats(run.deck).map(([catId, copies]) => {
                 const chosen = trim === catId;
@@ -259,7 +202,7 @@ export function RewardPick({
 
         {step === "recap" ? (
           <section className="space-y-4">
-            <Heading
+            <StepHeading
               title={
                 nextRival
                   ? `Ready for ${nextRival.name}`
@@ -269,7 +212,7 @@ export function RewardPick({
             >
               This is what you take into match {run.matchIndex + 2}. Nothing is
               settled until you go on.
-            </Heading>
+            </StepHeading>
             <ul className="space-y-4">
               {steps.includes("cat") ? (
                 <RecapRow
