@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { pixelFont } from "~/styles/fonts";
 
+import { Label, TableButton } from "./pieces";
 import { TableNav } from "./TableNav";
 
 /**
@@ -56,5 +57,68 @@ export function TableRail({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
+  );
+}
+
+export interface StepRailProps {
+  /** Zero-based. */
+  index: number;
+  count: number;
+  /** What the step has settled, or what comes next, in one sentence. */
+  children: ReactNode;
+  /** Omit on the first step, which has nothing behind it. */
+  onBack?: () => void;
+  nextLabel: string;
+  onNext: () => void;
+  /** Holds both buttons while the last step's confirm is being sent. */
+  disabled?: boolean;
+}
+
+/**
+ * The rail of a screen that is one step of several: where the player is in
+ * the sequence, the sentence, a cream Back and the one cobalt way forward.
+ */
+export function StepRail({
+  index,
+  count,
+  children,
+  onBack,
+  nextLabel,
+  onNext,
+  disabled = false,
+}: StepRailProps) {
+  return (
+    <TableRail>
+      <div className="min-w-0">
+        {count > 1 ? (
+          <Label>
+            Step {index + 1} of {count}
+          </Label>
+        ) : null}
+        <p className="text-ink text-sm font-semibold" aria-live="polite">
+          {children}
+        </p>
+      </div>
+      <div className="flex gap-2 sm:shrink-0">
+        {onBack ? (
+          <TableButton
+            variant="secondary"
+            size="md"
+            disabled={disabled}
+            onClick={onBack}
+          >
+            Back
+          </TableButton>
+        ) : null}
+        <TableButton
+          size="md"
+          disabled={disabled}
+          onClick={onNext}
+          className="flex-1 sm:flex-none"
+        >
+          {nextLabel}
+        </TableButton>
+      </div>
+    </TableRail>
   );
 }

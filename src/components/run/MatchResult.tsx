@@ -1,3 +1,5 @@
+import type { Ref } from "react";
+
 import { getGoal } from "~/server/game/goals";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
@@ -10,9 +12,12 @@ import { ScoreSheets } from "./Scorepad";
  */
 export function MatchResult({
   match,
+  headingRef,
   className = "",
 }: {
   match: MatchView;
+  /** Given when the sheet is a step of its own, so focus can be sent to it. */
+  headingRef?: Ref<HTMLHeadingElement>;
   className?: string;
 }) {
   const result = match.result;
@@ -26,7 +31,11 @@ export function MatchResult({
       className={`piece piece-card border-ink text-ink space-y-3 border-2 bg-white p-3 sm:p-4 ${className}`}
     >
       <div>
-        <h2 className="text-print text-3xl">
+        <h2
+          ref={headingRef}
+          tabIndex={headingRef ? -1 : undefined}
+          className="text-print text-3xl"
+        >
           {result.won ? `You beat ${rival.name}` : `You lost to ${rival.name}`}
         </h2>
         <p className="mt-1.5 text-sm">

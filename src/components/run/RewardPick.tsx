@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState, type ReactNode, type Ref } from "react";
 
+import { CatCard } from "~/components/cats/CatCard";
 import { PixelSprite } from "~/components/PixelSprite";
 import { getCat } from "~/server/game/cats";
 import { getRelic } from "~/server/game/relics";
@@ -15,9 +16,12 @@ import type { MatchView, RunView } from "~/server/game/view";
 
 import { CatDetail, CatPick } from "./CatPick";
 import { countCats } from "./ClanPick";
+import { plural } from "./describe";
 import { MatchResult } from "./MatchResult";
-import { TableButton } from "./pieces";
-import { TableArea, TableRail } from "./TableSurface";
+import { Label, RelicTile, TableButton } from "./pieces";
+import { rewardSteps, type RewardStep } from "./steps";
+import { StepRail, TableArea } from "./TableSurface";
+import { useSteps } from "./useSteps";
 
 export interface RewardPickProps {
   run: RunView;
@@ -30,16 +34,71 @@ export interface RewardPickProps {
   runStrip: ReactNode;
 }
 
-function Heading({ title, children }: { title: string; children: ReactNode }) {
+/** A card of the deck as a small tile, on the trim step and on the recap. */
+const DECK_CHIP =
+  "piece border-ink text-ink flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold";
+
+function Heading({
+  title,
+  headingRef,
+  children,
+}: {
+  title: string;
+  headingRef: Ref<HTMLHeadingElement>;
+  children: ReactNode;
+}) {
   return (
     <div className="max-w-[65ch]">
-      <h2 className="text-print text-ink text-3xl">{title}</h2>
+      <h2
+        ref={headingRef}
+        tabIndex={-1}
+        className="text-print text-ink text-3xl"
+      >
+        {title}
+      </h2>
       <p className="text-ink mt-1 text-sm">{children}</p>
     </div>
   );
 }
 
-/** After a win: one cat, sometimes a relic, sometimes a trim. One confirm. */
+/** One choice on the recap: what was picked, and the way back to change it. */
+function RecapRow({
+  label,
+  empty,
+  busy,
+  onChange,
+  children,
+}: {
+  label: string;
+  /** What to say when nothing was picked. */
+  empty: string;
+  busy: boolean;
+  onChange: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <li className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-4">
+      <div className="space-y-1 sm:w-80">
+        <Label>{label}</Label>
+        {children ?? <p className="text-ink text-sm">{empty}</p>}
+      </div>
+      <TableButton
+        variant="secondary"
+        disabled={busy}
+        onClick={onChange}
+        aria-label={`Change: ${label.toLowerCase()}`}
+        className="self-start sm:mt-5"
+      >
+        Change
+      </TableButton>
+    </li>
+  );
+}
+
+/**
+ * After a win, one screen at a time: the result, a cat, sometimes a relic,
+ * sometimes a trim, then a recap that holds the one confirm.
+ */
 export function RewardPick({
   run,
   offer,
@@ -53,35 +112,49 @@ export function RewardPick({
   const [trim, setTrim] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
 
+  const steps = rewardSteps(offer, Boolean(match?.result));
+  const { step, index, count, isFirst, next, back, goTo, heading } =
+    useSteps(steps);
+
   const nextRivalId = run.gauntlet[run.matchIndex + 1];
   const nextRival = nextRivalId ? getRival(nextRivalId) : null;
   const deckAfter = run.deck.length + (cat ? 1 : 0) - (trim ? 1 : 0);
 
-  const summary = [
-    cat ? `Adding ${getCat(cat).name}.` : "No new cat.",
-    ...(offer.relics.length > 0
-      ? [relic ? `Taking the ${getRelic(relic).name}.` : "No relic."]
-      : []),
-    ...(offer.canTrim
-      ? [trim ? `Trimming one ${getCat(trim).name}.` : "No trim."]
-      : []),
-    `Deck: ${deckAfter} cards.`,
-  ].join(" ");
+  const sentence: Record<RewardStep, string> = {
+    result: "Your reward is next.",
+    cat: cat ? `Adding ${getCat(cat).name}.` : "No new cat.",
+    relic: relic ? `Taking the ${getRelic(relic).name}.` : "No relic.",
+    trim: trim ? `Trimming one ${getCat(trim).name}.` : "No trim.",
+    recap: `Deck: ${deckAfter} cards.`,
+  };
+  const picked: Record<RewardStep, boolean> = {
+    result: true,
+    cat: cat !== null,
+    relic: relic !== null,
+    trim: trim !== null,
+    recap: true,
+  };
+  const confirm = busy
+    ? "Shuffling…"
+    : nextRival
+      ? `On to ${nextRival.name}`
+      : "On to the next match";
 
   return (
     <>
       <TableArea className="space-y-5">
         {runStrip}
-        {match ? <MatchResult match={match} /> : null}
 
-        <section className="space-y-3">
-          <Heading title="Add a cat">
-            One of these joins your deck for the rest of the run. Or none: a
-            smaller deck finds its best cats more often.
-          </Heading>
-          {offer.cats.length === 0 ? (
-            <p className="text-ink text-sm">No cats were on offer this time.</p>
-          ) : (
+        {step === "result" && match ? (
+          <MatchResult match={match} headingRef={heading} />
+        ) : null}
+
+        {step === "cat" ? (
+          <section className="space-y-3">
+            <Heading title="Add a cat" headingRef={heading}>
+              One of these joins your deck for the rest of the run. Or none: a
+              smaller deck finds its best cats more often.
+            </Heading>
             <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
               {offer.cats.map((catId) => (
                 <li key={catId}>
@@ -97,12 +170,12 @@ export function RewardPick({
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        ) : null}
 
-        {offer.relics.length > 0 ? (
+        {step === "relic" ? (
           <section className="space-y-3">
-            <Heading title="Take a relic">
+            <Heading title="Take a relic" headingRef={heading}>
               A relic lasts the whole run. You hold{" "}
               {run.relics.map((id) => getRelic(id).name).join(", ")}.
             </Heading>
@@ -133,9 +206,9 @@ export function RewardPick({
           </section>
         ) : null}
 
-        {offer.canTrim ? (
+        {step === "trim" ? (
           <section className="space-y-3">
-            <Heading title="Trim a card">
+            <Heading title="Trim a card" headingRef={heading}>
               Your deck, spread out. Remove one card for good, if you like. It
               has {run.deck.length} cards and cannot go below {MIN_DECK}.
             </Heading>
@@ -150,7 +223,7 @@ export function RewardPick({
                       aria-pressed={chosen}
                       aria-label={`Trim one ${getCat(catId).name}, ${copies} in the deck`}
                       onClick={() => setTrim(chosen ? null : catId)}
-                      className={`piece border-ink text-ink flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold ${chosen ? "is-chosen lift bg-white" : "bg-cream hover:bg-sky-soft liftable"}`}
+                      className={`${DECK_CHIP} ${chosen ? "is-chosen lift bg-white" : "bg-cream hover:bg-sky-soft liftable"}`}
                     >
                       <PixelSprite catId={catId} size={32} decorative />
                       <span className="tabular-nums">
@@ -168,25 +241,79 @@ export function RewardPick({
             </ul>
           </section>
         ) : null}
+
+        {step === "recap" ? (
+          <section className="space-y-4">
+            <Heading
+              title={
+                nextRival
+                  ? `Ready for ${nextRival.name}`
+                  : "Ready for the next match"
+              }
+              headingRef={heading}
+            >
+              This is what you take into match {run.matchIndex + 2}. Nothing is
+              settled until you go on.
+            </Heading>
+            <ul className="space-y-4">
+              {steps.includes("cat") ? (
+                <RecapRow
+                  label="New cat"
+                  empty="No new cat."
+                  busy={busy}
+                  onChange={() => goTo("cat")}
+                >
+                  {cat ? <CatCard catId={cat} /> : null}
+                </RecapRow>
+              ) : null}
+              {steps.includes("relic") ? (
+                <RecapRow
+                  label="Relic"
+                  empty="No relic."
+                  busy={busy}
+                  onChange={() => goTo("relic")}
+                >
+                  {relic ? <RelicTile relicId={relic} /> : null}
+                </RecapRow>
+              ) : null}
+              {steps.includes("trim") ? (
+                <RecapRow
+                  label="Trim"
+                  empty="No trim."
+                  busy={busy}
+                  onChange={() => goTo("trim")}
+                >
+                  {trim ? (
+                    <div className={`${DECK_CHIP} w-fit bg-white`}>
+                      <PixelSprite catId={trim} size={32} decorative />
+                      <span>{getCat(trim).name}</span>
+                      <span className="bg-ink text-cream px-1 leading-4">
+                        Trim 1
+                      </span>
+                    </div>
+                  ) : null}
+                </RecapRow>
+              ) : null}
+            </ul>
+            <p className="text-ink text-sm font-semibold">
+              {deckAfter === run.deck.length
+                ? `Your deck stays at ${plural(deckAfter, "card")}.`
+                : `Your deck goes from ${run.deck.length} cards to ${deckAfter}.`}
+            </p>
+          </section>
+        ) : null}
       </TableArea>
 
-      <TableRail>
-        <p className="text-ink text-sm font-semibold" aria-live="polite">
-          {summary}
-        </p>
-        <TableButton
-          size="md"
-          disabled={busy}
-          onClick={() => onChoose({ cat, relic, trim })}
-          className="sm:shrink-0"
-        >
-          {busy
-            ? "Shuffling…"
-            : nextRival
-              ? `On to ${nextRival.name}`
-              : "On to the next match"}
-        </TableButton>
-      </TableRail>
+      <StepRail
+        index={index}
+        count={count}
+        onBack={isFirst ? undefined : back}
+        nextLabel={step === "recap" ? confirm : picked[step] ? "Next" : "Skip"}
+        onNext={step === "recap" ? () => onChoose({ cat, relic, trim }) : next}
+        disabled={busy}
+      >
+        {sentence[step]}
+      </StepRail>
 
       <CatDetail catId={detail} onClose={() => setDetail(null)} />
     </>

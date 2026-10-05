@@ -81,6 +81,7 @@ export function RunView() {
     return (
       <TableSurface>
         <RunSummary
+          key={run.final.id}
           view={run.final.view}
           unlocked={run.final.unlocked}
           onAgain={run.clearFinal}
