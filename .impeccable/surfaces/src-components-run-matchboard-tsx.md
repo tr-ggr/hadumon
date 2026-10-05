@@ -74,5 +74,5 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 ## Unresolved
 
 - Drag-and-drop and habitat scenery on the match table are deferred.
-- Rival sprites are only on the tower so far: the nameplate, the landing page's rival fan and the codex still name a rival without drawing it.
-- The die-cut material is scoped to `.tabletop`; home, codex and landing keep the flat piece.
+- Rival sprites are on the tower and in the codex so far: the nameplate and the landing page's rival fan still name a rival without drawing it. The codex draws it at 48px on its card.
+- The die-cut material is no longer scoped to the run. `.tabletop` is on the body, so home, the codex, sign-in, the landing page and every dialog are cardboard too; `TableSurface` is a tabletop of its own inside it, for the fit and the effects layer.

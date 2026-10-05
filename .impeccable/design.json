@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-05T12:58:54+08:00",
+  "generatedAt": "2026-10-05T20:07:03+08:00",
   "title": "Design System: HaduMon",
   "extensions": {
     "colorMeta": {
@@ -167,21 +167,6 @@
           "#ababab",
           "#cecece",
           "#eeeeee"
-        ]
-      },
-      "edge": {
-        "role": "neutral",
-        "displayName": "Edge",
-        "canonical": "#c8dfea",
-        "tonalRamp": [
-          "#000d15",
-          "#172932",
-          "#32464f",
-          "#526770",
-          "#758a94",
-          "#99afb9",
-          "#bbd2dd",
-          "#dcf3fe"
         ]
       },
       "chipboard": {
@@ -363,28 +348,61 @@
           "#84e6ae",
           "#c4ffda"
         ]
+      },
+      "stone-light": {
+        "role": "neutral",
+        "displayName": "Light Stone",
+        "canonical": "#d0dae2",
+        "tonalRamp": [
+          "#101519",
+          "#27343f",
+          "#3e5465",
+          "#58768e",
+          "#7b97ad",
+          "#a4b7c7",
+          "#c9d5de",
+          "#e9eef1"
+        ]
+      },
+      "stone-rib": {
+        "role": "neutral",
+        "displayName": "Stone Rib",
+        "canonical": "#6e7f90",
+        "tonalRamp": [
+          "#121417",
+          "#2c333a",
+          "#47525d",
+          "#637382",
+          "#8694a2",
+          "#abb5bf",
+          "#ced4d9",
+          "#ebedf0"
+        ]
+      },
+      "stone-deep": {
+        "role": "neutral",
+        "displayName": "Deep Stone",
+        "canonical": "#3a4857",
+        "tonalRamp": [
+          "#101418",
+          "#29333d",
+          "#415162",
+          "#5c728a",
+          "#7e93a9",
+          "#a6b5c4",
+          "#cbd3dc",
+          "#eaedf1"
+        ]
       }
     },
     "typographyMeta": {
-      "display": {
-        "displayName": "Display",
-        "purpose": "The one headline of a page outside a run: home's next step, the auth heading, Codex. 1.875rem below 640px."
-      },
-      "headline": {
-        "displayName": "Headline",
-        "purpose": "Dialog titles and the wordmark in the app shell. 1.25rem below 640px. The pull quote in the landing page's cast panel takes the same two sizes at 700 in italics."
-      },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Panel titles."
-      },
       "card-title": {
         "displayName": "Card title",
         "purpose": "A cat's or relic's name on its piece, the points tag, token counts, reward-step numerals."
       },
       "body": {
         "displayName": "Body",
-        "purpose": "Page and dialog copy."
+        "purpose": "Page and dialog copy, and what is typed in a field."
       },
       "body-sm": {
         "displayName": "Body small",
@@ -396,7 +414,7 @@
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Sentence-case heading above a group of pieces, the second line of a lane's activate tile, small table button text."
+        "purpose": "Sentence-case heading above a group of pieces, the label beside a row of filter tokens (soft ink), the second line of a lane's activate tile, small table button text."
       },
       "piece-label": {
         "displayName": "Piece label",
@@ -408,42 +426,26 @@
       },
       "print": {
         "displayName": "Print",
-        "purpose": "Jersey 20 at 20px, tabletop only: lane names, Round n, the rival's name, clan names, gauntlet numerals, the log heading, score totals. On the landing page also a rival's name and numeral in the rival fan and the lane's name in the lane showcase's readout."
+        "purpose": "Jersey 20 at 20px, on every page: lane names, Round n, the rival's name, clan names, gauntlet numerals, the log heading, score totals. In the codex a section's count and the name of a relic, a clan and a rival. On the landing page also a rival's name and numeral in the rival fan and the lane's name in the lane showcase's readout."
       },
       "print-lg": {
         "displayName": "Print large",
-        "purpose": "Jersey 20 at 30px, tabletop only: run screen headings and the two score tokens. On the landing page: a heading on a phone, a boss's name and numeral in the rival fan, the demo's two score tokens."
+        "purpose": "Jersey 20 at 30px: the title of a board and of a dialog, the two counts on home's codex board, run screen headings and the two score tokens. Also a page's one heading below 640px."
       },
       "print-xl": {
         "displayName": "Print heading",
-        "purpose": "Jersey 20 at 40px from 640px, landing page only: the ribbon's h1 and each panel's h2, the close included. 30px below 640px."
+        "purpose": "Jersey 20 at 40px from 640px: the one h1 of a page outside a run (the ribbon on the landing page and on home, Codex, the sign-in heading, the 404) and each panel's h2 on the landing page. 30px below 640px."
       },
       "wordmark": {
-        "displayName": "Wordmark, landing",
-        "purpose": "The wordmark on the landing page's title plaque: 56px, 76px from 640px, 96px from 1024px, weight 800, line-height 0.9, tracking -0.035em, with a 3px ink stroke painted under the fill and a 3px chipboard edge and 2px ink line as a straight-down text shadow. The family is the open system rounded stack; that is carried, not a rule."
+        "displayName": "Wordmark",
+        "purpose": "The die-cut wordmark on the title plaque: 56px, 76px from 640px, 96px from 1024px on the landing page; 48px, 64px from 1024px on home, where it is left out below 640px. Weight 800, line-height 0.9, tracking -0.035em, with a 3px ink stroke painted under the fill and a 3px chipboard edge and a 2px ink line as a straight-down text shadow. Mon is coral."
+      },
+      "lid-wordmark": {
+        "displayName": "Lid wordmark",
+        "purpose": "The wordmark on the lid of every signed-in page and of login and signup: cream with Mon in coral, not cut. 1.25rem below 640px. The pull quote in the landing page's cast panel takes the same two sizes at 700 in italics."
       }
     },
     "shadows": [
-      {
-        "name": "panel",
-        "value": "0 10px 30px rgb(23 33 43 / 0.08)",
-        "purpose": "Ambient lift for white panels and dialogs."
-      },
-      {
-        "name": "floating-bar",
-        "value": "0 12px 36px rgb(23 33 43 / 0.18)",
-        "purpose": "The mobile navigation bar (not shown on the run route)."
-      },
-      {
-        "name": "auth-shell",
-        "value": "0 28px 80px rgb(13 60 157 / 0.2)",
-        "purpose": "The single card on login and signup."
-      },
-      {
-        "name": "hero-button",
-        "value": "0 10px 20px rgb(216 255 79 / 0.24)",
-        "purpose": "Soft lime glow under the hero pill button. Defined in the button component; no screen uses it now that the landing demo's confirm is a table button."
-      },
       {
         "name": "rarity-band",
         "value": "inset 0 3px 0 <rarity colour>",
@@ -452,27 +454,27 @@
       {
         "name": "piece",
         "value": "0 calc(var(--e) - var(--sink, 0px) + 2px) 0 -2px #b9a47e, 0 calc(var(--e) - var(--sink, 0px) + 2px) 0 0 #17212b, 0 calc(var(--e) - var(--sink, 0px) + var(--lift, 0px) + 7px) 0 -2px var(--cast)",
-        "purpose": "Tabletop only. A piece's chipboard edge (--e: 2px token or tile, 3px card), the ink line under it, and an unblurred cast shadow showing 3px at rest."
+        "purpose": "Every piece on every page: the chipboard edge, the ink line under it, and a cast that shows 3px at rest. --e is 2px for a token or tile and 3px for a card; a piece printed on a piece has none."
       },
       {
         "name": "mat",
-        "value": "0 5px 0 -2px #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 -2px color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Tabletop only. The sky mat as a 3px board on the cloth."
+        "value": "0 5px 0 -2px #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 -2px var(--mat-cast, color-mix(in srgb, #b9a47e 42%, #fff8e7))",
+        "purpose": "The sky mat as a 3px board on the cloth: the match's, and the menu mat on home."
       },
       {
         "name": "tray-well",
         "value": "inset 0 3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Tabletop only. A recess, shaded along its top inner edge."
+        "purpose": "A recess, shaded along its top inner edge."
       },
       {
         "name": "rail",
         "value": "0 -3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Tabletop only. The docked edge shading the cloth above its ink line. The rail down the side of a match has no shade."
+        "purpose": "The docked edge of a match and the phone's nav dock, shading the cloth above the ink line. The rail down the side of a match has an ink line and no shade."
       },
       {
         "name": "cast-cloth",
         "value": "color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Cast shadow colour for a piece on the cloth."
+        "purpose": "Cast shadow colour for a piece on the cloth or on a board."
       },
       {
         "name": "cast-mat",
@@ -482,65 +484,75 @@
       {
         "name": "cast-rail",
         "value": "color-mix(in srgb, #b9a47e 34%, #ffffff)",
-        "purpose": "Cast shadow colour for a piece on the docked edge or on the match's side rail."
+        "purpose": "Cast shadow colour for a piece on the docked edge, the match's side rail or the phone's nav dock."
       },
       {
         "name": "stage",
         "value": "0 7px 0 -2px #b9a47e, 0 7px 0 0 #17212b, 0 14px 0 -2px var(--cast)",
-        "purpose": "Landing page. The cobalt stage frame as a 5px board with a 5px cast in the colour of what it stands on."
+        "purpose": "The cobalt stage frame as a 5px board with a 5px cast in the colour of what it stands on: on the landing page and around the sign-in picture."
       },
       {
         "name": "board",
         "value": "0 5px 0 -2px #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 -2px var(--board-cast, color-mix(in srgb, #b9a47e 42%, #fff8e7))",
-        "purpose": "Landing page. The folded cream board and the board in the close, 3px boards like the mat; the cast is cloth cast on the cloth and deep sky in the close."
+        "purpose": "Every board: a page's, a dialog's, the landing page's folded board and the board in its close. A 3px board like the mat. --board-cast is deep sky on a sky band, #0b1118 under a dialog, and ink at 60% in deep stone in the tower's room."
       },
       {
         "name": "hero-mat-edge",
         "value": "0 3px 0 0 #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Landing page. The lower edge of the full-bleed sky mat on the cloth, under a 2px ink bottom border."
+        "purpose": "The lower edge of the full-bleed sky mat on the cloth, under a 2px ink bottom border."
       },
       {
         "name": "fold",
         "value": "inset 0 3px 0 0 color-mix(in srgb, #b9a47e 26%, #fff8e7)",
-        "purpose": "Landing page. The shade on the far side of a seam between two panels of the board, under a 2px ink top border."
+        "purpose": "The shade on the far side of a seam between two panels of the board, under a 2px ink top border."
       },
       {
         "name": "wordmark-edge",
         "value": "text-shadow: 0 3px 0 #b9a47e, 0 5px 0 #17212b; -webkit-text-stroke: 3px #17212b; paint-order: stroke fill",
-        "purpose": "Landing page. The wordmark's letters as die-cut pieces: an ink cut line, a 3px chipboard edge, a 2px ink line under it."
+        "purpose": "The wordmark's letters as die-cut pieces, on the landing page's plaque and on home's."
       },
       {
         "name": "crowd-cast",
         "value": "a bar under the sprite: height 6.25%, inset 18.75% left and right, background var(--cast)",
-        "purpose": "Landing page. The flat cast of a standing crowd cat or oversized icon, one sprite pixel deep and ten wide. Not a box shadow."
+        "purpose": "The flat cast of a standing crowd cat or oversized icon, and of the clan's cat on home's menu mat: one sprite pixel deep."
       },
       {
         "name": "cast-sky",
         "value": "#73bde4",
-        "purpose": "Cast shadow colour for a piece on the landing page's sky bands."
+        "purpose": "Cast shadow colour for a piece or a board on a sky band."
       },
       {
         "name": "cast-lid",
         "value": "#0b1118",
-        "purpose": "Cast shadow colour for a piece on the landing page's ink lid strip and footer."
+        "purpose": "Cast shadow colour for a piece on the ink lid and the landing footer, and of a dialog on the dimmed page."
+      },
+      {
+        "name": "field",
+        "value": "inset 0 3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
+        "purpose": "A text field: a white slot cut into the board, shaded along its top inner edge."
+      },
+      {
+        "name": "cast-room",
+        "value": "color-mix(in srgb, #17212b 60%, #3a4857)",
+        "purpose": "What a board casts on the stone wall inside the tower (the codex)."
+      },
+      {
+        "name": "dialog-scrim",
+        "value": "rgb(23 33 43 / 0.5)",
+        "purpose": "The dimmed page under a dialog. A flat fill, not a shadow and not a blur."
+      },
+      {
+        "name": "blank",
+        "value": "color-mix(in srgb, #b9a47e 34%, #fff8e7)",
+        "purpose": "The fill of a chipboard blank where something is still to be printed. No border and no shadow."
+      },
+      {
+        "name": "cast-scene",
+        "value": "#0b1118",
+        "purpose": "What a piece, a board and a mat cast on a page laid over the tower's scene (home, the 404): --cast, --board-cast and --mat-cast under .tower-app[data-place=outside] > .shell-page."
       }
     ],
     "motion": [
-      {
-        "name": "press",
-        "value": "140ms ease; translateY(2px) scale(0.99) on :active",
-        "purpose": "Press feedback on pill buttons, chips, and clickable chrome."
-      },
-      {
-        "name": "auth-enter",
-        "value": "320ms cubic-bezier(0.16, 1, 0.3, 1); 12px rise and fade",
-        "purpose": "One-shot entrance of the auth card."
-      },
-      {
-        "name": "skeleton-pulse",
-        "value": "Tailwind animate-pulse (2s cubic-bezier(0.4, 0, 0.6, 1) infinite)",
-        "purpose": "Loading placeholders."
-      },
       {
         "name": "demo-step",
         "value": "560ms between steps; 0ms under prefers-reduced-motion",
@@ -549,7 +561,7 @@
       {
         "name": "table-lift",
         "value": "transform 150ms cubic-bezier(0.2, 0.9, 0.3, 1.25); box-shadow 120ms steps(2, end); lifted translateY(-4px), hover translateY(-2px) for fine pointers, pressed translateY(2px)",
-        "purpose": "Tabletop: a piece lifts when chosen, rises on hover, sinks when pressed. The move eases with a little give; the edge and cast under it change in two steps and are never eased."
+        "purpose": "a piece lifts when chosen, rises on hover, sinks when pressed. The move eases with a little give; the edge and cast under it change in two steps and are never eased."
       },
       {
         "name": "hand-raise",
@@ -574,7 +586,7 @@
       {
         "name": "piece-land",
         "value": "240ms cubic-bezier(0.16, 1, 0.3, 1); from translateY(-7px), 1px past, back",
-        "purpose": "Tabletop: a token arriving drops into place."
+        "purpose": "A token arriving drops into place. Also the sign-in board, a notice, and the boards, mats and header pieces of a page set down after the camera has stopped."
       },
       {
         "name": "slot-fire",
@@ -700,6 +712,46 @@
         "name": "reduced-motion",
         "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once with one settle sound, sets numbers at once, and skips flights, pops, floats, sparks, shakes, the hand lean, the shimmer, the cloth light and the result tally; the landing crowd's animations are removed and the demo's steps land with no delay",
         "purpose": "Applied under prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "blank-wait",
+        "value": "900ms steps(3, end) infinite alternate; opacity 1 to 0.45",
+        "purpose": "A chipboard blank waits in steps, as a sprite would."
+      },
+      {
+        "name": "place-move",
+        "value": "360ms cubic-bezier(0.45, 0, 0.2, 1); one transform on the tower's world",
+        "purpose": "The camera between outside (home, the 404) and the door (Play). moveMs and moveEase in src/components/tower/places.ts."
+      },
+      {
+        "name": "room-move-in",
+        "value": "480ms cubic-bezier(0.85, 0, 1, 0.3); zoom to 32",
+        "purpose": "The camera going in through The Archivist's window to the codex. It starts slowly, since magnifying by 32 is otherwise over in its first tenth. The wall cuts in when it stops."
+      },
+      {
+        "name": "room-move-out",
+        "value": "480ms cubic-bezier(0, 0.7, 0.15, 1); zoom from 32",
+        "purpose": "The camera coming out of the room. The wall cuts away at the press and the move ends slowly."
+      },
+      {
+        "name": "page-land",
+        "value": "piece-land 240ms cubic-bezier(0.16, 1, 0.3, 1) on every .board, .mat and header piece of the page, together; the landed state is held 320ms; one settle sound",
+        "purpose": "A page is put away (visibility: hidden) at the press and set down when the camera has stopped and the page has come, whichever is later."
+      },
+      {
+        "name": "move-limit",
+        "value": "4000ms",
+        "purpose": "A page that has not come by then is given up on and the page being left is shown again."
+      },
+      {
+        "name": "scene-drift-far",
+        "value": "336s steps(168, end) infinite; translateX by one 168-pixel tile, a tower pixel every 2s; none under reduced motion",
+        "purpose": "The far bank of cloud behind the tower drifts left in whole tower pixels and loops. Transform only."
+      },
+      {
+        "name": "scene-drift-near",
+        "value": "150s steps(120, end) infinite; translateX by one 120-pixel tile, a tower pixel every 1.25s; none under reduced motion",
+        "purpose": "The near bank of cloud, a little quicker."
       }
     ],
     "breakpoints": [
@@ -730,6 +782,18 @@
       {
         "name": "key-hints",
         "value": "(hover: hover) and (pointer: fine)"
+      },
+      {
+        "name": "dock",
+        "value": "below 768px: the three ways about the app dock to the bottom edge; --dock-h is 4.75rem plus the safe area, and 0 from 768px"
+      },
+      {
+        "name": "tower-px",
+        "value": "2px; 3px from 640px by 720px; 4px from 1280px by 940px; 5px from 1680px by 1160px; 6px from 2000px by 1370px (min-width and min-height)"
+      },
+      {
+        "name": "heading-above-tower",
+        "value": "max-width 639px and min-height 660px"
       }
     ],
     "sound": [
@@ -745,8 +809,8 @@
       },
       {
         "name": "press",
-        "value": "every press on a run's screens makes one sound: its handler's own, else the falling click (sine 760Hz to 560Hz) from a window listener in src/components/run/sfx/ClickSound.tsx; a cobalt table button and a move sent play confirm (triangle G5 then C6)",
-        "purpose": "Nothing pressed in a run is silent, and nothing is heard twice."
+        "value": "every press on any page makes one sound: its handler's own, else the falling click (sine 760Hz to 560Hz) from a window listener in src/components/run/sfx/ClickSound.tsx; a cobalt table button and a move sent play confirm (triangle G5 then C6)",
+        "purpose": "Nothing pressed is silent, and nothing is heard twice."
       },
       {
         "name": "cat-voices",
@@ -761,7 +825,7 @@
       {
         "name": "music",
         "value": "tracks in src/components/run/music/tracks.ts: bpm, root, scale and bars of four 16-step parts (lead, arp, bass, drums) written as scale degrees; scheduled a bar at a time 200ms ahead of the bar line; 400ms crossfade on a change of tune",
-        "purpose": "One tune per screen of a run (clan pick, tower, roof, reward, run won, run lost) and one theme per rival; the opening hand plays the rival's theme without its lead and drums."
+        "purpose": "One tune per screen of a run (clan pick, tower, roof, reward, run won, run lost), one theme per rival, and one menu tune for home, the codex and the 404; the opening hand plays the rival's theme without its lead and drums."
       },
       {
         "name": "music-limits",
@@ -771,88 +835,133 @@
       {
         "name": "control",
         "value": "localStorage key hadumon:sound: full, quiet or muted; default full. localStorage key hadumon:music: on or off; default on",
-        "purpose": "The speaker corner button cycles the three and is the master of effects and music alike; the note button beside it turns the music alone off. Nothing plays in a hidden tab; a skip cuts every effect voice and plays one settle sound."
+        "purpose": "The speaker, in the table's corner and on the lid, cycles the three and is the master of effects and music alike; the note button beside it turns the music alone off. Nothing plays in a hidden tab; a skip cuts every effect voice and plays one settle sound."
+      },
+      {
+        "name": "rig",
+        "value": "src/components/SoundRig.tsx: ClickSound and HoverSound, mounted once in the root layout",
+        "purpose": "The click, the knock on nothing and the hover tick are heard on every page, landing and sign-in included. A second mount would tick twice."
+      },
+      {
+        "name": "menu-tune",
+        "value": "track menu in src/components/run/music/tracks.ts: 88bpm, root F4, pentatonic, triangle lead, a rocking arpeggio and a bass, hat only; mounted in the shell by src/components/MenuMusic.tsx",
+        "purpose": "Home, the codex and the 404. It carries from page to page without starting over and crossfades with the table's music. useMusic has one owner at a time, so a leaving page cannot hush the arriving one. Landing, login and signup have no tune."
+      }
+    ],
+    "scenery": [
+      {
+        "name": "sky",
+        "value": "4px-wide tile: #b7492d 20 rows, dither 28, #f07b4d 56, dither 28, #f5c84c 34, dither 20, #fff2a8 22; 4x4 ordered (Bayer) dither",
+        "purpose": "The evening sky behind the tower. A dither, never a gradient."
+      },
+      {
+        "name": "horizon",
+        "value": "34 tower pixels above the tower's ground",
+        "purpose": "Where the sea meets the sky."
+      },
+      {
+        "name": "clouds",
+        "value": "far: 168x56 tile, #9aa9b7 lit #d0dae2, foot 6px under the horizon; near: 120x34 tile, #d0dae2 lit #fff8e7, foot 2px under",
+        "purpose": "Two banks of cloud along the horizon."
+      },
+      {
+        "name": "sea",
+        "value": "32x52 tile: #1557d8 with glints #a9ddf5 and #e7f7fd, dithering to #0d3c9d from row 18",
+        "purpose": "The sea under the horizon; pressed cobalt below the tile."
+      },
+      {
+        "name": "rock-and-shore",
+        "value": "rock #17212b with a 2px #3a4857 top, 150px deep; shore #0b1118, rising 58px to the left, ending 34px left of the tower",
+        "purpose": "The tower's ground and the dark near shore. The tower's foot is 14 tower pixels above the stage bottom in the far shot."
       }
     ]
   },
   "components": [
     {
-      "name": "Primary Button",
+      "name": "Table Button",
       "kind": "button",
-      "refersTo": "button-primary",
-      "description": "Cobalt capsule for the one action that moves the page forward. Chrome only: dialogs, home, codex, auth, landing. Not used on the tabletop.",
-      "html": "<button class=\"ds-btn ds-btn-primary\">Start a run</button>",
-      "css": ".ds-btn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:-0.025em;cursor:pointer;transition:transform 140ms ease,box-shadow 140ms ease,filter 140ms ease}.ds-btn:active{transform:translateY(2px) scale(.99)}.ds-btn:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn-primary{background:var(--color-cobalt,#1557d8);border-color:var(--color-cobalt,#1557d8);color:#fff}.ds-btn-primary:hover{background:var(--color-cobalt-dark,#0d3c9d)}"
+      "refersTo": "table-button",
+      "description": "The app's one button, a piece: cobalt for the one way forward, cream for the rest, lime for the one of a set that is in force (the page you are on, held pressed in), ink with cream text for an act that cannot be undone. Square, 2px ink, a 2px edge that sinks when pressed. Three sizes (40, 48, 56px) and a 40px icon square.",
+      "html": "<div class=\"ds-ground ds-tb-row\"><button class=\"ds-pc ds-tb ds-tb-primary\">Take 2 dice</button><button class=\"ds-pc ds-tb ds-tb-secondary\">Back</button><a class=\"ds-pc ds-tb ds-tb-chosen ds-pressed\" href=\"#\" aria-current=\"page\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='4' y='0' width='1' height='1' fill='#1a1120'/><rect x='6' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#ffffff'/><rect x='4' y='1' width='1' height='1' fill='#ffffff'/><rect x='5' y='1' width='1' height='1' fill='#1a1120'/><rect x='6' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#1a1120'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#ffffff'/><rect x='5' y='2' width='1' height='1' fill='#ffffff'/><rect x='6' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#ffffff'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#1a1120'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#1a1120'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#1a1120'/><rect x='4' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#ffffff'/><rect x='6' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#1a1120'/><rect x='2' y='6' width='1' height='1' fill='#ffffff'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='4' y='6' width='1' height='1' fill='#1a1120'/><rect x='5' y='6' width='1' height='1' fill='#ffffff'/><rect x='6' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/><rect x='4' y='7' width='1' height='1' fill='#1a1120'/><rect x='5' y='7' width='1' height='1' fill='#1a1120'/><rect x='6' y='7' width='1' height='1' fill='#1a1120'/></svg>Home</a><button class=\"ds-pc ds-tb ds-tb-danger ds-tb-md\">Log out</button><button class=\"ds-pc ds-tb ds-tb-primary\" disabled>Tuck</button><button class=\"ds-pc ds-tb ds-tb-secondary ds-tb-icon\" aria-label=\"Log out\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='0' y='0' width='1' height='1' fill='#1a1120'/><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='0' width='1' height='1' fill='#1a1120'/><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#ffffff'/><rect x='3' y='1' width='1' height='1' fill='#1a1120'/><rect x='5' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#1a1120'/><rect x='6' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#1a1120'/><rect x='4' y='3' width='1' height='1' fill='#1a1120'/><rect x='5' y='3' width='1' height='1' fill='#1a1120'/><rect x='6' y='3' width='1' height='1' fill='#1a1120'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#1a1120'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#ffffff'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='0' y='7' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/></svg></button><a class=\"ds-pc ds-tb ds-tb-primary ds-tb-lg\" href=\"#\">Start a run</a></div>",
+      "css": ".ds-ground{background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-tb-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:16px 16px 24px}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}"
     },
     {
-      "name": "Secondary Button",
-      "kind": "button",
-      "refersTo": "button-secondary",
-      "description": "Soft sky capsule for cancel, back, and retry.",
-      "html": "<button class=\"ds-btn ds-btn-secondary\">Try again</button>",
-      "css": ".ds-btn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid transparent;border-radius:999px;font-size:14px;font-weight:600;letter-spacing:-0.025em;cursor:pointer;transition:transform 140ms ease,box-shadow 140ms ease,filter 140ms ease}.ds-btn:active{transform:translateY(2px) scale(.99)}.ds-btn:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-btn:disabled{opacity:.45;cursor:not-allowed}.ds-btn-secondary{background:var(--color-sky-soft,#e7f7fd);color:var(--color-ink,#17212b)}.ds-btn-secondary:hover{background:var(--color-sky-surface,#a9ddf5)}"
-    },
-    {
-      "name": "Filter Chips",
+      "name": "Filter Tokens",
       "kind": "chip",
-      "refersTo": "chip",
-      "description": "Single-choice filter pills in the codex; the selected chip is cobalt.",
-      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\" aria-pressed=\"true\">All</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-pip\" style=\"background:#f07b4d\"></span>Flame</button><button class=\"ds-chip\" aria-pressed=\"false\"><span class=\"ds-pip\" style=\"background:#8acbe7\"></span>Mist</button></div>",
-      "css": ".ds-pip{display:inline-block;width:12px;height:12px;border:2px solid var(--color-ink,#17212b);flex-shrink:0}.ds-chips{display:flex;flex-wrap:wrap;gap:6px}.ds-chip{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;border-radius:999px;border:1px solid rgb(23 33 43 / .15);background:#fff;color:var(--color-ink,#17212b);font-size:14px;font-weight:700;cursor:pointer;transition:transform 140ms ease}.ds-chip:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-chip[aria-pressed=true]{background:var(--color-cobalt,#1557d8);border-color:var(--color-cobalt,#1557d8);color:#fff}.ds-chip:active{transform:translateY(2px) scale(.99)}.ds-chip:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+      "refersTo": "filter-token",
+      "description": "Single-choice filters in the codex as white tokens on a board, 44px tall; the one that is set is lime with the cobalt chosen frame. The group label is 12px bold soft ink, sentence case.",
+      "html": "<div class=\"ds-bd ds-ft\"><p class=\"ds-ft-label\">Element</p><button class=\"ds-pc ds-ft-token\" aria-pressed=\"false\">All</button><button class=\"ds-pc ds-ft-token\" aria-pressed=\"true\">Flame</button><button class=\"ds-pc ds-ft-token\" aria-pressed=\"false\">Mist</button><button class=\"ds-pc ds-ft-token\" aria-pressed=\"false\">Volt</button></div>",
+      "css": ".ds-bd{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);padding:20px;box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--board-cast,color-mix(in srgb, #b9a47e 42%, #fff8e7))}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-ft{display:flex;flex-wrap:wrap;align-items:center;gap:10px 8px;margin-bottom:10px}.ds-ft-label{width:56px;margin:0;font-size:12px;font-weight:700;color:var(--color-ink-soft,#5b6c7d)}.ds-ft-token{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 12px;background:#fff;color:var(--color-ink,#17212b);font-size:14px;font-weight:700;cursor:pointer}.ds-ft-token:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-ft-token:active{--sink:2px;transform:translateY(2px)}.ds-ft-token[aria-pressed=true]{background:var(--color-lime,#d8ff4f);border-color:var(--color-cobalt,#1557d8);box-shadow:inset 0 0 0 2px var(--color-cobalt,#1557d8),0 4px 0 -2px var(--color-chipboard,#b9a47e),0 4px 0 0 var(--color-ink,#17212b),0 9px 0 -2px var(--cast)}"
     },
     {
       "name": "Text Field",
       "kind": "input",
-      "refersTo": "input",
-      "description": "White field with an edge border; the border turns cobalt on focus.",
-      "html": "<label class=\"ds-field\"><span>Username</span><input class=\"ds-input\" /></label>",
-      "css": ".ds-field{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:block;max-width:320px;color:var(--color-ink,#17212b);font-size:14px;font-weight:800}.ds-field span{display:block;margin-bottom:8px}.ds-input{font:inherit;font-size:16px;font-weight:400;width:100%;min-height:48px;padding:0 16px;border-radius:12px;border:1px solid var(--color-edge,#c8dfea);background:#fff;color:var(--color-ink,#17212b);outline:none;transition:border-color 150ms}.ds-input:focus{border-color:var(--color-cobalt,#1557d8)}"
+      "refersTo": "field",
+      "description": "A white slot cut into the board: square, 2px ink border, a 3px shade along its top inner edge, 48px tall. Focus is the global cobalt outline; the border does not change. The password's trailing control is the word Show or Hide.",
+      "html": "<div class=\"ds-bd ds-fld-board\"><label class=\"ds-fld\"><span class=\"ds-fld-label\">Username</span><input class=\"ds-fld-input\" value=\"demo\"></label><label class=\"ds-fld\"><span class=\"ds-fld-label\">Password</span><span class=\"ds-fld-wrap\"><input class=\"ds-fld-input ds-fld-trail\" type=\"password\" value=\"demo1234\"><button type=\"button\" class=\"ds-fld-show\">Show</button></span></label><p class=\"ds-fld-error\">That username and password do not match.</p></div>",
+      "css": ".ds-bd{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);padding:20px;box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--board-cast,color-mix(in srgb, #b9a47e 42%, #fff8e7))}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-fld-board{display:grid;gap:16px;max-width:360px;margin-bottom:10px}.ds-fld{display:block}.ds-fld-label{display:block;margin-bottom:6px;font-size:14px;font-weight:800}.ds-fld-wrap{position:relative;display:block}.ds-fld-input{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);box-sizing:border-box;width:100%;min-height:48px;padding:0 12px;font-size:16px;color:var(--color-ink,#17212b);background:#fff;border:2px solid var(--color-ink,#17212b);border-radius:0;box-shadow:inset 0 3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)}.ds-fld-input:focus-visible,.ds-fld-show:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-fld-input:disabled{opacity:.6}.ds-fld-trail{padding-right:80px}.ds-fld-show{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);position:absolute;top:4px;right:6px;min-width:48px;min-height:40px;padding:0 8px;border:0;background:none;color:var(--color-ink,#17212b);font-size:12px;font-weight:900;text-decoration:underline;text-underline-offset:2px;cursor:pointer}.ds-fld-error{margin:0;padding:8px 12px;background:#fff;border:2px solid var(--color-ink,#17212b);font-size:14px;font-weight:700}"
     },
     {
-      "name": "Panel",
+      "name": "Board",
       "kind": "card",
-      "refersTo": "panel",
-      "description": "The standard chrome container: white, rounded, hairline, one soft shadow.",
-      "html": "<section class=\"ds-panel\"><h2>Recent runs</h2><p>Nothing on record. Finish a run, win or lose, and it is written down here.</p></section>",
-      "css": ".ds-panel{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);max-width:420px;padding:16px;background:#fff;border:1px solid rgb(23 33 43 / .08);border-radius:20px;box-shadow:0 10px 30px rgb(23 33 43 / .08);color:var(--color-ink,#17212b)}.ds-panel h2{margin:0 0 12px;font-size:18px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-panel p{margin:0;font-size:16px;line-height:1.45;color:var(--color-ink-soft,#5b6c7d)}"
+      "refersTo": "board",
+      "description": "The page-sized cream sheet everything outside a run is set out on: 2px ink border, a 3px board's edge and cast, a title in print at 30px with a count at its right. It is not a piece, so the button on it keeps its own edge. Shown as home's codex board.",
+      "html": "<div class=\"ds-ground ds-bd-wrap\"><section class=\"ds-bd\"><header class=\"ds-bd-head\"><h2 class=\"ds-print ds-bd-title\">Codex</h2></header><dl class=\"ds-bd-counts\"><div><dd class=\"ds-print\">12<span> / 26</span></dd><dt>cats unlocked</dt></div><div><dd class=\"ds-print\">3<span> / 9</span></dd><dt>relics unlocked</dt></div></dl><a class=\"ds-pc ds-tb ds-tb-secondary ds-tb-md\" href=\"#\">Open the codex</a></section></div>",
+      "css": ".ds-ground{background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-bd-wrap{padding:16px 16px 26px}.ds-bd{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);padding:20px;box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--board-cast,color-mix(in srgb, #b9a47e 42%, #fff8e7))}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}.ds-bd-head{margin-bottom:16px}.ds-bd-title{font-size:30px}.ds-bd-counts{display:flex;gap:24px;margin:0 0 20px}.ds-bd-counts dd{margin:0;font-size:30px;font-variant-numeric:tabular-nums}.ds-bd-counts dd span{color:var(--color-ink-soft,#5b6c7d)}.ds-bd-counts dt{margin-top:4px;font-size:12px;font-weight:700;color:var(--color-ink-soft,#5b6c7d)}"
     },
     {
-      "name": "Navigation Rail",
+      "name": "Dialog",
+      "kind": "card",
+      "refersTo": "dialog-board",
+      "description": "A board held over the table: 448px at most, over a 50% ink scrim, casting a darker ink, with its title in print at 30px. A destructive confirm is the ink button beside a cream way back.",
+      "html": "<div class=\"ds-scrim\"><div class=\"ds-bd ds-dlg\" role=\"dialog\" aria-label=\"Log out?\"><h2 class=\"ds-print ds-dlg-title\">Log out?</h2><p class=\"ds-dlg-copy\">A run in progress is saved. It will be where you left it when you log back in.</p><div class=\"ds-dlg-foot\"><button class=\"ds-pc ds-tb ds-tb-secondary ds-tb-md\">Stay</button><button class=\"ds-pc ds-tb ds-tb-danger ds-tb-md\">Log out</button></div></div></div>",
+      "css": ".ds-scrim{display:flex;justify-content:center;padding:24px 16px 32px;background:color-mix(in srgb,#17212b 50%,#fff8e7)}.ds-bd{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);padding:20px;box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--board-cast,color-mix(in srgb, #b9a47e 42%, #fff8e7))}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}.ds-dlg{--board-cast:#0b1118;width:100%;max-width:448px;box-sizing:border-box}.ds-dlg-title{font-size:30px}.ds-dlg-copy{margin:12px 0 0;font-size:16px;line-height:1.45}.ds-dlg-foot{display:flex;justify-content:flex-end;gap:12px;margin-top:20px;padding-bottom:4px}"
+    },
+    {
+      "name": "Notice",
+      "kind": "custom",
+      "refersTo": "toast",
+      "description": "A notice is a tile that lands at the bottom of the screen: white with ink text, or ink with cream text for an error. One 14px semibold line and Ok as bold underlined text.",
+      "html": "<div class=\"ds-ground ds-nt-stack\"><output class=\"ds-pc ds-nt\"><span>Run abandoned.</span><button type=\"button\">Ok</button></output><output class=\"ds-pc ds-nt ds-nt-error\"><span>That did not save. Try again.</span><button type=\"button\">Ok</button></output></div>",
+      "css": ".ds-ground{background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-nt-stack{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 16px 24px}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}@keyframes ds-land{0%{transform:translateY(-7px)}60%{transform:translateY(1px)}100%{transform:translateY(0)}}.ds-nt{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;align-items:center;gap:12px;max-width:384px;padding:8px 12px;background:#fff;color:var(--color-ink,#17212b);font-size:14px;font-weight:600;line-height:1.25;animation:ds-land 240ms cubic-bezier(0.16,1,0.3,1) both}.ds-nt-error{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-nt button{font:inherit;font-size:12px;font-weight:900;padding:0;border:0;background:none;color:inherit;text-decoration:underline;text-underline-offset:2px;cursor:pointer}.ds-nt button:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}@media (prefers-reduced-motion:reduce){.ds-nt{animation:none}}"
+    },
+    {
+      "name": "Lid and Dock",
       "kind": "nav",
-      "refersTo": "nav-item",
-      "description": "Desktop rail: wordmark and three destinations; the active one is cobalt.",
-      "html": "<nav class=\"ds-rail\"><a class=\"ds-wordmark\" href=\"#\">Hadu<span>Mon</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H11v6H7a1 1 0 0 1-1-1z\"/></svg><span>Home</span></a><a class=\"ds-nav-item\" href=\"#\" aria-current=\"page\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M8 5v14l11-7z\"/></svg><span>Play</span></a><a class=\"ds-nav-item\" href=\"#\"><svg viewBox=\"0 0 24 24\" width=\"20\" height=\"20\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4zM9 4v16M13 9h2\"/></svg><span>Codex</span></a></nav>",
-      "css": ".ds-rail{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:4px;width:192px;padding:16px 12px;background:#fff;border-right:1px solid rgb(23 33 43 / .08)}.ds-wordmark{margin-bottom:32px;padding:0 12px;font-size:24px;font-weight:800;letter-spacing:-0.025em;color:var(--color-ink,#17212b);text-decoration:none}.ds-wordmark span{color:var(--color-coral,#ff7163)}.ds-nav-item{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:12px;font-size:14px;font-weight:700;color:var(--color-ink-soft,#5b6c7d);text-decoration:none;transition:background 150ms,color 150ms}.ds-nav-item:hover{background:var(--color-sky-soft,#e7f7fd);color:var(--color-ink,#17212b)}.ds-nav-item[aria-current=page]{background:var(--color-cobalt,#1557d8);color:#fff}.ds-nav-item:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
+      "refersTo": "lid-strip",
+      "description": "The shell of every signed-in page but the table. An ink lid, 52px: the wordmark, Home, Play and Codex as small table buttons with pixel icons (the page you are on lime and pressed in, Play cobalt), the name, and Log out as an icon button. Below 768px the three are medium buttons in a white rail docked to the bottom edge. On ink the focus outline is lime.",
+      "html": "<div class=\"ds-shell\"><header class=\"ds-lid\"><a class=\"ds-lid-mark\" href=\"#\">Hadu<span>Mon</span></a><nav class=\"ds-lid-nav\" aria-label=\"Primary navigation\"><a class=\"ds-pc ds-tb ds-tb-chosen ds-pressed\" href=\"#\" aria-current=\"page\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='4' y='0' width='1' height='1' fill='#1a1120'/><rect x='6' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#ffffff'/><rect x='4' y='1' width='1' height='1' fill='#ffffff'/><rect x='5' y='1' width='1' height='1' fill='#1a1120'/><rect x='6' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#1a1120'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#ffffff'/><rect x='5' y='2' width='1' height='1' fill='#ffffff'/><rect x='6' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#ffffff'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#1a1120'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#1a1120'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#1a1120'/><rect x='4' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#ffffff'/><rect x='6' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#1a1120'/><rect x='2' y='6' width='1' height='1' fill='#ffffff'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='4' y='6' width='1' height='1' fill='#1a1120'/><rect x='5' y='6' width='1' height='1' fill='#ffffff'/><rect x='6' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/><rect x='4' y='7' width='1' height='1' fill='#1a1120'/><rect x='5' y='7' width='1' height='1' fill='#1a1120'/><rect x='6' y='7' width='1' height='1' fill='#1a1120'/></svg>Home</a><a class=\"ds-pc ds-tb ds-tb-primary\" href=\"#\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='0' y='0' width='1' height='1' fill='#1a1120'/><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#1a1120'/><rect x='5' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#1a1120'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#ffffff'/><rect x='4' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#1a1120'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='0' y='7' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/></svg>Play</a><a class=\"ds-pc ds-tb ds-tb-secondary\" href=\"#\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='0' width='1' height='1' fill='#1a1120'/><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='4' y='0' width='1' height='1' fill='#1a1120'/><rect x='5' y='0' width='1' height='1' fill='#1a1120'/><rect x='6' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#ffffff'/><rect x='4' y='1' width='1' height='1' fill='#ffffff'/><rect x='5' y='1' width='1' height='1' fill='#ffffff'/><rect x='6' y='1' width='1' height='1' fill='#ffffff'/><rect x='7' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#1a1120'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#1a1120'/><rect x='5' y='2' width='1' height='1' fill='#1a1120'/><rect x='6' y='2' width='1' height='1' fill='#ffffff'/><rect x='7' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#1a1120'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#ffffff'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#1a1120'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#ffffff'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#1a1120'/><rect x='3' y='5' width='1' height='1' fill='#ffffff'/><rect x='4' y='5' width='1' height='1' fill='#ffffff'/><rect x='5' y='5' width='1' height='1' fill='#ffffff'/><rect x='6' y='5' width='1' height='1' fill='#ffffff'/><rect x='7' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#1a1120'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='4' y='6' width='1' height='1' fill='#1a1120'/><rect x='5' y='6' width='1' height='1' fill='#1a1120'/><rect x='6' y='6' width='1' height='1' fill='#1a1120'/><rect x='7' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/><rect x='4' y='7' width='1' height='1' fill='#1a1120'/><rect x='5' y='7' width='1' height='1' fill='#1a1120'/><rect x='6' y='7' width='1' height='1' fill='#1a1120'/></svg>Codex</a></nav><span class=\"ds-lid-name\">demo</span><button class=\"ds-pc ds-tb ds-tb-secondary ds-tb-icon\" aria-label=\"Log out\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='0' y='0' width='1' height='1' fill='#1a1120'/><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='0' width='1' height='1' fill='#1a1120'/><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#ffffff'/><rect x='3' y='1' width='1' height='1' fill='#1a1120'/><rect x='5' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#1a1120'/><rect x='6' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#1a1120'/><rect x='4' y='3' width='1' height='1' fill='#1a1120'/><rect x='5' y='3' width='1' height='1' fill='#1a1120'/><rect x='6' y='3' width='1' height='1' fill='#1a1120'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#1a1120'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#ffffff'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='0' y='7' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/></svg></button></header><div class=\"ds-ground ds-shell-page\"></div><nav class=\"ds-dock\" aria-label=\"Primary navigation, phone\"><a class=\"ds-pc ds-tb ds-tb-chosen ds-tb-md ds-pressed\" href=\"#\" aria-current=\"page\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='4' y='0' width='1' height='1' fill='#1a1120'/><rect x='6' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#ffffff'/><rect x='4' y='1' width='1' height='1' fill='#ffffff'/><rect x='5' y='1' width='1' height='1' fill='#1a1120'/><rect x='6' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#1a1120'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#ffffff'/><rect x='5' y='2' width='1' height='1' fill='#ffffff'/><rect x='6' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#ffffff'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#1a1120'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#1a1120'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#1a1120'/><rect x='4' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#ffffff'/><rect x='6' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#1a1120'/><rect x='2' y='6' width='1' height='1' fill='#ffffff'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='4' y='6' width='1' height='1' fill='#1a1120'/><rect x='5' y='6' width='1' height='1' fill='#ffffff'/><rect x='6' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/><rect x='4' y='7' width='1' height='1' fill='#1a1120'/><rect x='5' y='7' width='1' height='1' fill='#1a1120'/><rect x='6' y='7' width='1' height='1' fill='#1a1120'/></svg>Home</a><a class=\"ds-pc ds-tb ds-tb-primary ds-tb-md\" href=\"#\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='0' y='0' width='1' height='1' fill='#1a1120'/><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#ffffff'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#1a1120'/><rect x='5' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#ffffff'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#1a1120'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#ffffff'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#1a1120'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#ffffff'/><rect x='3' y='5' width='1' height='1' fill='#ffffff'/><rect x='4' y='5' width='1' height='1' fill='#1a1120'/><rect x='5' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#1a1120'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='0' y='7' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/></svg>Play</a><a class=\"ds-pc ds-tb ds-tb-secondary ds-tb-md\" href=\"#\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='1' y='0' width='1' height='1' fill='#1a1120'/><rect x='2' y='0' width='1' height='1' fill='#1a1120'/><rect x='3' y='0' width='1' height='1' fill='#1a1120'/><rect x='4' y='0' width='1' height='1' fill='#1a1120'/><rect x='5' y='0' width='1' height='1' fill='#1a1120'/><rect x='6' y='0' width='1' height='1' fill='#1a1120'/><rect x='0' y='1' width='1' height='1' fill='#1a1120'/><rect x='1' y='1' width='1' height='1' fill='#ffffff'/><rect x='2' y='1' width='1' height='1' fill='#1a1120'/><rect x='3' y='1' width='1' height='1' fill='#ffffff'/><rect x='4' y='1' width='1' height='1' fill='#ffffff'/><rect x='5' y='1' width='1' height='1' fill='#ffffff'/><rect x='6' y='1' width='1' height='1' fill='#ffffff'/><rect x='7' y='1' width='1' height='1' fill='#1a1120'/><rect x='0' y='2' width='1' height='1' fill='#1a1120'/><rect x='1' y='2' width='1' height='1' fill='#ffffff'/><rect x='2' y='2' width='1' height='1' fill='#1a1120'/><rect x='3' y='2' width='1' height='1' fill='#ffffff'/><rect x='4' y='2' width='1' height='1' fill='#1a1120'/><rect x='5' y='2' width='1' height='1' fill='#1a1120'/><rect x='6' y='2' width='1' height='1' fill='#ffffff'/><rect x='7' y='2' width='1' height='1' fill='#1a1120'/><rect x='0' y='3' width='1' height='1' fill='#1a1120'/><rect x='1' y='3' width='1' height='1' fill='#ffffff'/><rect x='2' y='3' width='1' height='1' fill='#1a1120'/><rect x='3' y='3' width='1' height='1' fill='#ffffff'/><rect x='4' y='3' width='1' height='1' fill='#ffffff'/><rect x='5' y='3' width='1' height='1' fill='#ffffff'/><rect x='6' y='3' width='1' height='1' fill='#ffffff'/><rect x='7' y='3' width='1' height='1' fill='#1a1120'/><rect x='0' y='4' width='1' height='1' fill='#1a1120'/><rect x='1' y='4' width='1' height='1' fill='#ffffff'/><rect x='2' y='4' width='1' height='1' fill='#1a1120'/><rect x='3' y='4' width='1' height='1' fill='#ffffff'/><rect x='4' y='4' width='1' height='1' fill='#ffffff'/><rect x='5' y='4' width='1' height='1' fill='#ffffff'/><rect x='6' y='4' width='1' height='1' fill='#ffffff'/><rect x='7' y='4' width='1' height='1' fill='#1a1120'/><rect x='0' y='5' width='1' height='1' fill='#1a1120'/><rect x='1' y='5' width='1' height='1' fill='#ffffff'/><rect x='2' y='5' width='1' height='1' fill='#1a1120'/><rect x='3' y='5' width='1' height='1' fill='#ffffff'/><rect x='4' y='5' width='1' height='1' fill='#ffffff'/><rect x='5' y='5' width='1' height='1' fill='#ffffff'/><rect x='6' y='5' width='1' height='1' fill='#ffffff'/><rect x='7' y='5' width='1' height='1' fill='#1a1120'/><rect x='0' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='6' width='1' height='1' fill='#ffffff'/><rect x='2' y='6' width='1' height='1' fill='#1a1120'/><rect x='3' y='6' width='1' height='1' fill='#1a1120'/><rect x='4' y='6' width='1' height='1' fill='#1a1120'/><rect x='5' y='6' width='1' height='1' fill='#1a1120'/><rect x='6' y='6' width='1' height='1' fill='#1a1120'/><rect x='7' y='6' width='1' height='1' fill='#1a1120'/><rect x='1' y='7' width='1' height='1' fill='#1a1120'/><rect x='2' y='7' width='1' height='1' fill='#1a1120'/><rect x='3' y='7' width='1' height='1' fill='#1a1120'/><rect x='4' y='7' width='1' height='1' fill='#1a1120'/><rect x='5' y='7' width='1' height='1' fill='#1a1120'/><rect x='6' y='7' width='1' height='1' fill='#1a1120'/></svg>Codex</a></nav></div>",
+      "css": ".ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}.ds-ground{background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-shell{max-width:560px;border:2px solid var(--color-ink,#17212b)}.ds-shell-page{height:40px}.ds-lid{--cast:#0b1118;display:flex;align-items:center;gap:10px;padding:4px 12px 8px;background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7);font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif)}.ds-lid .ds-pc{--cast:#0b1118}.ds-lid :focus-visible{outline-color:var(--color-lime,#d8ff4f)}.ds-lid-mark{font-size:20px;font-weight:800;letter-spacing:-.025em;color:inherit;text-decoration:none}.ds-lid-mark span{color:var(--color-coral,#ff7163)}.ds-lid-nav{display:flex;gap:10px;margin-left:8px}.ds-lid-name{margin-left:auto;font-size:14px;font-weight:700}.ds-dock{--cast:color-mix(in srgb,#b9a47e 34%,#fff);display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px 12px 14px;background:#fff;border-top:2px solid var(--color-ink,#17212b);box-shadow:0 -3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)}.ds-dock .ds-pc{--cast:color-mix(in srgb,#b9a47e 34%,#fff)}"
+    },
+    {
+      "name": "Home Menu",
+      "kind": "custom",
+      "refersTo": "title-ribbon",
+      "description": "Home as the game's main menu: the cream title plaque with the die-cut wordmark, the lime ribbon carrying the page's one h1 in print, and a sky mat holding the greeting, one sentence, the coming rival's coral nameplate and one large cobalt way forward. In the build it lies beside the tower and over its evening sea, neither of which is drawn here, and its pieces cast a darker ink (#0b1118), as shown.",
+      "html": "<div class=\"ds-ground ds-hm\"><header class=\"ds-hm-head\"><p class=\"ds-pc ds-hm-plaque\" aria-hidden=\"true\">Hadu<span>Mon</span></p><h3 class=\"ds-pc ds-print ds-hm-ribbon\">Up against Alley Tom</h3></header><section class=\"ds-hm-mat\"><p class=\"ds-hm-hello\">Welcome back, demo</p><p class=\"ds-hm-detail\">Cinder Clan on Kitten, match 1 of 6.</p><p class=\"ds-hm-label\">Across the table</p><div class=\"ds-pc ds-hm-plate\"><span class=\"ds-print\">Alley Tom</span></div><a class=\"ds-pc ds-tb ds-tb-primary ds-tb-lg\" href=\"#\">Continue run</a></section></div>",
+      "css": ".ds-ground{background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-pc{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb, #b9a47e 42%, #fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 150ms cubic-bezier(0.2,0.9,0.3,1.25),box-shadow 120ms steps(2,end),background-color 520ms ease-out}.ds-pc:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tb{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;text-decoration:none;cursor:pointer}.ds-tb:active:not(:disabled),.ds-tb.ds-pressed{--sink:2px;transform:translateY(2px)}.ds-tb:disabled{opacity:.45;cursor:not-allowed}.ds-tb-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tb-primary:hover:not(:disabled){background:var(--color-cobalt-dark,#0d3c9d)}.ds-tb-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tb-secondary:hover:not(:disabled){background:var(--color-sky-soft,#e7f7fd)}.ds-tb-chosen{background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-tb-danger{background:var(--color-ink,#17212b);color:var(--color-cream,#fff8e7)}.ds-tb-danger:hover:not(:disabled){background:color-mix(in srgb,#17212b 85%,transparent)}.ds-tb-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tb-lg{min-height:56px;padding:0 24px;font-size:16px}.ds-tb-icon{width:40px;height:40px;min-height:0;padding:0}.ds-print{font-family:var(--font-pixel, 'Jersey 20'),var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;margin:0}.ds-hm{background:#1557d8;--cast:#0b1118;display:flex;flex-direction:column;align-items:flex-start;gap:20px;padding:16px 16px 28px;color:var(--color-ink,#17212b);font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif)}.ds-hm-head{display:flex;flex-direction:column;align-items:flex-start}.ds-hm-plaque{--e:5px;margin:0;padding:8px 20px 16px;background:var(--color-cream,#fff8e7);font-size:48px;font-weight:800;letter-spacing:-.035em;line-height:.9;paint-order:stroke fill;-webkit-text-stroke:3px var(--color-ink,#17212b);text-shadow:0 3px 0 var(--color-chipboard,#b9a47e),0 5px 0 var(--color-ink,#17212b)}.ds-hm-plaque span{color:var(--color-coral,#ff7163)}.ds-hm-ribbon{position:relative;z-index:1;margin:-12px 0 0 20px;padding:8px 20px;background:var(--color-lime,#d8ff4f);font-size:30px}.ds-hm-mat{--cast:var(--color-sky-deep,#73bde4);display:flex;flex-direction:column;align-items:flex-start;gap:12px;width:100%;max-width:420px;box-sizing:border-box;padding:20px;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px color-mix(in srgb, #b9a47e 42%, #fff8e7)}.ds-hm-mat .ds-pc{--cast:var(--color-sky-deep,#73bde4)}.ds-hm-hello{margin:0;font-size:14px;font-weight:700}.ds-hm-detail{margin:0;font-size:16px;line-height:1.45}.ds-hm-label{margin:0 0 -8px;font-size:12px;font-weight:700}.ds-hm-plate{padding:4px 10px;background:var(--color-coral,#ff7163);font-size:20px}.ds-hm .ds-hm-plaque,.ds-hm .ds-hm-ribbon{--cast:#0b1118}.ds-hm .ds-hm-mat{box-shadow:0 5px 0 -2px #b9a47e,0 5px 0 0 #17212b,0 10px 0 -2px #0b1118}"
     },
     {
       "name": "Cat Card",
       "kind": "custom",
       "refersTo": "cat-card",
-      "description": "The signature piece: sprite, name, cost pips, lime points tag, and the power in words. Shown flat, as it is outside the tabletop; on the tabletop it gains a 3px chipboard edge. Common rarity band shown.",
+      "description": "The signature piece: sprite, name, cost pips, lime points tag, and the power in words. It stands at card height on every page: a 3px chipboard edge, an ink line and a cast under the rarity band. Common rarity band shown.",
       "html": "<div class=\"ds-cat-card\"><div class=\"ds-cat-head\"><svg viewBox=\"0 0 16 16\" width=\"44\" height=\"44\" shape-rendering=\"crispEdges\" style=\"image-rendering:pixelated;flex-shrink:0\" aria-hidden=\"true\"><rect x=\"7\" y=\"0\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"7\" y=\"1\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"1\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"1\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"7\" y=\"2\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"2\" width=\"1\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"2\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"2\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"2\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"3\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"4\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"3\" width=\"4\" height=\"1\" fill=\"#b7492d\"/><rect x=\"10\" y=\"3\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"12\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"13\" y=\"3\" width=\"1\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"14\" y=\"3\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"3\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"4\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"4\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"5\" width=\"14\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"5\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"4\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"6\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"6\" width=\"1\" height=\"1\" fill=\"#ffffff\"/><rect x=\"12\" y=\"6\" width=\"1\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"6\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"6\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"3\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"5\" y=\"7\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"7\" width=\"2\" height=\"1\" fill=\"#5cbf89\"/><rect x=\"13\" y=\"7\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"7\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"0\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"8\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"9\" y=\"8\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"8\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"8\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"1\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"5\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"7\" y=\"9\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"9\" width=\"2\" height=\"1\" fill=\"#ffffff\"/><rect x=\"11\" y=\"9\" width=\"3\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"14\" y=\"9\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"2\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"6\" y=\"10\" width=\"4\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"10\" y=\"10\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"11\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"11\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"11\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"11\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"6\" y=\"12\" width=\"4\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"10\" y=\"12\" width=\"1\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"12\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"13\" y=\"12\" width=\"2\" height=\"1\" fill=\"#b7492d\"/><rect x=\"15\" y=\"12\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"13\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"13\" width=\"2\" height=\"1\" fill=\"#ffd36b\"/><rect x=\"9\" y=\"13\" width=\"6\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"15\" y=\"13\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"4\" y=\"14\" width=\"1\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"7\" y=\"14\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"14\" width=\"2\" height=\"1\" fill=\"#f07b4d\"/><rect x=\"11\" y=\"14\" width=\"4\" height=\"1\" fill=\"#1a1120\"/><rect x=\"5\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/><rect x=\"9\" y=\"15\" width=\"2\" height=\"1\" fill=\"#1a1120\"/></svg><div class=\"ds-cat-id\"><p class=\"ds-cat-name\">Flameclaw</p><div class=\"ds-cat-cost\"><span class=\"ds-pip\" style=\"background:#f07b4d\"></span></div></div><p class=\"ds-cat-points\">2</p></div><p class=\"ds-cat-rule\">When activated: gain 1 Flame essence.</p></div>",
-      "css": ".ds-pip{display:inline-block;width:12px;height:12px;border:2px solid var(--color-ink,#17212b);flex-shrink:0}.ds-cat-card{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:8px;width:208px;padding:8px;background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);box-shadow:inset 0 3px 0 #9aa9b7}.ds-cat-head{display:flex;align-items:center;gap:8px}.ds-cat-id{min-width:0;flex:1}.ds-cat-name{margin:0;font-size:14px;font-weight:800;letter-spacing:-0.025em;line-height:1.25}.ds-cat-cost{display:flex;gap:4px;margin-top:4px}.ds-cat-points{margin:0;padding:0 6px;font-size:14px;font-weight:800;line-height:24px;background:var(--color-lime,#d8ff4f);border:2px solid var(--color-ink,#17212b)}.ds-cat-rule{margin:0;padding-top:6px;border-top:1px solid rgb(23 33 43 / .2);font-size:12px;line-height:1.375}"
+      "css": ".ds-pip{display:inline-block;width:12px;height:12px;border:2px solid var(--color-ink,#17212b);flex-shrink:0}.ds-cat-card{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;gap:8px;width:208px;padding:8px;background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);box-shadow:inset 0 3px 0 #9aa9b7}.ds-cat-head{display:flex;align-items:center;gap:8px}.ds-cat-id{min-width:0;flex:1}.ds-cat-name{margin:0;font-size:14px;font-weight:800;letter-spacing:-0.025em;line-height:1.25}.ds-cat-cost{display:flex;gap:4px;margin-top:4px}.ds-cat-points{margin:0;padding:0 6px;font-size:14px;font-weight:800;line-height:24px;background:var(--color-lime,#d8ff4f);border:2px solid var(--color-ink,#17212b)}.ds-cat-rule{margin:0;padding-top:6px;border-top:1px solid rgb(23 33 43 / .2);font-size:12px;line-height:1.375}/* ds-cc-edge */.ds-cat-card{margin-bottom:10px;box-shadow:inset 0 3px 0 #9aa9b7,0 5px 0 -2px #b9a47e,0 5px 0 0 #17212b,0 10px 0 -2px color-mix(in srgb, #b9a47e 42%, #fff8e7)}"
     },
     {
       "name": "Feeder Dice",
       "kind": "custom",
       "refersTo": "die",
-      "description": "Square dice holding an essence pip; a chosen die fills lime (and lifts 4px on the tabletop). Shown flat, as in the landing demo.",
+      "description": "Square dice holding an essence pip; a chosen die fills lime and lifts 4px. Each is a 2px tile with its edge and cast, as every piece is on every page.",
       "html": "<ul class=\"ds-dice\"><li><button class=\"ds-die\" aria-pressed=\"true\"><span class=\"ds-die-pip\" style=\"background:#f07b4d\"></span><span>Flame</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8acbe7\"></span><span>Mist</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#f5c84c\"></span><span>Volt</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#77bd70\"></span><span>Thorn</span></button></li><li><button class=\"ds-die\" aria-pressed=\"false\"><span class=\"ds-die-pip\" style=\"background:#8275c6\"></span><span>Shade</span></button></li></ul>",
-      "css": ".ds-dice{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:384px;margin:0;padding:0;list-style:none}.ds-die{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;padding:6px 4px;background:#fff;color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:1;cursor:pointer}.ds-die-pip{width:22px;height:22px;box-sizing:border-box;border:2px solid var(--color-ink,#17212b)}.ds-die:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-die[aria-pressed=true],.ds-die[aria-pressed=true]:hover{background:var(--color-lime,#d8ff4f)}.ds-die:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}"
-    },
-    {
-      "name": "Table Button",
-      "kind": "button",
-      "refersTo": "table-button",
-      "description": "An action on the tabletop as a piece: cobalt for the one confirm, cream for the rest. Square, 2px ink, a 2px edge that sinks when pressed. Three sizes (40, 48, 56px); the large one is the landing page's \"Start a run\", a link in the primary variant.",
-      "html": "<div class=\"ds-cloth\"><button class=\"ds-piece ds-tbtn ds-tbtn-primary\">Take 2 dice<kbd class=\"ds-key\">Enter</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-secondary\">Back<kbd class=\"ds-key\">Esc</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-primary\" disabled>Tuck</button><a class=\"ds-piece ds-tbtn ds-tbtn-primary ds-tbtn-lg\" href=\"#\">Start a run</a></div>",
-      "css": ".ds-cloth{display:flex;flex-wrap:wrap;gap:8px;padding:16px 16px 22px;background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-piece{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-piece:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tbtn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;cursor:pointer}.ds-tbtn-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tbtn-lg{min-height:56px;padding:0 24px;font-size:16px}a.ds-tbtn{text-decoration:none}.ds-tbtn-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tbtn-primary:hover{background:var(--color-cobalt-dark,#0d3c9d)}.ds-tbtn-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tbtn-secondary:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-tbtn:active:not(:disabled){--sink:2px;transform:translateY(2px)}.ds-tbtn:disabled{opacity:.45;cursor:not-allowed}.ds-key{display:inline-grid;place-items:center;height:18px;min-width:16px;padding:0 4px;background:#fff;color:var(--color-ink,#17212b);border:1px solid rgb(23 33 43 / .6);font-family:inherit;font-size:10px;font-weight:700;line-height:1}@media not ((hover:hover) and (pointer:fine)){.ds-key{display:none}}@media (prefers-reduced-motion:reduce){.ds-piece{transition-duration:.01ms}}"
+      "css": ".ds-dice{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;max-width:384px;margin:0;padding:0;list-style:none}.ds-die{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:100%;min-height:48px;padding:6px 4px;background:#fff;color:var(--color-ink,#17212b);border:2px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:1;cursor:pointer}.ds-die-pip{width:22px;height:22px;box-sizing:border-box;border:2px solid var(--color-ink,#17212b)}.ds-die:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-die[aria-pressed=true],.ds-die[aria-pressed=true]:hover{background:var(--color-lime,#d8ff4f)}.ds-die:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}/* ds-die-edge */.ds-dice{padding-bottom:10px}.ds-die{box-shadow:0 4px 0 -2px #b9a47e,0 4px 0 0 #17212b,0 9px 0 -2px color-mix(in srgb, #b9a47e 42%, #fff8e7)}"
     },
     {
       "name": "Lane on the Mat",
       "kind": "custom",
       "refersTo": "lane-tile",
-      "description": "One printed lane of the tabletop mat: the cobalt activate tile, a placed cat with its yarn track, the lime Play here space, a printed later space with its reward step, and the end cap.",
+      "description": "One printed lane of the match's mat: the cobalt activate tile, a placed cat with its yarn track, the lime Play here space, a printed later space with its reward step, and the end cap.",
       "html": "<section class=\"ds-mat\"><div class=\"ds-lane\"><button class=\"ds-piece ds-lane-tile\"><span class=\"ds-lane-name\">Hunt</span><span class=\"ds-lane-does\">Take 2 dice</span></button><button class=\"ds-piece ds-space ds-space-placed\"><span class=\"ds-space-name\">Flameclaw</span><span class=\"ds-yarn\"><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='1' y='0' width='1' height='1' fill='#17212b'/><rect x='2' y='0' width='1' height='1' fill='#17212b'/><rect x='3' y='0' width='1' height='1' fill='#17212b'/><rect x='4' y='0' width='1' height='1' fill='#17212b'/><rect x='5' y='0' width='1' height='1' fill='#17212b'/><rect x='0' y='1' width='1' height='1' fill='#17212b'/><rect x='1' y='1' width='1' height='1' fill='#d8ff4f'/><rect x='2' y='1' width='1' height='1' fill='#d8ff4f'/><rect x='3' y='1' width='1' height='1' fill='#17212b'/><rect x='4' y='1' width='1' height='1' fill='#d8ff4f'/><rect x='5' y='1' width='1' height='1' fill='#d8ff4f'/><rect x='6' y='1' width='1' height='1' fill='#17212b'/><rect x='0' y='2' width='1' height='1' fill='#17212b'/><rect x='1' y='2' width='1' height='1' fill='#d8ff4f'/><rect x='2' y='2' width='1' height='1' fill='#17212b'/><rect x='3' y='2' width='1' height='1' fill='#d8ff4f'/><rect x='4' y='2' width='1' height='1' fill='#d8ff4f'/><rect x='5' y='2' width='1' height='1' fill='#17212b'/><rect x='6' y='2' width='1' height='1' fill='#17212b'/><rect x='0' y='3' width='1' height='1' fill='#17212b'/><rect x='1' y='3' width='1' height='1' fill='#17212b'/><rect x='2' y='3' width='1' height='1' fill='#d8ff4f'/><rect x='3' y='3' width='1' height='1' fill='#d8ff4f'/><rect x='4' y='3' width='1' height='1' fill='#17212b'/><rect x='5' y='3' width='1' height='1' fill='#d8ff4f'/><rect x='6' y='3' width='1' height='1' fill='#17212b'/><rect x='0' y='4' width='1' height='1' fill='#17212b'/><rect x='1' y='4' width='1' height='1' fill='#d8ff4f'/><rect x='2' y='4' width='1' height='1' fill='#d8ff4f'/><rect x='3' y='4' width='1' height='1' fill='#17212b'/><rect x='4' y='4' width='1' height='1' fill='#d8ff4f'/><rect x='5' y='4' width='1' height='1' fill='#d8ff4f'/><rect x='6' y='4' width='1' height='1' fill='#17212b'/><rect x='0' y='5' width='1' height='1' fill='#17212b'/><rect x='1' y='5' width='1' height='1' fill='#d8ff4f'/><rect x='2' y='5' width='1' height='1' fill='#17212b'/><rect x='3' y='5' width='1' height='1' fill='#d8ff4f'/><rect x='4' y='5' width='1' height='1' fill='#d8ff4f'/><rect x='5' y='5' width='1' height='1' fill='#17212b'/><rect x='6' y='5' width='1' height='1' fill='#17212b'/><rect x='1' y='6' width='1' height='1' fill='#17212b'/><rect x='2' y='6' width='1' height='1' fill='#17212b'/><rect x='3' y='6' width='1' height='1' fill='#17212b'/><rect x='4' y='6' width='1' height='1' fill='#17212b'/><rect x='5' y='6' width='1' height='1' fill='#17212b'/><rect x='7' y='6' width='1' height='1' fill='#17212b'/><rect x='6' y='7' width='1' height='1' fill='#17212b'/><rect x='7' y='7' width='1' height='1' fill='#17212b'/></svg><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='1' y='0' width='1' height='1' fill='#b9a47e'/><rect x='2' y='0' width='1' height='1' fill='#b9a47e'/><rect x='3' y='0' width='1' height='1' fill='#b9a47e'/><rect x='4' y='0' width='1' height='1' fill='#b9a47e'/><rect x='5' y='0' width='1' height='1' fill='#b9a47e'/><rect x='0' y='1' width='1' height='1' fill='#b9a47e'/><rect x='3' y='1' width='1' height='1' fill='#b9a47e'/><rect x='6' y='1' width='1' height='1' fill='#b9a47e'/><rect x='0' y='2' width='1' height='1' fill='#b9a47e'/><rect x='2' y='2' width='1' height='1' fill='#b9a47e'/><rect x='5' y='2' width='1' height='1' fill='#b9a47e'/><rect x='6' y='2' width='1' height='1' fill='#b9a47e'/><rect x='0' y='3' width='1' height='1' fill='#b9a47e'/><rect x='1' y='3' width='1' height='1' fill='#b9a47e'/><rect x='4' y='3' width='1' height='1' fill='#b9a47e'/><rect x='6' y='3' width='1' height='1' fill='#b9a47e'/><rect x='0' y='4' width='1' height='1' fill='#b9a47e'/><rect x='3' y='4' width='1' height='1' fill='#b9a47e'/><rect x='6' y='4' width='1' height='1' fill='#b9a47e'/><rect x='0' y='5' width='1' height='1' fill='#b9a47e'/><rect x='2' y='5' width='1' height='1' fill='#b9a47e'/><rect x='5' y='5' width='1' height='1' fill='#b9a47e'/><rect x='6' y='5' width='1' height='1' fill='#b9a47e'/><rect x='1' y='6' width='1' height='1' fill='#b9a47e'/><rect x='2' y='6' width='1' height='1' fill='#b9a47e'/><rect x='3' y='6' width='1' height='1' fill='#b9a47e'/><rect x='4' y='6' width='1' height='1' fill='#b9a47e'/><rect x='5' y='6' width='1' height='1' fill='#b9a47e'/><rect x='7' y='6' width='1' height='1' fill='#b9a47e'/><rect x='6' y='7' width='1' height='1' fill='#b9a47e'/><rect x='7' y='7' width='1' height='1' fill='#b9a47e'/></svg><svg viewBox='0 0 8 8' width='16' height='16' shape-rendering='crispEdges' aria-hidden='true'><rect x='1' y='0' width='1' height='1' fill='#b9a47e'/><rect x='2' y='0' width='1' height='1' fill='#b9a47e'/><rect x='3' y='0' width='1' height='1' fill='#b9a47e'/><rect x='4' y='0' width='1' height='1' fill='#b9a47e'/><rect x='5' y='0' width='1' height='1' fill='#b9a47e'/><rect x='0' y='1' width='1' height='1' fill='#b9a47e'/><rect x='3' y='1' width='1' height='1' fill='#b9a47e'/><rect x='6' y='1' width='1' height='1' fill='#b9a47e'/><rect x='0' y='2' width='1' height='1' fill='#b9a47e'/><rect x='2' y='2' width='1' height='1' fill='#b9a47e'/><rect x='5' y='2' width='1' height='1' fill='#b9a47e'/><rect x='6' y='2' width='1' height='1' fill='#b9a47e'/><rect x='0' y='3' width='1' height='1' fill='#b9a47e'/><rect x='1' y='3' width='1' height='1' fill='#b9a47e'/><rect x='4' y='3' width='1' height='1' fill='#b9a47e'/><rect x='6' y='3' width='1' height='1' fill='#b9a47e'/><rect x='0' y='4' width='1' height='1' fill='#b9a47e'/><rect x='3' y='4' width='1' height='1' fill='#b9a47e'/><rect x='6' y='4' width='1' height='1' fill='#b9a47e'/><rect x='0' y='5' width='1' height='1' fill='#b9a47e'/><rect x='2' y='5' width='1' height='1' fill='#b9a47e'/><rect x='5' y='5' width='1' height='1' fill='#b9a47e'/><rect x='6' y='5' width='1' height='1' fill='#b9a47e'/><rect x='1' y='6' width='1' height='1' fill='#b9a47e'/><rect x='2' y='6' width='1' height='1' fill='#b9a47e'/><rect x='3' y='6' width='1' height='1' fill='#b9a47e'/><rect x='4' y='6' width='1' height='1' fill='#b9a47e'/><rect x='5' y='6' width='1' height='1' fill='#b9a47e'/><rect x='7' y='6' width='1' height='1' fill='#b9a47e'/><rect x='6' y='7' width='1' height='1' fill='#b9a47e'/><rect x='7' y='7' width='1' height='1' fill='#b9a47e'/></svg></span></button><button class=\"ds-piece ds-space ds-space-play\"><span>Play here</span><small>1 yarn</small></button><div class=\"ds-space ds-space-print\"><span>2 yarn</span><span class=\"ds-step\">3</span></div><div class=\"ds-cap\"><span class=\"ds-step ds-step-plain\">4</span></div></div></section>",
       "css": ".ds-mat{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);max-width:560px;margin-bottom:10px;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b);color:var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px color-mix(in srgb,#b9a47e 42%,#fff8e7)}.ds-piece{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-piece:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-mat .ds-piece{--cast:var(--color-sky-deep,#73bde4)}.ds-lane{display:grid;grid-template-columns:9.5rem repeat(3,minmax(0,1fr)) 2.75rem;gap:6px;padding:8px 12px 14px}.ds-lane-tile{display:flex;flex-direction:column;justify-content:center;gap:4px;min-height:60px;padding:6px 10px;text-align:left;background:var(--color-cobalt,#1557d8);color:#fff;font:inherit;cursor:pointer}.ds-lane-tile:hover{background:var(--color-cobalt-dark,#0d3c9d)}.ds-lane-tile:active{--sink:2px;transform:translateY(2px);background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b)}.ds-lane-name{font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;font-size:20px}.ds-lane-does{font-size:12px;font-weight:700;line-height:1}.ds-space{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:60px;padding:4px 6px;font:inherit;font-size:11px;font-weight:700;line-height:1.25;color:var(--color-ink,#17212b)}.ds-space-placed{background:var(--color-cream,#fff8e7);cursor:pointer}.ds-space-placed:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-space-name{font-weight:900;letter-spacing:-0.025em}.ds-yarn{display:flex;gap:1px}.ds-space-play{align-items:center;background:var(--color-lime,#d8ff4f);font-size:12px;font-weight:900;cursor:pointer}.ds-space-play small{font-size:11px;font-weight:700}.ds-space-print{flex-direction:row;align-items:center;justify-content:space-between;box-sizing:border-box;border:2px dashed rgb(23 33 43 / .55);background:rgb(255 255 255 / .45)}.ds-cap{display:grid;place-items:center}.ds-step{display:inline-flex;align-items:center;height:24px;padding:0 4px;box-sizing:border-box;border:2px solid var(--color-ink,#17212b);background:var(--color-lime,#d8ff4f);font-size:14px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums}.ds-step-plain{border-color:transparent;background:none}@media (prefers-reduced-motion:reduce){.ds-piece{transition-duration:.01ms}}"
     },
@@ -868,7 +977,7 @@
       "name": "Landing Stage",
       "kind": "custom",
       "refersTo": "stage-frame",
-      "description": "The front of the box on the landing page: a cream title plaque with the die-cut wordmark, a lime ribbon carrying the h1 in print, and the cobalt stage frame (ink, cobalt band, ink, a white stud in each corner, a 5px board edge) with the cloth laid inside it, all on the sky mat.",
+      "description": "The front of the box on the landing page: a cream title plaque with the die-cut wordmark, a lime ribbon carrying the h1 in print, and the cobalt stage frame (ink, cobalt band, ink, a white stud in each corner, a 5px board edge) with the cloth laid inside it, all on the sky mat. The plaque and ribbon also head home's menu, and the frame holds the sign-in picture.",
       "html": "<div class=\"ds-sky\"><div class=\"ds-title\"><p class=\"ds-plaque\">Hadu<span>Mon</span></p><h3 class=\"ds-ribbon\">Six rivals. Twelve turns each.</h3></div><div class=\"ds-stage\"><span class=\"ds-stud ds-stud-tl\"></span><span class=\"ds-stud ds-stud-tr\"></span><span class=\"ds-stud ds-stud-bl\"></span><span class=\"ds-stud ds-stud-br\"></span><div class=\"ds-stage-inner\">The playable round goes here, on the cloth.</div></div></div>",
       "css": ".ds-sky{--cast:var(--color-sky-deep,#73bde4);display:flex;flex-direction:column;align-items:center;padding:28px 16px 30px;background:var(--color-sky-surface,#a9ddf5);color:var(--color-ink,#17212b);font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif)}.ds-title{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;margin-bottom:-24px}.ds-plaque{margin:0;padding:10px 36px 24px;background:var(--color-cream,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 7px 0 -2px var(--color-chipboard,#b9a47e),0 7px 0 0 var(--color-ink,#17212b),0 12px 0 -2px var(--cast);font-size:76px;font-weight:800;letter-spacing:-0.035em;line-height:.9;paint-order:stroke fill;-webkit-text-stroke:3px var(--color-ink,#17212b);text-shadow:0 3px 0 var(--color-chipboard,#b9a47e),0 5px 0 var(--color-ink,#17212b)}.ds-plaque span{color:var(--color-coral,#ff7163)}.ds-ribbon{position:relative;margin:-12px 0 0;padding:10px 24px;background:var(--color-lime,#d8ff4f);border:2px solid var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--cast);font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-size:40px;font-weight:400;letter-spacing:.01em;line-height:1;text-align:center}.ds-stage{--band:10px;position:relative;width:100%;max-width:520px;box-sizing:border-box;padding:var(--band);background:var(--color-cobalt,#1557d8);border:2px solid var(--color-ink,#17212b);box-shadow:0 7px 0 -2px var(--color-chipboard,#b9a47e),0 7px 0 0 var(--color-ink,#17212b),0 14px 0 -2px var(--cast)}.ds-stud{position:absolute;width:calc(var(--band) - 4px);height:calc(var(--band) - 4px);background:#fff}.ds-stud-tl{top:2px;left:2px}.ds-stud-tr{top:2px;right:2px}.ds-stud-bl{bottom:2px;left:2px}.ds-stud-br{bottom:2px;right:2px}.ds-stage-inner{padding:44px 16px 20px;border:2px solid var(--color-ink,#17212b);background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px;font-size:14px;line-height:1.375}"
     },
@@ -883,26 +992,27 @@
   ],
   "narrative": {
     "northStar": "Pieces on a Cream Table",
-    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.\n\nThe pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the climb between matches, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.\n\nThe match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). The six rivals are sprites too, all in the rival coral, met at the windows of the grey pixel tower a run climbs between matches. Sprites, these icons and the tower are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface. It is the tabletop at page scale, laid out as the front of the game's box, with no app shell and no white panel. From the top: an ink lid strip with the two account buttons; a full-bleed sky mat printed with paws and yarn; on it a cream title plaque with the wordmark and Hadu perched on top, a lime ribbon carrying the h1, and a thick cobalt stage frame holding one playable Hunt round run by the real match engine; a crowd of cats standing around the frame; then one cream board on the cloth, folded into four panels (the lead, the cats, the rows, the rivals); a sky closing band; and an ink footer. It is built from the table's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, turn cubes, score tokens, table buttons) and adds only what the match table has no use for: the lid strip, the plaque and ribbon, the stage frame, the folded board, and the crowd.",
+    "overview": "**Creative North Star: \"Pieces on a Cream Table\"**\n\nHaduMon is a board game laid out on a warm cream table, and the whole app is that table. There is one material: die-cut cardboard on a woven cream cloth. Everything a player can see or press is a piece of it: square corners, a 2px near-black border, a flat fill, a chipboard edge straight down, and an unblurred cast shadow. A cat card, a button, a text field, a dialog, a notice, and the navigation are all cut from the same card. There is no page chrome. Nothing is rounded, nothing has a hairline border, and nothing has a blurred shadow.\n\nThe scope is one class, `.tabletop`, and it is on the `body` (`src/app/layout.tsx`) together with the pixel face, so every page is cardboard and a dialog or a notice drawn on the body is cardboard like the rest. A run's table (`TableSurface`, on `/run`) is a tabletop of its own inside it, because it carries the fit and the layer its effects are drawn on. Outside a run a page is laid out at page scale from a few large things: an ink lid across the top, cream boards on the cloth, a sky mat, a cobalt stage frame. A board (`src/components/ui/Board.tsx`) is the page-sized cream sheet that everything else is set out on. It has a card's edge and cast but it is not a piece, so the buttons, cards and tiles on it keep their own edge.\n\nThe tower a run climbs is the app's backdrop. It stands behind every signed-in page that is not the table, showing the run as it stands, and each of those pages is a place at it: home is outside, with the whole tower in view; Play is the door, close on wherever the run has got to; the codex is a room inside, reached through The Archivist's window. Going from one page to another moves a camera on the tower, and the page arrived at is set down when the camera stops. The tower stands on a rock in the sea under an evening sky, drawn in the same pixels, so home and the 404 are not on the cloth: they are pieces laid over that scene, as a title screen is. Nothing readable is set straight on the scene; it is always on a piece, a mat or a board. The cloth is still the ground of the landing page, of a run's table and inside a stage frame. The landing page, login and signup have no tower.\n\nThe match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no panels, on the table or off it. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron, and for the lid and the table's corner buttons a speaker at full, quiet and off, two beamed notes and one note crossed out, home, play, book and exit), the seven food icons (beef, fish, chicken, dry food, pork, a treat, and a question mark for a cost any food pays), and the five element marks (flame, drop, bolt, leaf, crescent). The six rivals are sprites too, on the cats' grid and all in the rival coral, each told apart by what it wears; they are met at the windows of the tower a run climbs, which is drawn in the same pixels in four stone greys and stands behind the rest of the app. Sprites, these icons, the tower and the scene it stands in are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, the codex, and sign-in breathe more: boards 28px apart, 16 to 20px of padding inside one. Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface. It is the tabletop at page scale, laid out as the front of the game's box, with no shell and no tower. From the top: an ink lid strip with the two account buttons; a full-bleed sky mat printed with paws and yarn; on it a cream title plaque with the wordmark and Hadu perched on top, a lime ribbon carrying the h1, and a thick cobalt stage frame holding one playable Hunt round run by the real match engine; a crowd of cats standing around the frame; then one cream board on the cloth, folded into four panels (the lead, the cats, the rows, the rivals); a sky closing band; and an ink footer. It is built from the table's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, turn cubes, score tokens, table buttons). It was the first page laid out at page scale, and the furniture it brought (the lid strip, the plaque and ribbon, the stage frame, the board, the crowd) is now the whole app's.",
     "keyCharacteristics": [
-      "Warm cream canvas; sky blue for the board and the home hero.",
-      "Two materials: rounded white chrome, square 2px-ink game pieces.",
-      "Pieces are flat on home, the codex, auth, and in dialogs, and die-cut cardboard with a straight-down edge inside the tabletop (the run route and the landing page).",
-      "Cobalt is the action, lime is the player's, coral is the rival's.",
-      "16x16 pixel cats and 8x8 pixel icons as inline SVG, the only imagery.",
-      "One rounded bold type voice, plus a pixel print face on the tabletop at 20px and 30px, and at 40px for a heading on the landing page.",
+      "Warm cream cloth under the table and the landing page; sky blue for mats and bands; an evening sky and sea behind home.",
+      "One material: square 2px-ink cardboard pieces with a straight-down edge and an unblurred cast, on every page and in every dialog.",
+      "A board is the page-sized cream sheet that pieces are set out on. It is not a piece.",
+      "The grey pixel tower stands behind every signed-in page but the table, and those pages are places at it: outside, the door, a room.",
+      "Cobalt is the action, lime is the player's, coral is the rival's, ink is the act that cannot be undone.",
+      "16x16 pixel cats and rivals, 8x8 pixel icons and one grey pixel tower on its rock in a pixel sea, as inline SVG, the only imagery.",
+      "One rounded bold type voice, plus a pixel print face at 20px and 30px, and at 40px for a page's one heading.",
       "The landing page is the front of the box: lid strip, sky mat, title plaque, lime ribbon, cobalt stage frame, a crowd of cats, one folded cream board.",
       "Every state has a border, fill, or height change, never colour alone on text."
     ],
     "rules": [
       {
         "name": "The Lime Is Yours Rule",
-        "body": "Lime marks something the player chose, holds, or won. It is never decoration and never the rival's. One exception is named: the ribbon under the landing wordmark, which carries the page's h1, is lime although it is nothing the player chose, holds, or won. No other surface takes it.",
+        "body": "Lime marks something the player chose, holds, or won, and where the player is: the page you are on, a filter you set. It is never decoration and never the rival's. One exception is named: the ribbon under the wordmark, on the landing page and on home, which carries the page's h1 and is lime although it is nothing the player chose, holds, or won. No other surface takes it.",
         "section": "colors"
       },
       {
         "name": "The Coral Is Theirs Rule",
-        "body": "Coral marks the rival and what the rival does; outside the table it also marks a destructive act. It never marks a decision the player owes, and never a piece the player owns. Text sitting on a coral fill is ink.",
+        "body": "Coral marks the rival and what the rival does, at the table and off it: a nameplate, a plate in the codex, the tag of a run a rival ended. It never marks a decision the player owes, never a piece the player owns, and never a destructive act: Log out and Abandon run are ink. Text sitting on a coral fill is ink.",
         "section": "colors"
       },
       {
@@ -912,17 +1022,17 @@
       },
       {
         "name": "The Ink On Colour Rule",
-        "body": "Text on lime, coral, sky, cream, or an element hue is ink. White text appears only on cobalt. The inverses are the small ink tag and, on the landing page, the lid strip and the footer, which carry cream text.",
+        "body": "Text on lime, coral, sky, cream, white, or an element hue is ink. White text appears only on cobalt. Cream text appears only on ink: the lid, the landing footer, the small ink tag, the destructive button, and an error notice.",
         "section": "colors"
       },
       {
         "name": "The Element Stays On The Cat Rule",
-        "body": "Element hues colour sprites, pips, and dice. Panels, buttons, and headings never take an element colour.",
+        "body": "Element hues colour sprites, food icons, element marks, and dice. Boards, buttons, and headings never take an element colour. The sky behind the tower is the one place an element's colours are a ground.",
         "section": "colors"
       },
       {
         "name": "The Two Sizes Of Print Rule",
-        "body": "The pixel face is drawn on a 20px grid, so on the match table it is set at 20px and 30px and nowhere between. The landing page adds one step, for a heading only: 30px on a phone and 40px from 640px, on the ribbon's h1 and each panel's h2. Print is for what is printed on the board (names, numerals, totals, headings on the table), never for rules text, and never outside the tabletop.",
+        "body": "The pixel face is drawn on a 20px grid, so it is set at 20px and 30px and nowhere between. One step is added, for a heading only: 30px on a phone and 40px from 640px, on the one h1 of a page outside a run and on each panel's h2 on the landing page. Print is for what is printed (names, numerals, totals, headings), never for a sentence of rules text or copy, and never for anything typed: a field's text and its label are the rounded face. These are sizes at the table's own scale: a fitted run screen (see Layout) magnifies them with everything else on it.",
         "section": "typography"
       },
       {
@@ -932,7 +1042,7 @@
       },
       {
         "name": "The Sentence Case Rule",
-        "body": "Headings, buttons, and labels are sentence case. Uppercase is reserved for two small marks: the filter group label and the Boss tag in the codex.",
+        "body": "Headings, buttons, labels, and tags are sentence case. Nothing in the build is set in uppercase: the filter group label and the Boss tag in the codex, once the two exceptions, are sentence case too.",
         "section": "typography"
       },
       {
@@ -941,54 +1051,68 @@
         "section": "typography"
       },
       {
-        "name": "The Scoped Thickness Rule",
-        "body": "A game piece casts no shadow outside the tabletop: on home, the codex, auth, and in every dialog it is border and fill. Inside the tabletop (the run route and the landing page) every piece has an edge and a cast shadow, straight down and unblurred. No piece anywhere takes a blurred shadow or a sideways offset.",
+        "name": "The One Thickness Rule",
+        "body": "Every piece on every page has its edge and its cast, straight down and unblurred: on home, in the codex, at sign-in, in a dialog and in a notice as at the table. A piece printed on a piece has none of its own. A board is not a piece: it has a board's edge and cast, and the pieces on it keep theirs. No piece anywhere takes a blurred shadow or a sideways offset.",
         "section": "elevation"
       },
       {
         "name": "The Frame Means State Rule",
-        "body": "On the tabletop a piece's state is its border: cobalt border for open to pick, cobalt border with a 2px cobalt inner line for chosen, cobalt border with a 2px cobalt and a 2px lime inner line for waiting on the player. A chosen piece is also lifted. No ring is drawn outside a piece's border.",
+        "body": "A piece's state is its border: cobalt border for open to pick, cobalt border with a 2px cobalt inner line for chosen, cobalt border with a 2px cobalt and a 2px lime inner line for waiting on the player. A chosen piece is also lifted. No ring is drawn outside a piece's border.",
         "section": "elevation"
       },
       {
         "name": "The Three Heights Rule",
-        "body": "A thing on the table is print (0), a token or tile (2px), or a card (3px). Only a stack is taller, and its height is its count. The landing page's title plaque and stage frame are the box's furniture, not things in play, and stand 5px.",
+        "body": "A thing on the table is print (0), a token or tile (2px), or a card (3px). Only a stack is taller, and its height is its count. The title plaque and the stage frame are the box's furniture, not things in play, and stand 5px.",
         "section": "elevation"
       }
     ],
     "dos": [
-      "Do decide which material a new element is before styling it. In play: square, 2px ink border, flat fill. Around play: rounded, white, hairline, soft shadow.",
-      "Do decide which scope a piece is in. Inside the tabletop (`TableSurface` on the run route, the landing page's own root) it is cardboard: give it the `piece` class and let the tabletop add the edge. Anywhere else it stays flat.",
+      "Do make every new element a piece or a board. A piece: the `piece` class, square, 2px ink border, flat fill; the tabletop adds its edge and cast. A board: `Board`, the page-sized sheet that holds pieces.",
+      "Do leave the scope to the `body`, which is the tabletop. No page opens one of its own but a run's `TableSurface`, which needs the fit and the effects layer.",
       "Do pick one of the three heights for a new thing on the table: print, token or tile (2px), card (3px).",
-      "Do render every cat through `src/components/PixelSprite.tsx` at a whole-pixel multiple of 16 where the layout allows, and every mark on a piece through `src/components/PixelIcon.tsx` at a multiple of 8.",
-      "Do use ink text on lime, coral, sky, and cream; white text only on cobalt.",
+      "Do render every cat through `src/components/PixelSprite.tsx` and every rival through `src/components/RivalSprite.tsx` at a whole-pixel multiple of 16 where the layout allows, and every mark on a piece through `src/components/PixelIcon.tsx` at a multiple of 8.",
+      "Do use ink text on lime, coral, sky, cream, and white; white text only on cobalt; cream text only on ink.",
       "Do show state on the table with the frame (cobalt border, cobalt inner line, lime inner line) and with height (lifted 4px, pressed 2px), and reinforce a chosen token with a lime fill.",
       "Do end every choice in a run in the turn block or a rail, with a sentence saying what will happen and one cobalt table button.",
-      "Do keep the run route free of app chrome: the corner buttons are its only navigation.",
+      "Do give a sequence of screens a `StepRail` and keep its confirm on the last step alone; every earlier step only moves.",
+      "Do keep the run route free of the lid and the dock: the corner buttons are its only navigation.",
+      "Do lay a new column screen of a run in `TableArea` on a `TableSurface` with `fit`, and centre a short step with `fitted:my-auto`.",
       "Do keep what names a hand card (sprite, points, cost, name, Info) in its left strip, and tilt only a card at rest; anything being read stands upright.",
-      "Do make actions on the table from `TableButton`: cobalt for the one confirm, cream for the rest.",
-      "Do set the pixel face at 20px or 30px, or at 40px for a heading on the landing page, and only for print on the board.",
+      "Do make every action from `TableButton` or `TableLink`: cobalt for the one way forward, cream for the rest, lime for the one of a set that is in force, ink for an act that cannot be undone.",
+      "Do set the pixel face at 20px or 30px, or at 40px for a page's one heading, and only for what is printed: a heading, a name, a numeral, a total.",
+      "Do give a page outside a run exactly one h1, in print at 30px, and 40px from 640px.",
       "Do give every key a visible hint on its piece, shown only for a fine pointer, and keep every keyed action reachable by tap.",
-      "Do keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px unless its hit area is extended.",
+      "Do keep a page's controls at 44px tall or more where the layout allows; nothing interactive goes below 40px unless its hit area is extended.",
       "Do write counts and scores in tabular figures and labels in sentence case.",
-      "Do give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry.",
-      "Do build the landing page from the tabletop's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, table buttons) inside its own `.tabletop` scope, with no app shell around them.",
+      "Do give every loading surface blanks in the shape of its content, and every error a plain sentence and a retry.",
+      "Do build the landing page from the tabletop's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, table buttons), with no shell and no tower around them.",
+      "Do put a new signed-in page at a place (`placeFor` in `src/components/tower/places.ts`): the camera moves on the press, and the page lands when the camera has stopped.",
+      "Do keep the tower's side of a page clear where the page is outside (`beside-tower`), and lay a page in the room with `in-room` so its boards cast on stone.",
+      "Do draw scenery as rows of legend characters in tower pixels inside the tower's picture, and let the camera magnify it with the tower.",
+      "Do confirm a destructive act in a dialog, with the ink button beside a cream way back that holds the focus.",
       "Do keep a crowd cat decorative: a whole multiple of 16, no label, no clicks, a flat cast only where it stands on the ground."
     ],
     "donts": [
-      "Don't round the corners of a game piece.",
-      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. Outside the tabletop a piece has no shadow at all; inside it has only the straight-down edge and cast.",
-      "Don't bring the cardboard edge, the cloth, or the pixel face to home, the codex, auth, or a dialog.",
-      "Don't put a 2px ink border or square corners on page chrome, and don't lay a white rounded panel or a pill button on the tabletop.",
+      "Don't round a corner anywhere, or draw a pill, a 1px hairline border, or a blurred shadow. The build has none.",
+      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. A piece has only the straight-down edge and cast. The only light on the tabletop is the three named under Motion: score heat, a raised legendary's shimmer, and the drift on a run's cloth.",
+      "Don't give a board the `piece` class or lay a board on a board. A board is not a piece, and the pieces on it keep their own edge.",
+      "Don't bring back page chrome: no white panel, no side rail, no floating bar, no second kind of button.",
       "Don't draw a ring outside a piece's border to show state.",
-      "Don't use coral for a decision the player owes or for a card the player is trimming; coral is the rival's.",
-      "Don't set the pixel face at any size but 20px and 30px, or 40px for a landing heading, or use it for rules text.",
+      "Don't use coral for a decision the player owes, for a card the player is trimming, or for a destructive action. Coral is the rival's; Log out and Abandon run are ink.",
+      "Don't set the pixel face at any size but 20px and 30px, or 40px for a page's one heading, or use it for rules text, a sentence of copy, or anything typed.",
       "Don't set readable text below 10px, or below 11px on a piece from 640px up.",
-      "Don't ease tabletop motion smoothly or fade pieces in; lifts, presses, flips, and rolls move in steps.",
-      "Don't use gradients or emoji anywhere.",
+      "Don't move a cardboard piece in steps, or a pixel sprite smoothly: pieces ease and spring, sprites hop a whole pixel at a time. The climb's camera moves the whole picture and is the one thing that eases a sprite across the screen. Don't fade pieces in.",
+      "Don't animate anything on the table but `transform` and `opacity`, ease a shadow, or shake the table itself; a shake belongs to the mat, the supply and the climb's tower.",
+      "Don't put anything over the climb's picture but its bars, its subtitle, its title card and Skip, or give two cats the same pitch.",
+      "Don't fit the match or the climb, add a quarter step to the fit, or use `xl:` and wider breakpoints on a column screen: a fitted screen is 1120px wide to itself whatever the window says.",
+      "Don't play a tune on the landing page, login or signup, mount the sound rig or the menu tune a second time, play an effect that the player's own action, a turn's playback, a beat of the climb or a page landing did not cause, write a note of music louder than 0.14, or ship an audio file.",
+      "Don't use gradients or emoji anywhere. The three lights named under Motion are the only gradients, and each is a light, never a fill. The sky behind the tower is a dither, not a gradient.",
       "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
-      "Don't use an element hue for a panel, a button, or a heading.",
-      "Don't use lime for anything the rival owns, or coral for a reward. The landing ribbon is the only lime that is not the player's.",
+      "Don't use the stone greys for anything but the tower, the wall inside it and the scene it stands in, or draw a rival in any colour but coral. The clouds and the rock's top in the tower's scene are stone too. Don't zoom the tower by anything but a whole number (1, 2 and 32 are the ones in use), frame its stage, or fill it with anything but its scene.",
+      "Don't put anything on the tower's side of a page that is outside, let the backdrop take a click, or show a page before the camera has stopped.",
+      "Don't use an element hue for a board, a button, or a heading. The sky behind the tower is the one ground they colour.",
+      "Don't set text straight on the tower's scene, smooth or blur the scene, or move any part of it in anything but whole tower pixels.",
+      "Don't use lime for anything the rival owns, or coral for a reward. The title ribbon, on the landing page and on home, is the only lime that is not the player's.",
       "Don't introduce currency, shop, or premium styling; nothing is for sale."
     ]
   }
