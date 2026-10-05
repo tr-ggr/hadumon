@@ -11,9 +11,9 @@ import {
   type ReactNode,
 } from "react";
 
+import { HaduAvatar } from "~/components/HaduAvatar";
 import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
-import { PixelSprite } from "~/components/PixelSprite";
 import { MenuMusic } from "~/components/MenuMusic";
 import { MusicButton } from "~/components/run/music/MusicButton";
 import { playSound } from "~/components/run/sfx/engine";
@@ -203,10 +203,10 @@ function Lid({ pathname }: { pathname: string }) {
 
   return (
     <header className="lid bg-ink text-cream sticky top-0 z-30">
-      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-3 px-3 pt-1 pb-2 sm:px-5">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-2 px-2 pt-1 pb-2 sm:gap-3 sm:px-5">
         <Link
           href="/"
-          className="text-pixel shrink-0 text-xl sm:text-2xl md:max-lg:hidden"
+          className="text-pixel shrink-0 text-xl max-[379px]:hidden sm:text-2xl md:max-lg:hidden"
         >
           Hadu<span className="text-coral">Mon</span>
         </Link>
@@ -223,12 +223,12 @@ function Lid({ pathname }: { pathname: string }) {
             />
           ))}
         </nav>
-        <div className="ml-auto flex min-w-0 items-center gap-1.5">
+        <div className="ml-auto flex min-w-0 items-center gap-1 sm:gap-1.5">
           {profile.data ? (
             <Link
               href="/shop"
               aria-label={`${profile.data.coins} ${profile.data.coins === 1 ? "coin" : "coins"}. Open the shop.`}
-              className="piece border-ink bg-cream text-ink hover:bg-sky-soft inline-flex h-10 shrink-0 items-center gap-1 border-2 px-2 text-sm font-black tabular-nums"
+              className="piece border-ink bg-cream text-ink hover:bg-sky-soft inline-flex h-10 shrink-0 items-center gap-1 border-2 px-1.5 text-sm font-black tabular-nums sm:px-2"
             >
               <PixelIcon name="coin" size={16} fill={COIN_COLOR} />
               {profile.data.coins}
@@ -242,7 +242,12 @@ function Lid({ pathname }: { pathname: string }) {
             }
             className={`piece border-ink text-ink inline-flex h-10 min-w-0 shrink-0 items-center gap-1.5 border-2 pr-2 pl-1 text-sm font-black ${isActive(pathname, "/profile") ? "bg-lime is-pressed" : "bg-cream hover:bg-sky-soft"}`}
           >
-            <PixelSprite catId="hadu" size={32} decorative />
+            {/* At this size there is no room for an aura: it is cut off. */}
+            <HaduAvatar
+              look={profile.data?.look}
+              size={32}
+              className="overflow-hidden"
+            />
             {displayName ? (
               <span className="hidden max-w-28 truncate lg:inline">
                 {displayName}

@@ -2,9 +2,10 @@
 
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
+import { HaduAvatar } from "~/components/HaduAvatar";
 import { PixelIcon } from "~/components/PixelIcon";
-import { PixelSprite } from "~/components/PixelSprite";
 import { RelicIcon } from "~/components/RelicIcon";
+import { useLook } from "~/components/skins/SkinProvider";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 import type { RunView } from "~/server/game/view";
@@ -49,6 +50,7 @@ export function ChestScene({
   onOpen,
   runStrip,
 }: ChestSceneProps) {
+  const look = useLook();
   const [relic, setRelic] = useState<string | null>(null);
   const { step, index, count, isFirst, next, back, goTo, heading } =
     useSteps(CHEST_STEPS);
@@ -120,7 +122,7 @@ export function ChestScene({
               className={`mat chest-stage relative flex h-28 items-end justify-center gap-3 overflow-clip px-4 pb-3 ${arrived ? "" : "is-arriving"}`}
             >
               <span className="chest-walk relative block">
-                <PixelSprite catId="hadu" size={64} decorative />
+                <HaduAvatar look={look} size={64} />
               </span>
               <span className="relative block h-16 w-16">
                 <PixelIcon

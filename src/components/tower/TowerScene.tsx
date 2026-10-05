@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
+import { HaduAvatar } from "~/components/HaduAvatar";
 import { PixelIcon } from "~/components/PixelIcon";
-import { PixelSprite } from "~/components/PixelSprite";
 import { RivalSprite } from "~/components/RivalSprite";
 import type { TowerStanding } from "~/components/run/climb";
 import { Tower as TowerFront } from "~/components/run/Tower";
@@ -14,8 +14,6 @@ import { ROOF_PENNANT, ROOF_STAND } from "./camera";
 import { TowerScenery } from "./TowerScenery";
 import { px } from "./TowerStage";
 
-/** The cat that climbs, whatever clan the run is. */
-const CLIMBER = "hadu";
 /** The player's lime, as a value: a pixel icon takes colours, not classes. */
 const LIME = "#d8ff4f";
 
@@ -54,7 +52,7 @@ export interface TowerSceneProps extends TowerStanding {
 /**
  * The tower, where it stands and everyone on it: the sky and the sea behind,
  * a rival behind each window, the player's pennants on the floors taken, and
- * Hadu at the foot, on a ledge or on the roof. It is the picture a
+ * the player's hadu at the foot, on a ledge or on the roof. It is the picture a
  * `TowerStage` shows, drawn in tower pixels.
  */
 export function TowerScene({
@@ -159,7 +157,7 @@ export function TowerScene({
                   : "climb-scramble"
             }`}
           >
-            <PixelSprite catId={CLIMBER} decorative className="climb-sprite" />
+            <HaduAvatar look={look} className="climb-sprite" />
             <span className="climb-dust" />
           </span>
         </span>

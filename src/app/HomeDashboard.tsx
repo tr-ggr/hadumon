@@ -3,9 +3,10 @@
 import { useState, type CSSProperties, type ReactNode } from "react";
 
 import { countUnlocked } from "~/components/codex/entries";
-import { PixelSprite } from "~/components/PixelSprite";
+import { HaduAvatar } from "~/components/HaduAvatar";
 import { Nameplate } from "~/components/run/pieces";
 import { GauntletTrack } from "~/components/run/RunStrip";
+import { useLook } from "~/components/skins/SkinProvider";
 import { Board, Skeleton, TableButton, TableLink } from "~/components/ui";
 import { difficultyOf } from "~/server/game/difficulty";
 import { GAUNTLET, getRival } from "~/server/game/rival";
@@ -53,7 +54,6 @@ export function HomeDashboard({ displayName }: HomeDashboardProps) {
             title="Six rivals are waiting"
             detail="None of them are in a hurry."
             action="Start a run"
-            catId="flameclaw"
             rivalId={GAUNTLET[0]}
             rivalLabel="First across the table"
             track={<GauntletTrack run={NO_RUN} over />}
@@ -94,23 +94,21 @@ const RIBBON =
 /** The mat the next thing to do is laid on. */
 function MenuMat({
   displayName,
-  catId,
   children,
 }: {
   displayName: string;
-  catId: string;
   children: ReactNode;
 }) {
+  const look = useLook();
   return (
     <section
       aria-label="Your run"
       className="mat flex w-full max-w-2xl flex-col gap-4 p-3 sm:flex-row sm:gap-6 sm:p-5"
     >
       <span className="relative shrink-0 self-start after:absolute after:inset-x-[18.75%] after:top-full after:h-[6.25%] after:bg-[var(--cast)] after:content-['']">
-        <PixelSprite
-          catId={catId}
+        <HaduAvatar
+          look={look}
           size={96}
-          decorative
           className="h-16 w-16 sm:h-24 sm:w-24"
         />
       </span>
@@ -130,7 +128,6 @@ function Menu({
   title,
   detail,
   action,
-  catId,
   rivalId,
   rivalLabel,
   track,
@@ -139,7 +136,6 @@ function Menu({
   title: string;
   detail: string;
   action: string;
-  catId: string;
   /** Whoever is next across the table. */
   rivalId: string | undefined;
   rivalLabel: string;
@@ -150,7 +146,7 @@ function Menu({
       <Masthead>
         <h1 className={RIBBON}>{title}</h1>
       </Masthead>
-      <MenuMat displayName={displayName} catId={catId}>
+      <MenuMat displayName={displayName}>
         <p className="text-base break-words sm:text-lg">{detail}</p>
         {rivalId ? (
           <div className="w-full max-w-sm space-y-1">
@@ -182,7 +178,7 @@ function MenuSkeleton({ displayName }: { displayName: string }) {
           <Skeleton className="h-[30px] w-full sm:h-10" />
         </h1>
       </Masthead>
-      <MenuMat displayName={displayName} catId="flameclaw">
+      <MenuMat displayName={displayName}>
         <div role="status" aria-busy="true" className="w-full space-y-3">
           <span className="sr-only">Checking on your run…</span>
           <Skeleton className="h-5 w-3/4" />
@@ -208,7 +204,7 @@ function MenuError({
       <Masthead>
         <h1 className={RIBBON}>Your run did not answer</h1>
       </Masthead>
-      <MenuMat displayName={displayName} catId="flameclaw">
+      <MenuMat displayName={displayName}>
         <div role="alert" className="space-y-3">
           <p className="text-base sm:text-lg">
             It is saved either way. Ask again, or go and look for yourself.
@@ -263,7 +259,6 @@ function RunInProgress({
             : `${tier}, ${place}${rival.boss ? ", a boss" : ""}. ${rival.flavor}`
       }
       action="Continue run"
-      catId="hadu"
       rivalId={rivalId}
       rivalLabel={
         rewardDue || chestDue ? "Next across the table" : "Across the table"
