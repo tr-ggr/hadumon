@@ -163,6 +163,7 @@ describe("trackFor", () => {
 
   it("gives every screen a tune of its own", () => {
     const screens: MusicScreen[] = [
+      { on: "menu" },
       { on: "clans" },
       { on: "climb", summit: false },
       { on: "climb", summit: true },

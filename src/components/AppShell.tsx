@@ -6,6 +6,7 @@ import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 
 import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
+import { MenuMusic } from "~/components/MenuMusic";
 import { MusicButton } from "~/components/run/music/MusicButton";
 import { playSound } from "~/components/run/sfx/engine";
 import { SoundButton } from "~/components/run/sfx/SoundButton";
@@ -142,6 +143,9 @@ function Shell({
         moving={moving}
         hidden={onTable && !moving}
       />
+      {/* One tune for every page that is not the table, so it carries from
+          page to page; the table plays its own. */}
+      {onTable ? null : <MenuMusic />}
       {onTable && !moving ? null : <Lid pathname={here} />}
       {/* The table lays its own cloth edge to edge and carries its own way
           out; every other page is a column on the app's cloth. */}

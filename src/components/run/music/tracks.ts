@@ -1,11 +1,12 @@
 /**
- * Every tune of a run, written down as data, the way the sounds are. A track
+ * Every tune of the game, written down as data, the way the sounds are. A track
  * is a few bars; a bar is up to four parts of sixteen steps each; a step is
  * a degree of the track's scale, a hold, a rest or a drum. Nothing here
  * touches the Web Audio API: `notesFor` turns one bar into the same `Note`
  * the effects are made of, and the player only has to schedule them.
  *
- * Every screen of a run has its own tune and every rival its own theme. The
+ * Every screen of a run has its own tune and every rival its own theme; the
+ * pages around a run share one. The
  * opening hand plays the theme of the rival about to be met with its lead
  * and drums left out, so the match drops in on top of what was playing.
  */
@@ -434,6 +435,40 @@ const TOWER: Track = {
 };
 
 const SCREENS = {
+  /**
+   * Outside the tower and in its rooms, between runs: soft and unhurried, a
+   * triangle over a rocking arpeggio, with a hat and nothing heavier.
+   */
+  menu: {
+    bpm: 88,
+    root: F4,
+    scale: "pentatonic",
+    lead: "triangle",
+    bars: [
+      {
+        lead: "4-----2-3-------",
+        arp: "0.2.4.2.0.2.4.2.",
+        bass: "0-------0-------",
+      },
+      {
+        lead: "....2-3-4---5---",
+        arp: "0.2.4.2.0.2.4.2.",
+        bass: "3-------3-------",
+      },
+      {
+        lead: "7-----5-4-------",
+        arp: "1.3.5.3.1.3.5.3.",
+        bass: "1-------1-------",
+        drums: "........h.......",
+      },
+      {
+        lead: "3---2---0-------",
+        arp: "0.2.4.2.0.2.4...",
+        bass: "4-------0-------",
+        drums: "........h...h...",
+      },
+    ],
+  },
   /** Choosing a clan: slow and open, an arpeggio and a bass and nothing else. */
   clans: {
     bpm: 84,
@@ -547,9 +582,9 @@ export const TRACKS: Record<TrackId, Track> = {
 
 export const TRACK_IDS = Object.keys(TRACKS) as TrackId[];
 
-/** Where a run is, as far as the music cares. */
+/** Where the player is, as far as the music cares. */
 export type MusicScreen =
-  | { on: "clans" | "reward" }
+  | { on: "menu" | "clans" | "reward" }
   | { on: "climb"; summit: boolean }
   | { on: "setup" | "match"; rivalId: string | undefined }
   | { on: "summary"; won: boolean };
@@ -561,6 +596,7 @@ function isTheme(id: string | undefined): id is RivalTheme {
 /** The tune a screen plays. A rival nobody wrote a theme for gets the first one. */
 export function trackFor(screen: MusicScreen): TrackId {
   switch (screen.on) {
+    case "menu":
     case "clans":
     case "reward":
       return screen.on;
