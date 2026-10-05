@@ -94,7 +94,10 @@ export function RivalMat({
                         <ElementMark element={cat.element} />
                       </span>
                       <PixelSprite catId={placed.catId} size={40} decorative />
-                      <span className="w-full text-[10px] leading-tight font-black [overflow-wrap:anywhere] sm:text-[11px]">
+                      <span
+                        lang="en"
+                        className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] sm:text-[11px] sm:tracking-tight"
+                      >
                         {cat.name}
                       </span>
                       <YarnTrack
@@ -125,7 +128,7 @@ export function RivalMat({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <section aria-label={`${rival.name}'s cards`} className="space-y-2">
-            <Label>Hand, deck and tray</Label>
+            <Label>Hand, deck, discard and tray</Label>
             <div className="flex items-center gap-2.5">
               <Pile count={seat.handCount} owner="rival" label="Its hand" />
               <Pile count={seat.deckCount} owner="rival" label="Its deck" />
@@ -141,13 +144,24 @@ export function RivalMat({
                 {plural(seat.deckCount, "card")} in its deck.
               </p>
             </div>
-            <p className="text-xs leading-snug">
-              <span className="font-bold">Tray:</span>{" "}
-              {seat.tray.length > 0
-                ? seat.tray.map((id) => getCat(id).name).join(", ")
-                : "empty"}
-              .
-            </p>
+            {seat.tray.length > 0 ? (
+              <ul
+                aria-label={`${rival.name}'s tray, face up`}
+                className="flex flex-wrap gap-1.5"
+              >
+                {seat.tray.map((catId, index) => (
+                  <li
+                    key={`${index}-${catId}`}
+                    className="piece border-ink bg-cream flex items-center gap-1 border-2 py-0.5 pr-1.5 pl-0.5 text-[11px] leading-tight font-black"
+                  >
+                    <PixelSprite catId={catId} size={24} decorative />
+                    {getCat(catId).name}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-ink-soft text-xs">Its tray is empty.</p>
+            )}
           </section>
           <section
             aria-label={`${rival.name}'s food and relic`}

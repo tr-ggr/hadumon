@@ -597,7 +597,7 @@ const OVER_MS = 1000;
 
 /**
  * How long frame `index` stays up before the next lands. A chain speeds up
- * as its powers pile on, down to a floor; the rival's card and a scored goal
+ * as its powers pile on, down to a floor; the rival's move and a scored goal
  * get a beat of their own, and the end of the match is held. The closing
  * frame is the table itself, so nothing waits on it.
  */

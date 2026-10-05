@@ -119,7 +119,7 @@ const PLANT = paced(480);
 const PULL = paced(900);
 /** The title card coming down. */
 const SLAM = paced(400);
-/** The rest on the last frame, as long as a rival's card is held up. */
+/** The rest on the last frame, as long as a rival's title card is held up. */
 export const CLIMB_REST = 1400;
 /** The rest when nothing moves, so the one still frame can be read. */
 export const CLIMB_REST_CALM = 2200;

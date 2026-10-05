@@ -48,7 +48,7 @@ export interface TurnPanelProps {
   turn: TurnControls;
   /** What the table is showing while a turn plays back, else `null`. */
   playing: string | null;
-  /** True on the step the rival's card turns over. */
+  /** True on a step the rival makes a move. */
   rivalStep: boolean;
   /**
    * How hot the player's score runs, 0 to 1: nothing at rest, deeper with

@@ -11,6 +11,7 @@ import {
   columnYarnCost,
   ROW_REWARD,
   SLOTS,
+  TRADE_CATS,
   type PlacedCat,
   type SlotRef,
 } from "~/server/game/match";
@@ -31,11 +32,29 @@ import { denLimit, queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
 /** The thing a lane's reward is counted in, and the lane's key. */
 const LANES: Record<
   Row,
-  { unit: IconName; one: string; many: string; key: string }
+  { unit: IconName; one: string; many: string; key: string; trade: string }
 > = {
-  hunt: { unit: "die", one: "die", many: "dice", key: "H" },
-  den: { unit: "yarn", one: "yarn", many: "yarn", key: "D" },
-  prowl: { unit: "card", one: "cat", many: "cats", key: "P" },
+  hunt: {
+    unit: "die",
+    one: "die",
+    many: "dice",
+    key: "H",
+    trade: "discard 1 cat from your hand for 1 more die",
+  },
+  den: {
+    unit: "yarn",
+    one: "yarn",
+    many: "yarn",
+    key: "D",
+    trade: "spend 1 food for 1 more yarn",
+  },
+  prowl: {
+    unit: "card",
+    one: "cat",
+    many: "cats",
+    key: "P",
+    trade: "spend 1 yarn from a cat for 1 more cat",
+  },
 };
 
 /**
@@ -128,6 +147,11 @@ export function BoardRow({
           <span className="text-xs leading-none font-bold">
             {activateLabel}
           </span>
+          {match.trades[row] && !activating ? (
+            <span className="text-[11px] leading-none font-bold">
+              or {match.rewards[row] + 1} by trade
+            </span>
+          ) : null}
         </span>
         <KeyHint className="absolute -top-1.5 -right-1.5">{lane.key}</KeyHint>
       </button>
@@ -211,16 +235,31 @@ export function BoardRow({
                   >
                     <span className="font-semibold" aria-hidden>
                       Row<span className="@max-[8.5rem]:hidden"> gives</span>
-                      <span className="sm:@max-[7rem]:hidden">
+                      {/* A trade mark takes the room the last word had. */}
+                      <span
+                        className={
+                          TRADE_CATS.includes(col)
+                            ? "sm:@max-[10.5rem]:hidden"
+                            : "sm:@max-[7rem]:hidden"
+                        }
+                      >
                         {next ? " now" : " here"}
                       </span>
                     </span>
-                    <RewardStep
-                      lane={lane}
-                      cats={col}
-                      reward={ladder[col] ?? 0}
-                      here={next}
-                    />
+                    <span className="flex items-center gap-0.5">
+                      <RewardStep
+                        lane={lane}
+                        cats={col}
+                        reward={ladder[col] ?? 0}
+                        here={next}
+                      />
+                      {TRADE_CATS.includes(col) ? (
+                        <TradeMark
+                          lane={lane}
+                          open={next && match.trades[row]}
+                        />
+                      ) : null}
+                    </span>
                   </span>
                 </div>
               </li>
@@ -282,6 +321,33 @@ function RewardStep({
         With {plural(cats, "cat")} here the lane gives{" "}
         {reward === 1 ? `1 ${lane.one}` : `${reward} ${lane.many}`}
         {here ? ", which is where it is now" : ""}.
+      </span>
+    </span>
+  );
+}
+
+/**
+ * The mark of a trade spot, printed beside the reward of the two spaces that
+ * have one: while that space is the next one, activating the lane may also
+ * buy one more. It is dashed while the trade is only printed there, and
+ * solid lime once it can be made.
+ */
+function TradeMark({
+  lane,
+  open,
+}: {
+  lane: (typeof LANES)[Row];
+  open: boolean;
+}) {
+  return (
+    <span
+      title={`Trade spot: ${lane.trade}.`}
+      className={`text-pixel border-ink flex h-6 items-center border px-0.5 text-sm leading-none ${open ? "bg-lime" : "border-dashed"}`}
+    >
+      <span aria-hidden>+1</span>
+      <span className="sr-only">
+        A trade spot: with this space next, you may {lane.trade}
+        {open ? ", which you can do now" : ""}.
       </span>
     </span>
   );
