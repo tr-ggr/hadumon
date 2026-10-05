@@ -271,7 +271,7 @@ body:has(.table-fit) [role="dialog"] {
   box-shadow:
     0 5px 0 -2px var(--color-chipboard),
     0 5px 0 0 var(--color-ink),
-    0 10px 0 -2px var(--cast-cloth);
+    0 10px 0 -2px var(--mat-cast, var(--cast-cloth));
 }
 .tabletop .tray-well {
   background: var(--color-cloth);
@@ -866,6 +866,48 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .tower-backdrop[data-room="true"] .tower-stage {
   visibility: hidden;
 }
+/*
+ * Where the tower stands: sky, cloud and sea as bands of one tile repeated
+ * sideways, laid in the picture behind the tower and sized in its pixels, so
+ * the camera magnifies them with it. The clouds drift a pixel at a time.
+ */
+.tabletop .scene-band {
+  position: absolute;
+  background-repeat: repeat-x;
+  image-rendering: pixelated;
+}
+.tabletop .scene-sky {
+  background-color: #b7492d;
+}
+.tabletop .scene-sea {
+  background-color: var(--color-cobalt-dark);
+}
+@keyframes scene-drift {
+  to {
+    transform: translateX(calc(var(--px) * var(--tile) * -1));
+  }
+}
+.tabletop .scene-drift-far {
+  --tile: 168;
+  animation: scene-drift 336s steps(168, end) infinite;
+}
+.tabletop .scene-drift-near {
+  --tile: 120;
+  animation: scene-drift 150s steps(120, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .scene-drift-far,
+  .tabletop .scene-drift-near {
+    animation: none !important;
+  }
+}
+/* A page laid over that scene, outside the tower: what it casts is dark,
+   whatever part of the sky or the sea it happens to lie on. */
+.tabletop .tower-app[data-place="outside"] > .shell-page {
+  --cast: #0b1118;
+  --board-cast: #0b1118;
+  --mat-cast: #0b1118;
+}
 /* A page laid inside the tower: what it casts falls on stone. */
 .tabletop .in-room {
   --board-cast: color-mix(
@@ -1021,9 +1063,6 @@ body:has(.table-fit) [role="dialog"] {
 }
 .tabletop .climb-pennant.anim-land {
   animation-duration: calc(240ms * var(--pace));
-}
-.tabletop .climb-cast {
-  background: var(--cast-cloth);
 }
 /* Hadu goes from ledge to ledge in steps, scrabbling a pixel left and right
    on the way, and hops as he lands with a puff of dust at his feet. */

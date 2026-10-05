@@ -6,9 +6,10 @@ import { RivalSprite } from "~/components/RivalSprite";
 import type { TowerStanding } from "~/components/run/climb";
 import { Tower as TowerFront } from "~/components/run/Tower";
 import { SPRITE_SIZE } from "~/components/sprites/cats";
-import { LANE, type Tower } from "~/components/sprites/tower";
+import type { Tower } from "~/components/sprites/tower";
 
 import { ROOF_PENNANT, ROOF_STAND } from "./camera";
+import { TowerScenery } from "./TowerScenery";
 import { px } from "./TowerStage";
 
 /** The cat that climbs, whatever clan the run is. */
@@ -49,9 +50,10 @@ export interface TowerSceneProps extends TowerStanding {
 }
 
 /**
- * The tower and everyone on it: a rival behind each window, the player's
- * pennants on the floors taken, and Hadu at the foot, on a ledge or on the
- * roof. It is the picture a `TowerStage` shows, drawn in tower pixels.
+ * The tower, where it stands and everyone on it: the sky and the sea behind,
+ * a rival behind each window, the player's pennants on the floors taken, and
+ * Hadu at the foot, on a ledge or on the roof. It is the picture a
+ * `TowerStage` shows, drawn in tower pixels.
  */
 export function TowerScene({
   tower,
@@ -70,15 +72,7 @@ export function TowerScene({
 
   return (
     <>
-      <span
-        className="climb-cast absolute"
-        style={{
-          left: px(LANE - 4),
-          right: px(-2),
-          top: "100%",
-          height: px(2),
-        }}
-      />
+      <TowerScenery tower={tower} />
 
       {tower.floors.map((floor, index) => {
         const rivalId = gauntlet[index];

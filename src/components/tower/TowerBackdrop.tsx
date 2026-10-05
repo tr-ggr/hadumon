@@ -9,37 +9,27 @@ import {
   STONE_LIGHT,
   STONE_RIB,
   WALL,
-  WALL_WIDTH,
   buildTower,
-  stackRuns,
 } from "~/components/sprites/tower";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { api } from "~/trpc/react";
 
 import { moveEase, moveMs, placeShot, roomFloor, type Place } from "./places";
+import { tileImage } from "./tile";
 import { TowerScene } from "./TowerScene";
 import { TowerStage } from "./TowerStage";
 
 const CREAM = "#fff8e7";
 
 /** The wall tile as an image a stylesheet can repeat, drawn as the tower is. */
-const WALL_IMAGE = (() => {
-  const blocks = stackRuns(WALL, {
-    ".": null,
-    "3": STONE_RIB,
-    "1": STONE,
-    "2": STONE_LIGHT,
-    c: CHIPBOARD,
-    w: CREAM,
-  })
-    .map(
-      (block) =>
-        `<rect x='${block.x}' y='${block.y}' width='${block.width}' height='${block.height}' fill='${block.fill}'/>`,
-    )
-    .join("");
-  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${WALL_WIDTH}' height='${WALL.length}' shape-rendering='crispEdges'>${blocks}</svg>`;
-  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
-})();
+const WALL_IMAGE = tileImage(WALL, {
+  ".": null,
+  "3": STONE_RIB,
+  "1": STONE,
+  "2": STONE_LIGHT,
+  c: CHIPBOARD,
+  w: CREAM,
+});
 
 export interface TowerBackdropProps {
   /** Where the page being shown, or being gone to, is. */

@@ -136,6 +136,7 @@ function Shell({
       data-nav={
         moving ? "moving" : move !== null || landed ? "landed" : undefined
       }
+      data-place={placeFor(here)}
       onClickCapture={startMove}
     >
       <TowerBackdrop

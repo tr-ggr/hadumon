@@ -57,12 +57,12 @@ export interface PlaceShot {
 }
 
 /**
- * Where the tower stands when it is seen whole from outside: its foot a
- * little above the bottom of the stage, and its right side on the right edge
- * of the page's column. A page that shows it keeps that side of itself clear
- * (`.beside-tower`).
+ * Where the tower stands when it is seen whole from outside: its foot far
+ * enough above the bottom of the stage to show the rock it stands on, and
+ * its right side on the right edge of the page's column. A page that shows
+ * it keeps that side of itself clear (`.beside-tower`).
  */
-const GROUND = "calc(100cqh - 1.25rem)";
+const GROUND = "calc(100cqh - var(--px) * 14)";
 const PARKED = "calc(50cqw + min(50cqw, 590px) - 1.25rem - var(--px) * 39)";
 const MIDDLE = { at: "50cqw", focus: "50cqh" };
 
