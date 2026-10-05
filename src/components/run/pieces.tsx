@@ -1,5 +1,6 @@
 import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
+import { RelicIcon } from "~/components/RelicIcon";
 import { KeyHint } from "~/components/ui/table";
 import { difficultyOf, type DifficultyId } from "~/server/game/difficulty";
 import type { Essence } from "~/server/game/match";
@@ -291,7 +292,7 @@ export function TurnCube({ spent }: { spent: boolean }) {
   );
 }
 
-/** A relic as a tile, with its rules text. */
+/** A relic as a tile: its drawing, and its rules text. */
 export function RelicTile({
   relicId,
   className = "",
@@ -302,9 +303,10 @@ export function RelicTile({
   const relic = getRelic(relicId);
   return (
     <div
-      className={`piece border-ink bg-cream text-ink border-2 px-2 py-1 ${className}`}
+      className={`piece border-ink bg-cream text-ink flex items-center gap-2 border-2 px-2 py-1 ${className}`}
     >
-      <p className="text-xs leading-snug">
+      <RelicIcon relicId={relicId} />
+      <p className="min-w-0 text-xs leading-snug">
         <span className="text-pixel text-sm">{relic.name}.</span> {relic.text}
       </p>
     </div>

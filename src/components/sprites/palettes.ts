@@ -1,5 +1,6 @@
 import type { Element } from "~/server/game/elements";
 import type { Rarity } from "~/server/game/cats";
+import { getRelic } from "~/server/game/relics";
 
 export interface FurPalette {
   /** `1` primary fur */
@@ -47,6 +48,8 @@ export const RARITY_PALETTES: Record<Rarity, RarityPalette> = {
 /** Hard outline shared by every sprite. */
 export const OUTLINE_COLOR = "#1a1120";
 export const WHITE_COLOR = "#ffffff";
+/** The lime the lane marks are printed in. */
+export const LIME_COLOR = "#d8ff4f";
 
 /**
  * Resolves the legend character → CSS colour map for one cat.
@@ -89,4 +92,18 @@ export function rivalColors(): Record<string, string | null> {
     e: OUTLINE_COLOR,
     w: WHITE_COLOR,
   };
+}
+
+/**
+ * The fill of a relic's art, read off its own rule: a charm is its element's
+ * colour, a relic that works on a lane is the lane marks' lime, and anything
+ * else is white.
+ */
+export function relicFill(relicId: string): string {
+  const { score, mods } = getRelic(relicId);
+  if (score?.per === "element") return ELEMENT_PALETTES[score.element]["1"];
+  const lane =
+    score?.per === "row" ||
+    Boolean(mods?.huntBonus ?? mods?.denBonus ?? mods?.prowlBonus);
+  return lane ? LIME_COLOR : WHITE_COLOR;
 }

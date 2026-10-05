@@ -4,6 +4,7 @@ import { useState, type ReactNode } from "react";
 
 import { CatCard, ElementMark } from "~/components/cats/CatCard";
 import { PixelSprite } from "~/components/PixelSprite";
+import { RelicIcon } from "~/components/RelicIcon";
 import { getCat } from "~/server/game/cats";
 import { ELEMENT_LABELS } from "~/server/game/elements";
 import { getRelic } from "~/server/game/relics";
@@ -150,13 +151,16 @@ export function RewardPick({
                       disabled={busy}
                       aria-pressed={chosen}
                       onClick={() => setRelic(chosen ? null : id)}
-                      className={`piece border-ink text-ink flex h-full min-h-16 w-full flex-col justify-start border-2 p-2 text-left ${chosen ? "bg-lime is-chosen lift" : "bg-cream hover:bg-sky-soft liftable"}`}
+                      className={`piece border-ink text-ink flex h-full min-h-16 w-full items-start gap-2 border-2 p-2 text-left ${chosen ? "bg-lime is-chosen lift" : "bg-cream hover:bg-sky-soft liftable"}`}
                     >
-                      <span className="text-pixel block text-sm">
-                        {item.name}
-                      </span>
-                      <span className="mt-1 block text-xs leading-snug">
-                        {item.text}
+                      <RelicIcon relicId={id} />
+                      <span className="min-w-0">
+                        <span className="text-pixel block text-sm">
+                          {item.name}
+                        </span>
+                        <span className="mt-1 block text-xs leading-snug">
+                          {item.text}
+                        </span>
                       </span>
                     </button>
                   </li>

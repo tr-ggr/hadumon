@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { ElementMark } from "~/components/cats/CatCard";
+import { RelicIcon } from "~/components/RelicIcon";
 import { getRelic } from "~/server/game/relics";
 import { CLANS, isClanId } from "~/server/game/run";
 import { lockedText, type CodexEntry } from "./entries";
@@ -41,6 +42,12 @@ export function RelicList({ entries }: { entries: readonly CodexEntry[] }) {
             name={relic.name}
             text={entry.unlocked ? relic.text : lockedText(entry)}
             locked={!entry.unlocked}
+            mark={
+              <RelicIcon
+                relicId={entry.id}
+                className={entry.unlocked ? "" : "grayscale"}
+              />
+            }
           />
         );
       })}

@@ -19,15 +19,22 @@ export interface PixelIconProps {
  * A tabletop icon as crisp inline SVG, drawn the way the cats are. Pure and
  * hook-free, so it works in server components.
  */
-export function PixelIcon({
-  name,
-  size = 16,
+export function PixelIcon({ name, size = 16, ...rest }: PixelIconProps) {
+  return <IconSvg rows={ICONS[name]} size={size} {...rest} />;
+}
+
+/** A square grid in the icons' legend, one rect per run of a colour. */
+export function IconSvg({
+  rows,
+  size,
   fill = WHITE_COLOR,
   ink = OUTLINE_COLOR,
   label,
   className,
-}: PixelIconProps) {
-  const rows: readonly string[] = ICONS[name];
+}: Omit<PixelIconProps, "name" | "size"> & {
+  rows: readonly string[];
+  size: number;
+}) {
   const runs = buildRuns(rows, {
     ".": null,
     o: ink,
