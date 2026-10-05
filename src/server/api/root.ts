@@ -1,6 +1,9 @@
 import { authRouter } from "~/server/api/routers/auth";
 import { codexRouter } from "~/server/api/routers/codex";
+import { collectionRouter } from "~/server/api/routers/collection";
+import { profileRouter } from "~/server/api/routers/profile";
 import { runRouter } from "~/server/api/routers/run";
+import { shopRouter } from "~/server/api/routers/shop";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 
 /** The primary router for the HaduMon server. */
@@ -8,6 +11,9 @@ export const appRouter = createTRPCRouter({
   auth: authRouter,
   run: runRouter,
   codex: codexRouter,
+  collection: collectionRouter,
+  shop: shopRouter,
+  profile: profileRouter,
 });
 
 // export type definition of API

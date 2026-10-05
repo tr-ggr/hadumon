@@ -1,16 +1,19 @@
 import { randomBytes } from "node:crypto";
 
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, ne } from "drizzle-orm";
+import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 
+import { addCoins, lockProfile } from "~/server/api/economy";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { DbOrTx, Transaction } from "~/server/db";
 import { runs, unlocks, type Run } from "~/server/db/schema/runs";
 import { ROWS } from "~/server/game/cats";
 import { DIFFICULTIES } from "~/server/game/difficulty";
+import { profiles } from "~/server/db/schema/economy";
 import { ELEMENTS } from "~/server/game/elements";
 import { IllegalAction, type MatchEvent } from "~/server/game/match";
+import { payout } from "~/server/game/payout";
 import {
   abandonRun,
   actInRun,
@@ -20,6 +23,7 @@ import {
   startRun,
   summarizeRun,
   type RunState,
+  type RunSummary,
 } from "~/server/game/run";
 import {
   earnedUnlocks,
@@ -90,6 +94,8 @@ export interface RunUpdate extends RunSnapshot {
   beats: RivalBeat[];
   /** What the run unlocked, set once when it ends. */
   unlocked: Unlock[];
+  /** The coins the run paid, set once when it ends; `null` until then. */
+  coins: number | null;
 }
 
 function snapshot(run: Pick<Run, "id" | "version" | "state">): RunSnapshot {
@@ -158,16 +164,25 @@ async function retireStaleRun(
   run: Pick<Run, "id" | "userId" | "version" | "state">,
 ): Promise<void> {
   const summary = retireRun(run.state);
-  await tx
+  // Only the fields every version has written are read.
+  const old = run.state as unknown as { results?: unknown } | null;
+  const finished = Array.isArray(old?.results) ? old.results.length : 0;
+  const coins = coinsFor(summary);
+  const [closed] = await tx
     .update(runs)
     .set({
       version: run.version + 1,
       matchesWon: summary.matchesWon,
       score: summary.totalScore,
+      coins,
       status: "abandoned",
       endedAt: new Date(),
     })
-    .where(eq(runs.id, run.id));
+    .where(and(eq(runs.id, run.id), eq(runs.status, "active")))
+    .returning({ id: runs.id });
+  // Closed by another request since it was read: that one paid for it.
+  if (!closed) return;
+  await payRun(tx, run.userId, coins, finished);
   const unlocked = earnedUnlocks(summary, await heldUnlocks(tx, run.userId));
   if (unlocked.length > 0) {
     await tx
@@ -203,7 +218,38 @@ function engine<T>(fn: () => T): T {
   }
 }
 
-/** Writes the next state and, if the run just ended, closes it and awards unlocks. */
+/** The coins a closed run pays. What it is counted from never leaves the server. */
+function coinsFor(summary: RunSummary): number {
+  return payout({ ...summary, goalsSwept: 0, reclaimed: 0 });
+}
+
+/**
+ * Pays a run that has just been closed, in the transaction that closed it.
+ * A run that finished a match also uses up the ticket its chest and its
+ * theft were drawn from; one given up before that keeps it, so starting
+ * again deals the same.
+ */
+async function payRun(
+  tx: Transaction,
+  userId: string,
+  coins: number,
+  finished: number,
+): Promise<void> {
+  // The run row is locked already: run first, then profile, everywhere.
+  await lockProfile(tx, userId);
+  if (coins > 0) await addCoins(tx, userId, coins);
+  if (finished > 0) {
+    await tx
+      .update(profiles)
+      .set({ runTicket: sql`${profiles.runTicket} + 1` })
+      .where(eq(profiles.userId, userId));
+  }
+}
+
+/**
+ * Writes the next state and, if the run just ended, closes it, pays its
+ * coins and awards its unlocks.
+ */
 async function persist(
   tx: Transaction,
   run: Run,
@@ -214,8 +260,11 @@ async function persist(
   const summary = summarizeRun(state);
   const ended = state.phase === "over" && state.outcome !== null;
   const nextVersion = run.version + 1;
+  const coins = ended ? coinsFor(summary) : null;
 
-  await tx
+  // Only a run still active is written, so one can never be closed, or
+  // paid, twice.
+  const [written] = await tx
     .update(runs)
     .set({
       state,
@@ -223,13 +272,25 @@ async function persist(
       matchesWon: summary.matchesWon,
       score: summary.totalScore,
       ...(ended
-        ? { status: state.outcome ?? "lost", endedAt: new Date() }
+        ? {
+            status: state.outcome ?? "lost",
+            endedAt: new Date(),
+            coins: coins ?? 0,
+          }
         : {}),
     })
-    .where(eq(runs.id, run.id));
+    .where(and(eq(runs.id, run.id), eq(runs.status, "active")))
+    .returning({ id: runs.id });
+  if (!written) {
+    throw new TRPCError({
+      code: "CONFLICT",
+      message: "The run moved on in another tab. Reload to catch up.",
+    });
+  }
 
   let unlocked: Unlock[] = [];
   if (ended) {
+    await payRun(tx, run.userId, coins ?? 0, state.results.length);
     unlocked = earnedUnlocks(summary, await heldUnlocks(tx, run.userId));
     if (unlocked.length > 0) {
       await tx
@@ -245,6 +306,7 @@ async function persist(
     events,
     beats,
     unlocked,
+    coins,
   };
 }
 
@@ -376,6 +438,7 @@ export const runRouter = createTRPCRouter({
           status: runs.status,
           matchesWon: runs.matchesWon,
           score: runs.score,
+          coins: runs.coins,
           startedAt: runs.startedAt,
           endedAt: runs.endedAt,
         })
