@@ -2,16 +2,28 @@
  * A voice for every HaduMon, written down as data like the rest of the
  * table's sounds. A cat is heard when it is chosen or turned over to read.
  *
- * Three things make a voice. Its pitch is the cat's own: no two share one,
+ * Four things make a voice. Its pitch is the cat's own: no two share one,
  * so no two cats can sound the same. Its shape comes from what the cat is (a
  * rogue chirps up, a bruiser falls, a tank barely moves), and its timbre
  * from its element. A rarer cat takes longer over it and adds an ornament.
+ * And each cat has one of four small turns of its own, so that two of a kind
+ * a rung apart are still two cats.
+ *
+ * Nothing here is written out cat by cat but a legendary's signature: the
+ * pitches are worked out from the catalogue, however many cats it holds.
  *
  * Cats are the player's pieces: triangle, sine and a quiet square, never the
  * rival's sawtooth, and never noise.
  */
 
-import { CATS, type Archetype, type Rarity } from "~/server/game/cats";
+import {
+  CAT_LIST,
+  CATS,
+  RARITIES,
+  type Archetype,
+  type Cat,
+  type Rarity,
+} from "~/server/game/cats";
 import type { Element } from "~/server/game/elements";
 
 import { recipe, tone, voiceSeconds, type Note, type Voice } from "./recipes";
@@ -19,46 +31,93 @@ import { recipe, tone, voiceSeconds, type Note, type Voice } from "./recipes";
 /** The pitch every other is counted from: A3. */
 const ROOT_HZ = 220;
 
+/** What a voice is made from: all of a cat that can be heard. */
+export type Voiced = Pick<Cat, "id" | "element" | "archetype" | "rarity">;
+
 /**
- * Each cat's own pitch, in semitones above the root. Tanks and the shade
- * clan sit at the bottom, volt at the top. Hadu is on E4, where a chain of
- * powers starts its ladder.
+ * The pitches are a ladder of this many rungs, a quarter of a semitone
+ * apart: A3 at the bottom and a little over two octaves to the top, 946 Hz.
+ * It is a rung for every cat the catalogue is meant to hold.
  */
-const PITCH: Readonly<Record<string, number>> = {
-  bramblepaw: 0,
-  verdantmane: 1,
-  umbralynx: 2,
-  aurelynx: 3,
-  gloomtail: 4,
-  nyxaroth: 5,
-  duskmew: 6,
-  hadu: 7,
-  shadewhisker: 8,
-  burrfang: 9,
-  infernomane: 10,
-  flameclaw: 11,
-  arcpurr: 12,
-  thornkit: 13,
-  pyrelynx: 14,
-  brumefang: 15,
-  cinderpounce: 16,
-  nimbustail: 17,
-  emberkit: 18,
-  dewhisker: 19,
-  oraclemew: 20,
-  mistpaw: 21,
-  joltpad: 22,
-  sparkmew: 23,
-  stormsabre: 24,
-  voltwhisk: 25,
+export const RUNGS = 102;
+const RUNGS_TO_A_SEMITONE = 4;
+
+const HADU = "hadu";
+/**
+ * Hadu's rung: E4, seven semitones above the root, where a chain of powers
+ * starts its ladder. He is on it whatever else is in the catalogue.
+ */
+const HADU_RUNG = 7 * RUNGS_TO_A_SEMITONE;
+
+/**
+ * The order the cats go up the ladder in. The clans come first, the shade
+ * clan at the bottom and volt at the top. Within a clan the cats go from the
+ * lowest voice to the highest, tanks first and scouts last; then the
+ * commoner cat is under the rarer; and the name settles what is left.
+ */
+const ELEMENT_RANK: Record<Element, number> = {
+  shade: 0,
+  thorn: 1,
+  flame: 2,
+  mist: 3,
+  volt: 4,
 };
+
+const ARCHETYPE_RANK: Record<Archetype, number> = {
+  tank: 0,
+  bruiser: 1,
+  familiar: 2,
+  mage: 3,
+  rogue: 4,
+  scout: 5,
+};
+
+function upTheLadder(a: Voiced, b: Voiced): number {
+  return (
+    ELEMENT_RANK[a.element] - ELEMENT_RANK[b.element] ||
+    ARCHETYPE_RANK[a.archetype] - ARCHETYPE_RANK[b.archetype] ||
+    RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity) ||
+    // Not by locale: the order must be the same on every machine.
+    (a.id < b.id ? -1 : a.id > b.id ? 1 : 0)
+  );
+}
+
+/**
+ * The rung each cat stands on. Hadu takes his own, and the rest are laid in
+ * order over the rungs he left, spread from the bottom to the top: a small
+ * catalogue is not packed into the low end, and a full one takes every rung.
+ * One fuller than the ladder is not refused a voice. The ladder goes on up, a
+ * rung for each cat over, and the pitches are still all different.
+ */
+export function ladderFor(
+  cats: readonly Voiced[],
+): ReadonlyMap<string, number> {
+  const pinned = cats.some((cat) => cat.id === HADU);
+  const rest = cats.filter((cat) => cat.id !== HADU).sort(upTheLadder);
+  const free = Array.from(
+    { length: Math.max(RUNGS, cats.length) },
+    (_, rung) => rung,
+  ).filter((rung) => !pinned || rung !== HADU_RUNG);
+
+  // A stride of a rung or more, so no two cats round to the same one.
+  const stride = (free.length - 1) / Math.max(1, rest.length - 1);
+  const ladder = new Map<string, number>(pinned ? [[HADU, HADU_RUNG]] : []);
+  rest.forEach((cat, i) => {
+    ladder.set(cat.id, free[Math.round(i * stride)] ?? 0);
+  });
+  return ladder;
+}
+
+const LADDER = ladderFor(CAT_LIST);
 
 /**
  * The three notes a legendary signs off with, in semitones above its pitch:
  * gold goes up a major chord, the night comes down a minor one, and Hadu
  * goes home, to the fifth, and home again an octave up.
  */
-const SIGNATURE: Readonly<Record<string, readonly [number, number, number]>> = {
+export const SIGNATURE: Readonly<
+  Record<string, readonly [number, number, number]>
+> = {
   aurelynx: [0, 4, 7],
   nyxaroth: [7, 3, 0],
   hadu: [0, 7, 12],
@@ -68,10 +127,15 @@ function semitones(count: number): number {
   return 2 ** (count / 12);
 }
 
-/** A cat's pitch in Hz, or `null` for a cat that has no voice written. */
+/** The pitch of a rung of the ladder, in Hz. */
+export function rungHz(rung: number): number {
+  return ROOT_HZ * semitones(rung / RUNGS_TO_A_SEMITONE);
+}
+
+/** A cat's pitch in Hz, or `null` for a cat the catalogue does not hold. */
 export function catPitch(catId: string): number | null {
-  if (!Object.hasOwn(PITCH, catId)) return null;
-  return ROOT_HZ * semitones(PITCH[catId] ?? 0);
+  const rung = LADDER.get(catId);
+  return rung === undefined ? null : rungHz(rung);
 }
 
 /**
@@ -119,6 +183,70 @@ const CONTOUR: Record<Archetype, readonly Stroke[]> = {
   // A low, flat mrrp: one held note and the small turn that ends it.
   tank: [stroke(1, 0.97, 0, 0.12), stroke(0.97, 1.03, 0.09, 0.09, 0.8)],
 };
+
+/**
+ * The small turn a cat gives its shape, so that it is not only a rung that
+ * tells it from the next of its kind. The shape is still its archetype's.
+ */
+export const INFLECTIONS = ["plain", "grace", "wide", "dip"] as const;
+export type Inflection = (typeof INFLECTIONS)[number];
+
+/** Said as it is written. */
+function plain(contour: readonly Stroke[]): readonly Stroke[] {
+  return contour;
+}
+
+/** A short note a tone under the call, and then the call. */
+function grace(contour: readonly Stroke[]): readonly Stroke[] {
+  const first = contour[0];
+  if (!first) return contour;
+  const under = first.from * 0.89;
+  return [
+    stroke(under, under, 0, 0.04, 0.6),
+    ...contour.map((s) => ({ ...s, at: s.at + 0.03 })),
+  ];
+}
+
+/**
+ * Every stroke reaches a quarter further from the cat's own pitch, up or
+ * down. A tank moves so little that this is the faintest of the four on it.
+ */
+function wide(contour: readonly Stroke[]): readonly Stroke[] {
+  return contour.map((s) => ({
+    ...s,
+    from: s.from ** 1.25,
+    to: s.to ** 1.25,
+  }));
+}
+
+/** The call, and a small fall off the end of it. */
+function dip(contour: readonly Stroke[]): readonly Stroke[] {
+  const last = contour.at(-1);
+  if (!last) return contour;
+  return [
+    ...contour,
+    stroke(last.to, last.to * 0.84, last.at + last.len * 0.5, 0.06, 0.6),
+  ];
+}
+
+const INFLECT: Record<
+  Inflection,
+  (contour: readonly Stroke[]) => readonly Stroke[]
+> = { plain, grace, wide, dip };
+
+/** A string as a whole number, the same every time: FNV-1a, 32 bits. */
+function hash(text: string): number {
+  let sum = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) {
+    sum = Math.imul(sum ^ text.charCodeAt(i), 0x01000193);
+  }
+  return sum >>> 0;
+}
+
+/** Which turn a cat gives its shape. Its name decides, so it never changes. */
+export function catInflection(catId: string): Inflection {
+  return INFLECTIONS[hash(catId) % INFLECTIONS.length] ?? "plain";
+}
 
 /** How much longer a rarer cat takes. A legendary's signature is its length. */
 const STRETCH: Record<Rarity, number> = {
@@ -262,17 +390,23 @@ function echo(notes: readonly Note[], later: number): Note[] {
   }));
 }
 
-/**
- * The voice of a cat. One the table has no voice for sounds like any other
- * piece being picked up.
- */
-export function catVoice(catId: string): Voice {
-  const hz = catPitch(catId);
-  const cat = Object.hasOwn(CATS, catId) ? CATS[catId] : undefined;
-  if (hz === null || !cat) return recipe("pick");
+/** A voice that would run over is said a little faster, to end inside the limit. */
+function fit(voice: readonly Note[]): Voice {
+  const seconds = voiceSeconds(voice);
+  if (seconds <= VOICE_SECONDS) return voice;
+  const faster = (VOICE_SECONDS * 0.999) / seconds;
+  return voice.map((note) => ({
+    ...note,
+    at: note.at * faster,
+    attack: note.attack * faster,
+    decay: note.decay * faster,
+  }));
+}
 
+/** A cat's call at a pitch: its shape, turned, stretched and given a timbre. */
+function ornamented(cat: Voiced, hz: number, inflection: Inflection): Note[] {
   const stretch = STRETCH[cat.rarity];
-  const strokes = CONTOUR[cat.archetype].map((s) => ({
+  const strokes = INFLECT[inflection](CONTOUR[cat.archetype]).map((s) => ({
     ...s,
     from: s.from * hz,
     to: s.to * hz,
@@ -285,7 +419,9 @@ export function catVoice(catId: string): Voice {
   if (cat.rarity === "epic") {
     return [...call, ...glint(strokes), ...echo(call, 0.09)];
   }
-  const signature = SIGNATURE[catId];
+  const signature = Object.hasOwn(SIGNATURE, cat.id)
+    ? SIGNATURE[cat.id]
+    : undefined;
   if (cat.rarity === "legendary" && signature) {
     // The signature comes in over the tail of the call.
     const start = voiceSeconds(call) * 0.6;
@@ -297,4 +433,27 @@ export function catVoice(catId: string): Voice {
     ];
   }
   return call;
+}
+
+/**
+ * The voice of anything with a cat's four parts, at a pitch. The turn is the
+ * one its name gives it unless another is asked for.
+ */
+export function voiceFor(
+  cat: Voiced,
+  hz: number,
+  inflection: Inflection = catInflection(cat.id),
+): Voice {
+  return fit(ornamented(cat, hz, inflection));
+}
+
+/**
+ * The voice of a cat. One the table has no voice for sounds like any other
+ * piece being picked up.
+ */
+export function catVoice(catId: string): Voice {
+  const hz = catPitch(catId);
+  const cat = Object.hasOwn(CATS, catId) ? CATS[catId] : undefined;
+  if (hz === null || !cat) return recipe("pick");
+  return voiceFor(cat, hz);
 }
