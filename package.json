@@ -22,6 +22,8 @@
     "lint:fix": "next lint --fix",
     "preview": "next build && next start",
     "selfplay": "tsx --conditions=react-server scripts/selfplay.ts",
+    "sprites:recipes": "tsx scripts/sprite-recipes.ts",
+    "sprites:sheet": "tsx scripts/sprite-sheet.ts",
     "start": "next start",
     "test": "vitest run",
     "test:watch": "vitest",
