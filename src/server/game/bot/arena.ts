@@ -3,7 +3,9 @@
  * measure the levels against one another and to prove matches end.
  */
 
-import { ELEMENTS } from "../elements";
+import { getCat, RARITIES } from "../cats";
+import { DIFFICULTY, type DifficultyId } from "../difficulty";
+import { ELEMENTS, type Element } from "../elements";
 import {
   createDuel,
   stepDuel,
@@ -11,10 +13,19 @@ import {
   type DuelState,
   type SideId,
 } from "../match";
+import { GAUNTLET } from "../rival";
+import { rivalDeck } from "../rivalDecks";
 import { createRng } from "../rng";
-import { starterDeck } from "../run";
+import {
+  chooseReward,
+  makeOffer,
+  starterDeck,
+  startRun,
+  type RunPool,
+} from "../run";
 import { observe } from "./observe";
-import type { Bot } from "./levels";
+import { botAt, TOP_LEVEL, type Bot } from "./levels";
+import { styleOf } from "./styles";
 
 /** Plays a match to its end, each seat chosen for by its own bot. */
 export function playDuel(
@@ -92,4 +103,89 @@ export function faceOff(a: Bot, b: Bot, games: number, label: string): Tally {
     record(tally, playDuel(config, { player: b, rival: a }), "rival");
   }
   return tally;
+}
+
+/** The level the rival at `matchIndex` plays at on a tier. */
+export function rivalLevel(matchIndex: number, tier: DifficultyId): number {
+  return matchIndex + DIFFICULTY[tier].rank;
+}
+
+export interface GauntletMatch {
+  rivalId: string;
+  level: number;
+  player: number;
+  rival: number;
+  won: boolean;
+}
+
+export interface GauntletConfig {
+  seed: string;
+  clanId: Element;
+  pool: RunPool;
+  tier: DifficultyId;
+  /**
+   * What-ifs for measuring, never used by a run: levels added to every
+   * rival's, and relics handed to the rival at a match.
+   */
+  levelShift?: number;
+  rivalRelics?: (rivalId: string, matchIndex: number) => string[];
+}
+
+/**
+ * A whole run with a bot in the player's seat: six rivals in order, each on
+ * its own deck at the level the tier asks, until one of them wins. After a
+ * win the stand-in takes the rarest cat offered and the first relic, as a
+ * run's reward screen would let it.
+ */
+export function playGauntlet(
+  config: GauntletConfig,
+  player: Bot,
+): GauntletMatch[] {
+  let run = startRun({
+    seed: config.seed,
+    clanId: config.clanId,
+    pool: config.pool,
+    difficulty: config.tier,
+  });
+  const played: GauntletMatch[] = [];
+  for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
+    const level = Math.min(
+      TOP_LEVEL,
+      rivalLevel(matchIndex, config.tier) + (config.levelShift ?? 0),
+    );
+    const state = playDuel(
+      {
+        seed: `${config.seed}:m${matchIndex}`,
+        rivalId,
+        level,
+        player: { deck: run.deck, relics: run.relics },
+        rival: {
+          deck: rivalDeck(rivalId, matchIndex, config.pool.cats),
+          relics: config.rivalRelics?.(rivalId, matchIndex) ?? [],
+        },
+      },
+      { player, rival: botAt(level, styleOf(rivalId)) },
+    );
+    const result = state.result;
+    if (!result) break;
+    played.push({
+      rivalId,
+      level,
+      player: result.player.total,
+      rival: result.rival.total,
+      won: result.won,
+    });
+    if (!result.won || matchIndex === GAUNTLET.length - 1) break;
+
+    const reward = makeOffer({ ...run, matchIndex });
+    const cat = [...reward.cats].sort(
+      (a, b) =>
+        RARITIES.indexOf(getCat(b).rarity) - RARITIES.indexOf(getCat(a).rarity),
+    )[0];
+    run = chooseReward(
+      { ...run, matchIndex, phase: "reward", reward },
+      { cat: cat ?? null, relic: reward.relics[0] ?? null, trim: null },
+    );
+  }
+  return played;
 }

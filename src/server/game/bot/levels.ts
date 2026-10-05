@@ -3,10 +3,14 @@
  * a stronger one made to blunder at random.
  *
  *   0  a fixed list of priorities, no evaluation, never trades
- *   1  one step ahead, counting points only
- *   2  one step ahead with the full evaluation
- *   3  level 2 with more ways to make each move, averaged over 4 re-deals
- *   4  level 3, then the other seat's best reply to its 8 best moves
+ *   1  the same list, choosing its cat, its dice and its keep with care
+ *   2  one step ahead, counting points only
+ *   3  one step ahead, counting points and the round goal
+ *   4  one step ahead with the full evaluation
+ *   5  its 3 best moves, each played out twice to the end of the round
+ *   6  its 6 best moves, each played out 6 times to the end of the match
+ *   7  its 8 best moves and 256 playouts to the end of the match, spent on
+ *      the moves still in the running
  *
  * Every level is a pure function of what its seat can see and an RNG, and
  * tries no more moves than `STEP_CAP` allows.
@@ -36,17 +40,131 @@ import {
   type SlotRef,
 } from "../match";
 import type { Rng } from "../rng";
-import { evaluate, keepValue, NEUTRAL, pointsLead, wantedFood } from "./eval";
+import {
+  evaluate,
+  keepValue,
+  NEUTRAL,
+  pointsLead,
+  wantedFood,
+  type Weights,
+} from "./eval";
 import { fork, tryMove, type Budget } from "./fork";
 import { imagine, type Observation, type OwnSeat } from "./observe";
+import { pickDice, quickKeep, quickMove } from "./quick";
 import type { Habit, Style } from "./styles";
 
 export type Bot = (seen: Observation, rng: Rng) => Action;
 
-export const TOP_LEVEL = 4;
+/**
+ * What a level is made of. `cap` is the most moves it may try before it
+ * answers.
+ */
+export type LevelSpec =
+  /** The fixed list. `sharp` picks its cat, its dice and its keep with care. */
+  | { kind: "rote"; sharp: boolean }
+  /** One step ahead on points alone, or on points and the round goal. */
+  | { kind: "points"; goal: boolean; cap: number }
+  /** One step ahead with the full evaluation. */
+  | {
+      kind: "value";
+      deals: number;
+      wide: boolean;
+      replies: number;
+      cap: number;
+    }
+  /** Its best moves played out. */
+  | ({ kind: "playouts"; cap: number } & Playouts);
+
+interface Playouts {
+  /** How many of its best moves, by one step ahead, are played out. */
+  moves: number;
+  /** Playouts in each stage; after a stage only the better half goes on. */
+  stages: readonly number[];
+  /** Where a playout stops. */
+  until: "round" | "match";
+  /** What a finished playout is scored on. */
+  by: "value" | "points" | "wins";
+}
+
+/**
+ * The eight levels as first planned. Measured, three of them did not beat
+ * the level below (see `sprints/14-real-rival.md`); they are kept so that
+ * measurement can be run again.
+ */
+export const PLANNED: readonly LevelSpec[] = [
+  { kind: "rote", sharp: false },
+  { kind: "points", goal: false, cap: 200 },
+  { kind: "value", deals: 1, wide: false, replies: 0, cap: 200 },
+  { kind: "value", deals: 4, wide: true, replies: 0, cap: 1200 },
+  { kind: "value", deals: 4, wide: true, replies: 8, cap: 6000 },
+  {
+    kind: "playouts",
+    moves: 5,
+    stages: [4],
+    until: "round",
+    by: "value",
+    cap: 1500,
+  },
+  {
+    kind: "playouts",
+    moves: 6,
+    stages: [6],
+    until: "match",
+    by: "points",
+    cap: 2500,
+  },
+  {
+    kind: "playouts",
+    moves: 8,
+    stages: [6, 6, 12],
+    until: "match",
+    by: "wins",
+    cap: 5000,
+  },
+];
+
+/**
+ * The levels a rival plays at, 0 the least. Each beat the one below it in
+ * at least 56 matches of 100 when it was measured.
+ */
+export const LEVELS: readonly LevelSpec[] = [
+  { kind: "rote", sharp: false },
+  { kind: "rote", sharp: true },
+  { kind: "points", goal: false, cap: 400 },
+  { kind: "points", goal: true, cap: 400 },
+  { kind: "value", deals: 1, wide: false, replies: 0, cap: 400 },
+  {
+    kind: "playouts",
+    moves: 3,
+    stages: [2],
+    until: "round",
+    by: "value",
+    cap: 1000,
+  },
+  {
+    kind: "playouts",
+    moves: 6,
+    stages: [6],
+    until: "match",
+    by: "points",
+    cap: 2500,
+  },
+  {
+    kind: "playouts",
+    moves: 8,
+    stages: [16, 16, 32],
+    until: "match",
+    by: "points",
+    cap: 9000,
+  },
+];
+
+export const TOP_LEVEL = LEVELS.length - 1;
 
 /** The most moves each level may try before it answers. */
-export const STEP_CAP: readonly number[] = [0, 200, 200, 1200, 6000];
+export const STEP_CAP: readonly number[] = LEVELS.map((spec) =>
+  spec.kind === "rote" ? 0 : spec.cap,
+);
 
 /* ------------------------------------------------------------ level 0 */
 
@@ -95,8 +213,13 @@ function plainRow(seen: Observation, row: Row): Action {
 }
 
 /** The first cat in hand that can be played, into the first row it fits. */
-function firstPlay(own: OwnSeat): Action | null {
-  for (const [hand, catId] of own.hand.entries()) {
+function firstPlay(own: OwnSeat, sharp: boolean): Action | null {
+  // Sharp, the cat worth the most is tried first.
+  const order = [...own.hand.entries()];
+  if (sharp) {
+    order.sort(([, a], [, b]) => getCat(b).points - getCat(a).points);
+  }
+  for (const [hand, catId] of order) {
     const row = getCat(catId).rows.find((r) => canPlay(own, hand, r));
     if (!row) continue;
     const swap = defaultSwap(
@@ -117,11 +240,25 @@ function firstPlay(own: OwnSeat): Action | null {
  * prowl for some; with a cat that only yarn is keeping off the board, go to
  * the Den; otherwise hunt.
  */
-function byRote(seen: Observation): Action {
+function byRote(seen: Observation, sharp = false): Action {
   const own = seen.own;
-  if (seen.phase === "setup") return firstKeep(own.setup);
-  if (seen.phase === "pending") return { type: "resolve", choice: null };
-  const play = firstPlay(own);
+  if (seen.phase === "setup") {
+    return sharp ? quickKeep(own.setup) : firstKeep(own.setup);
+  }
+  if (seen.phase === "pending") {
+    // Sharp, it tucks the cat worth least; plain, it declines every choice.
+    if (!sharp || seen.pending?.kind !== "tuckHand") {
+      return { type: "resolve", choice: null };
+    }
+    let choice = 0;
+    own.hand.forEach((catId, hand) => {
+      if (getCat(catId).points < getCat(own.hand[choice] ?? catId).points) {
+        choice = hand;
+      }
+    });
+    return { type: "resolve", choice };
+  }
+  const play = firstPlay(own, sharp);
   if (play) return play;
   if (own.hand.length === 0) return plainRow(seen, "prowl");
   const discount = auraTotal(own.board, "discount");
@@ -131,7 +268,10 @@ function byRote(seen: Observation): Action {
       getCat(catId).rows.some((row) => own.board[row].length < SLOTS),
   );
   if (fed && boardYarnRoom(own.board) > 0) return plainRow(seen, "den");
-  return plainRow(seen, "hunt");
+  const hunt = plainRow(seen, "hunt");
+  return sharp && hunt.type === "hunt"
+    ? { type: "hunt", dice: pickDice(own, seen.feeder, hunt.dice.length) }
+    : hunt;
 }
 
 /* ------------------------------------------------------ looking ahead */
@@ -323,14 +463,31 @@ function bestKeep(seen: Observation): Action {
 
 /* ------------------------------------------------------------- levels */
 
-/** Level 1: whatever puts the most points on the table this turn. */
-function byPoints(seen: Observation, rng: Rng, style: Style): Action {
-  const rote = byRote(seen);
+/** Points on the table and the round goal as it stands; nothing of what is to come. */
+const GOAL_ONLY: Weights = {
+  goal: NEUTRAL.goal,
+  food: 0,
+  hand: 0,
+  afford: 0,
+  engine: 0,
+  yarn: 0,
+  deny: 0,
+};
+
+/** Whatever puts the most points on the table this turn. */
+function byPoints(
+  seen: Observation,
+  rng: Rng,
+  style: Style,
+  { goal, cap }: { goal: boolean; cap: number },
+): Action {
+  // Counting the goal, it also takes the care a sharp list does.
+  const rote = byRote(seen, goal);
   if (seen.phase !== "turn") return rote;
   const mind: Thinking = {
     style,
-    budget: { left: STEP_CAP[1] ?? 0 },
-    value: pointsLead,
+    budget: { left: cap },
+    value: goal ? (state, who) => evaluate(state, who, GOAL_ONLY) : pointsLead,
   };
   const ranked = rank([imagine(seen, rng)], seen.me, mind, false);
   const top = ranked[0];
@@ -354,8 +511,12 @@ function byValue(
   seen: Observation,
   rng: Rng,
   style: Style,
-  level: number,
-  { deals, wide, replies }: { deals: number; wide: boolean; replies: number },
+  {
+    deals,
+    wide,
+    replies,
+    cap,
+  }: { deals: number; wide: boolean; replies: number; cap: number },
 ): Action {
   if (seen.phase === "setup") return bestKeep(seen);
   if (seen.phase === "turn" && wantsReroll(seen)) return { type: "reroll" };
@@ -363,7 +524,7 @@ function byValue(
   const them = otherSide(me);
   const mind: Thinking = {
     style,
-    budget: { left: STEP_CAP[level] ?? 0 },
+    budget: { left: cap },
     value: (state, who) =>
       // The other seat is assumed to play without a manner.
       evaluate(state, who, who === me ? style.weights : NEUTRAL),
@@ -409,22 +570,97 @@ function byValue(
   return best.action;
 }
 
+/* ----------------------------------------------------------- playouts */
+
+/** The lead, in points, at which a playout counts as about three-quarters won. */
+const WIN_MARGIN = 3;
+
+/** Plays a fork on with `quickMove` for both seats until it should stop. */
+function playOut(state: DuelState, until: Playouts["until"], budget: Budget) {
+  const round = state.round;
+  for (let guard = 0; guard < 80 && state.phase !== "over"; guard++) {
+    if (until === "round" && state.round !== round) return;
+    tryMove(state, quickMove(state), budget);
+  }
+}
+
+/**
+ * Levels 5 to 7: the moves that look best one step ahead are each played out
+ * to the end of the round or the match, on tables dealt afresh for every
+ * playout and shared by every move, and the one that comes out best is made.
+ */
+function byPlayouts(
+  seen: Observation,
+  rng: Rng,
+  style: Style,
+  plan: Playouts & { cap: number },
+): Action {
+  if (seen.phase === "setup") return bestKeep(seen);
+  if (seen.phase === "turn" && wantsReroll(seen)) return { type: "reroll" };
+  const me = seen.me;
+  const mind: Thinking = {
+    style,
+    budget: { left: plan.cap },
+    value: (state, who) =>
+      evaluate(state, who, who === me ? style.weights : NEUTRAL),
+  };
+  const ranked = rank([imagine(seen, rng), imagine(seen, rng)], me, mind, true);
+  let running = ranked
+    .slice(0, plan.moves)
+    .map((entry) => ({ action: entry.action, total: 0, n: 0 }));
+  const top = running[0];
+  if (!top) return byRote(seen);
+  if (running.length === 1) return top.action;
+
+  const score = (state: DuelState): number => {
+    if (plan.by === "value") return mind.value(state, me);
+    const lead = pointsLead(state, me);
+    if (plan.by === "points") return lead;
+    // A playout is one deal of many: a narrow lead is a match half won.
+    return 1 / (1 + Math.exp(-lead / WIN_MARGIN));
+  };
+  const mean = (entry: (typeof running)[number]) =>
+    entry.n === 0 ? -Infinity : entry.total / entry.n;
+
+  for (const playouts of plan.stages) {
+    for (let i = 0; i < playouts; i++) {
+      // Enough left to play every move still running to the end once more.
+      if (mind.budget.left < running.length * 40) break;
+      const table = imagine(seen, rng);
+      for (const entry of running) {
+        const next = fork(table);
+        tryMove(next, entry.action, mind.budget);
+        playOut(next, plan.until, mind.budget);
+        entry.total += score(next);
+        entry.n += 1;
+      }
+    }
+    running.sort((a, b) => mean(b) - mean(a));
+    if (running.length > 2) {
+      running = running.slice(0, Math.ceil(running.length / 2));
+    }
+  }
+  return (running[0] ?? top).action;
+}
+
+/** A bot built to `spec`, playing in the manner of `style`. */
+export function botFrom(spec: LevelSpec, style: Style): Bot {
+  switch (spec.kind) {
+    case "rote":
+      return (seen) => byRote(seen, spec.sharp);
+    case "points":
+      return (seen, rng) => byPoints(seen, rng, style, spec);
+    case "value":
+      return (seen, rng) => byValue(seen, rng, style, spec);
+    case "playouts":
+      return (seen, rng) => byPlayouts(seen, rng, style, spec);
+  }
+}
+
 /** A bot that plays at `level` in the manner of `style`. */
 export function botAt(level: number, style: Style): Bot {
   const at = Math.max(0, Math.min(TOP_LEVEL, Math.floor(level)));
-  switch (at) {
-    case 0:
-      return (seen) => byRote(seen);
-    case 1:
-      return (seen, rng) => byPoints(seen, rng, style);
-    case 2:
-      return (seen, rng) =>
-        byValue(seen, rng, style, 2, { deals: 1, wide: false, replies: 0 });
-    case 3:
-      return (seen, rng) =>
-        byValue(seen, rng, style, 3, { deals: 4, wide: true, replies: 0 });
-    default:
-      return (seen, rng) =>
-        byValue(seen, rng, style, 4, { deals: 4, wide: true, replies: 8 });
-  }
+  const spec = LEVELS[at];
+  if (!spec) throw new Error(`No level ${level}`);
+  return botFrom(spec, style);
 }

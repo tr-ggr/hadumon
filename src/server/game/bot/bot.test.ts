@@ -69,7 +69,8 @@ describe("levels", () => {
         most = Math.max(most, meter.steps - before);
       }
       expect(most).toBeLessThanOrEqual(STEP_CAP[level] ?? 0);
-      if (level > 0) expect(most).toBeGreaterThan(0);
+      // Only the two fixed lists try nothing.
+      expect(most > 0).toBe(level > 1);
     }
   });
 
@@ -86,16 +87,18 @@ describe("levels", () => {
 describe("level 0", () => {
   const rote = botAt(0, styleOf("alley-tom"));
 
-  it("needs no RNG and never makes a trade", () => {
+  it("needs no RNG and never makes a trade, and neither does level 1", () => {
     const never = {
       next: () => {
         throw new Error("level 0 rolled a die");
       },
     } as unknown as ReturnType<typeof createRng>;
     let trades = 0;
-    for (const state of positions("rote")) {
-      const action: Action = rote(observe(state, state.active), never);
-      if ("trade" in action && action.trade !== undefined) trades += 1;
+    for (const bot of [rote, botAt(1, styleOf("alley-tom"))]) {
+      for (const state of positions("rote")) {
+        const action: Action = bot(observe(state, state.active), never);
+        if ("trade" in action && action.trade !== undefined) trades += 1;
+      }
     }
     expect(trades).toBe(0);
   });
