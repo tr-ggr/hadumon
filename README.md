@@ -145,6 +145,7 @@ src/
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
     sprites/              Sprite and icon grids, element/rarity palettes
     cats/                 CatCard, the food icons (EssencePip) and ElementMark
+    landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/

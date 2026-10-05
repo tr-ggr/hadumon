@@ -108,7 +108,8 @@
     transform: translateY(2px) scale(0.99);
   }
 }
-/* Print on the board: lane names, track numerals, scores. 20px or 30px. */
+/* Print on the board: lane names, track numerals, scores. 20px or 30px, and
+   40px for a heading on the landing page. */
 @utility text-print {
   font-family: var(--font-pixel), var(--font-display);
   font-weight: 400;
@@ -162,8 +163,16 @@
     var(--color-cream)
   );
   --cast: var(--cast-cloth);
+  --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E");
   background-color: var(--color-cream);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E");
+  background-image: var(--weave);
+  background-size: 16px 8px;
+}
+/* The cloth laid again inside something that is not cloth, such as a frame. */
+.tabletop .cloth {
+  --cast: var(--cast-cloth);
+  background-color: var(--color-cream);
+  background-image: var(--weave);
   background-size: 16px 8px;
 }
 /* A size utility brings its own line height; print is always set solid. */
@@ -314,6 +323,194 @@
 }
 .tabletop .anim-roll {
   animation: die-roll 280ms steps(4, end) both;
+}
+
+/*
+ * The landing page: the tabletop at page scale. A sky mat for the hero, a
+ * thick cobalt stage frame, one cream board folded into panels, and cats
+ * standing in the margins. Everything here is a tabletop piece; this block
+ * only adds what the match table has no use for.
+ */
+.landing {
+  overflow-x: clip;
+}
+/* On ink the cobalt focus outline is lost, so the lid and the footer use lime. */
+.landing .lid {
+  --cast: #0b1118;
+}
+.landing .lid :focus-visible {
+  outline-color: var(--color-lime);
+}
+/* A sky mat that runs the width of the page, printed with paws and yarn. */
+.landing .sky-band {
+  --cast: var(--color-sky-deep);
+  background-color: var(--color-sky-surface);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27 shape-rendering=%27crispEdges%27 fill=%27%2373bde4%27%3E%3Crect x=%2720%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2720%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2724%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2732%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2736%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2740%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2744%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2748%27 width=%2716%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27100%27 width=%2720%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27108%27 width=%278%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27112%27 width=%278%27 height=%274%27/%3E%3Crect x=%27112%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27120%27 width=%278%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27124%27 width=%2720%27 height=%274%27/%3E%3Crect x=%27124%27 y=%27124%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27128%27 width=%278%27 height=%274%27/%3E%3C/svg%3E");
+  background-size: 160px 160px;
+}
+.landing .hero-mat {
+  --half: 50%;
+  border-bottom: 2px solid var(--color-ink);
+  box-shadow:
+    0 3px 0 0 var(--color-chipboard),
+    0 5px 0 0 var(--color-ink),
+    0 10px 0 0 var(--cast-cloth);
+}
+/* Half the stage's width, so the crowd can stand against its edges. */
+@media (min-width: 1024px) {
+  .landing .hero-mat {
+    --half: 400px;
+  }
+}
+@media (min-width: 1280px) {
+  .landing .hero-mat {
+    --half: 460px;
+  }
+}
+@media (min-width: 1536px) {
+  .landing .hero-mat {
+    --half: 480px;
+  }
+}
+.landing .hero-stage {
+  width: 100%;
+  max-width: calc(var(--half) * 2);
+}
+/* The wordmark as die-cut letters: an ink cut line, an edge, a line under it. */
+.landing .wordmark {
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 0.9;
+  paint-order: stroke fill;
+  -webkit-text-stroke: 3px var(--color-ink);
+  text-shadow:
+    0 3px 0 var(--color-chipboard),
+    0 5px 0 var(--color-ink);
+}
+@media (min-width: 640px) {
+  .landing .wordmark {
+    font-size: 76px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing .wordmark {
+    font-size: 96px;
+  }
+}
+/*
+ * The stage frame: an ink line, a cobalt band, an ink line, a white stud in
+ * each corner, and a board's edge under it.
+ */
+.landing .stage {
+  --band: 6px;
+  position: relative;
+  background: var(--color-cobalt);
+  border: 2px solid var(--color-ink);
+  padding: var(--band);
+  box-shadow:
+    0 7px 0 -2px var(--color-chipboard),
+    0 7px 0 0 var(--color-ink),
+    0 14px 0 -2px var(--cast);
+}
+@media (min-width: 640px) {
+  .landing .stage {
+    --band: 10px;
+  }
+}
+.landing .stage-inner {
+  border: 2px solid var(--color-ink);
+  height: 100%;
+}
+.landing .stud {
+  position: absolute;
+  width: calc(var(--band) - 4px);
+  height: calc(var(--band) - 4px);
+  background: var(--color-white);
+}
+/* One cream board, folded: an ink seam between panels, shaded on the far side. */
+.landing .board {
+  --cast: var(--cast-cloth);
+  background: var(--color-cream);
+  border: 2px solid var(--color-ink);
+  box-shadow:
+    0 5px 0 -2px var(--color-chipboard),
+    0 5px 0 0 var(--color-ink),
+    0 10px 0 -2px var(--board-cast, var(--cast-cloth));
+}
+.landing .fold + .fold {
+  border-top: 2px solid var(--color-ink);
+  box-shadow: inset 0 3px 0 0
+    color-mix(in srgb, var(--color-chipboard) 26%, var(--color-cream));
+}
+/*
+ * The crowd: cats and oversized icons standing on the table. Each idles on a
+ * 2px two-step bob and casts a flat shadow one sprite pixel deep.
+ */
+.landing .crowd-cat {
+  position: absolute;
+  pointer-events: none;
+  line-height: 0;
+}
+.landing .crowd-cat > svg {
+  display: block;
+  animation: crowd-bob 1600ms steps(1, end) infinite;
+  animation-delay: calc(var(--i, 0) * -290ms);
+}
+.landing .crowd-cat.has-cast::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 18.75%;
+  left: 18.75%;
+  height: 6.25%;
+  background: var(--cast);
+}
+/* When the Hunt row fires, the crowd hops with the chain, right to left. */
+.landing:has([data-firing="3"]) .crowd-cat[data-wave="2"] > svg,
+.landing:has([data-firing="2"]) .crowd-cat[data-wave="2"] > svg,
+.landing:has([data-firing="1"]) .crowd-cat[data-wave="1"] > svg,
+.landing:has([data-firing="0"]) .crowd-cat[data-wave="0"] > svg,
+.landing:has([data-won="true"]) .crowd-cat > svg {
+  animation: crowd-hop 360ms steps(1, end) 1;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+.landing:has([data-won="true"]) .crowd-cat > svg {
+  animation-iteration-count: 3;
+}
+@keyframes crowd-bob {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes crowd-hop {
+  0% {
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-10px);
+  }
+  50% {
+    transform: translateY(-14px);
+  }
+  75% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing .crowd-cat > svg {
+    animation: none !important;
+  }
 }
 
 @keyframes auth-enter {

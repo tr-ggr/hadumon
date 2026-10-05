@@ -82,6 +82,7 @@ const TABLE_BUTTON = {
 const TABLE_BUTTON_SIZE = {
   sm: "min-h-10 px-2.5 text-xs",
   md: "min-h-12 px-4 text-sm",
+  lg: "min-h-14 px-6 text-base",
 };
 
 function tableButtonClass(
@@ -122,17 +123,18 @@ export function TableButton({
 export function TableLink({
   href,
   children,
+  variant = "secondary",
+  size = "md",
   className = "",
 }: {
   href: string;
   children: ReactNode;
+  variant?: keyof typeof TABLE_BUTTON;
+  size?: keyof typeof TABLE_BUTTON_SIZE;
   className?: string;
 }) {
   return (
-    <Link
-      href={href}
-      className={tableButtonClass("secondary", "md", className)}
-    >
+    <Link href={href} className={tableButtonClass(variant, size, className)}>
       {children}
     </Link>
   );
