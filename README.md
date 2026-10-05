@@ -2,10 +2,10 @@
 
 A web-based **roguelike engine-builder** about feline "Fakemon".
 
-A run is a gauntlet of **six short matches** against scripted rivals. In a match
-you play pixel-art cats into three habitat rows and activate a row to take its
-reward and fire every cat's power in it, right to left, in the manner of
-base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
+A run is a gauntlet of **six short matches** against rivals who play the same
+game across the table. In a match you play pixel-art cats into three habitat
+rows and activate a row to take its reward and fire every cat's power in it,
+right to left, in the manner of base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
 and the run is over. Only unlocks carry between runs. Between matches the run
 is shown as a grey tower of six floors: Hadu climbs one for every win, past a
 rival at each window, to the roof, full screen, with a camera that follows him
@@ -26,20 +26,27 @@ There is no gacha, no idle play, no currency and no multiplayer.
   and you pick the two. Later columns also cost yarn. Yarn, cached food and
   tucked cats are each worth a point, and tapping a cat on the board shows the
   cats tucked under it.
-- **Three rounds** of 5, 4 and 3 turns. Each round ends with a goal, scored
-  against the rival.
-- **The rival** flips one card from a ten-card deck after every turn: bank a
-  cat, stash yarn, raid the feeder, burn a tray card, or push the round's goal.
-- **You win** by outscoring it after the twelfth turn.
+- **Trade spots.** A lane holding exactly one cat or three offers a trade when
+  you activate it: a cat from your hand for one more die, a food for one more
+  yarn, a yarn for one more cat.
+- **Three rounds** of 5, 4 and 3 turns each. Each round ends with a goal,
+  scored on what each side really has.
+- **The rival** sits across the table with its own deck, hand, food and three
+  lanes, and takes a real turn after each of yours under the same rules. It
+  shares your feeder, so the dice it takes are gone. You can open its board at
+  any time; its hand stays face down. A bot plays it, and the bot is shown only
+  what its seat can see.
+- **You win** by outscoring it after the twelfth turn. Level on points, the
+  match goes to the side with more food left, then more cats, then to you.
 
 ## How a run plays
 
 - Pick a **clan**: a 16-card starter deck built around one element, plus that
   clan's relic.
-- Pick how hard: **Kitten**, **Stray** or **Apex**. Kitten is the game as it
-  is. On Stray every rival starts each match 2 points ahead, as 2 yarn; on
-  Apex, 4. Nothing else changes, and the head start is on the rival's sheet
-  from the first turn.
+- Pick how hard: **Kitten**, **Stray** or **Apex**. No tier gives a rival a
+  point, a card or a food. A rival plays at one of eight levels, its place in
+  the gauntlet plus the tier's rank, so on a harder tier the same six rivals
+  only think further ahead, and the level is printed on the nameplate.
 - Six rivals in a fixed order, with **bosses at 3 and 6**.
 - After each win, add one of three offered cats (or skip) and optionally trim a
   card. After matches 1, 3 and 5, also choose a **relic**, a run-long passive.
@@ -64,8 +71,8 @@ The screens around a match (clan pick, opening hand, reward, summary) are one
 1120px column; on a window of 1680x930 or more they are magnified whole, in
 half steps from 1.5x, to the largest size the window has room for.
 After each action the turn is played back one step
-at a time: the lane's cats fire from right to left, then the rival's card
-flips. Each cat pops as it fires, the points it scored rise off it, and the
+at a time: the lane's cats fire from right to left, then the rival takes its
+own turn. Each cat pops as it fires, the points it scored rise off it, and the
 score rolls up; a chain speeds up as it runs, and each power sounds one note
 higher than the last. Any click or key skips to the end, and reduced motion
 lands it at once.
@@ -158,6 +165,8 @@ Open Graph and Twitter card URLs resolve against.
 | `pnpm db:seed`                            | Create the demo account                                         |
 | `pnpm db:seed:prod`                       | Same seed against `.env.production.local` (see Deploying)       |
 | `pnpm db:studio`                          | Drizzle Studio                                                  |
+| `pnpm selfplay`                           | Bots play each other; writes `sprints/data/14-ladder.json`      |
+| `pnpm bench:bot`                          | How many moves each level tries, and how long it takes          |
 | `pnpm format:write` / `pnpm format:check` | Prettier                                                        |
 
 ## Layout
@@ -193,15 +202,19 @@ src/
                           unlocks), seed.ts
     game/                 The engine: pure, seeded, unit tested
       cats.ts             The 26 cats and their powers, as data
-      match.ts            One match: actions, powers, rival turn, goals, score
-      rival.ts            The six rivals and their action decks
+      match.ts            One match for two seats: actions, powers, goals, score
+      duel.ts             The driver: the player's action, then the rival's
+      bot/                The rival's mind: what its seat sees, eight levels,
+                          a style for each rival, and bots playing each other
+      rival.ts            The six rivals: a clan and a manner each
+      rivalDecks.ts       The deck and the charm each rival brings to a match
+      clans.ts            The five starter decks and their relics
       goals.ts            Round goals
       relics.ts           Relics and the rule changes they make
-      difficulty.ts       The three tiers, as rule changes laid over the relics'
+      difficulty.ts       The three tiers: the level each rival plays at
       run.ts              The gauntlet: clans, rewards, match-to-match flow
       unlocks.ts          What a finished run unlocks
       view.ts             The redacted state the client is allowed to see
-      sim.ts              Bots used to tune the numbers
       rng.ts              Seeded deterministic RNG
   styles/globals.css      Tailwind v4 theme tokens and utilities
 ```
@@ -210,7 +223,7 @@ The engine is a pair of pure state machines. `applyAction(state, action)` never
 mutates its input and draws all randomness from an RNG seeded by the run seed
 and a step counter, so a state and an action always give the same result. The
 server is authoritative: the client receives `toRunView(state)`, which leaves
-out the deck order, the rival's deck and the seed. Routers stay thin: lock the
+out both decks' order, the rival's hand and the seed. Routers stay thin: lock the
 run row, check its `version`, call the engine, persist.
 
 ## Sprints
@@ -218,5 +231,8 @@ run row, check its `version`, call the engine, persist.
 [`sprints/08-roguelike-overview.md`](./sprints/08-roguelike-overview.md) holds
 the rules and conventions of the current game, and
 [`sprints/10-engine.md`](./sprints/10-engine.md) is the engine and API
-reference. Sprints 00 to 07 describe the earlier idle game and are kept as
+reference.
+[`sprints/14-real-rival.md`](./sprints/14-real-rival.md) records how the rival
+came to play the game for real: the bot, its eight levels, and the measurements
+the gauntlet was set from. Sprints 00 to 07 describe the earlier idle game and are kept as
 history.

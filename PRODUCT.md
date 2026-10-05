@@ -14,7 +14,7 @@ Secondary (unconfirmed, do not design for): friends and testers of the project.
 
 ## Product Purpose
 
-HaduMon is a web-based roguelike engine-builder about feline "Fakemon". A run is a gauntlet of six short matches against scripted rivals. In a match the player plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to collect its reward and fire every cat's power in it, across three rounds of five, four, and three turns. Winning a match adds a cat or a relic to the run; losing one ends the run. Success for a new visitor is a created account and a finished first match; success for a player is a run that goes one rival further than the last and a codex that fills in.
+HaduMon is a web-based roguelike engine-builder about feline "Fakemon". A run is a gauntlet of six short matches against rivals who play the same game on a board of their own. In a match each side plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to collect its reward and fire every cat's power in it, turn about across three rounds of five, four, and three turns each. Winning a match adds a cat or a relic to the run; losing one ends the run. Success for a new visitor is a created account and a finished first match; success for a player is a run that goes one rival further than the last and a codex that fills in.
 
 ## Positioning
 
@@ -22,7 +22,7 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 
 1. The cast is feline Fakemon with elemental typing: 26 named cats (Flameclaw, Mistpaw, Voltwhisk, Nyxaroth, ...) across Flame, Mist, Volt, Thorn, and Shade, each with hand-written flavor text.
 2. The match is an engine-builder, not a combat game: three rows, one action a turn, and powers that chain from right to left. Nothing attacks anything.
-3. Matches are short: twelve turns each, with a rival that takes one visible, scripted action after every turn.
+3. Matches are short: twelve turns each, against a rival that takes a real turn after each of yours on a board you can open, with no head start on any difficulty.
 4. It runs in the browser on any device, and nothing is for sale. No install, no currency, no shop.
 
 ## Operating Context
@@ -36,12 +36,12 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 
 - 26 cats: 10 common, 5 uncommon, 5 rare, 3 epic, 3 legendary. Rarity is a power tier: it weights reward offers and gates unlocks. Each legendary also has a relic of its own, a lasting effect while it is on the board.
 - Five elements, each with the cat food its cats cost: Beef, Fish, Chicken, Dry food and Pork. A Treat pays for anything. There is no advantage wheel.
-- A match: 3 rows of 4 slots; 3 rounds of 5 / 4 / 3 turns; a five-dice feeder; a three-card tray; one goal per round contested with the rival.
+- A match: two seats, each with 3 rows of 4 slots, its own deck, hand and three-card tray; 3 rounds of 5 / 4 / 3 turns each, the lead changing hands every round; one shared five-dice feeder; one goal per round, scored on what each side really has. A row holding exactly 1 or 3 cats offers a trade when it is activated: a cat from hand for a die, a food for a yarn, a yarn for a cat.
 - A run: pick a clan (a starter deck built around one element) and a difficulty, six matches with bosses at 3 and 6, a reward after every win. The board resets each match; the deck and relics carry through.
-- Three difficulties: Kitten (the game as it is), Stray (every rival starts each match 2 points ahead, as 2 yarn) and Apex (4 ahead). The head start is the only change, it is printed on the rival's nameplate, and the player's own score means the same on every tier. Every tier earns unlocks; the Loud Bell and the Quiet Corner need Stray or harder, and Hadu needs a run won on Apex.
+- Three difficulties: Kitten, Stray and Apex. A tier gives the rival nothing: it only moves every rival up the table of eight levels (Kitten plays levels 1 to 6, Stray 2 to 7, Apex 3 to 8), so the same six rivals think further ahead. The level is printed on the rival's nameplate, and both scores mean the same on every tier. Every tier earns unlocks; the Loud Bell and the Quiet Corner need Stray or harder, and Hadu needs a run won on Apex.
 - A run has sound, music and effects: all synthesized in the browser, no audio files. Every screen of a run has its own chiptune and every rival its own theme; every press on the table is heard, and every cat has a voice of its own, played when it is chosen or inspected; the climb between matches is shot like a scene and fills the screen, with a camera, bars, a subtitle and a title card for the rival met. One control on the table sets the sound to full, quiet or off, and another turns the music alone off. Reduced motion lands a turn at once and shows the climb as one still frame.
 - Between runs only unlocks persist: cats, relics, and clans. No permanent power upgrades.
-- Rivals are scripted (an action deck), not other players. There is no multiplayer.
+- Rivals are played by a bot, not by other players, under the player's own rules: a deck built on a clan with one card added for each match already played, that clan's charm and no other relic, and only what its seat can see (never the player's hand, a deck's order or dice not yet rolled). How well a rival plays is its level, 1 to 8: its place in the gauntlet plus the tier's rank. There is no multiplayer.
 - Stack: Next.js 15 App Router, TypeScript strict, tRPC v11, Drizzle + Postgres, Tailwind v4. Game rules live as pure functions in `src/server/game/*` and are importable client-side.
 - Undecided: no guest/anonymous play exists; not planned.
 

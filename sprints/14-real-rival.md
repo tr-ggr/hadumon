@@ -312,3 +312,23 @@ A run's best match, new account on Kitten, which is what the score unlocks were 
 | 6 playouts, match | 41 | 91% | 84% | 66% | 49% | 8% |
 
 Checked in the browser on a new account: a run starts on the tier text above, the rival has kept before the keep screen, a played cat is answered by the rival's own turn in the log and on its panel, the Hunt's trade arms from a hand card and takes one die more, the rival's board opens and shows its cats, tray, food and charm, and a match runs to its result sheet with both score sheets.
+
+## Phase 8 — The rival's side of the table (done)
+
+Shaped against `DESIGN.md`, which has the detail (Lane, Rival Side, Scorepad).
+
+- **Trade spots on the mat.** The second and fourth space of each lane print a "+1" beside their reward step: dashed while the trade is only printed there, solid lime once that space is next and the trade can be paid. The lane's tile then adds "or 2 by trade" under what it gives. The trade is still made by tapping what pays for it.
+- **The rival's board** (`RivalMat.tsx`) opens from "See its board" on the rival's panel: its three lanes as a mat in the rival's coral, each cat with its yarn track and what it holds, its tray as small pieces, its hand, deck and discard as piles, its food and its charm. The hand stays face down and tucked cats are counted, never named.
+- **The rival's panel** shows hand and deck piles, cats out, turns left, yarn, goal points and food, and its last move in words; while a turn plays back it reads the step being shown.
+- Checked at 1440 by 900 and at 390 by 844 with a trade open and cats on both boards.
+
+## Phase 9 — Docs (done)
+
+`README.md`, `PRODUCT.md`, `AGENTS.md` (which `CLAUDE.md` links to), `DESIGN.md`, `sprints/08-roguelike-overview.md` and `sprints/10-engine.md` describe the game as it now is. `pnpm selfplay` and `pnpm bench:bot` run the two measuring scripts.
+
+## Left open
+
+- **Level 7 is barely above level 6** (about 55 matches in 100). Apex's last two rivals are close to one level; a stronger top level needs a better move inside the playout, not more playouts.
+- **A played-out bot beats the gauntlet more often than a careful one-step player by a wide margin** (57% of Kitten runs against 15% on a new account). Where a person sits between them is not measured; the first few real runs will say whether the tiers want moving.
+- **The first rival on Kitten** beats a fixed-list player more often than not (it wins the first match 58% of the time) because the rival now holds a charm. If new players bounce off match one, Alley Tom could go without his.
+- The Den's and the Prowl's trades are each offered to the bots with one way to pay; a bot never weighs which food or which cat's yarn to give up beyond what level 4 and up try.
