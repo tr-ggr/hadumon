@@ -54,7 +54,11 @@ export function SetupKeep({
             <h1 className="sr-only">
               Match {run.matchIndex + 1} of {run.gauntlet.length}
             </h1>
-            <Nameplate rivalId={match.rivalId} flavor />
+            <Nameplate
+              rivalId={match.rivalId}
+              difficulty={run.difficulty}
+              flavor
+            />
             <p className="text-ink text-sm leading-snug">
               Three rounds of {turns.join(", ").replace(/, (\d+)$/, " and $1")}{" "}
               turns. The rival flips one card after each of your turns. Score

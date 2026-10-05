@@ -6,6 +6,7 @@
  */
 
 import { ROWS, type RivalAction, type Row } from "./cats";
+import { difficultyOf, type DifficultyId } from "./difficulty";
 import {
   canPlay,
   canReroll,
@@ -87,6 +88,7 @@ export interface MatchView {
 
 export interface RunView {
   clanId: Element;
+  difficulty: DifficultyId;
   /** Deck contents in a fixed order; the draw order stays on the server. */
   deck: string[];
   relics: string[];
@@ -154,6 +156,7 @@ export function toMatchView(state: MatchState): MatchView {
 export function toRunView(run: RunState): RunView {
   return {
     clanId: run.clanId,
+    difficulty: difficultyOf(run.difficulty).id,
     deck: [...run.deck].sort(),
     relics: run.relics,
     matchIndex: run.matchIndex,

@@ -91,6 +91,39 @@ describe("createMatch", () => {
     );
     expect(orders.size).toBeGreaterThan(1);
   });
+
+  it("starts the rival with the tier's yarn, which scores from turn one", () => {
+    const on = (difficulty?: "kitten" | "stray" | "apex") =>
+      createMatch({
+        seed: "t",
+        deck: starterDeck("flame"),
+        relics: [],
+        rivalId: "alley-tom",
+        difficulty,
+      });
+    expect(on()).toEqual(fresh());
+    expect(on("kitten")).toEqual(fresh());
+    expect(rivalScore(on("kitten"))).toBe(0);
+    expect(on("stray").rival.yarn).toBe(2);
+    expect(rivalScore(on("stray"))).toBe(2);
+    expect(rivalScore(on("apex"))).toBe(4);
+    expect(playerScore(on("apex")).total).toBe(0);
+    // No dice were rolled for it: the rest of the deal is the same.
+    expect({ ...on("apex"), mods: fresh().mods, rival: fresh().rival }).toEqual(
+      fresh(),
+    );
+  });
+
+  it("lays the tier over the relics' mods", () => {
+    const state = createMatch({
+      seed: "t",
+      deck: starterDeck("flame"),
+      relics: ["warm-saucer"],
+      rivalId: "alley-tom",
+      difficulty: "stray",
+    });
+    expect(state.mods).toMatchObject({ startWild: 1, rivalStartYarn: 2 });
+  });
 });
 
 describe("setup", () => {

@@ -3,6 +3,7 @@ import type { ButtonHTMLAttributes, ReactNode } from "react";
 
 import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
+import { difficultyOf, type DifficultyId } from "~/server/game/difficulty";
 import type { Essence } from "~/server/game/match";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
@@ -373,18 +374,27 @@ export function RelicTiles({
   );
 }
 
-/** The rival's coral nameplate: name, boss mark and the trait that sets it apart. */
+/**
+ * The rival's coral nameplate: name, boss mark and the trait that sets it
+ * apart. On a tier above Kitten it also carries the tier and the head start
+ * the tier gave it.
+ */
 export function Nameplate({
   rivalId,
   flavor = false,
+  difficulty,
   className = "",
 }: {
   rivalId: string;
   /** Also print the flavor line, when meeting the rival. */
   flavor?: boolean;
+  /** The run's tier, where the plate is across the table in a run. */
+  difficulty?: DifficultyId;
   className?: string;
 }) {
   const rival = getRival(rivalId);
+  const tier = difficultyOf(difficulty);
+  const ahead = tier.mods.rivalStartYarn ?? 0;
   return (
     <div
       className={`piece border-ink bg-coral text-ink flex flex-col justify-center border-2 px-2.5 py-1 ${className}`}
@@ -396,6 +406,11 @@ export function Nameplate({
             Boss
           </span>
         ) : null}
+        {ahead > 0 ? (
+          <span className="border-ink border bg-white px-1 text-[11px] leading-4 font-black">
+            {tier.name}
+          </span>
+        ) : null}
       </div>
       {flavor ? (
         <p className="mt-1 text-sm leading-snug italic">{rival.flavor}</p>
@@ -403,6 +418,7 @@ export function Nameplate({
       <p className="mt-0.5 text-xs leading-snug font-bold">
         {rival.trait ??
           "No tricks: banks, stashes, raids, burns and pushes like anyone."}
+        {ahead > 0 ? ` Started ${ahead} points ahead, as ${ahead} yarn.` : ""}
       </p>
     </div>
   );

@@ -36,6 +36,7 @@ function view(change: Partial<RunView> & { setup?: boolean }): RunView {
   const { setup = true, ...rest } = change;
   return {
     clanId: "flame",
+    difficulty: "kitten",
     deck: [],
     relics: [],
     matchIndex: 0,

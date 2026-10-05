@@ -22,6 +22,8 @@ export interface Mods {
   goalBonus: number;
   /** Extra turns in the first round. */
   extraTurns: number;
+  /** Yarn the rival holds when a match starts, a point each. */
+  rivalStartYarn: number;
 }
 
 export const NO_MODS: Mods = {
@@ -33,6 +35,7 @@ export const NO_MODS: Mods = {
   rivalBankDelta: 0,
   goalBonus: 0,
   extraTurns: 0,
+  rivalStartYarn: 0,
 };
 
 export type ScoreRule =
@@ -137,13 +140,16 @@ export function getRelic(relicId: string): Relic {
   return relic;
 }
 
-export function combineMods(relicIds: readonly string[]): Mods {
+/** The relics' mods summed, with `extra` (a difficulty's, say) laid on top. */
+export function combineMods(
+  relicIds: readonly string[],
+  extra: Partial<Mods> = {},
+): Mods {
   const mods: Mods = { ...NO_MODS };
-  for (const id of relicIds) {
-    const extra = getRelic(id).mods;
-    if (!extra) continue;
-    for (const key of Object.keys(extra) as (keyof Mods)[]) {
-      mods[key] += extra[key] ?? 0;
+  for (const part of [...relicIds.map((id) => getRelic(id).mods), extra]) {
+    if (!part) continue;
+    for (const key of Object.keys(part) as (keyof Mods)[]) {
+      mods[key] += part[key] ?? 0;
     }
   }
   return mods;

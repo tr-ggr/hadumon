@@ -508,6 +508,7 @@ export function MatchBoard({
           <div className="hidden lg:block">{sideStrip}</div>
           <RivalSide
             match={match}
+            difficulty={run.difficulty}
             news={shownNews}
             flipping={frame?.flipping ?? false}
           />

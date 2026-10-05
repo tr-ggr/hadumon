@@ -1,0 +1,1 @@
+ALTER TABLE "hadumon_runs" ADD COLUMN "difficulty" text DEFAULT 'kitten' NOT NULL;

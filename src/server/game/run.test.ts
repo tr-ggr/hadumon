@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { getCat } from "./cats";
 import { IllegalAction } from "./match";
+import type { Mods } from "./relics";
 import { GAUNTLET } from "./rival";
 import { createRng } from "./rng";
 import {
@@ -9,6 +10,7 @@ import {
   actInRun,
   chooseReward,
   CLANS,
+  loadRun,
   makeOffer,
   MIN_DECK,
   offerWeights,
@@ -67,6 +69,76 @@ describe("startRun", () => {
     expect(run.match?.relics).toEqual(run.relics);
     expect(run.deck).toHaveLength(16);
     expect(newRun("x")).toEqual(newRun("x"));
+  });
+});
+
+describe("difficulty", () => {
+  const onTier = (difficulty?: "kitten" | "stray" | "apex") =>
+    startRun({ seed: "r", clanId: "flame", pool, difficulty });
+
+  it("is Kitten unless the run says otherwise", () => {
+    expect(newRun().difficulty).toBe("kitten");
+    expect(newRun().match?.rival.yarn).toBe(0);
+    expect(onTier("kitten")).toEqual(newRun());
+    expect(summarizeRun(newRun()).difficulty).toBe("kitten");
+  });
+
+  it("gives the rival its head start and changes nothing else", () => {
+    const stray = onTier("stray");
+    const apex = onTier("apex");
+    expect(stray.match?.rival.yarn).toBe(2);
+    expect(apex.match?.rival.yarn).toBe(4);
+    expect(stray.match?.mods.rivalStartYarn).toBe(2);
+    expect(summarizeRun(apex).difficulty).toBe("apex");
+    // The same seed deals the same table on every tier.
+    const kitten = newRun();
+    expect({
+      ...stray.match,
+      mods: kitten.match?.mods,
+      rival: kitten.match?.rival,
+    }).toEqual(kitten.match);
+  });
+
+  it("carries the head start into every match of the run", () => {
+    let run = finishMatch(onTier("apex"), true);
+    run = chooseReward(run, { cat: null, relic: null, trim: null });
+    expect(run.matchIndex).toBe(1);
+    expect(run.match?.rival.yarn).toBe(4);
+    expect(run.difficulty).toBe("apex");
+  });
+
+  it("reads a run saved before tiers existed as Kitten", () => {
+    const old = finishMatch(newRun(), true);
+    delete old.difficulty;
+    const next = chooseReward(old, { cat: null, relic: null, trim: null });
+    expect(next.match?.rival.yarn).toBe(0);
+    expect(summarizeRun(next).difficulty).toBe("kitten");
+  });
+});
+
+describe("loadRun", () => {
+  it("fills in a mod the stored match never had", () => {
+    const run = startRun({ seed: "r", clanId: "flame", pool });
+    const oldMods: Partial<Mods> = { ...run.match!.mods };
+    delete oldMods.rivalStartYarn;
+    const stored = {
+      ...run,
+      match: { ...run.match!, mods: oldMods },
+    } as RunState;
+    expect(stored.match?.mods.rivalStartYarn).toBeUndefined();
+    expect(loadRun(stored)).toEqual(run);
+  });
+
+  it("keeps the mods a match was dealt", () => {
+    const run = startRun({
+      seed: "r",
+      clanId: "flame",
+      pool,
+      difficulty: "apex",
+    });
+    expect(loadRun(run)).toEqual(run);
+    const between = { ...run, match: null };
+    expect(loadRun(between)).toBe(between);
   });
 });
 

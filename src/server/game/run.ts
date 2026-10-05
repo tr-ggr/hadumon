@@ -8,6 +8,7 @@
  */
 
 import { CAT_LIST, getCat, type Rarity } from "./cats";
+import { difficultyOf, type DifficultyId } from "./difficulty";
 import { ELEMENT_LABELS, type Element } from "./elements";
 import {
   applyAction,
@@ -17,7 +18,7 @@ import {
   type MatchEvent,
   type MatchState,
 } from "./match";
-import { getRelic } from "./relics";
+import { getRelic, NO_MODS } from "./relics";
 import { GAUNTLET } from "./rival";
 import { createRng, type Rng } from "./rng";
 
@@ -109,6 +110,8 @@ export type RunOutcome = "won" | "lost" | "abandoned";
 export interface RunState {
   seed: string;
   clanId: Element;
+  /** Missing on a run saved before tiers existed, which is a Kitten run. */
+  difficulty?: DifficultyId;
   pool: RunPool;
   deck: string[];
   relics: string[];
@@ -125,6 +128,8 @@ export interface RunConfig {
   seed: string;
   clanId: Element;
   pool: RunPool;
+  /** Kitten if left out. */
+  difficulty?: DifficultyId;
 }
 
 function matchFor(run: RunState): MatchState {
@@ -135,6 +140,7 @@ function matchFor(run: RunState): MatchState {
     deck: run.deck,
     relics: run.relics,
     rivalId,
+    difficulty: difficultyOf(run.difficulty).id,
   });
 }
 
@@ -142,6 +148,7 @@ export function startRun(config: RunConfig): RunState {
   const run: RunState = {
     seed: config.seed,
     clanId: config.clanId,
+    difficulty: difficultyOf(config.difficulty).id,
     pool: { cats: [...config.pool.cats], relics: [...config.pool.relics] },
     deck: starterDeck(config.clanId),
     relics: [CLANS[config.clanId].relicId],
@@ -154,6 +161,19 @@ export function startRun(config: RunConfig): RunState {
   };
   run.match = matchFor(run);
   return run;
+}
+
+/**
+ * A stored run brought up to date. A match in flight keeps the mods it was
+ * dealt, so one saved before a mod existed has no value for it; it is given
+ * the mod's default, and no reader ever meets `undefined`.
+ */
+export function loadRun(run: RunState): RunState {
+  if (!run.match) return run;
+  return {
+    ...run,
+    match: { ...run.match, mods: { ...NO_MODS, ...run.match.mods } },
+  };
 }
 
 /** Chance weights of each rarity in a cat offer, by the match just won. */
@@ -289,6 +309,7 @@ export function abandonRun(run: RunState): RunState {
 /** The facts about a run that unlock rules and the `runs` row read. */
 export interface RunSummary {
   clanId: Element;
+  difficulty: DifficultyId;
   matchesWon: number;
   won: boolean;
   bestMatchScore: number;
@@ -298,6 +319,7 @@ export interface RunSummary {
 export function summarizeRun(run: RunState): RunSummary {
   return {
     clanId: run.clanId,
+    difficulty: difficultyOf(run.difficulty).id,
     matchesWon: run.results.filter((r) => r.won).length,
     won: run.outcome === "won",
     bestMatchScore: Math.max(0, ...run.results.map((r) => r.player)),

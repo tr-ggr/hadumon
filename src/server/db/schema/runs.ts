@@ -37,6 +37,8 @@ export const runs = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     status: runStatusEnum("status").notNull().default("active"),
     clanId: text("clan_id").notNull(),
+    /** A `DifficultyId`. Runs from before tiers existed are Kitten runs. */
+    difficulty: text("difficulty").notNull().default("kitten"),
     seed: text("seed").notNull(),
     version: integer("version").notNull().default(0),
     state: jsonb("state").$type<RunState>().notNull(),

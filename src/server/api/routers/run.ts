@@ -8,12 +8,14 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { DbOrTx, Transaction } from "~/server/db";
 import { runs, unlocks, type Run } from "~/server/db/schema/runs";
 import { ROWS } from "~/server/game/cats";
+import { DIFFICULTIES } from "~/server/game/difficulty";
 import { ELEMENTS } from "~/server/game/elements";
 import { IllegalAction, type MatchEvent } from "~/server/game/match";
 import {
   abandonRun,
   actInRun,
   chooseReward,
+  loadRun,
   startRun,
   summarizeRun,
   type RunState,
@@ -74,7 +76,11 @@ export interface RunUpdate extends RunSnapshot {
 }
 
 function snapshot(run: Pick<Run, "id" | "version" | "state">): RunSnapshot {
-  return { id: run.id, version: run.version, view: toRunView(run.state) };
+  return {
+    id: run.id,
+    version: run.version,
+    view: toRunView(loadRun(run.state)),
+  };
 }
 
 function isUnlockKind(value: string): value is UnlockKind {
@@ -119,7 +125,7 @@ async function lockActiveRun(
       message: "The run moved on in another tab. Reload to catch up.",
     });
   }
-  return run;
+  return { ...run, state: loadRun(run.state) };
 }
 
 /** Runs an engine call, turning a rules violation into a client error. */
@@ -197,7 +203,12 @@ export const runRouter = createTRPCRouter({
   }),
 
   start: protectedProcedure
-    .input(z.object({ clanId: z.enum(ELEMENTS) }))
+    .input(
+      z.object({
+        clanId: z.enum(ELEMENTS),
+        difficulty: z.enum(DIFFICULTIES).default("kitten"),
+      }),
+    )
     .mutation(async ({ ctx, input }): Promise<RunSnapshot> => {
       return ctx.db.transaction(async (tx) => {
         const held = await heldUnlocks(tx, ctx.user.id);
@@ -212,11 +223,18 @@ export const runRouter = createTRPCRouter({
           seed,
           clanId: input.clanId,
           pool: poolFromUnlocks(held),
+          difficulty: input.difficulty,
         });
         // The partial unique index refuses a second active run.
         const [run] = await tx
           .insert(runs)
-          .values({ userId: ctx.user.id, clanId: input.clanId, seed, state })
+          .values({
+            userId: ctx.user.id,
+            clanId: input.clanId,
+            difficulty: input.difficulty,
+            seed,
+            state,
+          })
           .onConflictDoNothing()
           .returning();
         if (!run) {
@@ -281,6 +299,7 @@ export const runRouter = createTRPCRouter({
         .select({
           id: runs.id,
           clanId: runs.clanId,
+          difficulty: runs.difficulty,
           status: runs.status,
           matchesWon: runs.matchesWon,
           score: runs.score,

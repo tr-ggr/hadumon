@@ -5,6 +5,7 @@
  */
 
 import { CAT_LIST } from "./cats";
+import { isAtLeast, type DifficultyId } from "./difficulty";
 import type { RunPool, RunSummary } from "./run";
 
 export const UNLOCK_KINDS = ["cat", "relic", "clan"] as const;
@@ -23,6 +24,12 @@ export interface UnlockRule extends Unlock {
 
 const wins = (n: number) => (run: RunSummary) => run.matchesWon >= n;
 const scored = (n: number) => (run: RunSummary) => run.bestMatchScore >= n;
+const won = (run: RunSummary) => run.won;
+/** Holds only for a run on `tier` or a harder one. */
+const atLeast =
+  (tier: DifficultyId, test: (run: RunSummary) => boolean) =>
+  (run: RunSummary) =>
+    isAtLeast(run.difficulty, tier) && test(run);
 
 /** Open on a new account: one clan, every common and uncommon, ten relics. */
 export const STARTING_UNLOCKS: Unlock[] = [
@@ -91,7 +98,7 @@ export const UNLOCK_RULES: UnlockRule[] = [
     kind: "cat",
     key: "stormsabre",
     hint: "Win a run.",
-    test: (run) => run.won,
+    test: won,
   },
   {
     kind: "cat",
@@ -105,7 +112,12 @@ export const UNLOCK_RULES: UnlockRule[] = [
     hint: "Win a run with the Static Clan.",
     test: (run) => run.won && run.clanId === "volt",
   },
-  { kind: "cat", key: "hadu", hint: "Win a run.", test: (run) => run.won },
+  {
+    kind: "cat",
+    key: "hadu",
+    hint: "Win a run on Apex.",
+    test: atLeast("apex", won),
+  },
 
   { kind: "relic", key: "early-riser", hint: "Win a match.", test: wins(1) },
   {
@@ -123,14 +135,14 @@ export const UNLOCK_RULES: UnlockRule[] = [
   {
     kind: "relic",
     key: "loud-bell",
-    hint: "Win 4 matches in one run.",
-    test: wins(4),
+    hint: "Beat Madame Mittens on Stray or harder.",
+    test: atLeast("stray", wins(3)),
   },
   {
     kind: "relic",
     key: "quiet-corner",
-    hint: "Win a run.",
-    test: (run) => run.won,
+    hint: "Win a run on Stray or harder.",
+    test: atLeast("stray", won),
   },
 ];
 

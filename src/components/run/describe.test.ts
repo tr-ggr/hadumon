@@ -33,6 +33,7 @@ function newMatch(): MatchState {
   const run = startRun({
     seed: "describe-test",
     clanId: "flame",
+    difficulty: "kitten",
     pool: poolFromUnlocks(STARTING_UNLOCKS),
   });
   if (!run.match) throw new Error("no match");

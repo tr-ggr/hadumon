@@ -2,6 +2,7 @@
 
 import { PixelIcon } from "~/components/PixelIcon";
 import { RIVAL_ACTIONS, type RivalAction } from "~/server/game/cats";
+import type { DifficultyId } from "~/server/game/difficulty";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
@@ -39,11 +40,13 @@ function cardsLeft(match: MatchView): string {
  */
 export function RivalSide({
   match,
+  difficulty,
   news,
   flipping,
   className = "",
 }: {
   match: MatchView;
+  difficulty: DifficultyId;
   news: RivalNews | null;
   /** True on the step the rival's card turns over. */
   flipping: boolean;
@@ -60,7 +63,11 @@ export function RivalSide({
       aria-label={`${rival.name}, the rival`}
       className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-stretch gap-x-3 gap-y-3 lg:flex lg:flex-col ${className}`}
     >
-      <Nameplate rivalId={match.rivalId} className="col-span-2" />
+      <Nameplate
+        rivalId={match.rivalId}
+        difficulty={difficulty}
+        className="col-span-2"
+      />
 
       <p
         className="piece border-ink bg-coral text-ink col-start-3 row-start-1 flex min-w-16 flex-col items-center justify-center border-2 px-2 py-1 lg:hidden"

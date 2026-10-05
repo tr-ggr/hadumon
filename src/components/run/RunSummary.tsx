@@ -2,6 +2,7 @@
 
 import { CatCard } from "~/components/cats/CatCard";
 import { getCat } from "~/server/game/cats";
+import { DIFFICULTY } from "~/server/game/difficulty";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
 import { CLANS, isClanId } from "~/server/game/run";
@@ -156,7 +157,8 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
               <section className="piece piece-card border-ink text-ink border-2 bg-white p-3 sm:p-4">
                 <table className="w-full max-w-xl text-sm">
                   <caption className="text-print pb-2 text-left text-xl">
-                    Match by match, {CLANS[view.clanId].name}
+                    Match by match, {CLANS[view.clanId].name} on{" "}
+                    {DIFFICULTY[view.difficulty].name}
                   </caption>
                   <thead>
                     <tr className="border-ink border-b-2 text-left text-xs">

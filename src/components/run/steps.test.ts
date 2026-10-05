@@ -21,6 +21,7 @@ function ended(change: Partial<RunView> & { scored?: boolean } = {}): RunView {
   const { scored = true, ...rest } = change;
   return {
     clanId: "flame",
+    difficulty: "kitten",
     deck: [],
     relics: [],
     matchIndex: 0,

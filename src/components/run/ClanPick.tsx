@@ -5,6 +5,12 @@ import { useState } from "react";
 import { PixelSprite } from "~/components/PixelSprite";
 import { Skeleton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
+import {
+  DIFFICULTY,
+  DIFFICULTY_LIST,
+  difficultyOf,
+  type DifficultyId,
+} from "~/server/game/difficulty";
 import type { Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLAN_LIST, starterDeck, type Clan } from "~/server/game/run";
@@ -13,6 +19,7 @@ import { api } from "~/trpc/react";
 
 import { CatDetail } from "./CatPick";
 import { Pile, RelicTile, TableButton } from "./pieces";
+import { stored, useStored } from "./stored";
 import { TableArea, TableRail } from "./TableSurface";
 
 /** A deck as `[catId, copies]`, most copies first. */
@@ -52,9 +59,15 @@ export function DeckChip({
   );
 }
 
+/** The tier of the last run started here, offered again the next time. */
+const lastDifficulty = stored<DifficultyId>(
+  "hadumon:difficulty",
+  (raw) => difficultyOf(raw).id,
+);
+
 export interface ClanPickProps {
   busy: boolean;
-  onStart: (clanId: Element) => void;
+  onStart: (clanId: Element, difficulty: DifficultyId) => void;
 }
 
 /** No run in progress: choose a starter deck and begin. */
@@ -63,6 +76,8 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
   const unlocked = clans.data ?? [];
   const [picked, setPicked] = useState<Element | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
+  const difficulty = useStored(lastDifficulty);
+  const tier = DIFFICULTY[difficulty];
 
   const firstOpen = CLAN_LIST.find((clan) => unlocked.includes(clan.id));
   const chosen =
@@ -86,6 +101,32 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
             </p>
           ) : null}
         </header>
+
+        <section aria-labelledby="tier-heading" className="space-y-2.5 pb-1.5">
+          <h2 id="tier-heading" className="text-print text-ink text-xl">
+            How hard
+          </h2>
+          <ul className="grid gap-x-3 gap-y-3.5 sm:grid-cols-3">
+            {DIFFICULTY_LIST.map((option) => {
+              const selected = option.id === difficulty;
+              return (
+                <li key={option.id}>
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => lastDifficulty.write(option.id)}
+                    className={`piece border-ink text-ink flex h-full min-h-14 w-full flex-col justify-center gap-1 border-2 px-3 py-2 text-left ${selected ? "bg-lime is-pressed" : "bg-cream hover:bg-sky-soft"}`}
+                  >
+                    <span className="text-print text-xl">{option.name}</span>
+                    <span className="text-xs leading-snug font-semibold">
+                      {option.text}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
         {clans.isLoading ? (
           <div
@@ -117,7 +158,7 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
       <TableRail>
         <p className="text-ink text-sm font-semibold">
           {chosenClan && firstRival
-            ? `${chosenClan.name}. First across the table: ${getRival(firstRival).name}.`
+            ? `${chosenClan.name} on ${tier.name}. First across the table: ${getRival(firstRival).name}.`
             : clans.isLoading
               ? "Loading your clans."
               : "No clan is open yet."}
@@ -125,7 +166,7 @@ export function ClanPick({ busy, onStart }: ClanPickProps) {
         <TableButton
           size="md"
           disabled={busy || !chosenClan}
-          onClick={() => chosenClan && onStart(chosenClan.id)}
+          onClick={() => chosenClan && onStart(chosenClan.id, difficulty)}
           className="sm:shrink-0"
         >
           {busy

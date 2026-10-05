@@ -3,6 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import { useToast } from "~/components/ui";
+import type { DifficultyId } from "~/server/game/difficulty";
 import type { Element } from "~/server/game/elements";
 import type { Action, MatchEvent } from "~/server/game/match";
 import type { RewardChoice } from "~/server/game/run";
@@ -228,7 +229,8 @@ export function useRunController() {
       climb && shown && climbFits(climb, shown.id, shown.view) ? climb : null,
     finishClimb,
     dismissGoal: () => setRecap((prev) => ({ ...prev, goal: null })),
-    start: (clanId: Element) => start.mutate({ clanId }),
+    start: (clanId: Element, difficulty: DifficultyId) =>
+      start.mutate({ clanId, difficulty }),
     act: (action: Action) => {
       if (version !== undefined) act.mutate({ version, action });
     },

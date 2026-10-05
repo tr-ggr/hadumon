@@ -7,6 +7,7 @@ import { ElementMark } from "~/components/cats/CatCard";
 import { countUnlocked } from "~/components/codex/entries";
 import { PixelSprite } from "~/components/PixelSprite";
 import { Button, ButtonLink, Panel, Skeleton } from "~/components/ui";
+import { difficultyOf } from "~/server/game/difficulty";
 import type { Element } from "~/server/game/elements";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { CLANS, isClanId } from "~/server/game/run";
@@ -144,7 +145,7 @@ function NextStepError({
 
 function RunInProgress({ snapshot }: { snapshot: RunSnapshot }) {
   const { view } = snapshot;
-  const clan = CLANS[view.clanId];
+  const clan = `${CLANS[view.clanId].name} on ${difficultyOf(view.difficulty).name}`;
   const total = view.gauntlet.length;
   const rewardDue = view.phase === "reward";
   // While a reward is waiting, `matchIndex` still points at the match just won.
@@ -157,8 +158,8 @@ function RunInProgress({ snapshot }: { snapshot: RunSnapshot }) {
       title={rewardDue ? "A reward is waiting" : `Up against ${rival.name}`}
       detail={
         rewardDue
-          ? `${clan.name}. Then ${rival.name}, ${place}${rival.boss ? ", a boss" : ""}.`
-          : `${clan.name}, ${place}${rival.boss ? ", a boss" : ""}. ${rival.flavor}`
+          ? `${clan}. Then ${rival.name}, ${place}${rival.boss ? ", a boss" : ""}.`
+          : `${clan}, ${place}${rival.boss ? ", a boss" : ""}. ${rival.flavor}`
       }
       action="Continue run"
     >
@@ -271,7 +272,7 @@ function PastRunRow({ run, now }: { run: PastRun; now: number }) {
           {clan?.name ?? run.clanId}
           <span className="text-ink-soft font-normal">
             {" "}
-            · {outcomeText(run)}
+            · {difficultyOf(run.difficulty).name} · {outcomeText(run)}
           </span>
         </p>
       </div>

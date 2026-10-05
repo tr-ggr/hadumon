@@ -25,6 +25,14 @@ describe("relics", () => {
     );
   });
 
+  it("lays extra mods over the relics'", () => {
+    expect(combineMods([], { rivalStartYarn: 2 })).toEqual({
+      ...NO_MODS,
+      rivalStartYarn: 2,
+    });
+    expect(combineMods(["warm-saucer"], { startWild: 1 }).startWild).toBe(2);
+  });
+
   it("gives every relic exactly one job", () => {
     for (const relic of RELIC_LIST) {
       expect(Boolean(relic.mods) !== Boolean(relic.score)).toBe(true);

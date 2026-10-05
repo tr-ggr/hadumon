@@ -26,6 +26,7 @@ import {
   type RivalAction,
   type Row,
 } from "./cats";
+import { difficultyOf, type DifficultyId } from "./difficulty";
 import { ELEMENTS, type Element } from "./elements";
 import { GOAL_IDS, getGoal } from "./goals";
 import { combineMods, relicScore, type Mods } from "./relics";
@@ -207,6 +208,8 @@ export interface MatchConfig {
   deck: readonly string[];
   relics: readonly string[];
   rivalId: string;
+  /** The run's tier; its mods are laid over the relics'. Kitten if left out. */
+  difficulty?: DifficultyId;
 }
 
 export function emptyPool(): EssencePool {
@@ -222,12 +225,13 @@ export function createMatch(config: MatchConfig): MatchState {
   const deck = rng.shuffle(config.deck);
   const setup = deck.splice(0, SETUP_CATS);
   const tray = deck.splice(0, TRAY_SIZE);
+  const mods = combineMods(config.relics, difficultyOf(config.difficulty).mods);
   return {
     seed: config.seed,
     step: 0,
     rivalId: config.rivalId,
     relics: [...config.relics],
-    mods: combineMods(config.relics),
+    mods,
     phase: "setup",
     round: 0,
     turnsLeft: 0,
@@ -245,7 +249,7 @@ export function createMatch(config: MatchConfig): MatchState {
       deck: rng.shuffle(getRival(config.rivalId).deck),
       discard: [],
       banked: 0,
-      yarn: 0,
+      yarn: mods.rivalStartYarn,
       pushes: 0,
       goalPoints: 0,
       last: null,
