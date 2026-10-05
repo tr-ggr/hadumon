@@ -8,8 +8,8 @@ reward and fire every cat's power in it, right to left, in the manner of
 base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
 and the run is over. Only unlocks carry between runs. Between matches the run
 is shown as a grey tower of six floors: Hadu climbs one for every win, past a
-rival at each window, to the roof, with a camera that follows him up and a
-title card for whoever he meets.
+rival at each window, to the roof, full screen, with a camera that follows him
+up and a title card for whoever he meets.
 
 There is no gacha, no idle play, no currency and no multiplayer.
 
@@ -69,8 +69,9 @@ lands it at once.
 
 The table has sound and music, made in the browser with the Web Audio API
 (there are no audio files). Every screen of a run has its own chiptune and
-every rival its own theme. The speaker button in the corner cycles full, quiet
-and off for both; the note button beside it turns the music alone off. Both
+every rival its own theme. Every press on the table is heard, and each of the
+26 cats has a voice of its own, played when it is chosen or turned over to
+read. The speaker button in the corner cycles full, quiet and off for both; the note button beside it turns the music alone off. Both
 choices are kept in the browser. Nothing plays in a background tab.
 
 Keys, where there is a keyboard: `1`-`9` pick a hand card (or a die, tray card
@@ -174,7 +175,7 @@ src/
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components
     run/fx/               Match effects: cue to intents (plan), sampled springs, Web Animations
-    run/sfx/              Sound effects: recipes as data, the Web Audio engine, the volume setting
+    run/sfx/              Sound effects: recipes and cat voices as data, the Web Audio engine, click sounds, the volume setting
     run/music/            Music: tracks as data, the bar scheduler, the on/off setting
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/

@@ -648,32 +648,37 @@
       },
       {
         "name": "climb-step",
-        "value": "240ms opening pose; 400ms camera push or a window shutting; 600ms up the wall; 240ms landing; 220ms a floor of the tilt; 420ms a rival rising (360ms more on a boss's dark window); 480ms the roof pennant; 900ms the pull back; 400ms the title card",
+        "value": "as played, each written length times the pace: 300ms opening pose; 500ms camera push or a window shutting; 750ms up the wall; 300ms landing; 275ms a floor of the tilt; 525ms a rival rising (450ms more on a boss's dark window); 600ms the roof pennant; 1125ms the pull back; 500ms the title card",
         "purpose": "Tabletop: the climb between matches is played one frame at a time, like a turn."
       },
       {
+        "name": "climb-pace",
+        "value": "1.25: CLIMB_PACE in src/components/run/climb.ts, read by the stylesheet as --pace; every climb duration is calc(<written ms> * var(--pace)); the rests are not scaled",
+        "purpose": "Tabletop: the one number that sets how slowly the climb plays."
+      },
+      {
         "name": "climb-hop",
-        "value": "transform 560ms steps(8, end) between ledges with a one-pixel scrabble left and right (140ms steps(1, end), four times), then the crowd's hop (360ms steps(1, end)) and two white dust pixels (280ms steps(3, end)) on landing; walking in at the foot is 20 pixels in 360ms steps(5, end)",
+        "value": "as played: transform 700ms steps(8, end) between ledges with a one-pixel scrabble left and right (175ms steps(1, end), four times), then the crowd's hop (450ms steps(1, end)) and two white dust pixels (350ms steps(3, end)) on landing; walking in at the foot is 20 pixels in 450ms steps(5, end)",
         "purpose": "Tabletop: Hadu goes up one floor of the tower."
       },
       {
         "name": "climb-window",
-        "value": "transform 240ms steps(3, end); translateY 100% dark, 37.5% looking over the sill, 0 out",
+        "value": "transform 300ms steps(3, end) as played; translateY 100% dark, 37.5% looking over the sill, 0 out",
         "purpose": "Tabletop: a rival slides up into its window."
       },
       {
         "name": "climb-camera",
-        "value": "one transform on the tower inside a clipped stage: translate so the framed point sits at 50cqw and 44cqh, scale 1 (far back) or 2 (close); each beat's own duration, cubic-bezier(0.45, 0, 0.2, 1); rounded to a whole pixel",
+        "value": "one transform on the tower inside a clipped stage fixed over the whole window (inset 0, 100dvh): translate so the framed point sits at 50cqw and 44cqh, never further left than the window's edge, scale 1 (far back) or 2 (close); each beat's own duration, cubic-bezier(0.45, 0, 0.2, 1); rounded to a whole pixel. One tower pixel is 2px, and 3px from 636 tall by 468 wide, 4px from 848 by 624, 5px from 1060 by 780, 6px from 1272 by 936",
         "purpose": "Tabletop: the climb is shot like a scene. The camera pushes in on Hadu, follows him up the wall, crosses to the window, and pulls back at the roof."
       },
       {
         "name": "climb-bars",
-        "value": "two ink bars, 11cqh each, translateY from off the stage's edge, 320ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "value": "two ink bars, 11cqh each, translateY from off the window's edge, 400ms as played, cubic-bezier(0.16, 1, 0.3, 1); outside the box that shakes",
         "purpose": "Tabletop: in whenever the climb's camera is close, out when it is far back."
       },
       {
         "name": "title-slam",
-        "value": "340ms cubic-bezier(0.16, 1, 0.3, 1); from translateY(-36px) scale(1.12), past by 3px, settles; no fade",
+        "value": "425ms as played, cubic-bezier(0.16, 1, 0.3, 1); from translateY(-36px) scale(1.12), past by 3px, settles; no fade",
         "purpose": "Tabletop: the climb's title card (coral for a rival, lime at the roof) comes down over the lower bar on the last two beats."
       },
       {
@@ -737,6 +742,16 @@
         "name": "chain-ladder",
         "value": "major pentatonic from E4 (329.63Hz), one step a power, capped at step 12",
         "purpose": "The pitch of a power climbs with the chain; a power that changed nothing plays a dull 185Hz note and does not climb."
+      },
+      {
+        "name": "press",
+        "value": "every press on a run's screens makes one sound: its handler's own, else the falling click (sine 760Hz to 560Hz) from a window listener in src/components/run/sfx/ClickSound.tsx; a cobalt table button and a move sent play confirm (triangle G5 then C6)",
+        "purpose": "Nothing pressed in a run is silent, and nothing is heard twice."
+      },
+      {
+        "name": "cat-voices",
+        "value": "src/components/run/sfx/voices.ts: 26 pitches a semitone apart from A3 (220Hz), one a cat; contour by archetype, timbre by element (triangle, sine, square at 0.1 at most; no sawtooth, no noise); longer and ornamented by rarity; 0.45s at most",
+        "purpose": "A cat is heard in its own voice when it is chosen or turned over to read."
       },
       {
         "name": "limits",
