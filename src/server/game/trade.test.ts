@@ -10,7 +10,7 @@ import {
   type Essence,
   type PlacedCat,
 } from "./match";
-import { starterDeck } from "./run";
+import { starterDeck } from "./clans";
 import {
   lift,
   soloActions as legalActions,

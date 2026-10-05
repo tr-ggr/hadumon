@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
 import { getCat } from "~/server/game/cats";
 import { ELEMENTS } from "~/server/game/elements";
-import { CLAN_LIST, starterDeck } from "~/server/game/run";
+import { CLAN_LIST, starterDeck } from "~/server/game/clans";
 
 import {
   CLAN_MASCOTS,

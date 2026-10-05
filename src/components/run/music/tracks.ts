@@ -469,8 +469,8 @@ const SCREENS = {
       },
     ],
   },
-  /** Choosing a clan: slow and open, an arpeggio and a bass and nothing else. */
-  clans: {
+  /** Before a run: slow and open, an arpeggio and a bass and nothing else. */
+  start: {
     bpm: 84,
     root: C4,
     scale: "major",
@@ -479,6 +479,40 @@ const SCREENS = {
       { arp: "5.7.9.c.9.7.9.7.", bass: "5-------5---9---" },
       { arp: "3.5.7.a.7.5.7.5.", bass: "3-------3---7---" },
       { arp: "4.6.8.b.8.6.8.6.", bass: "4-------4---6---" },
+    ],
+  },
+  /**
+   * The chest at the tower's foot: the same open arpeggio a fourth up, with
+   * a triangle picking out what might be inside.
+   */
+  chest: {
+    bpm: 84,
+    root: F4,
+    scale: "major",
+    lead: "triangle",
+    bars: [
+      {
+        lead: "........4---7---",
+        arp: "0.2.4.7.4.2.4.2.",
+        bass: "0-------0---4---",
+      },
+      {
+        lead: "9-------7---5---",
+        arp: "5.7.9.c.9.7.9.7.",
+        bass: "5-------5---9---",
+      },
+      {
+        lead: "........5---7---",
+        arp: "3.5.7.a.7.5.7.5.",
+        bass: "3-------3---7---",
+        drums: "............h...",
+      },
+      {
+        lead: "8-------b-------",
+        arp: "4.6.8.b.8.6.8.6.",
+        bass: "4-------4---6---",
+        drums: "........h...h...",
+      },
     ],
   },
   tower: TOWER,
@@ -584,7 +618,7 @@ export const TRACK_IDS = Object.keys(TRACKS) as TrackId[];
 
 /** Where the player is, as far as the music cares. */
 export type MusicScreen =
-  | { on: "menu" | "clans" | "reward" }
+  | { on: "menu" | "start" | "chest" | "reward" }
   | { on: "climb"; summit: boolean }
   | { on: "setup" | "match"; rivalId: string | undefined }
   | { on: "summary"; won: boolean };
@@ -597,7 +631,8 @@ function isTheme(id: string | undefined): id is RivalTheme {
 export function trackFor(screen: MusicScreen): TrackId {
   switch (screen.on) {
     case "menu":
-    case "clans":
+    case "start":
+    case "chest":
     case "reward":
       return screen.on;
     case "climb":

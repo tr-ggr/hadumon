@@ -1,22 +1,40 @@
 import { describe, expect, it } from "vitest";
 
 import { CAT_LIST, getCat, RARITIES, type Rarity } from "./cats";
+import { CLANS, starterDeck } from "./clans";
+import { copyCap } from "./collection";
+import { countCards, defaultDeck } from "./deck";
 import { ELEMENTS } from "./elements";
 import { GAUNTLET } from "./rival";
 import {
   gauntletDeck,
-  PICK_CAPS,
+  rarityMix,
+  RIVAL_DECK,
   rivalDeck,
-  rivalPicks,
   rivalRelics,
   themeOf,
 } from "./rivalDecks";
-import { CLANS, makeOffer, starterDeck, startRun } from "./run";
-import { poolFromUnlocks, STARTING_UNLOCKS } from "./unlocks";
+import { startingPool } from "./unlocks";
 
 const EVERY_CAT = CAT_LIST.map((cat) => cat.id);
-const NEW_ACCOUNT = poolFromUnlocks(STARTING_UNLOCKS).cats;
-const rank = (catId: string) => RARITIES.indexOf(getCat(catId).rarity);
+const NEW_ACCOUNT = startingPool().cats;
+const DEFAULT = defaultDeck();
+const sorted = (cards: readonly string[]) => [...cards].sort();
+const count = (deck: readonly string[], rarity: Rarity) =>
+  deck.filter((id) => getCat(id).rarity === rarity).length;
+
+/** A legal deck that is half rares and better, from the whole catalogue. */
+function richDeck(): string[] {
+  const of = (rarity: Rarity) =>
+    CAT_LIST.filter((cat) => cat.rarity === rarity).map((cat) => cat.id);
+  return [
+    ...of("legendary").slice(0, 2),
+    ...of("epic").slice(0, 4),
+    ...of("rare").slice(0, 6),
+    ...of("uncommon").slice(0, 6),
+    ...of("common").slice(0, 6),
+  ];
+}
 
 describe("rival decks", () => {
   it("give every rival of the gauntlet a clan to build on", () => {
@@ -34,50 +52,86 @@ describe("rival decks", () => {
   });
 
   it("are a run deck's size at the same match: 16 cards and one a match", () => {
-    for (const pool of [EVERY_CAT, NEW_ACCOUNT]) {
-      for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
-        const deck = gauntletDeck(matchIndex, pool);
-        expect(deck).toHaveLength(16 + matchIndex);
-        expect(deck.slice(0, 16)).toEqual(starterDeck(themeOf(rivalId)));
+    for (const [pool, built] of [
+      [EVERY_CAT, DEFAULT],
+      [EVERY_CAT, richDeck()],
+      [NEW_ACCOUNT, DEFAULT],
+    ] as const) {
+      for (const [matchIndex] of GAUNTLET.entries()) {
+        expect(gauntletDeck(matchIndex, pool, built)).toHaveLength(
+          RIVAL_DECK + matchIndex,
+        );
       }
     }
   });
 
-  it("never pick a cat rarer than a player has typically taken by then", () => {
+  it("come out, for a new account's first match, as each clan's old starter", () => {
     for (const rivalId of GAUNTLET) {
-      rivalPicks(rivalId, 5, EVERY_CAT).forEach((catId, pick) => {
-        const cap = PICK_CAPS[pick];
-        if (!cap) throw new Error("no cap");
-        expect(rank(catId)).toBeLessThanOrEqual(RARITIES.indexOf(cap));
-      });
+      expect(sorted(rivalDeck(rivalId, 0, NEW_ACCOUNT, DEFAULT))).toEqual(
+        sorted(starterDeck(themeOf(rivalId))),
+      );
     }
-    // With the whole catalogue to pick from, the cap is what gets picked.
-    expect(
-      rivalPicks("old-nine-lives", 5, EVERY_CAT).map(
-        (catId) => getCat(catId).rarity,
-      ),
-    ).toEqual(PICK_CAPS);
   });
 
-  it("pick their own clan's cats first, and no cat twice", () => {
-    for (const rivalId of GAUNTLET) {
-      const picks = rivalPicks(rivalId, 5, EVERY_CAT);
-      expect(new Set(picks).size).toBe(picks.length);
-      // The first pick is an uncommon, and every clan has one.
-      expect(getCat(picks[0] ?? "").element).toBe(themeOf(rivalId));
+  it("are mixed as the player's deck is, every rarity above common rounded down", () => {
+    const rich = richDeck();
+    expect(rich).toHaveLength(24);
+    for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
+      const size = RIVAL_DECK + matchIndex;
+      const mix = rarityMix(rich, size);
+      const deck = rivalDeck(rivalId, matchIndex, EVERY_CAT, rich);
+      for (const rarity of RARITIES) {
+        expect(count(deck, rarity), `${rivalId} ${rarity}`).toBe(mix[rarity]);
+        if (rarity !== "common") {
+          // Never more of a rarity than the player holds, for its size.
+          expect(mix[rarity] / size).toBeLessThanOrEqual(
+            count(rich, rarity) / rich.length,
+          );
+        }
+      }
+      expect(RARITIES.reduce((sum, r) => sum + mix[r], 0)).toBe(size);
+    }
+    // A deck of commons and uncommons meets no rare, whatever the pool.
+    for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
+      const deck = rivalDeck(rivalId, matchIndex, EVERY_CAT, DEFAULT);
+      expect(count(deck, "rare") + count(deck, "epic")).toBe(0);
+      expect(count(deck, "legendary")).toBe(0);
+    }
+  });
+
+  it("take their own clan's cats first, and keep to the copy caps", () => {
+    for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
+      const theme = themeOf(rivalId);
+      const deck = rivalDeck(rivalId, matchIndex, EVERY_CAT, richDeck());
+      for (const [catId, copies] of Object.entries(countCards(deck))) {
+        expect(copies, catId).toBeLessThanOrEqual(copyCap(catId));
+      }
+      // With the whole catalogue to draw on, it is all the rival's element.
+      expect(deck.every((id) => getCat(id).element === theme)).toBe(true);
     }
   });
 
   it("never show an account a cat it could not own", () => {
     for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
-      for (const catId of rivalDeck(rivalId, matchIndex, NEW_ACCOUNT)) {
+      for (const catId of rivalDeck(
+        rivalId,
+        matchIndex,
+        NEW_ACCOUNT,
+        DEFAULT,
+      )) {
         expect(NEW_ACCOUNT).toContain(catId);
       }
     }
-    expect(rivalPicks("old-nine-lives", 5, ["flameclaw"])).toEqual([
-      "flameclaw",
-    ]);
-    expect(rivalPicks("old-nine-lives", 5, [])).toEqual([]);
+  });
+
+  it("make up a rarity the account cannot fill from the one below", () => {
+    // The deck asks for rares, and the account owns one rare of another clan.
+    const pool = [...NEW_ACCOUNT, "pyrelynx"];
+    const deck = rivalDeck("old-nine-lives", 5, pool, richDeck());
+    expect(deck).toHaveLength(RIVAL_DECK + 5);
+    expect(deck.every((id) => pool.includes(id))).toBe(true);
+    expect(count(deck, "legendary") + count(deck, "epic")).toBe(0);
+    expect(count(deck, "rare")).toBe(copyCap("pyrelynx"));
   });
 
   it("come with the rival's clan charm and no other relic", () => {
@@ -87,30 +141,8 @@ describe("rival decks", () => {
   });
 
   it("are the same deck every time", () => {
-    expect(gauntletDeck(5, EVERY_CAT)).toEqual(gauntletDeck(5, EVERY_CAT));
-  });
-});
-
-describe("the pick caps", () => {
-  /** The rarity the best of three offered cats has, half the time or more. */
-  function typicalBest(matchIndex: number): Rarity {
-    const base = startRun({
-      seed: "caps",
-      clanId: "flame",
-      pool: { cats: EVERY_CAT, relics: [] },
-    });
-    const best: number[] = [];
-    for (let i = 0; i < 2000; i++) {
-      const offer = makeOffer({ ...base, seed: `caps-${i}`, matchIndex });
-      best.push(Math.max(...offer.cats.map(rank)));
-    }
-    best.sort((a, b) => a - b);
-    const median = RARITIES[best[Math.floor(best.length / 2)] ?? 0];
-    if (!median) throw new Error("no median");
-    return median;
-  }
-
-  it("are what a reward's best cat typically is after each match", () => {
-    expect([0, 1, 2, 3, 4].map(typicalBest)).toEqual(PICK_CAPS);
+    expect(gauntletDeck(5, EVERY_CAT, richDeck())).toEqual(
+      gauntletDeck(5, EVERY_CAT, richDeck()),
+    );
   });
 });

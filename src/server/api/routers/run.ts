@@ -4,11 +4,19 @@ import { TRPCError } from "@trpc/server";
 import { and, desc, eq, ne, sql } from "drizzle-orm";
 import { z } from "zod";
 
-import { addCoins, lockProfile } from "~/server/api/economy";
+import {
+  addCards,
+  addCoins,
+  lockProfile,
+  ownedBy,
+  savedDeck,
+} from "~/server/api/economy";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import type { DbOrTx, Transaction } from "~/server/db";
 import { runs, unlocks, type Run } from "~/server/db/schema/runs";
 import { ROWS } from "~/server/game/cats";
+import { gainCards, ownedIds } from "~/server/game/collection";
+import { describeProblem, validateDeck } from "~/server/game/deck";
 import { DIFFICULTIES } from "~/server/game/difficulty";
 import { profiles } from "~/server/db/schema/economy";
 import { ELEMENTS } from "~/server/game/elements";
@@ -19,6 +27,7 @@ import {
   actInRun,
   chooseReward,
   isCurrentRun,
+  openChest,
   retireRun,
   startRun,
   summarizeRun,
@@ -27,7 +36,7 @@ import {
 } from "~/server/game/run";
 import {
   earnedUnlocks,
-  poolFromUnlocks,
+  relicsFromUnlocks,
   STARTING_UNLOCKS,
   UNLOCK_KINDS,
   type Unlock,
@@ -183,13 +192,7 @@ async function retireStaleRun(
   // Closed by another request since it was read: that one paid for it.
   if (!closed) return;
   await payRun(tx, run.userId, coins, finished);
-  const unlocked = earnedUnlocks(summary, await heldUnlocks(tx, run.userId));
-  if (unlocked.length > 0) {
-    await tx
-      .insert(unlocks)
-      .values(unlocked.map((unlock) => ({ userId: run.userId, ...unlock })))
-      .onConflictDoNothing();
-  }
+  await award(tx, run.userId, summary);
 }
 
 /** The account's active run, if it has one; an unreadable one is closed first. */
@@ -220,7 +223,35 @@ function engine<T>(fn: () => T): T {
 
 /** The coins a closed run pays. What it is counted from never leaves the server. */
 function coinsFor(summary: RunSummary): number {
-  return payout({ ...summary, goalsSwept: 0, reclaimed: 0 });
+  return payout(summary);
+}
+
+/**
+ * Records what a closed run unlocked. A cat's rule is a prize paid once: it
+ * goes on the ledger, and a copy of the cat goes into the collection unless
+ * the account already holds all it can.
+ */
+async function award(
+  tx: Transaction,
+  userId: string,
+  summary: RunSummary,
+): Promise<Unlock[]> {
+  const unlocked = earnedUnlocks(summary, await heldUnlocks(tx, userId));
+  if (unlocked.length === 0) return unlocked;
+  await tx
+    .insert(unlocks)
+    .values(unlocked.map((unlock) => ({ userId, ...unlock })))
+    .onConflictDoNothing();
+  const cats = unlocked.filter((u) => u.kind === "cat").map((u) => u.key);
+  if (cats.length > 0) {
+    const { gains } = gainCards(await ownedBy(tx, userId), cats);
+    await addCards(
+      tx,
+      userId,
+      gains.filter((gain) => gain.kept).map((gain) => gain.catId),
+    );
+  }
+  return unlocked;
 }
 
 /**
@@ -290,14 +321,10 @@ async function persist(
 
   let unlocked: Unlock[] = [];
   if (ended) {
+    // The profile is locked by the payment, so the collection cannot move
+    // under the prizes.
     await payRun(tx, run.userId, coins ?? 0, state.results.length);
-    unlocked = earnedUnlocks(summary, await heldUnlocks(tx, run.userId));
-    if (unlocked.length > 0) {
-      await tx
-        .insert(unlocks)
-        .values(unlocked.map((unlock) => ({ userId: run.userId, ...unlock })))
-        .onConflictDoNothing();
-    }
+    unlocked = await award(tx, run.userId, summary);
   }
   return {
     id: run.id,
@@ -327,47 +354,42 @@ export const runRouter = createTRPCRouter({
     },
   ),
 
-  /** Clans the account can start a run with. */
-  clans: protectedProcedure.query(async ({ ctx }) => {
-    const held = await heldUnlocks(ctx.db, ctx.user.id);
-    return held.filter((u) => u.kind === "clan").map((u) => u.key);
-  }),
-
+  /**
+   * Starts a run with the deck the account has saved. A deck that is no
+   * longer legal is refused, never mended: its owner is sent to fix it.
+   */
   start: protectedProcedure
-    .input(
-      z.object({
-        clanId: z.enum(ELEMENTS),
-        difficulty: z.enum(DIFFICULTIES).default("kitten"),
-      }),
-    )
+    .input(z.object({ difficulty: z.enum(DIFFICULTIES).default("kitten") }))
     .mutation(async ({ ctx, input }): Promise<RunSnapshot> => {
+      const userId = ctx.user.id;
       return ctx.db.transaction(async (tx) => {
-        const held = await heldUnlocks(tx, ctx.user.id);
-        if (!held.some((u) => u.kind === "clan" && u.key === input.clanId)) {
+        // An unreadable run left active would refuse the new one below.
+        await activeRun(tx, userId);
+        const profile = await lockProfile(tx, userId);
+        const [held, owned, deck] = await Promise.all([
+          heldUnlocks(tx, userId),
+          ownedBy(tx, userId),
+          savedDeck(tx, userId),
+        ]);
+        const [problem] = validateDeck(deck.cards, owned);
+        if (problem) {
           throw new TRPCError({
-            code: "FORBIDDEN",
-            message: "You have not unlocked that clan.",
+            code: "BAD_REQUEST",
+            message: `Your deck cannot be played. ${describeProblem(problem)} Mend it on the Deck page.`,
           });
         }
-        // An unreadable run left active would refuse the new one below.
-        await activeRun(tx, ctx.user.id);
         const seed = randomBytes(16).toString("hex");
         const state = startRun({
           seed,
-          clanId: input.clanId,
-          pool: poolFromUnlocks(held),
+          ticket: `${userId}:${profile.runTicket}`,
+          deck: deck.cards,
+          pool: { cats: ownedIds(owned), relics: relicsFromUnlocks(held) },
           difficulty: input.difficulty,
         });
         // The partial unique index refuses a second active run.
         const [run] = await tx
           .insert(runs)
-          .values({
-            userId: ctx.user.id,
-            clanId: input.clanId,
-            difficulty: input.difficulty,
-            seed,
-            state,
-          })
+          .values({ userId, difficulty: input.difficulty, seed, state })
           .onConflictDoNothing()
           .returning();
         if (!run) {
@@ -377,6 +399,17 @@ export const runRouter = createTRPCRouter({
           });
         }
         return snapshot(run);
+      });
+    }),
+
+  /** Takes one relic from the opening chest, which deals the first match. */
+  openChest: protectedProcedure
+    .input(z.object({ version, relic: z.string().min(1).max(40) }))
+    .mutation(async ({ ctx, input }): Promise<RunUpdate> => {
+      return ctx.db.transaction(async (tx) => {
+        const run = await lockActiveRun(tx, ctx.user.id, input.version);
+        const state = engine(() => openChest(run.state, input.relic));
+        return persist(tx, run, state, []);
       });
     }),
 
@@ -396,7 +429,7 @@ export const runRouter = createTRPCRouter({
     .input(
       z.object({
         version,
-        cat: z.string().max(40).nullable(),
+        reclaim: z.string().max(40).nullable(),
         relic: z.string().max(40).nullable(),
         trim: z.string().max(40).nullable(),
       }),
@@ -404,9 +437,9 @@ export const runRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }): Promise<RunUpdate> => {
       return ctx.db.transaction(async (tx) => {
         const run = await lockActiveRun(tx, ctx.user.id, input.version);
-        const { cat, relic, trim } = input;
+        const { reclaim, relic, trim } = input;
         const state = engine(() =>
-          chooseReward(run.state, { cat, relic, trim }),
+          chooseReward(run.state, { reclaim, relic, trim }),
         );
         return persist(tx, run, state, []);
       });
@@ -433,7 +466,6 @@ export const runRouter = createTRPCRouter({
       ctx.db
         .select({
           id: runs.id,
-          clanId: runs.clanId,
           difficulty: runs.difficulty,
           status: runs.status,
           matchesWon: runs.matchesWon,

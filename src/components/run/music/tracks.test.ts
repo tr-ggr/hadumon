@@ -164,7 +164,8 @@ describe("trackFor", () => {
   it("gives every screen a tune of its own", () => {
     const screens: MusicScreen[] = [
       { on: "menu" },
-      { on: "clans" },
+      { on: "start" },
+      { on: "chest" },
       { on: "climb", summit: false },
       { on: "climb", summit: true },
       { on: "setup", rivalId: GAUNTLET[0] },

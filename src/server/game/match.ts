@@ -585,10 +585,19 @@ function isIndexList(values: readonly number[], length: number): boolean {
   );
 }
 
+/**
+ * Draws that found the deck and the discard pile both empty, for the
+ * measuring scripts to read. Nothing in a match depends on it.
+ */
+export const drawMeter = { dry: 0 };
+
 function drawCard(ctx: Ctx): string | null {
   const { side } = ctx;
   if (side.deck.length === 0) {
-    if (side.discard.length === 0) return null;
+    if (side.discard.length === 0) {
+      drawMeter.dry += 1;
+      return null;
+    }
     side.deck = ctx.rng.shuffle(side.discard);
     side.discard = [];
   }
@@ -596,7 +605,10 @@ function drawCard(ctx: Ctx): string | null {
 }
 
 function refillTray(ctx: Ctx): void {
-  while (ctx.side.tray.length < TRAY_SIZE) {
+  const { side } = ctx;
+  while (side.tray.length < TRAY_SIZE) {
+    // A tray left short is no draw refused: nothing was asked for.
+    if (side.deck.length === 0 && side.discard.length === 0) return;
     const card = drawCard(ctx);
     if (card === null) return;
     ctx.side.tray.push(card);

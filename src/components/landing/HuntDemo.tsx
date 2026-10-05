@@ -50,8 +50,8 @@ import {
   type MatchState,
 } from "~/server/game/match";
 import { GAUNTLET, getRival } from "~/server/game/rival";
-import { rivalDeck } from "~/server/game/rivalDecks";
-import { starterDeck } from "~/server/game/run";
+import { themeOf } from "~/server/game/rivalDecks";
+import { starterDeck } from "~/server/game/clans";
 import { toMatchView } from "~/server/game/view";
 
 import { word } from "./words";
@@ -73,7 +73,7 @@ function deal(n: number): MatchState {
       rivalId: RIVAL_ID,
       level: 0,
       player: { deck: starterDeck("flame"), relics: [] },
-      rival: { deck: rivalDeck(RIVAL_ID, 0, []), relics: [] },
+      rival: { deck: starterDeck(themeOf(RIVAL_ID)), relics: [] },
     },
     rivalPolicy,
   ).state;

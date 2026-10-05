@@ -11,7 +11,6 @@ import { progressText, type CodexEntry } from "./entries";
 export const CHAPTERS = [
   { id: "cats", label: "Cats" },
   { id: "relics", label: "Relics" },
-  { id: "clans", label: "Clans" },
   { id: "rivals", label: "Rivals" },
 ] as const;
 
@@ -44,13 +43,12 @@ export interface Shelf {
   status: "ready" | "loading" | "error";
   cats: readonly CodexEntry[];
   relics: readonly CodexEntry[];
-  clans: readonly CodexEntry[];
   /** Rival ids in the order a run meets them. */
   rivals: readonly string[];
 }
 
 export type PageBody =
-  | { kind: "cats" | "relics" | "clans"; entries: readonly CodexEntry[] }
+  | { kind: "cats" | "relics"; entries: readonly CodexEntry[] }
   | { kind: "rival"; rivalId: string; match: number }
   /** No cat matches the filters. */
   | { kind: "empty" }
@@ -88,8 +86,8 @@ export interface Anchor {
 
 /** How many of a chapter's things one page holds, by pages open at once. */
 export const PER_PAGE: Record<Up, Record<ChapterId, number>> = {
-  1: { cats: 4, relics: 4, clans: 5, rivals: 1 },
-  2: { cats: 4, relics: 6, clans: 3, rivals: 1 },
+  1: { cats: 4, relics: 4, rivals: 1 },
+  2: { cats: 4, relics: 6, rivals: 1 },
 };
 
 export function filterCats(
@@ -115,9 +113,9 @@ function deal(entries: readonly CodexEntry[], size: number): CodexEntry[][] {
   return pages;
 }
 
-/** A chapter of cats, relics or clans, in whatever state the shelf is in. */
+/** A chapter of cats or relics, in whatever state the shelf is in. */
 function entryChapter(
-  kind: "cats" | "relics" | "clans",
+  kind: "cats" | "relics",
   entries: readonly CodexEntry[],
   status: Shelf["status"],
   up: Up,
@@ -157,10 +155,6 @@ export function buildBook(shelf: Shelf, filters: Filters, up: Up): Book {
     relics: {
       count: ready ? progressText(shelf.relics) : "",
       pages: entryChapter("relics", shelf.relics, shelf.status, up),
-    },
-    clans: {
-      count: ready ? progressText(shelf.clans) : "",
-      pages: entryChapter("clans", shelf.clans, shelf.status, up),
     },
     rivals: {
       count: `${shelf.rivals.length} matches`,

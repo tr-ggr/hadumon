@@ -65,7 +65,7 @@ const SWIPE_EDGE_PX = 24;
 
 export interface CodexBookProps {
   shelf: Shelf;
-  /** Asks for the cats, relics and clans again after they did not load. */
+  /** Asks for the cats and relics again after they did not load. */
   onRetry: () => void;
   retrying: boolean;
   /** What went wrong, in the server's words. */

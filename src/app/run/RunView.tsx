@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { ClanPick } from "~/components/run/ClanPick";
+import { ChestScene } from "~/components/run/ChestScene";
 import { Climb } from "~/components/run/Climb";
 import { MatchBoard } from "~/components/run/MatchBoard";
 import { trackFor, type MusicScreen } from "~/components/run/music/tracks";
 import { useMusic } from "~/components/run/music/useMusic";
 import { RewardPick } from "~/components/run/RewardPick";
+import { RunStart } from "~/components/run/RunStart";
 import { RunStrip } from "~/components/run/RunStrip";
 import { RunSummary } from "~/components/run/RunSummary";
 import { SetupKeep } from "~/components/run/SetupKeep";
@@ -50,14 +51,16 @@ export function RunView() {
       : run.final && !landing
         ? "summary"
         : !view
-          ? "clans"
-          : landing
-            ? `board:${view.matchIndex}`
-            : view.phase === "reward"
-              ? `reward:${view.matchIndex}`
-              : match?.phase === "setup"
-                ? `setup:${view.matchIndex}`
-                : `board:${view.matchIndex}`;
+          ? "start"
+          : view.phase === "chest"
+            ? "chest"
+            : landing
+              ? `board:${view.matchIndex}`
+              : view.phase === "reward"
+                ? `reward:${view.matchIndex}`
+                : match?.phase === "setup"
+                  ? `setup:${view.matchIndex}`
+                  : `board:${view.matchIndex}`;
   const lastScreen = useRef(screen);
   useEffect(() => {
     if (lastScreen.current === screen) return;
@@ -76,12 +79,14 @@ export function RunView() {
         : run.loading || run.error
           ? null
           : !view
-            ? { on: "clans" }
-            : !landing && view.phase === "reward"
-              ? { on: "reward" }
-              : !landing && match?.phase === "setup"
-                ? { on: "setup", rivalId }
-                : { on: "match", rivalId };
+            ? { on: "start" }
+            : view.phase === "chest"
+              ? { on: "chest" }
+              : !landing && view.phase === "reward"
+                ? { on: "reward" }
+                : !landing && match?.phase === "setup"
+                  ? { on: "setup", rivalId }
+                  : { on: "match", rivalId };
   useMusic(scene ? trackFor(scene) : null);
 
   if (climb && climbing.frame && view) {
@@ -106,6 +111,7 @@ export function RunView() {
           key={run.final.id}
           view={run.final.view}
           unlocked={run.final.unlocked}
+          coins={run.final.coins ?? 0}
           onAgain={run.clearFinal}
         />
       </TableSurface>
@@ -149,7 +155,7 @@ export function RunView() {
   if (!view) {
     return (
       <TableSurface fit>
-        <ClanPick busy={run.busy} onStart={run.start} />
+        <RunStart busy={run.busy} onStart={run.start} />
       </TableSurface>
     );
   }
@@ -187,6 +193,15 @@ export function RunView() {
             sideStrip={<RunStrip {...stripProps} compact />}
           />
         ) : null
+      ) : view.phase === "chest" && view.chest ? (
+        <ChestScene
+          key={(run.snapshot ?? run.final)?.id}
+          run={view}
+          chest={view.chest}
+          busy={run.busy}
+          onOpen={run.openChest}
+          runStrip={strip}
+        />
       ) : view.phase === "reward" && view.reward ? (
         <RewardPick
           key={matchKey}

@@ -9,7 +9,7 @@ import { rewardSteps, SETUP_STEPS, summarySteps } from "./steps";
 
 function offer(change: Partial<RewardOffer> = {}): RewardOffer {
   return {
-    cats: ["flameclaw", "mistpaw", "voltwhisk"],
+    reclaim: ["flameclaw", "mistpaw", "voltwhisk"],
     relics: [],
     canTrim: false,
     ...change,
@@ -20,10 +20,11 @@ function offer(change: Partial<RewardOffer> = {}): RewardOffer {
 function ended(change: Partial<RunView> & { scored?: boolean } = {}): RunView {
   const { scored = true, ...rest } = change;
   return {
-    clanId: "flame",
     difficulty: "kitten",
     deck: [],
+    stolen: [],
     relics: [],
+    chest: null,
     matchIndex: 0,
     gauntlet: GAUNTLET,
     phase: "over",
@@ -51,7 +52,7 @@ describe("rewardSteps", () => {
   it("shows every step when everything is on offer", () => {
     expect(
       rewardSteps(offer({ relics: ["lucky-bell"], canTrim: true }), true),
-    ).toEqual(["result", "cat", "relic", "trim", "recap"]);
+    ).toEqual(["result", "reclaim", "relic", "trim", "recap"]);
   });
 
   it("has a relic step only when a relic is due", () => {
@@ -67,18 +68,21 @@ describe("rewardSteps", () => {
   });
 
   it("has no cat step when no cat is on offer", () => {
-    expect(rewardSteps(offer({ cats: [] }), true)).toEqual(["result", "recap"]);
+    expect(rewardSteps(offer({ reclaim: [] }), true)).toEqual([
+      "result",
+      "recap",
+    ]);
   });
 
   it("opens on the result only when there is one", () => {
     expect(rewardSteps(offer(), true)[0]).toBe("result");
-    expect(rewardSteps(offer(), false)).toEqual(["cat", "recap"]);
+    expect(rewardSteps(offer(), false)).toEqual(["reclaim", "recap"]);
   });
 
   it("always ends on the recap, which holds the confirm", () => {
     const offers = [
       offer(),
-      offer({ cats: [] }),
+      offer({ reclaim: [] }),
       offer({ relics: ["lucky-bell"], canTrim: true }),
     ];
     for (const each of offers) {
@@ -96,6 +100,20 @@ describe("summarySteps", () => {
       "unlocks",
       "summary",
     ]);
+  });
+
+  it("counts the coins after the unlocks, when the run paid any", () => {
+    expect(summarySteps(ended(), UNLOCKS, 40)).toEqual([
+      "result",
+      "unlocks",
+      "coins",
+      "summary",
+    ]);
+    expect(summarySteps(ended({ outcome: "abandoned" }), [], 12)).toEqual([
+      "coins",
+      "summary",
+    ]);
+    expect(summarySteps(ended(), [], 0)).toEqual(["result", "summary"]);
   });
 
   it("has no unlocks step when nothing was unlocked", () => {

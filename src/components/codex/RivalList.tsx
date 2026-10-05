@@ -8,8 +8,8 @@ import {
 import { ELEMENT_LABELS } from "~/server/game/elements";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
-import { rivalRelics } from "~/server/game/rivalDecks";
-import { CLANS } from "~/server/game/run";
+import { RIVAL_DECK, rivalRelics } from "~/server/game/rivalDecks";
+import { CLANS } from "~/server/game/clans";
 
 /** One rival and its deck. A rival is never locked. */
 export function RivalCard({
@@ -75,8 +75,9 @@ export function RivalCard({
       </table>
 
       <p className="text-xs leading-snug">
-        A {CLANS[rival.theme].name} deck of {15 + match} cards, built around{" "}
-        {ELEMENT_LABELS[rival.theme]} cats. Holds the{" "}
+        A {CLANS[rival.theme].name} deck of {RIVAL_DECK - 1 + match} cards,{" "}
+        {ELEMENT_LABELS[rival.theme]} cats first, drawn from the cats you own
+        and as rare as the deck you built. Holds the{" "}
         {rivalRelics(rivalId)
           .map((id) => getRelic(id).name)
           .join(" and ")}{" "}

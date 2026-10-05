@@ -17,7 +17,6 @@ import {
   type Essence,
   type SlotRef,
 } from "~/server/game/match";
-import { CLANS } from "~/server/game/run";
 import type { MatchView, RunView } from "~/server/game/view";
 
 import { BoardRow } from "./BoardRow";
@@ -767,7 +766,7 @@ export function MatchBoard({
                 onDeckPicks={changeDeckPicks}
                 onReroll={() => act({ type: "reroll" })}
                 onDetail={showCard}
-                deckNote={`${CLANS[run.clanId].name} deck, ${plural(run.deck.length, "card")}.`}
+                deckNote={`Your deck, ${plural(run.deck.length, "card")}.`}
               />
             </div>
           </div>

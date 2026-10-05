@@ -1,11 +1,19 @@
 import type { RouterOutputs } from "~/trpc/react";
 
-/** One cat, relic or clan as `codex.get` reports it. */
+/** One cat or relic as `codex.get` reports it. */
 export type CodexEntry = RouterOutputs["codex"]["get"]["cats"][number];
 
-/** What a locked entry shows in place of its rules. */
+/** What an entry the account does not hold shows in place of its rules. */
 export function lockedText(entry: CodexEntry): string {
-  return entry.hint ? `Locked. ${entry.hint}` : "Locked.";
+  const state = entry.copies === null ? "Locked." : "Not owned.";
+  return entry.hint ? `${state} ${entry.hint}` : state;
+}
+
+/** "2 of 3": the copies of a cat an account owns, out of the most it can. */
+export function copiesText(entry: CodexEntry): string | null {
+  return entry.copies === null || entry.cap === null
+    ? null
+    : `${entry.copies} of ${entry.cap}`;
 }
 
 export function countUnlocked(entries: readonly CodexEntry[]): number {

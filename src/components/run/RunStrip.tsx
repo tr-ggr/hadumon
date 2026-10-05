@@ -1,6 +1,5 @@
 import { DIFFICULTY } from "~/server/game/difficulty";
 import { getRival } from "~/server/game/rival";
-import { CLANS } from "~/server/game/run";
 import type { RunView } from "~/server/game/view";
 
 import { plural } from "./describe";
@@ -79,7 +78,7 @@ export function RunStrip({
   run: RunView;
   busy: boolean;
   onAbandon: () => void;
-  /** Leaves out the clan and deck size, where the table says them elsewhere. */
+  /** Leaves out the deck size, where the table says it elsewhere. */
   compact?: boolean;
 }) {
   const tier = DIFFICULTY[run.difficulty];
@@ -98,8 +97,8 @@ export function RunStrip({
           </p>
         ) : (
           <p className="whitespace-nowrap">
-            {CLANS[run.clanId].name} · {tier.name} ·{" "}
-            {plural(run.deck.length, "card")}
+            {tier.name} · {plural(run.deck.length, "card")}
+            {run.stolen.length > 0 ? ` · ${run.stolen.length} stolen` : ""}
           </p>
         )}
         <button

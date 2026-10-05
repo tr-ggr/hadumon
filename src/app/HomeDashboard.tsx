@@ -2,16 +2,13 @@
 
 import { useState, type CSSProperties, type ReactNode } from "react";
 
-import { ElementMark } from "~/components/cats/CatCard";
 import { countUnlocked } from "~/components/codex/entries";
 import { PixelSprite } from "~/components/PixelSprite";
-import { CLAN_MASCOTS } from "~/components/run/packs";
 import { Nameplate } from "~/components/run/pieces";
 import { GauntletTrack } from "~/components/run/RunStrip";
 import { Board, Skeleton, TableButton, TableLink } from "~/components/ui";
 import { difficultyOf } from "~/server/game/difficulty";
 import { GAUNTLET, getRival } from "~/server/game/rival";
-import { CLANS, isClanId } from "~/server/game/run";
 import { api, type RouterOutputs } from "~/trpc/react";
 
 export interface HomeDashboardProps {
@@ -238,9 +235,10 @@ function RunInProgress({
   snapshot: RunSnapshot;
 }) {
   const { view } = snapshot;
-  const clan = `${CLANS[view.clanId].name} on ${difficultyOf(view.difficulty).name}`;
+  const tier = `A ${difficultyOf(view.difficulty).name} run`;
   const total = view.gauntlet.length;
   const rewardDue = view.phase === "reward";
+  const chestDue = view.phase === "chest";
   // While a reward is waiting, `matchIndex` still points at the match just won.
   const upcoming = rewardDue ? view.matchIndex + 1 : view.matchIndex;
   const rivalId = view.gauntlet[upcoming] ?? GAUNTLET[0]!;
@@ -250,16 +248,26 @@ function RunInProgress({
   return (
     <Menu
       displayName={displayName}
-      title={rewardDue ? "A reward is waiting" : `Up against ${rival.name}`}
+      title={
+        chestDue
+          ? "A chest is waiting"
+          : rewardDue
+            ? "A reward is waiting"
+            : `Up against ${rival.name}`
+      }
       detail={
-        rewardDue
-          ? `${clan}. Then ${rival.name}, ${place}${rival.boss ? ", a boss" : ""}.`
-          : `${clan}, ${place}${rival.boss ? ", a boss" : ""}. ${rival.flavor}`
+        chestDue
+          ? `${tier}, not yet begun. Take a relic from the chest, then ${rival.name}.`
+          : rewardDue
+            ? `${tier}. Then ${rival.name}, ${place}${rival.boss ? ", a boss" : ""}.`
+            : `${tier}, ${place}${rival.boss ? ", a boss" : ""}. ${rival.flavor}`
       }
       action="Continue run"
-      catId={CLAN_MASCOTS[view.clanId]}
+      catId="hadu"
       rivalId={rivalId}
-      rivalLabel={rewardDue ? "Next across the table" : "Across the table"}
+      rivalLabel={
+        rewardDue || chestDue ? "Next across the table" : "Across the table"
+      }
       track={<GauntletTrack run={view} />}
     />
   );
@@ -319,19 +327,13 @@ const OUTCOME_TAG: Record<PastRun["status"], string> = {
 };
 
 function PastRunRow({ run, now }: { run: PastRun; now: number }) {
-  const clan = isClanId(run.clanId) ? CLANS[run.clanId] : null;
   const ended = run.endedAt ?? run.startedAt;
 
   return (
     <li className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
       <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        {clan ? <ElementMark element={clan.id} /> : null}
         <p className="min-w-0 font-bold break-words">
-          {clan?.name ?? run.clanId}
-          <span className="text-ink-soft font-normal">
-            {" "}
-            · {difficultyOf(run.difficulty).name}
-          </span>
+          {difficultyOf(run.difficulty).name}
         </p>
         <span
           className={`border-ink border-2 px-1.5 text-xs leading-5 font-black ${OUTCOME_TAG[run.status]}`}
@@ -341,6 +343,7 @@ function PastRunRow({ run, now }: { run: PastRun; now: number }) {
       </div>
       <p className="text-ink-soft text-sm tabular-nums">
         {run.matchesWon} of {GAUNTLET.length} won · score {run.score} ·{" "}
+        {run.coins} {run.coins === 1 ? "coin" : "coins"} ·{" "}
         <time dateTime={ended.toISOString()} title={ended.toLocaleString()}>
           {timeAgo(ended.getTime(), now)}
         </time>

@@ -72,9 +72,10 @@ function RoundTile({
         : turns;
   const standing = current ? match.standing : null;
   // In the rail a round that is not being played gives way to the one that is,
-  // and on a short screen one already scored is a single line.
+  // and on a short screen it is a single line: how it went, or what its goal
+  // will be.
   const compact = rail && !current;
-  const line = compact && scored !== undefined;
+  const line = compact;
 
   return (
     <li
@@ -83,6 +84,11 @@ function RoundTile({
     >
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-print text-xl">Round {round + 1}</h3>
+        {line && !scored ? (
+          <p className="lg:short:block hidden min-w-0 truncate text-xs font-black">
+            {goal.name}
+          </p>
+        ) : null}
         <p
           className={`flex flex-wrap items-center justify-end gap-1 ${line ? "lg:short:hidden" : ""}`}
         >

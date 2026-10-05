@@ -68,7 +68,7 @@ export function AuthScreen({
           >
             <div className="flex flex-col items-center px-4 pt-5 lg:px-8 lg:pt-8">
               <p className="text-print text-center text-xl text-balance lg:text-3xl">
-                Six rivals. Twelve turns each.
+                Six rivals. Twenty-six turns each.
               </p>
               <PixelSprite
                 catId="flameclaw"

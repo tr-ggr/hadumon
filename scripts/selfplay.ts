@@ -1,7 +1,9 @@
 /**
  * Has the bots play each other and writes what was measured to
- * `sprints/data/14-ladder.json`: how the levels stand against one another,
- * what the first seat and a tie are worth, and what each relic is worth.
+ * `sprints/data/15-ladder.json`: how the levels stand against one another,
+ * what the first seat and a tie are worth, what each relic is worth, and how
+ * whole runs go: how far, how many points, how many coins, and how often a
+ * draw finds no card.
  *
  *   pnpm tsx --conditions=react-server scripts/selfplay.ts
  *   pnpm tsx --conditions=react-server scripts/selfplay.ts --only=ladder --games=100
@@ -29,9 +31,12 @@ import {
   type LevelSpec,
 } from "~/server/game/bot/levels";
 import { PLAIN } from "~/server/game/bot/styles";
-import { CAT_LIST } from "~/server/game/cats";
+import { CAT_LIST, RARITIES } from "~/server/game/cats";
+import { CLANS, starterDeck } from "~/server/game/clans";
+import { copyCap } from "~/server/game/collection";
+import { DECK_SIZE, defaultDeck } from "~/server/game/deck";
 import { DIFFICULTIES, type DifficultyId } from "~/server/game/difficulty";
-import { ELEMENTS } from "~/server/game/elements";
+import { ELEMENTS, type Element } from "~/server/game/elements";
 import {
   ESSENCES,
   placedCats,
@@ -39,12 +44,13 @@ import {
   type MatchState,
   type SideId,
 } from "~/server/game/match";
+import { payout } from "~/server/game/payout";
 import { RELIC_LIST } from "~/server/game/relics";
 import { themeOf } from "~/server/game/rivalDecks";
-import { CLANS, starterDeck } from "~/server/game/run";
-import { poolFromUnlocks, STARTING_UNLOCKS } from "~/server/game/unlocks";
+import { summarizeRun } from "~/server/game/run";
+import { startingPool } from "~/server/game/unlocks";
 
-const OUT_FILE = "sprints/data/14-ladder.json";
+const OUT_FILE = "sprints/data/15-ladder.json";
 
 const args = new Map(
   process.argv
@@ -234,12 +240,37 @@ function relics() {
 /* ----------------------------------------------------------- gauntlet */
 
 const POOLS = {
-  newAccount: poolFromUnlocks(STARTING_UNLOCKS),
+  newAccount: startingPool(),
   everything: {
     cats: CAT_LIST.map((cat) => cat.id),
     relics: RELIC_LIST.map((relic) => relic.id),
   },
 };
+
+/**
+ * The richest deck an account that owns everything can build on one
+ * element: its rarest cats first, each to its cap, until there are 24.
+ */
+function richDeck(element: Element): string[] {
+  const cats = CAT_LIST.filter((cat) => cat.element === element).sort(
+    (a, b) =>
+      RARITIES.indexOf(b.rarity) - RARITIES.indexOf(a.rarity) ||
+      b.points - a.points ||
+      a.id.localeCompare(b.id),
+  );
+  const deck: string[] = [];
+  for (const cat of cats) {
+    for (let copy = 0; copy < copyCap(cat.id); copy++) {
+      if (deck.length < DECK_SIZE) deck.push(cat.id);
+    }
+  }
+  return deck;
+}
+
+/** The deck a stand-in brings: the default one, or the richest it could build. */
+function deckFor(poolName: keyof typeof POOLS, run: number): string[] {
+  return poolName === "newAccount" ? defaultDeck() : richDeck(elementAt(run));
+}
 
 type WhatIf = Pick<GauntletConfig, "levelShift" | "rivalRelics">;
 
@@ -255,25 +286,34 @@ function climbTower(
   let first = 0;
   let won = 0;
   let matches = 0;
+  let played = 0;
+  let dry = 0;
+  let points = 0;
+  let coins = 0;
   const reached = Array.from({ length: 7 }, () => 0);
   const best: number[] = [];
   for (let i = 0; i < runs; i++) {
-    const played = playGauntlet(
+    const { matches: record, run } = playGauntlet(
       {
         seed: `gauntlet-${i}`,
-        clanId: elementAt(i),
+        deck: deckFor(poolName, i),
         pool: POOLS[poolName],
         tier,
         ...whatIf,
       },
       bot,
     );
-    const wins = played.filter((match) => match.won).length;
-    if (played[0]?.won) first += 1;
+    const wins = record.filter((match) => match.won).length;
+    if (record[0]?.won) first += 1;
     if (wins === 6) won += 1;
     matches += wins;
+    played += record.length;
+    dry += record.reduce((sum, match) => sum + match.dry, 0);
+    const summary = summarizeRun(run);
+    points += summary.totalScore;
+    coins += payout(summary);
     reached[wins] = (reached[wins] ?? 0) + 1;
-    best.push(Math.max(0, ...played.map((match) => match.player)));
+    best.push(Math.max(0, ...record.map((match) => match.player)));
   }
   best.sort((a, b) => a - b);
   const share = (score: number) =>
@@ -288,16 +328,23 @@ function climbTower(
     runsWon: round(won / runs),
     /** How many runs ended with 0, 1, ... 6 matches won. */
     wins: reached,
+    /** Points and coins a run came to, and draws a match found no card for. */
+    pointsPerRun: round(points / runs, 1),
+    coinsPerRun: round(coins / runs, 1),
+    dryDrawsPerMatch: round(dry / Math.max(1, played), 2),
     bestScore: {
       median: best[Math.floor(runs / 2)] ?? 0,
       p90: best[Math.floor(runs * 0.9)] ?? 0,
       atLeast: Object.fromEntries(
-        [30, 33, 35, 38, 40, 42, 45].map((score) => [score, share(score)]),
+        [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100].map((score) => [
+          score,
+          share(score),
+        ]),
       ),
     },
   };
   console.log(
-    `${poolName} ${tier} player ${level}: first ${(row.firstMatch * 100).toFixed(0)}%, ${row.matchesWon} matches, run won ${(row.runsWon * 100).toFixed(0)}%, best ${row.bestScore.median}/${row.bestScore.p90}`,
+    `${poolName} ${tier} player ${level}: first ${(row.firstMatch * 100).toFixed(0)}%, ${row.matchesWon} matches, run won ${(row.runsWon * 100).toFixed(0)}%, best ${row.bestScore.median}/${row.bestScore.p90}, ${row.pointsPerRun} points, ${row.coinsPerRun} coins, ${row.dryDrawsPerMatch} dry draws a match`,
   );
   return row;
 }

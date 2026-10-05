@@ -16,7 +16,7 @@ import { Modal } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 import type { Element } from "~/server/game/elements";
 import { getRelic } from "~/server/game/relics";
-import { CLANS, starterDeck, type Clan } from "~/server/game/run";
+import { CLANS, starterDeck, type Clan } from "~/server/game/clans";
 
 import { CardStack } from "./CardStack";
 import { plural } from "./describe";

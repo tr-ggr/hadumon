@@ -42,8 +42,9 @@ const DECK_CHIP =
   "piece border-ink text-ink flex min-h-10 items-center gap-1 border-2 py-0.5 pr-2 pl-0.5 text-xs font-bold";
 
 /**
- * After a win, one screen at a time: the result, a cat, sometimes a relic,
- * sometimes a trim, then a recap that holds the one confirm.
+ * After a win, one screen at a time: the result, a stolen card to take
+ * back, sometimes a relic, sometimes a trim, then a recap that holds the one
+ * confirm.
  */
 export function RewardPick({
   run,
@@ -53,7 +54,7 @@ export function RewardPick({
   onChoose,
   runStrip,
 }: RewardPickProps) {
-  const [cat, setCat] = useState<string | null>(null);
+  const [reclaim, setReclaim] = useState<string | null>(null);
   const [relic, setRelic] = useState<string | null>(null);
   const [trim, setTrim] = useState<string | null>(null);
   const [detail, setDetail] = useState<string | null>(null);
@@ -67,20 +68,24 @@ export function RewardPick({
   const { step, index, count, isFirst, next, back, goTo, heading } =
     useSteps(steps);
 
+  const rivalName = getRival(run.gauntlet[run.matchIndex] ?? "alley-tom").name;
   const nextRivalId = run.gauntlet[run.matchIndex + 1];
   const nextRival = nextRivalId ? getRival(nextRivalId) : null;
-  const deckAfter = run.deck.length + (cat ? 1 : 0) - (trim ? 1 : 0);
+  const deckAfter = run.deck.length + (reclaim ? 1 : 0) - (trim ? 1 : 0);
+  const stolenAfter = run.stolen.length - (reclaim ? 1 : 0);
 
   const sentence: Record<RewardStep, string> = {
     result: "Your reward is next.",
-    cat: cat ? `Adding ${getCat(cat).name}.` : "No new cat.",
+    reclaim: reclaim
+      ? `Taking ${getCat(reclaim).name} back.`
+      : "Leaving them all.",
     relic: relic ? `Taking the ${getRelic(relic).name}.` : "No relic.",
     trim: trim ? `Trimming one ${getCat(trim).name}.` : "No trim.",
     recap: `Deck: ${deckAfter} cards.`,
   };
   const picked: Record<RewardStep, boolean> = {
     result: true,
-    cat: cat !== null,
+    reclaim: reclaim !== null,
     relic: relic !== null,
     trim: trim !== null,
     recap: true,
@@ -104,23 +109,26 @@ export function RewardPick({
           />
         ) : null}
 
-        {step === "cat" ? (
+        {step === "reclaim" ? (
           <section className="fitted:my-auto space-y-3">
-            <StepHeading title="Add a cat" headingRef={heading}>
-              One of these joins your deck for the rest of the run. Or none: a
-              smaller deck finds its best cats more often.
+            <StepHeading title="Take a card back" headingRef={heading}>
+              {rivalName} was holding{" "}
+              {offer.reclaim.length === 1 ? "this" : "these"}, out of the{" "}
+              {plural(run.stolen.length, "card")} of your deck still stolen. One
+              comes back for the rest of the run. Or none: a smaller deck finds
+              its best cats more often.
             </StepHeading>
             <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
-              {offer.cats.map((catId) => (
+              {offer.reclaim.map((catId) => (
                 <li key={catId}>
                   <CatPick
                     catId={catId}
-                    verb="Add"
-                    selected={cat === catId}
+                    verb="Take back"
+                    selected={reclaim === catId}
                     disabled={busy}
                     onSelect={() => {
-                      heard(catId, cat === catId);
-                      setCat(cat === catId ? null : catId);
+                      heard(catId, reclaim === catId);
+                      setReclaim(reclaim === catId ? null : catId);
                     }}
                     onDetail={() => {
                       playCat(catId);
@@ -225,14 +233,14 @@ export function RewardPick({
               settled until you go on.
             </StepHeading>
             <ul className="space-y-4">
-              {steps.includes("cat") ? (
+              {steps.includes("reclaim") ? (
                 <RecapRow
-                  label="New cat"
-                  empty="No new cat."
+                  label="Taken back"
+                  empty="No card taken back."
                   busy={busy}
-                  onChange={() => goTo("cat")}
+                  onChange={() => goTo("reclaim")}
                 >
-                  {cat ? <CatCard catId={cat} /> : null}
+                  {reclaim ? <CatCard catId={reclaim} /> : null}
                 </RecapRow>
               ) : null}
               {steps.includes("relic") ? (
@@ -268,7 +276,10 @@ export function RewardPick({
             <p className="text-ink text-sm font-semibold">
               {deckAfter === run.deck.length
                 ? `Your deck stays at ${plural(deckAfter, "card")}.`
-                : `Your deck goes from ${run.deck.length} cards to ${deckAfter}.`}
+                : `Your deck goes from ${run.deck.length} cards to ${deckAfter}.`}{" "}
+              {stolenAfter === 0
+                ? "Nothing of it is still stolen."
+                : `${plural(stolenAfter, "card")} of it ${stolenAfter === 1 ? "is" : "are"} still stolen.`}
             </p>
           </section>
         ) : null}
@@ -279,7 +290,9 @@ export function RewardPick({
         count={count}
         onBack={isFirst ? undefined : back}
         nextLabel={step === "recap" ? confirm : picked[step] ? "Next" : "Skip"}
-        onNext={step === "recap" ? () => onChoose({ cat, relic, trim }) : next}
+        onNext={
+          step === "recap" ? () => onChoose({ reclaim, relic, trim }) : next
+        }
         disabled={busy}
       >
         {sentence[step]}

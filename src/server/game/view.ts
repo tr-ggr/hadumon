@@ -40,7 +40,6 @@ import type {
   RunPhase,
   RunState,
 } from "./run";
-import type { Element } from "./elements";
 
 /** The rival's seat, as far as it shows across the table. */
 export interface RivalView {
@@ -114,11 +113,14 @@ export interface MatchView {
 }
 
 export interface RunView {
-  clanId: Element;
   difficulty: DifficultyId;
   /** Deck contents in a fixed order; the draw order stays on the server. */
   deck: string[];
+  /** The cards of the built deck the rivals still hold, sorted. */
+  stolen: string[];
   relics: string[];
+  /** The relics in the opening chest, while it waits to be opened. */
+  chest: string[] | null;
   matchIndex: number;
   gauntlet: readonly string[];
   phase: RunPhase;
@@ -210,11 +212,13 @@ export function toMatchView(state: MatchState): MatchView {
 }
 
 export function toRunView(run: RunState): RunView {
+  // The seed, the pool and the deck as it was built stay on the server.
   return {
-    clanId: run.clanId,
     difficulty: difficultyOf(run.difficulty).id,
     deck: [...run.deck].sort(),
+    stolen: [...run.stolen].sort(),
     relics: run.relics,
+    chest: run.phase === "chest" ? run.chest : null,
     matchIndex: run.matchIndex,
     gauntlet: GAUNTLET,
     phase: run.phase,

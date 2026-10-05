@@ -4,7 +4,6 @@ import { useCallback, useRef, useState } from "react";
 
 import { useToast } from "~/components/ui";
 import type { DifficultyId } from "~/server/game/difficulty";
-import type { Element } from "~/server/game/elements";
 import type { Action, MatchEvent } from "~/server/game/match";
 import type { RewardChoice } from "~/server/game/run";
 import type { MatchView, RivalBeat } from "~/server/game/view";
@@ -134,8 +133,18 @@ export function useRunController() {
     onSuccess: (snapshot) => {
       setFinal(null);
       setRecap(NO_RECAP);
-      climbFor("start", snapshot);
+      setClimb(null);
       store(snapshot);
+    },
+    onError,
+  });
+
+  // The way into the tower is shown once the chest is opened.
+  const chest = api.run.openChest.useMutation({
+    onSuccess: (update) => {
+      setRecap(NO_RECAP);
+      climbFor("start", update);
+      store(update);
     },
     onError,
   });
@@ -231,6 +240,7 @@ export function useRunController() {
     /** True while any mutation is in flight; every control is disabled. */
     busy:
       start.isPending ||
+      chest.isPending ||
       act.isPending ||
       reward.isPending ||
       abandon.isPending ||
@@ -252,8 +262,10 @@ export function useRunController() {
       climb && shown && climbFits(climb, shown.id, shown.view) ? climb : null,
     finishClimb,
     dismissGoal: () => setRecap((prev) => ({ ...prev, goal: null })),
-    start: (clanId: Element, difficulty: DifficultyId) =>
-      start.mutate({ clanId, difficulty }),
+    start: (difficulty: DifficultyId) => start.mutate({ difficulty }),
+    openChest: (relic: string) => {
+      if (version !== undefined) chest.mutate({ version, relic });
+    },
     act: (action: Action) => {
       if (version !== undefined) act.mutate({ version, action });
     },

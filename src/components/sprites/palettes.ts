@@ -93,6 +93,8 @@ export const OUTLINE_COLOR = "#1a1120";
 export const WHITE_COLOR = "#ffffff";
 /** The lime the lane marks are printed in. */
 export const LIME_COLOR = "#d8ff4f";
+/** The gold a coin is struck in. */
+export const COIN_COLOR = "#f5c84c";
 
 /**
  * The fur a cat wears: its own colours if it was drawn from life, else the

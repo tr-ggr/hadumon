@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { EssencePip } from "~/components/cats/CatCard";
+import { word } from "~/components/landing/words";
 import { ELEMENTS, FOOD_LABELS, type Element } from "~/server/game/elements";
 import { SETUP_KEEP, type Action } from "~/server/game/match";
 import type { MatchView, RunView } from "~/server/game/view";
@@ -102,9 +103,10 @@ export function SetupKeep({
         {step === "rival" ? (
           <section className="fitted:my-auto space-y-3">
             <StepHeading title="Meet the rival" headingRef={heading}>
-              {turns.length} rounds of {listWords(turns.map(String))} turns
-              each. The rival plays the same game on a board of its own, turn
-              about with you. Score more than the rival to win.
+              {word(turns.length, true)} rounds of{" "}
+              {listWords(turns.map(String))} turns each. The rival plays the
+              same game on a board of its own, turn about with you. Score more
+              than the rival to win.
             </StepHeading>
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)]">
               <Nameplate

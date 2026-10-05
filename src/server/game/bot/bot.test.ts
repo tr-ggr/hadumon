@@ -12,8 +12,9 @@ import {
 import { GAUNTLET } from "../rival";
 import { rivalDeck } from "../rivalDecks";
 import { createRng } from "../rng";
-import { CLANS, starterDeck } from "../run";
+import { CLANS, starterDeck } from "../clans";
 import { CAT_LIST } from "../cats";
+import { defaultDeck } from "../deck";
 import { playMatch } from "./arena";
 import { NEUTRAL, TILT_LIMIT } from "./eval";
 import { meter } from "./fork";
@@ -32,7 +33,10 @@ function gauntletMatch(matchIndex: number, rank: number, seed: string) {
     rivalId,
     level: matchIndex + rank,
     player: { deck: starterDeck("flame"), relics: [CLANS.flame.relicId] },
-    rival: { deck: rivalDeck(rivalId, matchIndex, POOL), relics: [] },
+    rival: {
+      deck: rivalDeck(rivalId, matchIndex, POOL, defaultDeck()),
+      relics: [],
+    },
   };
   return config;
 }

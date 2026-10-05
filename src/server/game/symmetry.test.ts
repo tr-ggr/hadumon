@@ -9,7 +9,7 @@ import {
   type MatchState,
 } from "./match";
 import { createRng } from "./rng";
-import { starterDeck } from "./run";
+import { starterDeck } from "./clans";
 
 /** The same table seen from the other chair. */
 function mirror(state: MatchState): MatchState {

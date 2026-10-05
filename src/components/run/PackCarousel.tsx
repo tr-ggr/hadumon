@@ -12,7 +12,7 @@ import {
 import { ElementMark } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import type { Element } from "~/server/game/elements";
-import type { Clan } from "~/server/game/run";
+import type { Clan } from "~/server/game/clans";
 
 import { ClanPack, PackSpace } from "./ClanPack";
 import { lean, settle } from "./fx/lean";

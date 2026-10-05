@@ -3,7 +3,6 @@ import { describe, expect, it } from "vitest";
 import { CAT_LIST, getCat } from "~/server/game/cats";
 import { RELIC_LIST } from "~/server/game/relics";
 import { GAUNTLET } from "~/server/game/rival";
-import { CLAN_LIST } from "~/server/game/run";
 import {
   anchorOf,
   buildBook,
@@ -25,13 +24,14 @@ const entry = (id: string, unlocked = true): CodexEntry => ({
   id,
   unlocked,
   hint: unlocked ? null : "Win a run.",
+  copies: null,
+  cap: null,
 });
 
 const shelf = (status: Shelf["status"] = "ready"): Shelf => ({
   status,
   cats: status === "ready" ? CAT_LIST.map((cat) => entry(cat.id)) : [],
   relics: status === "ready" ? RELIC_LIST.map((relic) => entry(relic.id)) : [],
-  clans: status === "ready" ? CLAN_LIST.map((clan) => entry(clan.id)) : [],
   rivals: GAUNTLET,
 });
 
@@ -56,13 +56,7 @@ describe("buildBook", () => {
   it("holds no more on a page than a page has room for", () => {
     for (const up of UPS) {
       for (const page of buildBook(shelf(), NO_FILTERS, up).pages) {
-        if (
-          page.body.kind !== "cats" &&
-          page.body.kind !== "relics" &&
-          page.body.kind !== "clans"
-        ) {
-          continue;
-        }
+        if (page.body.kind !== "cats" && page.body.kind !== "relics") continue;
         expect(page.body.entries.length).toBeGreaterThan(0);
         expect(page.body.entries.length).toBeLessThanOrEqual(
           PER_PAGE[up][page.body.kind],
@@ -126,7 +120,7 @@ describe("buildBook", () => {
     for (const up of UPS) {
       const loading = buildBook(shelf("loading"), NO_FILTERS, up);
       const failed = buildBook(shelf("error"), NO_FILTERS, up);
-      for (const id of ["cats", "relics", "clans"] as const) {
+      for (const id of ["cats", "relics"] as const) {
         expect(pagesOf(loading, id)[0]?.body.kind).toBe("loading");
         expect(pagesOf(loading, id)).toHaveLength(up);
         expect(pagesOf(failed, id)[0]?.body.kind).toBe("error");

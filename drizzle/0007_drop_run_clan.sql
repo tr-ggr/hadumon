@@ -1,0 +1,1 @@
+ALTER TABLE "hadumon_runs" DROP COLUMN "clan_id";

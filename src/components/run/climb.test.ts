@@ -36,10 +36,11 @@ function height(spot: Spot): number {
 function view(change: Partial<RunView> & { setup?: boolean }): RunView {
   const { setup = true, ...rest } = change;
   return {
-    clanId: "flame",
     difficulty: "kitten",
     deck: [],
+    stolen: [],
     relics: [],
+    chest: null,
     matchIndex: 0,
     gauntlet: GAUNTLET,
     phase: "match",
@@ -57,6 +58,8 @@ function wins(count: number): RunView["results"] {
     player: 30,
     rival: 20,
     won: true,
+    goalsWon: 2,
+    goals: 4,
   }));
 }
 

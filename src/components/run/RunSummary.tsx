@@ -1,11 +1,12 @@
 "use client";
 
 import { CatCard } from "~/components/cats/CatCard";
+import { PixelIcon } from "~/components/PixelIcon";
+import { COIN_COLOR } from "~/components/sprites/palettes";
 import { getCat } from "~/server/game/cats";
 import { DIFFICULTY } from "~/server/game/difficulty";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
-import { CLANS, isClanId } from "~/server/game/run";
 import type { Unlock } from "~/server/game/unlocks";
 import type { RunView } from "~/server/game/view";
 
@@ -24,10 +25,6 @@ export function unlockLabel(unlock: Unlock): string {
       return `${getCat(unlock.key).name}, a cat`;
     case "relic":
       return `${getRelic(unlock.key).name}, a relic`;
-    case "clan":
-      return isClanId(unlock.key)
-        ? `The ${CLANS[unlock.key].name}, a clan`
-        : unlock.key;
   }
 }
 
@@ -55,53 +52,55 @@ function headline(view: RunView): { title: string; text: string } {
   };
 }
 
-/** A new unlock as the piece it is: a card, a relic tile, or a clan plate. */
+/** A new unlock as the piece it is: a card or a relic tile. */
 function UnlockPiece({ unlock }: { unlock: Unlock }) {
-  if (unlock.kind === "cat") {
-    return <CatCard catId={unlock.key} className="h-full" />;
-  }
-  if (unlock.kind === "relic") {
-    return <RelicTile relicId={unlock.key} className="h-full" />;
-  }
-  const clan = isClanId(unlock.key) ? CLANS[unlock.key] : null;
-  return (
-    <div className="piece border-ink bg-lime text-ink h-full border-2 px-2 py-1.5">
-      <p className="text-pixel text-sm leading-tight">
-        {clan ? clan.name : unlock.key}
-      </p>
-      {clan ? <p className="mt-0.5 text-xs leading-snug">{clan.text}</p> : null}
-    </div>
+  return unlock.kind === "cat" ? (
+    <CatCard catId={unlock.key} className="h-full" />
+  ) : (
+    <RelicTile relicId={unlock.key} className="h-full" />
   );
 }
 
 export interface RunSummaryProps {
   view: RunView;
   unlocked: readonly Unlock[];
+  /** What the run paid. Only the total is ever known here. */
+  coins: number;
   onAgain: () => void;
 }
 
 /**
  * The end of a run, one screen at a time: the last match, what the run
- * unlocked, then the run as a whole. It exists only in memory; a reload
- * starts fresh.
+ * unlocked, the coins it paid, then the run as a whole. It exists only in
+ * memory; a reload starts fresh, and the record book on the home mat keeps
+ * what each run paid.
  */
-export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
+export function RunSummary({
+  view,
+  unlocked,
+  coins,
+  onAgain,
+}: RunSummaryProps) {
   const { title, text } = headline(view);
   const total = view.results.reduce((sum, result) => sum + result.player, 0);
   const lastMatch = view.outcome === "abandoned" ? null : view.match;
 
-  const steps = summarySteps(view, unlocked);
+  const steps = summarySteps(view, unlocked, coins);
   const { step, index, count, isFirst, isLast, next, back, heading } =
     useSteps(steps);
   const following = steps[index + 1];
 
+  const ahead =
+    following === "unlocks"
+      ? "What this run unlocked is next."
+      : following === "coins"
+        ? "What this run paid is next."
+        : "The run, match by match, is next.";
   const sentence: Record<SummaryStep, string> = {
-    result:
-      following === "unlocks"
-        ? "What this run unlocked is next."
-        : "The run, match by match, is next.",
-    unlocks: "The run, match by match, is next.",
-    summary: "A new run starts at the clan pick.",
+    result: ahead,
+    unlocks: ahead,
+    coins: ahead,
+    summary: "A new run starts with your deck and a tier.",
   };
 
   return (
@@ -128,8 +127,9 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
                 Unlocked
               </h2>
               <p className="text-ink mt-1 text-sm">
-                {plural(unlocked.length, "new piece")}, open in every run from
-                here on.
+                {plural(unlocked.length, "prize")} for what this run did. A cat
+                goes into your collection; a relic can turn up in every chest
+                and reward from here on.
               </p>
             </div>
             <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -140,6 +140,39 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
                 </li>
               ))}
             </ul>
+          </section>
+        ) : null}
+
+        {step === "coins" ? (
+          <section className="fitted:my-auto space-y-4 pt-2">
+            <div className="max-w-[65ch]">
+              <h2
+                ref={heading}
+                tabIndex={-1}
+                className="text-print text-ink text-3xl"
+              >
+                Coins
+              </h2>
+              <p className="text-ink mt-1 text-sm">
+                What the run paid. Coins open packs in the shop, and they are
+                only ever earned at this table.
+              </p>
+            </div>
+            <p className="piece piece-card border-ink text-ink flex w-fit items-center gap-3 border-2 bg-white py-3 pr-5 pl-3">
+              <PixelIcon name="coin" size={32} fill={COIN_COLOR} />
+              <span className="text-print text-5xl tabular-nums">
+                <span className="sr-only">You earned </span>
+                {coins}
+              </span>
+              <span className="text-sm font-black">
+                {coins === 1 ? "coin" : "coins"}
+              </span>
+            </p>
+            <div className="pb-2">
+              <TableLink href="/shop" variant="secondary">
+                Open the shop
+              </TableLink>
+            </div>
           </section>
         ) : null}
 
@@ -161,8 +194,7 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
               <section className="piece piece-card border-ink text-ink border-2 bg-white p-3 sm:p-4">
                 <table className="w-full max-w-xl text-sm">
                   <caption className="text-print pb-2 text-left text-xl">
-                    Match by match, {CLANS[view.clanId].name} on{" "}
-                    {DIFFICULTY[view.difficulty].name}
+                    Match by match, on {DIFFICULTY[view.difficulty].name}
                   </caption>
                   <thead>
                     <tr className="border-ink border-b-2 text-left text-xs">
@@ -232,9 +264,10 @@ export function RunSummary({ view, unlocked, onAgain }: RunSummaryProps) {
               </section>
             ) : null}
 
-            {unlocked.length === 0 ? (
-              <p className="text-ink text-sm">Nothing new this time.</p>
-            ) : null}
+            <p className="text-ink text-sm">
+              {coins > 0 ? `${plural(coins, "coin")} earned. ` : ""}
+              {unlocked.length === 0 ? "Nothing new unlocked this time." : ""}
+            </p>
 
             <div className="fitted:mb-auto pt-1 pb-2">
               <TableLink href="/codex">Open the codex</TableLink>

@@ -1,16 +1,17 @@
 import { describe, expect, it } from "vitest";
 
 import { CAT_LIST } from "../cats";
+import { DECK_SIZE, defaultDeck, STOLEN } from "../deck";
 import { rivalLevel, type DifficultyId } from "../difficulty";
-import { ELEMENTS } from "../elements";
 import { GAUNTLET } from "../rival";
 import { RELIC_LIST } from "../relics";
-import { poolFromUnlocks, STARTING_UNLOCKS } from "../unlocks";
-import { playGauntlet, type GauntletMatch } from "./arena";
+import { summarizeRun } from "../run";
+import { startingPool } from "../unlocks";
+import { playGauntlet, type Gauntlet } from "./arena";
 import { standIn } from "./index";
 import { LEVELS, TOP_LEVEL } from "./levels";
 
-const NEW_ACCOUNT = poolFromUnlocks(STARTING_UNLOCKS);
+const NEW_ACCOUNT = startingPool();
 const EVERYTHING = {
   cats: CAT_LIST.map((cat) => cat.id),
   relics: RELIC_LIST.map((relic) => relic.id),
@@ -22,17 +23,17 @@ function climb(level: number, tier: DifficultyId, runs: number) {
     playGauntlet(
       {
         seed: `gauntlet-${i}`,
-        clanId: ELEMENTS[i % ELEMENTS.length] ?? "flame",
+        deck: defaultDeck(),
         pool: NEW_ACCOUNT,
         tier,
       },
       standIn(level),
     ),
   );
-  const wins = (run: GauntletMatch[]) => run.filter((m) => m.won).length;
+  const wins = (run: Gauntlet) => run.matches.filter((m) => m.won).length;
   return {
     results,
-    firstMatch: results.filter((run) => run[0]?.won).length / runs,
+    firstMatch: results.filter((run) => run.matches[0]?.won).length / runs,
     matchesWon: results.reduce((sum, run) => sum + wins(run), 0) / runs,
   };
 }
@@ -64,17 +65,35 @@ describe("simulated runs", () => {
   const careful = climb(4, "kitten", 60);
 
   it("always end decided: a loss, or six wins", () => {
-    for (const run of [
+    for (const { matches, run } of [
       ...rote.results,
       ...points.results,
       ...careful.results,
     ]) {
-      expect(run.length).toBeGreaterThan(0);
-      expect(run.length).toBeLessThanOrEqual(GAUNTLET.length);
-      const last = run[run.length - 1];
-      expect(run.slice(0, -1).every((match) => match.won)).toBe(true);
-      expect(last?.won === false || run.length === GAUNTLET.length).toBe(true);
-      run.forEach((match, i) => expect(match.rivalId).toBe(GAUNTLET[i]));
+      expect(matches.length).toBeGreaterThan(0);
+      expect(matches.length).toBeLessThanOrEqual(GAUNTLET.length);
+      const last = matches[matches.length - 1];
+      expect(matches.slice(0, -1).every((match) => match.won)).toBe(true);
+      expect(last?.won === false || matches.length === GAUNTLET.length).toBe(
+        true,
+      );
+      matches.forEach((match, i) => expect(match.rivalId).toBe(GAUNTLET[i]));
+      expect(run.phase).toBe("over");
+      expect(run.outcome).toBe(last?.won ? "won" : "lost");
+    }
+  });
+
+  it("are the run itself: the same record, deck and stolen cards", () => {
+    for (const { matches, run } of careful.results) {
+      expect(run.results.map((r) => [r.player, r.rival, r.won])).toEqual(
+        matches.map((m) => [m.player, m.rival, m.won]),
+      );
+      const summary = summarizeRun(run);
+      expect(summary.matchesWon).toBe(matches.filter((m) => m.won).length);
+      // A card comes back with every reward taken, and none is made up.
+      expect(run.deck.length + run.stolen.length).toBe(DECK_SIZE);
+      expect(summary.reclaimed).toBe(STOLEN - run.stolen.length);
+      expect(run.relics.length).toBeGreaterThanOrEqual(1);
     }
   });
 
@@ -89,7 +108,7 @@ describe("simulated runs", () => {
 
   it("seldom hand a run to play by rote", () => {
     expect(rote.matchesWon).toBeLessThan(3);
-    const won = rote.results.filter((run) => run.length === 6 && run[5]?.won);
+    const won = rote.results.filter((run) => run.run.outcome === "won");
     // The relics a run gathers carry even a fixed list through, now and then.
     expect(won.length).toBeLessThanOrEqual(6);
   });
@@ -103,9 +122,9 @@ describe("simulated runs", () => {
     // No tier gives the rival a point: its first match starts level.
     for (const tier of ["kitten", "stray", "apex"] as const) {
       const [first] = playGauntlet(
-        { seed: "level", clanId: "flame", pool: EVERYTHING, tier },
+        { seed: "level", deck: defaultDeck(), pool: EVERYTHING, tier },
         standIn(0),
-      );
+      ).matches;
       expect(first?.level).toBe(rivalLevel(0, tier));
     }
   }, 30_000);
@@ -113,7 +132,7 @@ describe("simulated runs", () => {
   it("are reproducible from the seed", () => {
     const config = {
       seed: "same",
-      clanId: "thorn" as const,
+      deck: defaultDeck(),
       pool: EVERYTHING,
       tier: "stray" as const,
     };

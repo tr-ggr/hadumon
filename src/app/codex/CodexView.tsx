@@ -24,7 +24,6 @@ export function CodexView() {
             status: error ? "error" : "loading",
             cats: [],
             relics: [],
-            clans: [],
             rivals: GAUNTLET,
           },
     [data, error],

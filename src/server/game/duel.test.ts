@@ -23,7 +23,7 @@ import {
 } from "./match";
 import { GAUNTLET } from "./rival";
 import { createRng } from "./rng";
-import { starterDeck } from "./run";
+import { starterDeck } from "./clans";
 
 const FACES: Essence[] = ["flame", "mist", "volt", "thorn", "shade"];
 

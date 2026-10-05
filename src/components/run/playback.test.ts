@@ -9,9 +9,9 @@ import {
   type Action,
   type MatchState as Match,
 } from "~/server/game/match";
-import { rivalDeck } from "~/server/game/rivalDecks";
+import { themeOf } from "~/server/game/rivalDecks";
 import { createRng } from "~/server/game/rng";
-import { starterDeck } from "~/server/game/run";
+import { starterDeck } from "~/server/game/clans";
 import {
   flatten,
   lift,
@@ -99,7 +99,7 @@ function matchAgainst(
       rivalId,
       level,
       player: { deck: starterDeck(clan), relics },
-      rival: { deck: rivalDeck(rivalId, 0, []), relics: [] },
+      rival: { deck: starterDeck(themeOf(rivalId)), relics: [] },
     },
     rivalPolicy,
   ).state;

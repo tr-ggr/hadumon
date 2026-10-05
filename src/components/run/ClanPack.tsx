@@ -6,7 +6,7 @@ import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
 import { tileImage } from "~/components/tower/tile";
 import { Skeleton } from "~/components/ui";
 import { ELEMENTS, type Element } from "~/server/game/elements";
-import { CLANS, starterDeck } from "~/server/game/run";
+import { CLANS, starterDeck } from "~/server/game/clans";
 
 import { CLAN_PACKS, dulled, packWord } from "./packs";
 import { pileEdge } from "./pieces";

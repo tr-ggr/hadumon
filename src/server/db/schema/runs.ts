@@ -36,7 +36,6 @@ export const runs = createTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     status: runStatusEnum("status").notNull().default("active"),
-    clanId: text("clan_id").notNull(),
     /** A `DifficultyId`. Runs from before tiers existed are Kitten runs. */
     difficulty: text("difficulty").notNull().default("kitten"),
     seed: text("seed").notNull(),
@@ -61,8 +60,10 @@ export const runs = createTable(
 );
 
 /**
- * What an account keeps between runs. `kind` is `cat`, `relic` or `clan`;
- * `key` is that thing's id in the game catalogue.
+ * The prizes an account has been paid for what its runs did, each once.
+ * `kind` is `cat` or `relic`; `key` is that thing's id in the game
+ * catalogue. A relic here is unlocked; a cat here has had its one copy
+ * given (`cards` holds the copy itself).
  */
 export const unlocks = createTable(
   "unlocks",

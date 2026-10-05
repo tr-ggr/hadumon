@@ -1,9 +1,7 @@
 import type { ReactNode } from "react";
 
-import { ElementMark } from "~/components/cats/CatCard";
 import { RelicIcon } from "~/components/RelicIcon";
 import { getRelic } from "~/server/game/relics";
-import { CLANS, isClanId } from "~/server/game/run";
 import { lockedText, type CodexEntry } from "./entries";
 
 interface PieceProps {
@@ -14,7 +12,7 @@ interface PieceProps {
   mark?: ReactNode;
 }
 
-/** A relic or a clan as a tile on the board, like the ones a run carries. */
+/** A relic as a tile on the board, like the ones a run carries. */
 function Piece({ name, text, locked, mark }: PieceProps) {
   return (
     <li
@@ -58,29 +56,4 @@ export function RelicList({ entries, className }: PieceListProps) {
       })}
     </ul>
   );
-}
-
-export function ClanList({ entries, className }: PieceListProps) {
-  return (
-    <ul className={className}>
-      {entries.filter(isClanEntry).map((entry) => {
-        const clan = CLANS[entry.id];
-        return (
-          <Piece
-            key={entry.id}
-            name={clan.name}
-            text={entry.unlocked ? clan.text : lockedText(entry)}
-            locked={!entry.unlocked}
-            mark={<ElementMark element={clan.id} />}
-          />
-        );
-      })}
-    </ul>
-  );
-}
-
-function isClanEntry(
-  entry: CodexEntry,
-): entry is CodexEntry & { id: keyof typeof CLANS } {
-  return isClanId(entry.id);
 }

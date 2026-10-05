@@ -2,14 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import { ROWS } from "./cats";
 import { applyAction, type MatchState, type Side } from "./match";
-import { startRun } from "./run";
-import { poolFromUnlocks, STARTING_UNLOCKS } from "./unlocks";
+import { chestRun, matchRun } from "~/test/runs";
+import { startingPool } from "./unlocks";
 import { toMatchView, toRunView } from "./view";
 
-const run = startRun({
-  seed: "top-secret-seed",
-  clanId: "volt",
-  pool: poolFromUnlocks(STARTING_UNLOCKS),
+// A chest of charms: the run's one relic scores at the end and bends no rule.
+const run = matchRun("top-secret-seed", {
+  pool: {
+    ...startingPool(),
+    relics: ["ember-charm", "tide-charm", "spark-charm"],
+  },
 });
 
 /** The match with the player's seat changed. */
@@ -31,6 +33,27 @@ function keys(value: unknown, out = new Set<string>()): Set<string> {
   return out;
 }
 
+describe("run view", () => {
+  it("shows the chest only while it waits to be opened", () => {
+    const waiting = chestRun("top-secret-seed");
+    const view = toRunView(waiting);
+    expect(view.phase).toBe("chest");
+    expect(view.chest).toEqual(waiting.chest);
+    expect(view.match).toBeNull();
+    expect(JSON.stringify(view)).not.toContain("top-secret-seed");
+    expect(toRunView(run).chest).toBeNull();
+  });
+
+  it("lists the deck and the stolen cards sorted, never in draw order", () => {
+    const view = toRunView(run);
+    expect(view.deck).toEqual([...run.deck].sort());
+    expect(view.stolen).toEqual([...run.stolen].sort());
+    expect(view.deck).toHaveLength(16);
+    expect(view.stolen).toHaveLength(8);
+    expect(view).not.toHaveProperty("clanId");
+  });
+});
+
 describe("player view", () => {
   it("never carries the seed, a deck's order, or the rival's hand", () => {
     const view = toRunView(run);
@@ -42,6 +65,7 @@ describe("player view", () => {
       "queue",
       "discard",
       "pool",
+      "built",
       "sides",
       "under",
     ]) {

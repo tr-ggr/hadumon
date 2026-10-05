@@ -5,8 +5,8 @@ import { PixelIcon } from "~/components/PixelIcon";
 import { CardGridSkeleton, Skeleton, TableButton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 import { chapterLabel, type Page } from "./book";
-import { lockedText, type CodexEntry } from "./entries";
-import { ClanList, RelicList } from "./PieceList";
+import { copiesText, lockedText, type CodexEntry } from "./entries";
+import { RelicList } from "./PieceList";
 import { RivalCard } from "./RivalList";
 import type { Leaf } from "./turn";
 
@@ -16,9 +16,8 @@ import type { Leaf } from "./turn";
  * binder's are, whatever the cards in them have to say.
  */
 const CAT_GRID = "grid flex-1 grid-cols-2 grid-rows-2 gap-x-3 gap-y-4";
-/** Relics two across where a page is one of a spread; clans one to a line. */
+/** Relics two across where a page is one of a spread. */
 const RELIC_GRID = "grid grid-cols-1 gap-x-3 gap-y-4 md:grid-cols-2";
-const CLAN_GRID = "grid grid-cols-1 gap-y-4";
 
 export interface BookPageProps {
   page: Page;
@@ -157,8 +156,6 @@ function PageBody({
       );
     case "relics":
       return <RelicList entries={body.entries} className={RELIC_GRID} />;
-    case "clans":
-      return <ClanList entries={body.entries} className={CLAN_GRID} />;
     case "rival":
       return <RivalCard rivalId={body.rivalId} match={body.match} />;
     case "empty":
@@ -185,8 +182,8 @@ function PageBody({
       return (
         <div role="alert" className="flex flex-col items-start gap-3">
           <p>
-            The cats, relics and clans did not load. The rivals are in their
-            chapter regardless; they never needed permission.
+            The cats and relics did not load. The rivals are in their chapter
+            regardless; they never needed permission.
           </p>
           {problem ? <p className="text-ink-soft text-sm">{problem}</p> : null}
           <TableButton
@@ -252,6 +249,12 @@ function Pocket({
           className="w-full"
         />
       )}
+      {entry.unlocked && !out ? (
+        <span className="border-ink bg-lime text-ink pointer-events-none absolute -top-1.5 -right-1 z-10 border-2 px-1 text-[11px] leading-4 font-black tabular-nums">
+          <span className="sr-only">Owned: </span>
+          {copiesText(entry)}
+        </span>
+      ) : null}
       {out ? <span aria-hidden className="tray-well absolute inset-0" /> : null}
     </li>
   );

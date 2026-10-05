@@ -3,9 +3,8 @@ import { describe, expect, it } from "vitest";
 import { rivalPolicy } from "~/server/game/bot";
 import { advance } from "~/server/game/duel";
 import { ROUND_TURNS, type Action, type MatchState } from "~/server/game/match";
-import { startRun } from "~/server/game/run";
-import { poolFromUnlocks, STARTING_UNLOCKS } from "~/server/game/unlocks";
 import { toMatchView } from "~/server/game/view";
+import { matchRun } from "~/test/runs";
 
 import {
   describeAction,
@@ -35,12 +34,7 @@ import {
 const lowered = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 
 function newMatch(): MatchState {
-  const run = startRun({
-    seed: "describe-test",
-    clanId: "flame",
-    difficulty: "kitten",
-    pool: poolFromUnlocks(STARTING_UNLOCKS),
-  });
+  const run = matchRun("describe-test");
   if (!run.match) throw new Error("no match");
   return run.match;
 }

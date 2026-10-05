@@ -4,42 +4,51 @@
  */
 
 import { getCat, RARITIES } from "../cats";
-import { rivalLevel, type DifficultyId } from "../difficulty";
-import { ELEMENTS, type Element } from "../elements";
+import { starterDeck } from "../clans";
+import type { DifficultyId } from "../difficulty";
+import { ELEMENTS } from "../elements";
 import {
   createMatch,
+  drawMeter,
   stepMatch,
   type MatchConfig,
   type MatchState,
   type SideId,
 } from "../match";
-import { GAUNTLET } from "../rival";
-import { rivalDeck, rivalRelics } from "../rivalDecks";
 import { createRng } from "../rng";
 import {
-  chooseReward,
-  makeOffer,
-  starterDeck,
+  applyReward,
+  matchConfig,
+  settleMatch,
   startRun,
+  takeChest,
   type RunPool,
+  type RunState,
 } from "../run";
 import { observe } from "./observe";
 import { botAt, TOP_LEVEL, type Bot } from "./levels";
 import { styleOf } from "./styles";
 
-/** Plays a match to its end, each seat chosen for by its own bot. */
+/**
+ * Plays a match to its end, each seat chosen for by its own bot. `count`,
+ * if given, is added the draws that came up empty on the table itself, not
+ * in a bot's head.
+ */
 export function playMatch(
   config: MatchConfig,
   bots: Record<SideId, Bot>,
+  count?: { dry: number },
 ): MatchState {
   const state = createMatch(config);
-  for (let guard = 0; guard < 600 && state.phase !== "over"; guard++) {
+  for (let guard = 0; guard < 1200 && state.phase !== "over"; guard++) {
     const who = state.active;
     const action = bots[who](
       observe(state, who),
       createRng(`${state.seed}:${state.step}:bot`),
     );
+    const dry = drawMeter.dry;
     stepMatch(state, action);
+    if (count) count.dry += drawMeter.dry - dry;
   }
   if (state.phase !== "over") throw new Error("Match did not terminate");
   return state;
@@ -111,11 +120,14 @@ export interface GauntletMatch {
   player: number;
   rival: number;
   won: boolean;
+  /** Draws, by either seat, that found no card to draw. */
+  dry: number;
 }
 
 export interface GauntletConfig {
   seed: string;
-  clanId: Element;
+  /** The deck the stand-in built, and the cats and relics its account holds. */
+  deck: readonly string[];
   pool: RunPool;
   tier: DifficultyId;
   /**
@@ -126,63 +138,76 @@ export interface GauntletConfig {
   rivalRelics?: (rivalId: string, matchIndex: number) => string[];
 }
 
+export interface Gauntlet {
+  matches: GauntletMatch[];
+  /** The run as it ended, for what it pays and what it unlocks. */
+  run: RunState;
+}
+
+/** The rarer a card, the sooner a stand-in takes it back. */
+function rarest(cards: readonly string[]): string | null {
+  return (
+    [...cards].sort(
+      (a, b) =>
+        RARITIES.indexOf(getCat(b).rarity) -
+          RARITIES.indexOf(getCat(a).rarity) || a.localeCompare(b),
+    )[0] ?? null
+  );
+}
+
 /**
- * A whole run with a bot in the player's seat: six rivals in order, each on
- * its own deck with its clan's charm, at the level the tier asks, until one
- * of them wins. After a
- * win the stand-in takes the rarest cat offered and the first relic, as a
- * run's reward screen would let it.
+ * A whole run with a bot in the player's seat, made with the run's own
+ * transitions so it cannot drift from the game: the chest, six rivals in
+ * order, each on its own deck with its clan's charm, at the level the tier
+ * asks, until one of them wins. The stand-in takes the first relic in the
+ * chest, and after a win the rarest stolen card offered and the first relic.
  */
-export function playGauntlet(
-  config: GauntletConfig,
-  player: Bot,
-): GauntletMatch[] {
+export function playGauntlet(config: GauntletConfig, player: Bot): Gauntlet {
   let run = startRun({
     seed: config.seed,
-    clanId: config.clanId,
+    ticket: config.seed,
+    deck: config.deck,
     pool: config.pool,
     difficulty: config.tier,
   });
-  const played: GauntletMatch[] = [];
-  for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
-    const level = Math.min(
-      TOP_LEVEL,
-      rivalLevel(matchIndex, config.tier) + (config.levelShift ?? 0),
-    );
+  run = takeChest(run, run.chest[0] ?? "");
+  const matches: GauntletMatch[] = [];
+  while (run.phase === "match") {
+    const matchIndex = run.matchIndex;
+    const base = matchConfig(run);
+    const level = Math.min(TOP_LEVEL, base.level + (config.levelShift ?? 0));
+    const count = { dry: 0 };
     const state = playMatch(
       {
-        seed: `${config.seed}:m${matchIndex}`,
-        rivalId,
+        ...base,
         level,
-        player: { deck: run.deck, relics: run.relics },
         rival: {
-          deck: rivalDeck(rivalId, matchIndex, config.pool.cats),
+          ...base.rival,
           relics:
-            config.rivalRelics?.(rivalId, matchIndex) ?? rivalRelics(rivalId),
+            config.rivalRelics?.(base.rivalId, matchIndex) ?? base.rival.relics,
         },
       },
-      { player, rival: botAt(level, styleOf(rivalId)) },
+      { player, rival: botAt(level, styleOf(base.rivalId)) },
+      count,
     );
     const result = state.result;
     if (!result) break;
-    played.push({
-      rivalId,
+    matches.push({
+      rivalId: base.rivalId,
       level,
       player: result.player.total,
       rival: result.rival.total,
       won: result.won,
+      dry: count.dry,
     });
-    if (!result.won || matchIndex === GAUNTLET.length - 1) break;
-
-    const reward = makeOffer({ ...run, matchIndex });
-    const cat = [...reward.cats].sort(
-      (a, b) =>
-        RARITIES.indexOf(getCat(b).rarity) - RARITIES.indexOf(getCat(a).rarity),
-    )[0];
-    run = chooseReward(
-      { ...run, matchIndex, phase: "reward", reward },
-      { cat: cat ?? null, relic: reward.relics[0] ?? null, trim: null },
-    );
+    run = settleMatch(run, state);
+    if (run.phase === "reward" && run.reward) {
+      run = applyReward(run, {
+        reclaim: rarest(run.reward.reclaim),
+        relic: run.reward.relics[0] ?? null,
+        trim: null,
+      });
+    }
   }
-  return played;
+  return { matches, run };
 }

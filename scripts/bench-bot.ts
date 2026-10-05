@@ -10,10 +10,11 @@
 import { act, botAt, standIn, STEP_CAP, TOP_LEVEL } from "~/server/game/bot";
 import { meter } from "~/server/game/bot/fork";
 import { CAT_LIST } from "~/server/game/cats";
+import { defaultDeck } from "~/server/game/deck";
 import { applyAction, createMatch, type MatchState } from "~/server/game/match";
 import { GAUNTLET } from "~/server/game/rival";
 import { rivalDeck } from "~/server/game/rivalDecks";
-import { CLANS, starterDeck } from "~/server/game/run";
+import { CLANS, starterDeck } from "~/server/game/clans";
 import { styleOf } from "~/server/game/bot/styles";
 
 const MATCHES = Number(process.argv[2] ?? 12);
@@ -31,7 +32,10 @@ function rivalPositions(level: number, game: number): MatchState[] {
     rivalId,
     level,
     player: { deck: starterDeck("flame"), relics: [CLANS.flame.relicId] },
-    rival: { deck: rivalDeck(rivalId, matchIndex, POOL), relics: [] },
+    rival: {
+      deck: rivalDeck(rivalId, matchIndex, POOL, defaultDeck()),
+      relics: [],
+    },
   });
   for (let guard = 0; guard < 600 && state.phase !== "over"; guard++) {
     if (state.active === "rival") seen.push(state);

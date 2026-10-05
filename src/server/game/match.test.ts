@@ -20,7 +20,7 @@ import {
   type PlacedCat,
 } from "./match";
 import { createRng } from "./rng";
-import { starterDeck } from "./run";
+import { starterDeck } from "./clans";
 import {
   soloActions as legalActions,
   soloApply as applyAction,

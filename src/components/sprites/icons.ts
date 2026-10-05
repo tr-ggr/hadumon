@@ -30,6 +30,17 @@ export const ICONS = {
     ".ooooo.o",
     "......oo",
   ],
+  /** A coin: what a run pays, and what a pack costs. */
+  coin: [
+    "..oooo..",
+    ".o1111o.",
+    "o11oo11o",
+    "o1o1111o",
+    "o1o1111o",
+    "o11oo11o",
+    ".o1111o.",
+    "..oooo..",
+  ],
   /** A feeder die: what the Hunt takes. */
   die: [
     "oooooooo",

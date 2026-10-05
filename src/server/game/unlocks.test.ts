@@ -1,62 +1,95 @@
 import { describe, expect, it } from "vitest";
 
-import { CAT_LIST, CATS } from "./cats";
+import { CATS } from "./cats";
+import { CLANS } from "./clans";
+import { STARTER_COLLECTION } from "./collection";
 import { RELIC_LIST, RELICS } from "./relics";
-import { CLAN_LIST, CLANS, isClanId, type RunSummary } from "./run";
+import { deckElements, type RunSummary } from "./run";
 import {
   earnedUnlocks,
+  ELEMENT_DECK,
   HIGH_SCORE,
-  poolFromUnlocks,
+  relicsFromUnlocks,
   STARTING_UNLOCKS,
+  startingPool,
   TOP_SCORE,
+  UNLOCK_KINDS,
   UNLOCK_RULES,
   unlockId,
 } from "./unlocks";
 
 const summary = (extra: Partial<RunSummary> = {}): RunSummary => ({
-  clanId: "flame",
   difficulty: "kitten",
   matchesWon: 0,
+  matchesPlayed: 0,
   won: false,
   bestMatchScore: 0,
   totalScore: 0,
+  deckElements: deckElements([]),
+  goalsSwept: 0,
+  reclaimed: 0,
   ...extra,
 });
 
-describe("unlocks", () => {
-  it("starts an account with one clan, 15 cats and 10 relics", () => {
-    const of = (kind: string) =>
-      STARTING_UNLOCKS.filter((u) => u.kind === kind);
-    expect(of("clan").map((u) => u.key)).toEqual(["flame"]);
-    expect(of("cat")).toHaveLength(15);
-    expect(of("relic")).toHaveLength(10);
-  });
+/** The trophy cats: each is handed over once, for what a run did. */
+const TROPHIES = [
+  "nimbustail",
+  "pyrelynx",
+  "arcpurr",
+  "umbralynx",
+  "verdantmane",
+  "oraclemew",
+  "infernomane",
+  "stormsabre",
+  "nyxaroth",
+  "aurelynx",
+  "hadu",
+];
 
-  it("makes every relic, clan and original cat reachable exactly once", () => {
-    const all = [...STARTING_UNLOCKS, ...UNLOCK_RULES].map(unlockId).sort();
-    expect(new Set(all).size).toBe(all.length);
-    // The 76 cats added since have no rule: they are to come in packs.
-    expect(all.filter((id) => id.startsWith("cat:"))).toHaveLength(26);
-    const catalogue = new Set([
-      ...CAT_LIST.map((c) => `cat:${c.id}`),
-      ...RELIC_LIST.map((r) => `relic:${r.id}`),
-      ...CLAN_LIST.map((c) => `clan:${c.id}`),
-    ]);
-    for (const id of all) expect(catalogue.has(id), id).toBe(true);
-    for (const id of catalogue) {
-      if (!id.startsWith("cat:")) expect(all, id).toContain(id);
+describe("unlocks", () => {
+  it("are prizes of two kinds, a cat or a relic, and no clan", () => {
+    expect([...UNLOCK_KINDS]).toEqual(["cat", "relic"]);
+    for (const { kind } of [...STARTING_UNLOCKS, ...UNLOCK_RULES]) {
+      expect(UNLOCK_KINDS).toContain(kind);
     }
   });
 
-  it("only names things that exist", () => {
+  it("start an account with ten relics; its cats are its collection", () => {
+    expect(STARTING_UNLOCKS.every((u) => u.kind === "relic")).toBe(true);
+    expect(STARTING_UNLOCKS).toHaveLength(10);
+    const pool = startingPool();
+    expect(pool.relics).toEqual(relicsFromUnlocks(STARTING_UNLOCKS));
+    expect(pool.cats).toEqual(Object.keys(STARTER_COLLECTION).sort());
+    expect(pool.cats).toHaveLength(15);
+  });
+
+  it("make every relic reachable exactly once", () => {
+    const relics = [...STARTING_UNLOCKS, ...UNLOCK_RULES]
+      .filter((u) => u.kind === "relic")
+      .map((u) => u.key)
+      .sort();
+    expect(relics).toEqual(RELIC_LIST.map((r) => r.id).sort());
+  });
+
+  it("hand over each trophy cat once, and no cat a new account holds", () => {
+    const cats = UNLOCK_RULES.filter((u) => u.kind === "cat").map((u) => u.key);
+    expect([...cats].sort()).toEqual([...TROPHIES].sort());
+    for (const catId of cats) {
+      expect(STARTER_COLLECTION[catId]).toBeUndefined();
+    }
+    // Every other cat comes out of a pack and has no rule.
+    const all = [...STARTING_UNLOCKS, ...UNLOCK_RULES].map(unlockId);
+    expect(new Set(all).size).toBe(all.length);
+  });
+
+  it("only name things that exist", () => {
     for (const { kind, key } of [...STARTING_UNLOCKS, ...UNLOCK_RULES]) {
       if (kind === "cat") expect(CATS[key]).toBeDefined();
       if (kind === "relic") expect(RELICS[key]).toBeDefined();
-      if (kind === "clan") expect(isClanId(key)).toBe(true);
     }
   });
 
-  it("lets every clan start with a relic that is open from the start", () => {
+  it("open every clan's charm from the start, for the rivals and the chest", () => {
     const open = new Set(STARTING_UNLOCKS.map(unlockId));
     for (const clan of Object.values(CLANS)) {
       expect(open.has(`relic:${clan.relicId}`)).toBe(true);
@@ -69,7 +102,6 @@ describe("unlocks", () => {
     const first = earnedUnlocks(summary({ matchesWon: 1 }), STARTING_UNLOCKS);
     expect(first.map(unlockId).sort()).toEqual([
       "cat:nimbustail",
-      "clan:mist",
       "relic:early-riser",
     ]);
     expect(
@@ -87,16 +119,38 @@ describe("unlocks", () => {
     expect(high.map(unlockId)).not.toContain("cat:infernomane");
   });
 
-  it("ties the legendaries to winning with their clan", () => {
-    const won = (clanId: RunSummary["clanId"]) =>
+  it("ties two legendaries to winning with a deck built on their element", () => {
+    const won = (deck: Partial<RunSummary["deckElements"]>) =>
       earnedUnlocks(
-        summary({ clanId, matchesWon: 6, won: true }),
+        summary({
+          matchesWon: 6,
+          won: true,
+          deckElements: { ...deckElements([]), ...deck },
+        }),
         STARTING_UNLOCKS,
       ).map(unlockId);
-    expect(won("flame")).toContain("cat:stormsabre");
-    expect(won("flame")).not.toContain("cat:nyxaroth");
-    expect(won("shade")).toContain("cat:nyxaroth");
-    expect(won("volt")).toContain("cat:aurelynx");
+    expect(won({ flame: 24 })).toContain("cat:stormsabre");
+    expect(won({ flame: 24 })).not.toContain("cat:nyxaroth");
+    expect(won({ shade: ELEMENT_DECK })).toContain("cat:nyxaroth");
+    expect(won({ shade: ELEMENT_DECK - 1 })).not.toContain("cat:nyxaroth");
+    expect(won({ volt: ELEMENT_DECK })).toContain("cat:aurelynx");
+    expect(won({ volt: ELEMENT_DECK })).not.toContain("cat:nyxaroth");
+    // Half a deck of each is one deck: both can be won at once.
+    expect(won({ shade: 12, volt: 12 })).toEqual(
+      expect.arrayContaining(["cat:nyxaroth", "cat:aurelynx"]),
+    );
+    // A deck built on it earns nothing for a run that was lost.
+    expect(
+      earnedUnlocks(
+        summary({
+          matchesWon: 5,
+          deckElements: { ...deckElements([]), shade: 24 },
+        }),
+        STARTING_UNLOCKS,
+      ).map(unlockId),
+    ).not.toContain("cat:nyxaroth");
+    const hint = UNLOCK_RULES.find((rule) => rule.key === "nyxaroth")?.hint;
+    expect(hint).toBe("Win a run with 12 or more Shade cats in your deck.");
   });
 
   describe("by tier", () => {
@@ -167,12 +221,5 @@ describe("unlocks", () => {
         "Beat Madame Mittens on Stray or harder.",
       );
     });
-  });
-
-  it("builds the reward pool from what is held", () => {
-    const pool = poolFromUnlocks(STARTING_UNLOCKS);
-    expect(pool.cats).toHaveLength(15);
-    expect(pool.relics).toHaveLength(10);
-    expect(pool.cats).not.toContain("flame");
   });
 });

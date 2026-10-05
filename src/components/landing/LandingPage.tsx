@@ -6,7 +6,8 @@ import { CAT_LIST, ROWS } from "~/server/game/cats";
 import { ELEMENT_LABELS, ELEMENTS } from "~/server/game/elements";
 import { ROUND_TURNS, SLOTS } from "~/server/game/match";
 import { GAUNTLET, getRival } from "~/server/game/rival";
-import { CLAN_LIST, REWARD_CATS, starterDeck } from "~/server/game/run";
+import { DECK_SIZE, STOLEN } from "~/server/game/deck";
+import { REWARD_RECLAIM } from "~/server/game/run";
 
 import { CastShowcase } from "./CastShowcase";
 import { CornerCats, CrowdCat, HeroCrowd, MarginCrowd } from "./Crowd";
@@ -23,7 +24,6 @@ function listWords(words: readonly string[]): string {
 }
 
 const TURNS = ROUND_TURNS.reduce<number>((sum, turns) => sum + turns, 0);
-const FIRST_CLAN = CLAN_LIST[0];
 
 const HEADING = "text-print text-3xl text-balance sm:text-[40px]";
 const COPY = "max-w-[58ch] text-base sm:text-lg";
@@ -38,7 +38,6 @@ const PANEL = "fold px-4 py-10 sm:px-10 sm:py-14";
 export function LandingPage() {
   const rivals = GAUNTLET.length;
   const bosses = GAUNTLET.filter((id) => getRival(id).boss).length;
-  const deckSize = starterDeck(FIRST_CLAN?.id ?? "flame").length;
   const first = getRival(GAUNTLET[0] ?? "");
 
   return (
@@ -199,12 +198,14 @@ export function LandingPage() {
                     </p>
                     <p className={`${COPY} mt-3`}>
                       <strong className="font-extrabold">
-                        Win, and a cat joins your deck.
+                        Win, and a stolen card comes back.
                       </strong>{" "}
-                      You start with a clan&apos;s {deckSize} cards. After each
-                      win but the last you are offered {word(REWARD_CATS)} cats
-                      and may keep one, or none: a smaller deck finds its best
-                      cats more often. Every other win, a relic too.
+                      You build a deck of {word(DECK_SIZE)} cards, and the
+                      rivals make off with {word(STOLEN)} of them before the
+                      first match. After each win but the last you are shown{" "}
+                      {word(REWARD_RECLAIM)} of the stolen cards and may take
+                      one back, or none: a smaller deck finds its best cats more
+                      often. Every other win, a relic too.
                     </p>
                     <p className={`${COPY} mt-3`}>
                       <strong className="font-extrabold">
@@ -212,8 +213,8 @@ export function LandingPage() {
                       </strong>{" "}
                       Every match starts from {word(SLOTS * ROWS.length)} empty
                       slots. Your deck and relics carry through all{" "}
-                      {word(rivals)} rivals. Lose once and the run is over; what
-                      it unlocked for the next one is yours to keep.
+                      {word(rivals)} rivals. Lose once and the run is over; the
+                      coins it paid and what it unlocked are yours to keep.
                     </p>
                   </div>
                   <StageFrame

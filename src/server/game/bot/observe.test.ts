@@ -11,7 +11,7 @@ import {
   type SideId,
 } from "../match";
 import { createRng } from "../rng";
-import { starterDeck } from "../run";
+import { starterDeck } from "../clans";
 import { botAt, TOP_LEVEL } from "./levels";
 import { imagine, observe } from "./observe";
 import { styleOf } from "./styles";
