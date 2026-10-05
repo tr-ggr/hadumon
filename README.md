@@ -60,6 +60,9 @@ deck) and your mat of three lanes are in the centre; the score sheet, relics
 and log stand to the right; and your hand is a fan along the bottom edge. Hover
 a card, or pick it, and it stands upright with its whole face showing. On a
 narrow screen it is one column with the turn and the hand docked at the bottom.
+The screens around a match (clan pick, opening hand, reward, summary) are one
+1120px column; on a window of 1680x930 or more they are magnified whole, in
+half steps from 1.5x, to the largest size the window has room for.
 After each action the turn is played back one step
 at a time: the lane's cats fire from right to left, then the rival's card
 flips. Each cat pops as it fires, the points it scored rise off it, and the
@@ -69,7 +72,8 @@ lands it at once.
 
 The table has sound and music, made in the browser with the Web Audio API
 (there are no audio files). Every screen of a run has its own chiptune and
-every rival its own theme. Every press on the table is heard, and each of the
+every rival its own theme. Every press on the table is heard, a press on nothing is a dull knock on the
+cloth, a mouse coming onto a button or a card is a short tick, and each of the
 26 cats has a voice of its own, played when it is chosen or turned over to
 read. The speaker button in the corner cycles full, quiet and off for both; the note button beside it turns the music alone off. Both
 choices are kept in the browser. Nothing plays in a background tab.
@@ -175,7 +179,7 @@ src/
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components
     run/fx/               Match effects: cue to intents (plan), sampled springs, Web Animations
-    run/sfx/              Sound effects: recipes and cat voices as data, the Web Audio engine, click sounds, the volume setting
+    run/sfx/              Sound effects: recipes and cat voices as data, the Web Audio engine, click and hover sounds, the volume setting
     run/music/            Music: tracks as data, the bar scheduler, the on/off setting
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/
