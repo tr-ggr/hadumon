@@ -648,18 +648,33 @@
       },
       {
         "name": "climb-step",
-        "value": "380ms per beat; 160ms between windows filling; 480ms for a window shutting or a pennant landing",
+        "value": "240ms opening pose; 400ms camera push or a window shutting; 600ms up the wall; 240ms landing; 220ms a floor of the tilt; 420ms a rival rising (360ms more on a boss's dark window); 480ms the roof pennant; 900ms the pull back; 400ms the title card",
         "purpose": "Tabletop: the climb between matches is played one frame at a time, like a turn."
       },
       {
         "name": "climb-hop",
-        "value": "transform 320ms steps(4, end) between ledges, with the crowd's hop (360ms steps(1, end)) on landing",
+        "value": "transform 560ms steps(8, end) between ledges with a one-pixel scrabble left and right (140ms steps(1, end), four times), then the crowd's hop (360ms steps(1, end)) and two white dust pixels (280ms steps(3, end)) on landing; walking in at the foot is 20 pixels in 360ms steps(5, end)",
         "purpose": "Tabletop: Hadu goes up one floor of the tower."
       },
       {
         "name": "climb-window",
         "value": "transform 240ms steps(3, end); translateY 100% dark, 37.5% looking over the sill, 0 out",
         "purpose": "Tabletop: a rival slides up into its window."
+      },
+      {
+        "name": "climb-camera",
+        "value": "one transform on the tower inside a clipped stage: translate so the framed point sits at 50cqw and 44cqh, scale 1 (far back) or 2 (close); each beat's own duration, cubic-bezier(0.45, 0, 0.2, 1); rounded to a whole pixel",
+        "purpose": "Tabletop: the climb is shot like a scene. The camera pushes in on Hadu, follows him up the wall, crosses to the window, and pulls back at the roof."
+      },
+      {
+        "name": "climb-bars",
+        "value": "two ink bars, 11cqh each, translateY from off the stage's edge, 320ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Tabletop: in whenever the climb's camera is close, out when it is far back."
+      },
+      {
+        "name": "title-slam",
+        "value": "340ms cubic-bezier(0.16, 1, 0.3, 1); from translateY(-36px) scale(1.12), past by 3px, settles; no fade",
+        "purpose": "Tabletop: the climb's title card (coral for a rival, lime at the roof) comes down over the lower bar on the last two beats."
       },
       {
         "name": "climb-rest",
@@ -716,7 +731,7 @@
       {
         "name": "source",
         "value": "Web Audio API oscillators and filtered noise from recipes in src/components/run/sfx/recipes.ts; no audio files, no library",
-        "purpose": "Every sound in a match."
+        "purpose": "Every sound effect in a run."
       },
       {
         "name": "chain-ladder",
@@ -729,9 +744,19 @@
         "purpose": "A long chain cannot clip or pile up."
       },
       {
+        "name": "music",
+        "value": "tracks in src/components/run/music/tracks.ts: bpm, root, scale and bars of four 16-step parts (lead, arp, bass, drums) written as scale degrees; scheduled a bar at a time 200ms ahead of the bar line; 400ms crossfade on a change of tune",
+        "purpose": "One tune per screen of a run (clan pick, tower, roof, reward, run won, run lost) and one theme per rival; the opening hand plays the rival's theme without its lead and drums."
+      },
+      {
+        "name": "music-limits",
+        "value": "peak note gain 0.14; music bus 0.8 under the master; not counted against the 14 voices and not cut by a skip",
+        "purpose": "An effect always sits on top of the tune, and a skip never chops it."
+      },
+      {
         "name": "control",
-        "value": "localStorage key hadumon:sound: full, quiet or muted; default full",
-        "purpose": "The speaker corner button cycles the three. Nothing plays in a hidden tab; a skip cuts every voice and plays one settle sound."
+        "value": "localStorage key hadumon:sound: full, quiet or muted; default full. localStorage key hadumon:music: on or off; default on",
+        "purpose": "The speaker corner button cycles the three and is the master of effects and music alike; the note button beside it turns the music alone off. Nothing plays in a hidden tab; a skip cuts every effect voice and plays one settle sound."
       }
     ]
   },
@@ -924,7 +949,7 @@
       "Do use ink text on lime, coral, sky, and cream; white text only on cobalt.",
       "Do show state on the table with the frame (cobalt border, cobalt inner line, lime inner line) and with height (lifted 4px, pressed 2px), and reinforce a chosen token with a lime fill.",
       "Do end every choice in a run in the turn block or a rail, with a sentence saying what will happen and one cobalt table button.",
-      "Do keep the run route free of app chrome: the three corner buttons are its only navigation.",
+      "Do keep the run route free of app chrome: the corner buttons are its only navigation.",
       "Do keep what names a hand card (sprite, points, cost, name, Info) in its left strip, and tilt only a card at rest; anything being read stands upright.",
       "Do make actions on the table from `TableButton`: cobalt for the one confirm, cream for the rest.",
       "Do set the pixel face at 20px or 30px, or at 40px for a heading on the landing page, and only for print on the board.",

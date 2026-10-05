@@ -8,7 +8,8 @@ reward and fire every cat's power in it, right to left, in the manner of
 base-game Wingspan. Win a match and a cat or a relic joins your deck. Lose one
 and the run is over. Only unlocks carry between runs. Between matches the run
 is shown as a grey tower of six floors: Hadu climbs one for every win, past a
-rival at each window, to the roof.
+rival at each window, to the roof, with a camera that follows him up and a
+title card for whoever he meets.
 
 There is no gacha, no idle play, no currency and no multiplayer.
 
@@ -50,8 +51,9 @@ There is no gacha, no idle play, no currency and no multiplayer.
 
 ## At the table
 
-The match fills the screen, with no app shell around it: four small buttons in
-the top right corner set the sound and go Home, to the Codex, and to Log out. It is laid out as a
+The match fills the screen, with no app shell around it: five small buttons in
+the top right corner set the sound and the music and go Home, to the Codex, and
+to Log out. It is laid out as a
 table. A rail down the left holds the rival, the three rounds and your turn
 (scores, food, the prompt and its confirm); the shared supply (feeder, tray,
 deck) and your mat of three lanes are in the centre; the score sheet, relics
@@ -65,9 +67,11 @@ score rolls up; a chain speeds up as it runs, and each power sounds one note
 higher than the last. Any click or key skips to the end, and reduced motion
 lands it at once.
 
-The table has sound, made in the browser with the Web Audio API (there are no
-audio files). The speaker button in the corner cycles full, quiet and off, and
-the choice is kept in the browser. Nothing plays in a background tab.
+The table has sound and music, made in the browser with the Web Audio API
+(there are no audio files). Every screen of a run has its own chiptune and
+every rival its own theme. The speaker button in the corner cycles full, quiet
+and off for both; the note button beside it turns the music alone off. Both
+choices are kept in the browser. Nothing plays in a background tab.
 
 Keys, where there is a keyboard: `1`-`9` pick a hand card (or a die, tray card
 or cat while a lane is being resolved), `H` `D` `P` activate a lane or play the
@@ -166,11 +170,12 @@ src/
     RivalSprite.tsx       The same renderer for the six rivals, in coral
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
     sprites/              Cat, rival, icon and tower grids, and their palettes
-    cats/                 CatCard, the food icons (EssencePip) and ElementMark
+    cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
     run/  codex/          Screen components
     run/fx/               Match effects: cue to intents (plan), sampled springs, Web Animations
-    run/sfx/              Match sound: recipes as data, the Web Audio engine, the volume setting
+    run/sfx/              Sound effects: recipes as data, the Web Audio engine, the volume setting
+    run/music/            Music: tracks as data, the bar scheduler, the on/off setting
     ui/                   Button, Panel, Stat, Modal, badges, Toast, Skeleton
   server/
     api/                  tRPC root, context, routers (auth, run, codex)
