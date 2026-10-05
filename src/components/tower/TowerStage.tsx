@@ -15,6 +15,8 @@ export interface TowerStageProps {
   camera: Camera;
   /** How long the camera takes to get there. */
   ms: number;
+  /** The way it gets there, as a timing function. The climb's, unless told. */
+  ease?: string;
   /** How far down the stage the framed point sits; any CSS length. */
   focus: string;
   /** How far across the stage it sits. The middle, unless told. */
@@ -37,6 +39,7 @@ export function TowerStage({
   tower,
   camera,
   ms,
+  ease,
   focus,
   at,
   children,
@@ -55,6 +58,7 @@ export function TowerStage({
           "--cam-y": camera.y,
           "--zoom": camera.zoom,
           "--cam-ms": `${ms}ms`,
+          "--cam-ease": ease,
         } as CSSProperties
       }
     >

@@ -57,7 +57,7 @@ export function CodexView() {
   const codex = api.codex.get.useQuery();
 
   return (
-    <div className="flex flex-col gap-7">
+    <div className="in-room flex flex-col gap-7">
       <Board>
         <h1 className="text-print text-3xl sm:text-[40px]">Codex</h1>
         <p className="mt-2 max-w-prose">

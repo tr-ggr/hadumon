@@ -2,12 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type MouseEvent, type ReactNode } from "react";
 
 import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
 import { MusicButton } from "~/components/run/music/MusicButton";
+import { playSound } from "~/components/run/sfx/engine";
 import { SoundButton } from "~/components/run/sfx/SoundButton";
+import { useReducedMotion } from "~/components/run/useStepper";
+import { moveMs, placeFor } from "~/components/tower/places";
 import { TowerBackdrop } from "~/components/tower/TowerBackdrop";
 import type { IconName } from "~/components/sprites/icons";
 import { tableButtonClass, type TableButtonSize } from "~/components/ui";
@@ -27,7 +30,6 @@ export const NAV_ITEMS: NavItem[] = [
 const BARE_ROUTES = ["/login", "/signup"];
 /** The table takes the whole screen: no lid, no dock. See `TableNav`. */
 const TABLE_ROUTE = "/run";
-const CODEX_ROUTE = "/codex";
 
 export function AppShell({
   children,
@@ -44,22 +46,115 @@ export function AppShell({
     )
   )
     return <>{children}</>;
-  // The table lays its own cloth edge to edge and carries its own way out.
-  if (isActive(pathname, TABLE_ROUTE)) {
-    return (
-      <div className="flex min-h-dvh flex-col">
-        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
-      </div>
+  return <Shell pathname={pathname}>{children}</Shell>;
+}
+
+/** A page being gone to: where from, where to, and whether the camera is there. */
+interface Move {
+  from: string;
+  to: string;
+  settled: boolean;
+}
+
+/** If the page gone to never comes, the one being left is shown again. */
+const MOVE_LIMIT_MS = 4000;
+/** How long the pieces of a page take to land. */
+const LAND_MS = 320;
+
+/**
+ * Everything around a signed-in page. The tower stands behind it all, and a
+ * press on a link to another place moves the camera there: the page being
+ * left is put away at once, and the one arrived at is set down when the
+ * camera has stopped and the page has come. The table has the whole screen,
+ * so the lid and the dock are only up around it while the camera is moving.
+ */
+function Shell({
+  pathname,
+  children,
+}: {
+  pathname: string;
+  children: ReactNode;
+}) {
+  const calm = useReducedMotion();
+  const [move, setMove] = useState<Move | null>(null);
+  const [landed, setLanded] = useState(false);
+
+  const arrived = move !== null && pathname !== move.from;
+  const moving = move !== null && !(arrived && move.settled);
+  const here = move?.to ?? pathname;
+  const onTable = isActive(pathname, TABLE_ROUTE);
+
+  useEffect(() => {
+    if (!move || move.settled) return;
+    const timer = setTimeout(
+      () => setMove((now) => (now === move ? { ...now, settled: true } : now)),
+      moveMs(placeFor(move.from), placeFor(move.to)),
     );
-  }
+    return () => clearTimeout(timer);
+  }, [move]);
+
+  const leaving = move ? `${move.from} ${move.to}` : null;
+  useEffect(() => {
+    if (leaving === null) return;
+    const timer = setTimeout(() => setMove(null), MOVE_LIMIT_MS);
+    return () => clearTimeout(timer);
+  }, [leaving]);
+
+  useEffect(() => {
+    if (!move || !arrived || !move.settled) return;
+    setMove(null);
+    setLanded(true);
+    playSound("settle");
+  }, [move, arrived]);
+
+  useEffect(() => {
+    if (!landed) return;
+    const timer = setTimeout(() => setLanded(false), LAND_MS);
+    return () => clearTimeout(timer);
+  }, [landed]);
+
+  /** A plain press on a link to another place starts the camera for it. */
+  const startMove = (event: MouseEvent<HTMLDivElement>) => {
+    if (calm || event.button !== 0) return;
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+      return;
+    }
+    if (!(event.target instanceof Element)) return;
+    const link = event.target.closest("a[href]");
+    if (!(link instanceof HTMLAnchorElement)) return;
+    if (link.target === "_blank" || link.origin !== window.location.origin) {
+      return;
+    }
+    if (placeFor(link.pathname) === placeFor(pathname)) return;
+    setMove({ from: pathname, to: link.pathname, settled: false });
+  };
+
   return (
-    <div className="relative isolate flex min-h-dvh flex-col">
-      {isActive(pathname, CODEX_ROUTE) ? null : <TowerBackdrop />}
-      <Lid pathname={pathname} />
-      <main className="mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-3 pt-5 pb-28 sm:px-5 md:pb-12">
+    <div
+      className="tower-app relative isolate flex min-h-dvh flex-col"
+      data-nav={
+        moving ? "moving" : move !== null || landed ? "landed" : undefined
+      }
+      onClickCapture={startMove}
+    >
+      <TowerBackdrop
+        place={placeFor(here)}
+        moving={moving}
+        hidden={onTable && !moving}
+      />
+      {onTable && !moving ? null : <Lid pathname={here} />}
+      {/* The table lays its own cloth edge to edge and carries its own way
+          out; every other page is a column on the app's cloth. */}
+      <main
+        className={
+          onTable
+            ? "flex min-w-0 flex-1 flex-col"
+            : "shell-page mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-3 pt-5 pb-28 sm:px-5 md:pb-12"
+        }
+      >
         {children}
       </main>
-      <Dock pathname={pathname} />
+      {onTable && !moving ? null : <Dock pathname={here} />}
     </div>
   );
 }

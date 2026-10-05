@@ -9,6 +9,9 @@ import {
   TIER,
   TOWER_LEGEND,
   TOWER_WIDTH,
+  WALL,
+  WALL_LEGEND,
+  WALL_WIDTH,
   buildTower,
   stackRuns,
 } from "./tower";
@@ -132,5 +135,32 @@ describe("stackRuns", () => {
       { x: 0, y: 0, width: 2, height: 2, fill: "stone" },
       { x: 0, y: 2, width: 1, height: 1, fill: "stone" },
     ]);
+  });
+});
+
+describe("the wall inside", () => {
+  it("is one tile of legend characters, every row the tile's width", () => {
+    expect(WALL.length).toBeGreaterThan(0);
+    for (const row of WALL) {
+      expect(row).toHaveLength(WALL_WIDTH);
+      for (const pixel of row)
+        expect(Object.keys(WALL_LEGEND)).toContain(pixel);
+    }
+  });
+
+  it("repeats without a seam: mortar across the top, none along the bottom", () => {
+    expect(new Set(WALL[0])).toEqual(new Set(["3"]));
+    expect(WALL.at(-1)).not.toBe(WALL[0]);
+  });
+
+  it("is mostly deep stone, so a board laid on it is what is read", () => {
+    const pixels = WALL.join("");
+    const deep = [...pixels].filter((pixel) => pixel === ".").length;
+    expect(deep / pixels.length).toBeGreaterThan(0.6);
+  });
+
+  it("stands cards of both stocks on a shelf", () => {
+    const pixels = WALL.join("");
+    for (const pixel of ["c", "w", "1", "2"]) expect(pixels).toContain(pixel);
   });
 });

@@ -198,6 +198,71 @@ export function buildTower(bosses: readonly boolean[]): Tower {
   return { width: TOWER_WIDTH, height: rows.length, rows, floors };
 }
 
+/**
+ * The inside of the tower, as one tile of wall that repeats: courses of deep
+ * stone, and a shelf of index cards stood on end. It is what a camera sees
+ * once it has gone in through a window.
+ */
+export const WALL_LEGEND = {
+  ".": "deep stone",
+  "3": "mortar",
+  "1": "the shelf",
+  "2": "the shelf's lit edge",
+  c: "a card, chipboard",
+  w: "a card, cream",
+} as const;
+
+export const WALL_WIDTH = 32;
+/** A course of stone: a line of mortar and five rows of block. */
+const COURSE = 6;
+/** How far apart the upright joints of a course are. */
+const BLOCK = 16;
+/** Cards on the shelf: where each stands, how wide, how tall, and its stock. */
+const CARDS: readonly (readonly [number, number, number, string])[] = [
+  [2, 2, 7, "c"],
+  [4, 2, 8, "w"],
+  [6, 3, 6, "c"],
+  [11, 2, 8, "1"],
+  [13, 2, 5, "w"],
+  [18, 3, 8, "c"],
+  [21, 2, 7, "w"],
+  [25, 2, 6, "c"],
+  [27, 3, 8, "1"],
+];
+/** The rows above the shelf that cards stand in. */
+const SHELF_ROOM = 10;
+
+function course(joint: number): string[] {
+  const block = Array.from({ length: WALL_WIDTH }, (_, x) =>
+    x % BLOCK === joint ? "3" : ".",
+  ).join("");
+  return [
+    fill("3", WALL_WIDTH),
+    ...Array.from({ length: COURSE - 1 }, () => block),
+  ];
+}
+
+function shelf(): string[] {
+  const rows = Array.from({ length: SHELF_ROOM }, (_, y) =>
+    Array.from({ length: WALL_WIDTH }, (_, x) => {
+      const card = CARDS.find(
+        ([left, width, height]) =>
+          x >= left && x < left + width && y >= SHELF_ROOM - height,
+      );
+      return card?.[3] ?? ".";
+    }).join(""),
+  );
+  return [...rows, fill("2", WALL_WIDTH), fill("1", WALL_WIDTH)];
+}
+
+export const WALL: readonly string[] = [
+  ...course(8),
+  ...course(0),
+  ...course(8),
+  ...shelf(),
+  ...course(0),
+];
+
 export interface Block extends Box {
   fill: string;
 }

@@ -896,10 +896,55 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .tower-backdrop {
   --px: var(--tower-px);
   --pace: 1;
+  /* A camera that goes in through a window pushes the picture far off the
+     left of the stage; only the climb holds its left edge. */
+  --x-min: -1000000px;
   position: fixed;
   inset: var(--lid-h) 0 var(--dock-h) 0;
   z-index: -1;
   pointer-events: none;
+}
+.tabletop .tower-backdrop[data-moving="true"] .tower-world {
+  will-change: transform;
+}
+/* The inside of the tower: a wall of deep stone, cut to at once when the
+   camera has gone in through a window, and away from at once as it leaves.
+   While it is up, the outside is not drawn. */
+.tabletop .tower-room {
+  position: absolute;
+  inset: 0;
+  visibility: hidden;
+  background-color: var(--color-stone-deep);
+  background-size: calc(var(--px) * 32) auto;
+  image-rendering: pixelated;
+}
+.tabletop .tower-backdrop[data-room="true"] .tower-room {
+  visibility: visible;
+}
+.tabletop .tower-backdrop[data-room="true"] .tower-stage {
+  visibility: hidden;
+}
+/* A page laid inside the tower: what it casts falls on stone. */
+.tabletop .in-room {
+  --board-cast: color-mix(
+    in srgb,
+    var(--color-ink) 60%,
+    var(--color-stone-deep)
+  );
+}
+/*
+ * Going from one place to another. The page being left is put away at the
+ * press, the camera moves, and the page arrived at is set down when the
+ * camera has stopped and the page is there to show: its boards and mats land
+ * as any piece does.
+ */
+.tabletop .tower-app[data-nav="moving"] > main {
+  visibility: hidden;
+}
+.tabletop .tower-app[data-nav="landed"] > .shell-page .board,
+.tabletop .tower-app[data-nav="landed"] > .shell-page .mat,
+.tabletop .tower-app[data-nav="landed"] > .shell-page header > .piece {
+  animation: piece-land 240ms var(--ease-out) both;
 }
 /* The side of a page kept clear for the tower: its width, and a gap. */
 .tabletop .beside-tower {
@@ -951,7 +996,8 @@ body:has(.table-fit) [role="dialog"] {
       calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom))
     )
     scale(var(--zoom));
-  transition: transform var(--cam-ms, 400ms) cubic-bezier(0.45, 0, 0.2, 1);
+  transition: transform var(--cam-ms, 400ms)
+    var(--cam-ease, cubic-bezier(0.45, 0, 0.2, 1));
 }
 .tabletop .climb .tower-world {
   will-change: transform;
