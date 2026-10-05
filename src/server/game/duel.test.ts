@@ -531,11 +531,11 @@ describe("the end of a match", () => {
       targets: [],
     });
     expect(over.phase).toBe("over");
-    // Flameclaw 2 + 2 yarn + the Ember Charm's 2 + the lower share of Pawful.
+    // Flameclaw 2 + 2 yarn + the Ember Charm's 1 + the lower share of Pawful.
     expect(over.result?.player).toMatchObject({
-      total: 10,
+      total: 9,
       goals: 4,
-      relics: 2,
+      relics: 1,
     });
     // Bramblepaw 3 + 1 cached + 2 tucked + the goal.
     expect(over.result?.rival).toMatchObject({
@@ -548,7 +548,7 @@ describe("the end of a match", () => {
     expect(events[events.length - 1]).toEqual({
       type: "over",
       won: false,
-      player: 10,
+      player: 9,
       rival: 13,
       tiebreak: null,
     });

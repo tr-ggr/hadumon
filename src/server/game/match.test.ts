@@ -923,8 +923,10 @@ describe("rounds and goals", () => {
       cached: 1,
       tucked: 3,
       goals: 4,
-      relics: 2 * 2 + 2,
-      total: 22,
+      // The Ember Charm's point for each of two Flame cats, and the Quiet
+      // Corner's two.
+      relics: 2 * 1 + 2,
+      total: 20,
     });
   });
 });

@@ -3,7 +3,13 @@ import { describe, expect, it } from "vitest";
 import { GOAL_IDS, getGoal } from "./goals";
 import { ELEMENTS } from "./elements";
 import { emptyPool } from "./match";
-import { combineMods, NO_MODS, RELIC_LIST, relicScore } from "./relics";
+import {
+  CHARM_POINTS,
+  combineMods,
+  NO_MODS,
+  RELIC_LIST,
+  relicScore,
+} from "./relics";
 import { GAUNTLET, getRival, RIVAL_LIST } from "./rival";
 
 const placed = (catId: string, yarn = 0) => ({
@@ -47,8 +53,10 @@ describe("relics", () => {
       den: [placed("pyrelynx", 3)],
       prowl: [],
     };
-    expect(relicScore("ember-charm", board)).toBe(4);
-    expect(relicScore("briar-charm", board)).toBe(2);
+    // A charm pays a point a cat of its element: two Flame cats, one Thorn.
+    expect(relicScore("ember-charm", board)).toBe(2 * CHARM_POINTS);
+    expect(relicScore("briar-charm", board)).toBe(CHARM_POINTS);
+    expect(CHARM_POINTS).toBe(1);
     expect(relicScore("quiet-corner", board)).toBe(2);
     expect(relicScore("hoarders-basket", board)).toBe(2);
     expect(relicScore("warm-saucer", board)).toBe(0);

@@ -48,12 +48,19 @@ export interface Relic {
   score?: ScoreRule;
 }
 
+/**
+ * What a clan's charm pays for each cat of its element. Over four rounds a
+ * board fills, and at 2 a cat a charm was worth eight or nine points, twice
+ * any other relic; at 1 it is worth about what the best of them are.
+ */
+export const CHARM_POINTS = 1;
+
 function charm(id: string, name: string, element: Element): Relic {
   return {
     id,
     name,
-    text: `2 points for each ${ELEMENT_LABELS[element]} cat on your board at the end of a match.`,
-    score: { per: "element", element, points: 2 },
+    text: `${CHARM_POINTS} point for each ${ELEMENT_LABELS[element]} cat on your board at the end of a match.`,
+    score: { per: "element", element, points: CHARM_POINTS },
   };
 }
 
