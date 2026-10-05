@@ -32,6 +32,14 @@ export type Spot = "away" | "ground" | "roof" | number;
  */
 export type WindowState = "dark" | "peek" | "out" | "flag";
 
+/** What stands where on the tower. */
+export interface TowerStanding {
+  hadu: Spot;
+  windows: readonly WindowState[];
+  /** The pennant on the roof, once the last floor is taken. */
+  roofFlag: boolean;
+}
+
 /** What the camera frames. */
 export interface Shot {
   /**
@@ -189,6 +197,57 @@ function windowsAt(
   return Array.from({ length: count }, (_, index) =>
     index < floor ? "flag" : index === floor ? met : "peek",
   );
+}
+
+/**
+ * How the tower stands for a run that is not climbing: the picture behind
+ * the rest of the app. With no run, every rival is at home and Hadu waits at
+ * the foot. In a match he is on that floor's ledge and its rival is out; with
+ * a reward to take, the floor just won is shut and flagged and he has not
+ * gone up yet. Until the run is known (`undefined`), the tower is dark and
+ * nobody is on it.
+ */
+export function towerStanding(
+  run:
+    | Pick<RunView, "matchIndex" | "phase" | "outcome" | "gauntlet">
+    | null
+    | undefined,
+  count: number,
+): TowerStanding {
+  if (run === undefined) {
+    return {
+      hadu: "away",
+      windows: Array.from({ length: count }, () => "dark" as const),
+      roofFlag: false,
+    };
+  }
+  if (run === null) {
+    return {
+      hadu: "ground",
+      windows: windowsAt(-1, count, "peek"),
+      roofFlag: false,
+    };
+  }
+  const floors = run.gauntlet.length;
+  if (run.phase === "over" && run.outcome === "won") {
+    return {
+      hadu: "roof",
+      windows: windowsAt(floors, floors, "flag"),
+      roofFlag: true,
+    };
+  }
+  const floor = Math.min(Math.max(run.matchIndex, 0), floors - 1);
+  return run.phase === "reward"
+    ? {
+        hadu: floor,
+        windows: windowsAt(floor + 1, floors, "peek"),
+        roofFlag: false,
+      }
+    : {
+        hadu: floor,
+        windows: windowsAt(floor, floors, "out"),
+        roofFlag: false,
+      };
 }
 
 function valid(

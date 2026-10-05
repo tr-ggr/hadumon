@@ -10,6 +10,7 @@ import {
   climbAnnouncement,
   climbFits,
   restingFrame,
+  towerStanding,
   type ClimbFrame,
   type ClimbKind,
   type ClimbRecord,
@@ -402,5 +403,70 @@ describe("climbFits", () => {
         view({ phase: "over", outcome: "lost" }),
       ),
     ).toBe(false);
+  });
+});
+
+describe("towerStanding", () => {
+  const count = GAUNTLET.length;
+
+  it("is dark and empty until the run is known", () => {
+    const standing = towerStanding(undefined, count);
+    expect(standing.hadu).toBe("away");
+    expect(standing.windows).toEqual(GAUNTLET.map(() => "dark"));
+    expect(standing.roofFlag).toBe(false);
+  });
+
+  it("has every rival at home and Hadu at the foot with no run", () => {
+    const standing = towerStanding(null, count);
+    expect(standing.hadu).toBe("ground");
+    expect(standing.windows).toEqual(GAUNTLET.map(() => "peek"));
+  });
+
+  it("puts Hadu on the floor being played, its rival out, flags below", () => {
+    const standing = towerStanding(view({ matchIndex: 2 }), count);
+    expect(standing.hadu).toBe(2);
+    expect(standing.windows).toEqual([
+      "flag",
+      "flag",
+      "out",
+      "peek",
+      "peek",
+      "peek",
+    ]);
+  });
+
+  it("is where an ascent rests, for the same floor", () => {
+    for (let floor = 1; floor < count; floor++) {
+      const rest = restingFrame("ascend", floor, GAUNTLET);
+      const standing = towerStanding(view({ matchIndex: floor }), count);
+      expect(standing.hadu).toBe(rest?.hadu);
+      expect(standing.windows).toEqual(rest?.windows);
+    }
+  });
+
+  it("shuts and flags the floor just won while its reward waits", () => {
+    const standing = towerStanding(
+      view({ matchIndex: 1, phase: "reward" }),
+      count,
+    );
+    expect(standing.hadu).toBe(1);
+    expect(standing.windows).toEqual([
+      "flag",
+      "flag",
+      "peek",
+      "peek",
+      "peek",
+      "peek",
+    ]);
+  });
+
+  it("flags every floor and the roof for a run that was won", () => {
+    const standing = towerStanding(
+      view({ matchIndex: count - 1, phase: "over", outcome: "won" }),
+      count,
+    );
+    expect(standing.hadu).toBe("roof");
+    expect(standing.roofFlag).toBe(true);
+    expect(standing.windows).toEqual(GAUNTLET.map(() => "flag"));
   });
 });

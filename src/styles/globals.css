@@ -863,29 +863,38 @@ body:has(.table-fit) [role="dialog"] {
     --px: 6px;
   }
 }
-.tabletop .climb-stage {
-  position: absolute;
-  inset: 0;
+/* The stage and its camera are shared with the tower that stands behind the
+   rest of the app (`TowerStage`). The picture is never pushed further left
+   than `--x-min`: nothing, on the climb, so Hadu's ledge stays in it. */
+.tabletop .tower-stage {
   overflow: clip;
   container-type: size;
 }
-.tabletop .climb-world {
+.tabletop .tower-world {
   transform-origin: 0 0;
   transform: translate(
-      max(0px, calc(50cqw - var(--cam-x) * var(--px) * var(--zoom))),
+      max(
+        var(--x-min, 0px),
+        calc(var(--at-x, 50cqw) - var(--cam-x) * var(--px) * var(--zoom))
+      ),
       calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom))
     )
     scale(var(--zoom));
   transition: transform var(--cam-ms, 400ms) cubic-bezier(0.45, 0, 0.2, 1);
+}
+.tabletop .climb .tower-world {
   will-change: transform;
 }
 /* Where it can, the camera comes to rest on a whole pixel of the screen. */
 @supports (width: round(1.5px, 1px)) {
-  .tabletop .climb-world {
+  .tabletop .tower-world {
     transform: translate(
         max(
-          0px,
-          round(calc(50cqw - var(--cam-x) * var(--px) * var(--zoom)), 1px)
+          var(--x-min, 0px),
+          round(
+            calc(var(--at-x, 50cqw) - var(--cam-x) * var(--px) * var(--zoom)),
+            1px
+          )
         ),
         round(calc(var(--focus) - var(--cam-y) * var(--px) * var(--zoom)), 1px)
       )
@@ -1049,7 +1058,7 @@ body:has(.table-fit) [role="dialog"] {
 /* Reduced motion: the one frame it shows is simply there. The camera is
    already where it rests, the bars are in, the card is down. */
 @media (prefers-reduced-motion: reduce) {
-  .tabletop .climb-world,
+  .tabletop .tower-world,
   .tabletop .climb-bar,
   .tabletop .climb-hadu,
   .tabletop .climb-rival {

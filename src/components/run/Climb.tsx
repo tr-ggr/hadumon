@@ -8,11 +8,10 @@ import {
   type CSSProperties,
 } from "react";
 
-import { PixelIcon } from "~/components/PixelIcon";
-import { PixelSprite } from "~/components/PixelSprite";
-import { RivalSprite } from "~/components/RivalSprite";
-import { SPRITE_SIZE } from "~/components/sprites/cats";
-import { LANE, buildTower } from "~/components/sprites/tower";
+import { buildTower } from "~/components/sprites/tower";
+import { FOCUS, cameraFor } from "~/components/tower/camera";
+import { TowerScene } from "~/components/tower/TowerScene";
+import { TowerStage } from "~/components/tower/TowerStage";
 import { getRival } from "~/server/game/rival";
 
 import {
@@ -20,54 +19,9 @@ import {
   climbAnnouncement,
   type ClimbFrame,
   type ClimbRecord,
-  type Spot,
 } from "./climb";
-import { LIME, tableButtonClass } from "./pieces";
-import { Tower } from "./Tower";
+import { tableButtonClass } from "./pieces";
 import { useClimbFx } from "./useClimb";
-
-/** The cat that climbs, whatever clan the run is. */
-const CLIMBER = "hadu";
-/** Where Hadu and the pennant stand on the roof, in from its left edge. */
-const ROOF_STAND = LANE + 6;
-const ROOF_PENNANT = LANE + 36;
-
-/**
- * How far down the picture the camera puts what it frames. A little above
- * the middle, so the title card has the lower part to itself.
- */
-const FOCUS = 0.44;
-/** How much larger the tower is drawn in a close shot. A whole number, so pixels stay square. */
-const CLOSE = 2;
-/** Where a close shot looks, across the tower: toward the ledge, or the window. */
-const LEDGE_SIDE = LANE + 18;
-const WINDOW_SIDE = LANE + 26;
-
-/** A length in the tower's own pixels, which the screen's size sets. */
-function px(count: number): string {
-  return `calc(var(--px) * ${count})`;
-}
-
-/** The player's lime pennant, planted where a floor has been taken. */
-function Pennant({
-  left,
-  bottom,
-  landing,
-}: {
-  left: number;
-  bottom: number;
-  /** False for one that was already up when the climb began. */
-  landing: boolean;
-}) {
-  return (
-    <span
-      className={`climb-pennant absolute ${landing ? "anim-land" : ""}`}
-      style={{ left: px(left), bottom: px(bottom) }}
-    >
-      <PixelIcon name="goal" fill={LIME} className="block h-full w-full" />
-    </span>
-  );
-}
 
 /**
  * The card that names what the climb has come to: the rival of the floor, in
@@ -132,8 +86,6 @@ export function Climb({ climb, frame, beat, gauntlet, onSkip }: ClimbProps) {
     () => buildTower(gauntlet.map((rivalId) => getRival(rivalId).boss)),
     [gauntlet],
   );
-  /** Above the roof, room for a cat to stand on it. */
-  const height = tower.height + SPRITE_SIZE;
   /** What was already up when the climb began does not land again. */
   const [first] = useState(frame);
 
@@ -149,32 +101,6 @@ export function Climb({ climb, frame, beat, gauntlet, onSkip }: ClimbProps) {
     skip.current?.focus({ preventScroll: true });
   }, []);
 
-  const rise = (spot: Spot): number => {
-    if (spot === "roof") return tower.height;
-    if (typeof spot !== "number") return 0;
-    return tower.height - (tower.floors[spot]?.ledge ?? tower.height);
-  };
-
-  /** The point of the tower the camera looks at, in tower pixels, and how close. */
-  const camera = (): { x: number; y: number; zoom: number } => {
-    const { shot } = frame;
-    if (!shot.close || shot.on === "tower") {
-      return { x: tower.width / 2, y: height * FOCUS, zoom: 1 };
-    }
-    const spot = shot.on === "floor" ? (shot.floor ?? 0) : frame.hadu;
-    if (shot.on === "roof" || spot === "roof") {
-      return { x: ROOF_STAND + 18, y: SPRITE_SIZE + 6, zoom: CLOSE };
-    }
-    const floor = typeof spot === "number" ? tower.floors[spot] : undefined;
-    return {
-      x: shot.on === "floor" ? WINDOW_SIDE : LEDGE_SIDE,
-      // Off a floor he is at the foot, or about to be.
-      y: floor ? SPRITE_SIZE + floor.top + floor.height / 2 : height - 26,
-      zoom: CLOSE,
-    };
-  };
-  const cam = camera();
-
   const stage = useRef<HTMLDivElement>(null);
   useClimbFx(stage, beat, frame);
 
@@ -189,140 +115,48 @@ export function Climb({ climb, frame, beat, gauntlet, onSkip }: ClimbProps) {
         {said}
       </p>
 
-      <div
-        aria-hidden
-        className="climb-stage"
-        style={
-          {
-            "--focus": `${FOCUS * 100}cqh`,
-            "--cam-x": cam.x,
-            "--cam-y": cam.y,
-            "--zoom": cam.zoom,
-            "--cam-ms": `${frame.ms}ms`,
-          } as CSSProperties
+      <TowerStage
+        tower={tower}
+        camera={cameraFor(frame.shot, frame.hadu, tower)}
+        ms={frame.ms}
+        focus={`${FOCUS * 100}cqh`}
+        className="absolute inset-0"
+        overlay={
+          <>
+            <span className="climb-bar" data-edge="top" data-in={frame.bars} />
+            <span
+              className="climb-bar"
+              data-edge="bottom"
+              data-in={frame.bars}
+            />
+            {frame.title ? (
+              <TitleCard
+                rivalId={
+                  frame.plate === null ? undefined : gauntlet[frame.plate]
+                }
+                floor={frame.plate ?? gauntlet.length}
+                count={gauntlet.length}
+              />
+            ) : (
+              // The card says the same thing, so the two are never up together.
+              <div className="climb-caption">
+                <p className="bg-ink text-cream max-w-md px-3 py-1.5 text-center text-sm leading-5 font-semibold">
+                  {frame.text}
+                </p>
+              </div>
+            )}
+          </>
         }
       >
-        {/* The jolt is on a box of its own around the world, so it adds to
-            the camera's move and does not replace it, and the bars stay at
-            the screen's edges through it. */}
-        <div data-shake className="absolute inset-0">
-          <div
-            className="climb-world absolute top-0 left-0"
-            style={{ width: px(tower.width), height: px(height) }}
-          >
-            <span
-              className="climb-cast absolute"
-              style={{
-                left: px(LANE - 4),
-                right: px(-2),
-                top: "100%",
-                height: px(2),
-              }}
-            />
-
-            {tower.floors.map((floor, index) => {
-              const rivalId = gauntlet[index];
-              if (rivalId === undefined) return null;
-              return (
-                <div
-                  key={rivalId}
-                  className="bg-stone-deep absolute overflow-clip"
-                  style={{
-                    left: px(floor.hole.x),
-                    top: px(SPRITE_SIZE + floor.hole.y),
-                    width: px(floor.hole.width),
-                    height: px(floor.hole.height),
-                  }}
-                >
-                  <span
-                    className="climb-rival absolute bottom-0"
-                    data-state={frame.windows[index]}
-                    style={{
-                      left: px((floor.hole.width - SPRITE_SIZE) / 2),
-                    }}
-                  >
-                    <RivalSprite
-                      rivalId={rivalId}
-                      decorative
-                      className="climb-sprite"
-                    />
-                  </span>
-                </div>
-              );
-            })}
-
-            <div
-              className="absolute bottom-0 left-0 w-full"
-              style={{ height: px(tower.height) }}
-            >
-              <Tower tower={tower} className="block h-full w-full" />
-            </div>
-
-            {tower.floors.map((floor, index) =>
-              frame.windows[index] === "flag" ? (
-                <Pennant
-                  key={index}
-                  left={5}
-                  bottom={tower.height - floor.ledge}
-                  landing={first.windows[index] !== "flag"}
-                />
-              ) : null,
-            )}
-            {frame.roofFlag ? (
-              <Pennant left={ROOF_PENNANT} bottom={tower.height} landing />
-            ) : null}
-
-            {frame.hadu === "away" ? null : (
-              <span
-                className="climb-hadu absolute bottom-0 left-0 z-10"
-                style={
-                  {
-                    "--x": frame.hadu === "roof" ? ROOF_STAND : 0,
-                    "--rise": rise(frame.hadu),
-                  } as CSSProperties
-                }
-              >
-                {/* A new spot is a new sprite, so its way of arriving plays
-              again: walking in at the foot, scrambling up to a ledge. */}
-                <span
-                  key={String(frame.hadu)}
-                  className={`relative block ${
-                    frame.hadu === first.hadu
-                      ? ""
-                      : frame.hadu === "ground"
-                        ? "climb-walk"
-                        : "climb-scramble"
-                  }`}
-                >
-                  <PixelSprite
-                    catId={CLIMBER}
-                    decorative
-                    className="climb-sprite"
-                  />
-                  <span className="climb-dust" />
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        <span className="climb-bar" data-edge="top" data-in={frame.bars} />
-        <span className="climb-bar" data-edge="bottom" data-in={frame.bars} />
-        {frame.title ? (
-          <TitleCard
-            rivalId={frame.plate === null ? undefined : gauntlet[frame.plate]}
-            floor={frame.plate ?? gauntlet.length}
-            count={gauntlet.length}
-          />
-        ) : (
-          // The card says the same thing, so the two are never up together.
-          <div className="climb-caption">
-            <p className="bg-ink text-cream max-w-md px-3 py-1.5 text-center text-sm leading-5 font-semibold">
-              {frame.text}
-            </p>
-          </div>
-        )}
-      </div>
+        <TowerScene
+          tower={tower}
+          gauntlet={gauntlet}
+          hadu={frame.hadu}
+          windows={frame.windows}
+          roofFlag={frame.roofFlag}
+          first={first}
+        />
+      </TowerStage>
 
       <button
         ref={skip}
