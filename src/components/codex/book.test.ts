@@ -78,8 +78,13 @@ describe("buildBook", () => {
       expect(book.first[id] % 2, id).toBe(0);
       expect(book.pages[book.first[id]]?.chapter).toBe(id);
     }
-    // 26 cats are seven pages, so the eighth is the blank back of the last.
-    expect(pagesOf(book, "cats").at(-1)?.body.kind).toBe("blank");
+    // 102 cats are 26 pages, four to a page: a whole number of spreads, so
+    // the chapter ends on a printed page. An odd count ends on a blank back.
+    const printed = Math.ceil(CAT_LIST.length / PER_PAGE[2].cats);
+    expect(pagesOf(book, "cats")).toHaveLength(printed + (printed % 2));
+    expect(pagesOf(book, "cats").at(-1)?.body.kind).toBe(
+      printed % 2 === 1 ? "blank" : "cats",
+    );
   });
 
   it("pads nothing when one page is open", () => {

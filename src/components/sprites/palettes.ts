@@ -67,6 +67,8 @@ export const ELEMENT_COATS: Record<Element, readonly FurPalette[]> = {
  */
 export const CAT_PALETTES: Partial<Record<string, FurPalette>> = {
   hadu: { "1": "#2f2838", "2": "#ffffff", "3": "#f4a6b7" },
+  // A ginger: orange fur, cream where it pales, and a pink nose and ears.
+  stussy: { "1": "#ec8a34", "2": "#ffe9c7", "3": "#f4a6b7" },
 };
 
 export interface RarityPalette {

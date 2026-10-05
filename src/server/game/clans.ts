@@ -4,7 +4,6 @@
  * deck is built on one too (`rivalDecks.ts`).
  */
 
-import { CAT_LIST } from "./cats";
 import { ELEMENT_LABELS, type Element } from "./elements";
 import { getRelic } from "./relics";
 
@@ -40,18 +39,105 @@ export function isClanId(value: string): value is Element {
 }
 
 /**
- * 16 cards: three of each of the clan's commons, two of its uncommon, and one
- * of every other common.
+ * The 16 cards each clan starts on: three of each of its two first commons,
+ * two of its first uncommon, and one of every other clan's two first commons.
+ * The lists are written out, not worked out from the catalogue, so that a cat
+ * added to it changes no deck a run or a rival already starts with.
  */
+const STARTER_DECKS: Record<Element, readonly string[]> = {
+  flame: [
+    "flameclaw",
+    "flameclaw",
+    "flameclaw",
+    "emberkit",
+    "emberkit",
+    "emberkit",
+    "cinderpounce",
+    "cinderpounce",
+    "mistpaw",
+    "dewhisker",
+    "voltwhisk",
+    "sparkmew",
+    "thornkit",
+    "bramblepaw",
+    "shadewhisker",
+    "duskmew",
+  ],
+  mist: [
+    "flameclaw",
+    "emberkit",
+    "mistpaw",
+    "mistpaw",
+    "mistpaw",
+    "dewhisker",
+    "dewhisker",
+    "dewhisker",
+    "brumefang",
+    "brumefang",
+    "voltwhisk",
+    "sparkmew",
+    "thornkit",
+    "bramblepaw",
+    "shadewhisker",
+    "duskmew",
+  ],
+  volt: [
+    "flameclaw",
+    "emberkit",
+    "mistpaw",
+    "dewhisker",
+    "voltwhisk",
+    "voltwhisk",
+    "voltwhisk",
+    "sparkmew",
+    "sparkmew",
+    "sparkmew",
+    "joltpad",
+    "joltpad",
+    "thornkit",
+    "bramblepaw",
+    "shadewhisker",
+    "duskmew",
+  ],
+  thorn: [
+    "flameclaw",
+    "emberkit",
+    "mistpaw",
+    "dewhisker",
+    "voltwhisk",
+    "sparkmew",
+    "thornkit",
+    "thornkit",
+    "thornkit",
+    "bramblepaw",
+    "bramblepaw",
+    "bramblepaw",
+    "burrfang",
+    "burrfang",
+    "shadewhisker",
+    "duskmew",
+  ],
+  shade: [
+    "flameclaw",
+    "emberkit",
+    "mistpaw",
+    "dewhisker",
+    "voltwhisk",
+    "sparkmew",
+    "thornkit",
+    "bramblepaw",
+    "shadewhisker",
+    "shadewhisker",
+    "shadewhisker",
+    "duskmew",
+    "duskmew",
+    "duskmew",
+    "gloomtail",
+    "gloomtail",
+  ],
+};
+
+/** A clan's 16 starting cards, in the order they are listed. */
 export function starterDeck(clanId: Element): string[] {
-  const deck: string[] = [];
-  for (const cat of CAT_LIST) {
-    const own = cat.element === clanId;
-    if (cat.rarity === "common") {
-      deck.push(...Array.from({ length: own ? 3 : 1 }, () => cat.id));
-    } else if (cat.rarity === "uncommon" && own) {
-      deck.push(cat.id, cat.id);
-    }
-  }
-  return deck;
+  return [...STARTER_DECKS[clanId]];
 }

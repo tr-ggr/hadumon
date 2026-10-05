@@ -4,7 +4,6 @@
  * only widens what a run can offer.
  */
 
-import { CAT_LIST } from "./cats";
 import { isAtLeast, type DifficultyId } from "./difficulty";
 import type { RunPool, RunSummary } from "./run";
 
@@ -39,12 +38,31 @@ const atLeast =
   (run: RunSummary) =>
     isAtLeast(run.difficulty, tier) && test(run);
 
-/** Open on a new account: one clan, every common and uncommon, ten relics. */
+/**
+ * Open on a new account: one clan, fifteen cats and ten relics. The cats are
+ * the two commons and the uncommon each clan's starting deck is made of,
+ * written out so that a cat added to the catalogue is not opened by it. The
+ * rest of the catalogue has no rule here yet: those cats are to come in packs.
+ */
 export const STARTING_UNLOCKS: Unlock[] = [
   { kind: "clan", key: "flame" },
-  ...CAT_LIST.filter(
-    (cat) => cat.rarity === "common" || cat.rarity === "uncommon",
-  ).map((cat): Unlock => ({ kind: "cat", key: cat.id })),
+  ...[
+    "flameclaw",
+    "emberkit",
+    "cinderpounce",
+    "mistpaw",
+    "dewhisker",
+    "brumefang",
+    "voltwhisk",
+    "sparkmew",
+    "joltpad",
+    "thornkit",
+    "bramblepaw",
+    "burrfang",
+    "shadewhisker",
+    "duskmew",
+    "gloomtail",
+  ].map((key): Unlock => ({ kind: "cat", key })),
   ...[
     "ember-charm",
     "tide-charm",

@@ -121,6 +121,14 @@ export const SIGNATURE: Readonly<
   aurelynx: [0, 4, 7],
   nyxaroth: [7, 3, 0],
   hadu: [0, 7, 12],
+  // The sun comes up through its chord to the octave.
+  heliopard: [4, 7, 12],
+  // The tide goes out a fifth and comes back.
+  tidelune: [7, 0, 7],
+  // A branch: a small step, then a long reach.
+  canopyx: [0, 2, 7],
+  // Stussy asks: up a fourth, up again to the sixth, and left hanging there.
+  stussy: [0, 5, 9],
 };
 
 function semitones(count: number): number {

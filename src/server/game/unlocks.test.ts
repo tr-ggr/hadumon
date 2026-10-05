@@ -32,15 +32,20 @@ describe("unlocks", () => {
     expect(of("relic")).toHaveLength(10);
   });
 
-  it("makes everything in the catalogue reachable exactly once", () => {
+  it("makes every relic, clan and original cat reachable exactly once", () => {
     const all = [...STARTING_UNLOCKS, ...UNLOCK_RULES].map(unlockId).sort();
     expect(new Set(all).size).toBe(all.length);
-    const catalogue = [
+    // The 76 cats added since have no rule: they are to come in packs.
+    expect(all.filter((id) => id.startsWith("cat:"))).toHaveLength(26);
+    const catalogue = new Set([
       ...CAT_LIST.map((c) => `cat:${c.id}`),
       ...RELIC_LIST.map((r) => `relic:${r.id}`),
       ...CLAN_LIST.map((c) => `clan:${c.id}`),
-    ].sort();
-    expect(all).toEqual(catalogue);
+    ]);
+    for (const id of all) expect(catalogue.has(id), id).toBe(true);
+    for (const id of catalogue) {
+      if (!id.startsWith("cat:")) expect(all, id).toContain(id);
+    }
   });
 
   it("only names things that exist", () => {
