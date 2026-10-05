@@ -42,9 +42,15 @@ There is no gacha, no idle play, no currency and no multiplayer.
 
 ## At the table
 
-The match is laid out as a table: the rival across the top, the shared supply
-(feeder, tray, deck) in the middle, your mat of three lanes, and your hand
-docked at the bottom edge. After each action the turn is played back one step
+The match fills the screen, with no app shell around it: three small buttons in
+the top right corner go Home, to the Codex, and to Log out. It is laid out as a
+table. A rail down the left holds the rival, the three rounds and your turn
+(scores, food, the prompt and its confirm); the shared supply (feeder, tray,
+deck) and your mat of three lanes are in the centre; the score sheet, relics
+and log stand to the right; and your hand is a fan along the bottom edge. Hover
+a card, or pick it, and it stands upright with its whole face showing. On a
+narrow screen it is one column with the turn and the hand docked at the bottom.
+After each action the turn is played back one step
 at a time: the lane's cats fire from right to left, then the rival's card
 flips. Any click or key skips to the end, and reduced motion lands it at once.
 
@@ -140,7 +146,7 @@ src/
     run/                  The game: clan pick, match, reward, summary
     codex/                Every cat, relic, clan and rival; locked or not
   components/
-    AppShell.tsx          Sidebar, top bar and mobile nav
+    AppShell.tsx          Sidebar, top bar and mobile nav (not on /run, which has its own corner buttons)
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
     sprites/              Sprite and icon grids, element/rarity palettes

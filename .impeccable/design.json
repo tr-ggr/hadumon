@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-04T23:59:24+08:00",
+  "generatedAt": "2026-10-05T12:58:54+08:00",
   "title": "Design System: HaduMon",
   "extensions": {
     "colorMeta": {
@@ -340,21 +340,13 @@
         "displayName": "Display",
         "purpose": "The one headline of a page outside a run: home's next step, the auth heading, Codex. 1.875rem below 640px."
       },
-      "display-xl": {
-        "displayName": "Landing display",
-        "purpose": "The landing headline only. 2.25rem below 640px. Not used on app screens."
-      },
-      "display-lg": {
-        "displayName": "Boss name",
-        "purpose": "The two boss names on the landing ladder. 2.25rem below 640px."
-      },
       "headline": {
         "displayName": "Headline",
-        "purpose": "Dialog titles, the wordmark, gain headings on the landing ladder. 1.25rem below 640px."
+        "purpose": "Dialog titles and the wordmark in the app shell. 1.25rem below 640px. The pull quote in the landing page's cast panel takes the same two sizes at 700 in italics."
       },
       "title": {
         "displayName": "Title",
-        "purpose": "Panel titles and the row name in the landing demo."
+        "purpose": "Panel titles."
       },
       "card-title": {
         "displayName": "Card title",
@@ -366,7 +358,7 @@
       },
       "body-sm": {
         "displayName": "Body small",
-        "purpose": "In-game prose: the prompt on the docked edge, the rival's last card, result lines, table rows. The event log sets its lines at 13px."
+        "purpose": "In-game prose: the prompt in the turn block, the rival's last card, result lines, table rows. The event log sets its lines at 13px."
       },
       "caption": {
         "displayName": "Caption",
@@ -382,15 +374,23 @@
       },
       "piece-label-sm": {
         "displayName": "Piece label small",
-        "purpose": "The floor, 10px: a lane-tile name on a phone, a die's element name, a key hint, the Fires 1st mark in the landing demo."
+        "purpose": "The floor, 10px: a lane-tile name on a phone, a die's element name, a key hint, and below 640px the Fires 1st mark and the cat's name in the landing demo."
       },
       "print": {
         "displayName": "Print",
-        "purpose": "Jersey 20 at 20px, tabletop only: lane names, Round n, the rival's name, clan names, gauntlet numerals, the log heading, score totals."
+        "purpose": "Jersey 20 at 20px, tabletop only: lane names, Round n, the rival's name, clan names, gauntlet numerals, the log heading, score totals. On the landing page also a rival's name and numeral in the rival fan and the lane's name in the lane showcase's readout."
       },
       "print-lg": {
         "displayName": "Print large",
-        "purpose": "Jersey 20 at 30px, tabletop only: run screen headings and the two score tokens."
+        "purpose": "Jersey 20 at 30px, tabletop only: run screen headings and the two score tokens. On the landing page: a heading on a phone, a boss's name and numeral in the rival fan, the demo's two score tokens."
+      },
+      "print-xl": {
+        "displayName": "Print heading",
+        "purpose": "Jersey 20 at 40px from 640px, landing page only: the ribbon's h1 and each panel's h2, the close included. 30px below 640px."
+      },
+      "wordmark": {
+        "displayName": "Wordmark, landing",
+        "purpose": "The wordmark on the landing page's title plaque: 56px, 76px from 640px, 96px from 1024px, weight 800, line-height 0.9, tracking -0.035em, with a 3px ink stroke painted under the fill and a 3px chipboard edge and 2px ink line as a straight-down text shadow. The family is the open system rounded stack; that is carried, not a rule."
       }
     },
     "shadows": [
@@ -412,7 +412,7 @@
       {
         "name": "hero-button",
         "value": "0 10px 20px rgb(216 255 79 / 0.24)",
-        "purpose": "Soft lime glow under the hero button in the landing demo."
+        "purpose": "Soft lime glow under the hero pill button. Defined in the button component; no screen uses it now that the landing demo's confirm is a table button."
       },
       {
         "name": "rarity-band",
@@ -437,7 +437,7 @@
       {
         "name": "rail",
         "value": "0 -3px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
-        "purpose": "Tabletop only. The docked edge shading the cloth above its ink line."
+        "purpose": "Tabletop only. The docked edge shading the cloth above its ink line. The rail down the side of a match has no shade."
       },
       {
         "name": "cast-cloth",
@@ -452,7 +452,47 @@
       {
         "name": "cast-rail",
         "value": "color-mix(in srgb, #b9a47e 34%, #ffffff)",
-        "purpose": "Cast shadow colour for a piece on the docked edge."
+        "purpose": "Cast shadow colour for a piece on the docked edge or on the match's side rail."
+      },
+      {
+        "name": "stage",
+        "value": "0 7px 0 -2px #b9a47e, 0 7px 0 0 #17212b, 0 14px 0 -2px var(--cast)",
+        "purpose": "Landing page. The cobalt stage frame as a 5px board with a 5px cast in the colour of what it stands on."
+      },
+      {
+        "name": "board",
+        "value": "0 5px 0 -2px #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 -2px var(--board-cast, color-mix(in srgb, #b9a47e 42%, #fff8e7))",
+        "purpose": "Landing page. The folded cream board and the board in the close, 3px boards like the mat; the cast is cloth cast on the cloth and deep sky in the close."
+      },
+      {
+        "name": "hero-mat-edge",
+        "value": "0 3px 0 0 #b9a47e, 0 5px 0 0 #17212b, 0 10px 0 0 color-mix(in srgb, #b9a47e 42%, #fff8e7)",
+        "purpose": "Landing page. The lower edge of the full-bleed sky mat on the cloth, under a 2px ink bottom border."
+      },
+      {
+        "name": "fold",
+        "value": "inset 0 3px 0 0 color-mix(in srgb, #b9a47e 26%, #fff8e7)",
+        "purpose": "Landing page. The shade on the far side of a seam between two panels of the board, under a 2px ink top border."
+      },
+      {
+        "name": "wordmark-edge",
+        "value": "text-shadow: 0 3px 0 #b9a47e, 0 5px 0 #17212b; -webkit-text-stroke: 3px #17212b; paint-order: stroke fill",
+        "purpose": "Landing page. The wordmark's letters as die-cut pieces: an ink cut line, a 3px chipboard edge, a 2px ink line under it."
+      },
+      {
+        "name": "crowd-cast",
+        "value": "a bar under the sprite: height 6.25%, inset 18.75% left and right, background var(--cast)",
+        "purpose": "Landing page. The flat cast of a standing crowd cat or oversized icon, one sprite pixel deep and ten wide. Not a box shadow."
+      },
+      {
+        "name": "cast-sky",
+        "value": "#73bde4",
+        "purpose": "Cast shadow colour for a piece on the landing page's sky bands."
+      },
+      {
+        "name": "cast-lid",
+        "value": "#0b1118",
+        "purpose": "Cast shadow colour for a piece on the landing page's ink lid strip and footer."
       }
     ],
     "motion": [
@@ -460,16 +500,6 @@
         "name": "press",
         "value": "140ms ease; translateY(2px) scale(0.99) on :active",
         "purpose": "Press feedback on pill buttons, chips, and clickable chrome."
-      },
-      {
-        "name": "rival-flash-in",
-        "value": "150ms background-color",
-        "purpose": "Landing demo: the rival bar turns coral when the rival acts."
-      },
-      {
-        "name": "rival-flash-out",
-        "value": "700ms background-color",
-        "purpose": "Landing demo: the rival bar fades back to cream."
       },
       {
         "name": "auth-enter",
@@ -484,27 +514,17 @@
       {
         "name": "demo-step",
         "value": "560ms between steps; 0ms under prefers-reduced-motion",
-        "purpose": "The landing demo lands a turn one line at a time."
-      },
-      {
-        "name": "slot-fire-in",
-        "value": "150ms background-color",
-        "purpose": "Landing demo: the cat whose power is firing fills lime."
-      },
-      {
-        "name": "slot-fire-out",
-        "value": "700ms background-color",
-        "purpose": "Landing demo: the fired cat fades back to cream."
-      },
-      {
-        "name": "marker-won",
-        "value": "700ms background-color",
-        "purpose": "A ladder marker turns from coral to lime once its round is won."
+        "purpose": "The landing demo lands a turn one step at a time: the firing slot takes slot-fire, its line in the power list fills lime, and the rival's last card takes card-flip and is coral for that step."
       },
       {
         "name": "table-lift",
         "value": "transform and box-shadow 120ms steps(2, end); lifted translateY(-4px), hover translateY(-2px) for fine pointers, pressed translateY(2px)",
         "purpose": "Tabletop: a piece lifts when chosen, rises on hover, sinks when pressed."
+      },
+      {
+        "name": "hand-raise",
+        "value": "transform 160ms steps(4, end); a hand card loses its lean (up to 9deg) and its drop (up to 28px) and rises to stand 12px clear of the bottom edge",
+        "purpose": "Tabletop: a card in the fanned hand stands upright and whole when hovered, focused or chosen. Its neighbours do not move."
       },
       {
         "name": "table-step",
@@ -524,12 +544,12 @@
       {
         "name": "slot-fire",
         "value": "300ms steps(3, end); lime fill, translateY(-2px) to translateY(2px); returns to cream over 700ms steps(6, end)",
-        "purpose": "Tabletop: the cat whose power is firing presses and lights lime."
+        "purpose": "Tabletop, the landing demo included: the cat whose power is firing presses and lights lime."
       },
       {
         "name": "card-flip",
         "value": "360ms steps(6, end); scaleX 1 to 0.05 to 1",
-        "purpose": "Tabletop: the rival's card turns over and comes back coral."
+        "purpose": "Tabletop, the landing demo included: the rival's card turns over and comes back coral."
       },
       {
         "name": "die-roll",
@@ -542,8 +562,18 @@
         "purpose": "Tabletop: the rival's last card stays coral after it turns, with or without motion."
       },
       {
+        "name": "crowd-bob",
+        "value": "1600ms steps(1, end) infinite; translateY(0) then translateY(-2px); animation-delay calc(var(--i) * -290ms)",
+        "purpose": "Landing page: each crowd cat and oversized icon idles on a 2px two-step bob, staggered so no two move together."
+      },
+      {
+        "name": "crowd-hop",
+        "value": "360ms steps(1, end), once; translateY 0, -10px, -14px, -6px, 0; animation-delay calc(var(--i) * 50ms); three times when the round is won",
+        "purpose": "Landing page: the crowd hops with the firing chain. The cluster right of the stage hops on the first slot to fire, the plaque's cat on the middle one, the left cluster on the last; every crowd cat hops three times when the round is won."
+      },
+      {
         "name": "reduced-motion",
-        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once and skips flights",
+        "value": "all animation and transition durations 0.01ms; the tabletop lands the whole turn at once and skips flights; the landing crowd's animations are removed and the demo's steps land with no delay",
         "purpose": "Applied under prefers-reduced-motion: reduce."
       }
     ],
@@ -559,6 +589,14 @@
       {
         "name": "lg",
         "value": "1024px"
+      },
+      {
+        "name": "xl",
+        "value": "1280px"
+      },
+      {
+        "name": "2xl",
+        "value": "1536px"
       },
       {
         "name": "short-landscape",
@@ -639,9 +677,9 @@
       "name": "Table Button",
       "kind": "button",
       "refersTo": "table-button",
-      "description": "An action on the tabletop as a piece: cobalt for the one confirm, cream for the rest. Square, 2px ink, a 2px edge that sinks when pressed.",
-      "html": "<div class=\"ds-cloth\"><button class=\"ds-piece ds-tbtn ds-tbtn-primary\">Take 2 dice<kbd class=\"ds-key\">Enter</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-secondary\">Back<kbd class=\"ds-key\">Esc</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-primary\" disabled>Tuck</button></div>",
-      "css": ".ds-cloth{display:flex;flex-wrap:wrap;gap:8px;padding:16px 16px 22px;background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-piece{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-piece:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tbtn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;cursor:pointer}.ds-tbtn-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tbtn-primary:hover{background:var(--color-cobalt-dark,#0d3c9d)}.ds-tbtn-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tbtn-secondary:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-tbtn:active:not(:disabled){--sink:2px;transform:translateY(2px)}.ds-tbtn:disabled{opacity:.45;cursor:not-allowed}.ds-key{display:inline-grid;place-items:center;height:18px;min-width:16px;padding:0 4px;background:#fff;color:var(--color-ink,#17212b);border:1px solid rgb(23 33 43 / .6);font-family:inherit;font-size:10px;font-weight:700;line-height:1}@media not ((hover:hover) and (pointer:fine)){.ds-key{display:none}}@media (prefers-reduced-motion:reduce){.ds-piece{transition-duration:.01ms}}"
+      "description": "An action on the tabletop as a piece: cobalt for the one confirm, cream for the rest. Square, 2px ink, a 2px edge that sinks when pressed. Three sizes (40, 48, 56px); the large one is the landing page's \"Start a run\", a link in the primary variant.",
+      "html": "<div class=\"ds-cloth\"><button class=\"ds-piece ds-tbtn ds-tbtn-primary\">Take 2 dice<kbd class=\"ds-key\">Enter</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-secondary\">Back<kbd class=\"ds-key\">Esc</kbd></button><button class=\"ds-piece ds-tbtn ds-tbtn-primary\" disabled>Tuck</button><a class=\"ds-piece ds-tbtn ds-tbtn-primary ds-tbtn-lg\" href=\"#\">Start a run</a></div>",
+      "css": ".ds-cloth{display:flex;flex-wrap:wrap;gap:8px;padding:16px 16px 22px;background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-piece{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-piece:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-tbtn{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:40px;padding:0 10px;font-size:12px;font-weight:900;line-height:1.25;cursor:pointer}.ds-tbtn-md{min-height:48px;padding:0 16px;font-size:14px}.ds-tbtn-lg{min-height:56px;padding:0 24px;font-size:16px}a.ds-tbtn{text-decoration:none}.ds-tbtn-primary{background:var(--color-cobalt,#1557d8);color:#fff}.ds-tbtn-primary:hover{background:var(--color-cobalt-dark,#0d3c9d)}.ds-tbtn-secondary{background:var(--color-cream,#fff8e7);color:var(--color-ink,#17212b)}.ds-tbtn-secondary:hover{background:var(--color-sky-soft,#e7f7fd)}.ds-tbtn:active:not(:disabled){--sink:2px;transform:translateY(2px)}.ds-tbtn:disabled{opacity:.45;cursor:not-allowed}.ds-key{display:inline-grid;place-items:center;height:18px;min-width:16px;padding:0 4px;background:#fff;color:var(--color-ink,#17212b);border:1px solid rgb(23 33 43 / .6);font-family:inherit;font-size:10px;font-weight:700;line-height:1}@media not ((hover:hover) and (pointer:fine)){.ds-key{display:none}}@media (prefers-reduced-motion:reduce){.ds-piece{transition-duration:.01ms}}"
     },
     {
       "name": "Lane on the Mat",
@@ -660,38 +698,39 @@
       "css": ".ds-cloth2{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:flex;flex-wrap:wrap;align-items:center;gap:14px;padding:16px 16px 24px;color:var(--color-ink,#17212b);background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-piece{--e:2px;--lift:0px;--sink:0px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + var(--lift) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-piece:focus-visible{outline:3px solid var(--color-cobalt,#1557d8);outline-offset:3px}.ds-nameplate{max-width:260px;padding:4px 10px;background:var(--color-coral,#ff7163)}.ds-nameplate h3{margin:0;font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;font-size:20px}.ds-nameplate p{margin:2px 0 0;font-size:12px;font-weight:700;line-height:1.375}.ds-pile-wrap{position:relative;width:36px;height:48px}.ds-pile{--e:6px;box-sizing:border-box;width:100%;height:100%;background:var(--color-coral,#ff7163)}.ds-pile-wrap:hover .ds-pile{--lift:2px;transform:translateY(-2px)}.ds-count{position:absolute;top:-6px;right:-6px;min-width:20px;box-sizing:border-box;padding:0 2px;background:#fff;border:2px solid var(--color-ink,#17212b);font-size:12px;font-weight:800;line-height:16px;text-align:center;font-variant-numeric:tabular-nums}.ds-cubes{display:flex;gap:4px;margin:0}.ds-cube{display:block;box-sizing:border-box;width:12px;height:12px;background:var(--color-lime,#d8ff4f)}.ds-cube-spent{display:block;box-sizing:border-box;width:12px;height:12px;border:2px solid var(--color-sky-deep,#73bde4)}.ds-score{display:flex;flex-direction:column;align-items:center;margin:0;padding:2px 8px;background:var(--color-lime,#d8ff4f)}.ds-score-rival{background:var(--color-coral,#ff7163)}.ds-score span{font-size:11px;font-weight:700;line-height:1.25}.ds-score b{font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-weight:400;letter-spacing:.01em;line-height:1;font-size:30px;font-variant-numeric:tabular-nums}@media (prefers-reduced-motion:reduce){.ds-piece{transition-duration:.01ms}}"
     },
     {
-      "name": "Landing Ladder",
+      "name": "Landing Stage",
       "kind": "custom",
-      "refersTo": "ladder-marker",
-      "description": "The landing page's structure: a 2px ink track with square numbered rival markers (coral, lime once won), a lime gain marker, and rivals as cream pieces with their deck as a two-column list.",
-      "html": "<ol class=\"ds-ladder\"><li class=\"ds-step\"><div class=\"ds-step-rail\"><span class=\"ds-marker ds-marker-won\">1</span><span class=\"ds-track\"></span></div><div class=\"ds-step-body\"><article class=\"ds-rival\"><div><h3>Alley Tom</h3><p class=\"ds-rival-flavor\">Has never planned anything and is doing fine.</p></div><dl class=\"ds-deck\"><dt>4× Bank</dt><dd>Banks a cat worth 2</dd><dt>2× Stash</dt><dd>Stashes 1 yarn</dd><dt>2× Raid</dt><dd>Takes 1 die from the feeder</dd></dl></article></div></li><li class=\"ds-step\"><div class=\"ds-step-rail\"><span class=\"ds-gain\" aria-hidden=\"true\"><svg viewBox=\"0 0 5 5\" width=\"10\" height=\"10\" shape-rendering=\"crispEdges\"><rect x=\"2\" y=\"0\" width=\"1\" height=\"5\"/><rect x=\"0\" y=\"2\" width=\"5\" height=\"1\"/></svg></span><span class=\"ds-track\"></span></div><div class=\"ds-step-body\"><h3 class=\"ds-gain-title\">Win, and a cat joins your deck</h3></div></li><li class=\"ds-step ds-step-last\"><div class=\"ds-step-rail\"><span class=\"ds-marker ds-marker-boss\">3</span></div><div class=\"ds-step-body\"><article class=\"ds-rival\"><div><h3 class=\"ds-boss-name\">Madame Mittens</h3><p class=\"ds-boss-tag\">Boss</p><p class=\"ds-rival-flavor\">The feeder is hers. You are welcome to what she leaves.</p><p class=\"ds-rival-trait\">Raids take 2 dice, and she raids often.</p></div><dl class=\"ds-deck\"><dt>4× Bank</dt><dd>Banks a cat worth 3</dd><dt>3× Raid</dt><dd>Takes 2 dice from the feeder</dd></dl></article></div></li></ol>",
-      "css": ".ds-ladder{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);max-width:560px;margin:0;padding:0;list-style:none;color:var(--color-ink,#17212b)}.ds-step{display:grid;grid-template-columns:56px minmax(0,1fr);column-gap:24px}.ds-step-rail{display:flex;flex-direction:column;align-items:center}.ds-track{width:2px;flex:1;background:var(--color-ink,#17212b)}.ds-step-body{min-width:0;padding-bottom:40px}.ds-step-last .ds-step-body{padding-bottom:0}.ds-marker{display:grid;place-items:center;flex-shrink:0;width:40px;height:40px;border:2px solid var(--color-ink,#17212b);background:var(--color-coral,#ff7163);font-size:20px;font-weight:800;letter-spacing:-0.025em;font-variant-numeric:tabular-nums;transition:background-color 700ms}.ds-marker-won{background:var(--color-lime,#d8ff4f)}.ds-marker-boss{width:56px;height:56px;font-size:36px}.ds-gain{display:grid;place-items:center;flex-shrink:0;width:24px;height:24px;border:2px solid var(--color-ink,#17212b);background:var(--color-lime,#d8ff4f)}.ds-gain svg{fill:var(--color-ink,#17212b)}.ds-gain-title{margin:0;font-size:24px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-rival{display:grid;gap:16px;padding:20px;background:var(--color-cream,#fff8e7);border:2px solid var(--color-ink,#17212b)}.ds-rival h3{margin:0;font-size:30px;font-weight:800;letter-spacing:-0.025em;line-height:1.05}.ds-rival h3.ds-boss-name{font-size:60px;line-height:1}.ds-boss-tag{display:inline-block;margin:8px 0 0;padding:0 8px;border:2px solid var(--color-ink,#17212b);background:var(--color-coral,#ff7163);font-size:16px;font-weight:800;letter-spacing:-0.025em;line-height:28px}.ds-rival-flavor{margin:8px 0 0;font-size:18px;line-height:1.45;color:var(--color-ink-soft,#5b6c7d)}.ds-rival-trait{margin:8px 0 0;font-size:16px;font-weight:700;line-height:1.45}.ds-deck{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;column-gap:12px;row-gap:6px;margin:0;font-size:14px;line-height:1.45}.ds-deck dt{padding:0 6px;background:#fff;border:2px solid var(--color-ink,#17212b);font-size:12px;font-weight:900;line-height:20px;font-variant-numeric:tabular-nums}.ds-deck dd{margin:0}"
+      "refersTo": "stage-frame",
+      "description": "The front of the box on the landing page: a cream title plaque with the die-cut wordmark, a lime ribbon carrying the h1 in print, and the cobalt stage frame (ink, cobalt band, ink, a white stud in each corner, a 5px board edge) with the cloth laid inside it, all on the sky mat.",
+      "html": "<div class=\"ds-sky\"><div class=\"ds-title\"><p class=\"ds-plaque\">Hadu<span>Mon</span></p><h3 class=\"ds-ribbon\">Six rivals. Twelve turns each.</h3></div><div class=\"ds-stage\"><span class=\"ds-stud ds-stud-tl\"></span><span class=\"ds-stud ds-stud-tr\"></span><span class=\"ds-stud ds-stud-bl\"></span><span class=\"ds-stud ds-stud-br\"></span><div class=\"ds-stage-inner\">The playable round goes here, on the cloth.</div></div></div>",
+      "css": ".ds-sky{--cast:var(--color-sky-deep,#73bde4);display:flex;flex-direction:column;align-items:center;padding:28px 16px 30px;background:var(--color-sky-surface,#a9ddf5);color:var(--color-ink,#17212b);font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif)}.ds-title{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;margin-bottom:-24px}.ds-plaque{margin:0;padding:10px 36px 24px;background:var(--color-cream,#fff8e7);border:2px solid var(--color-ink,#17212b);box-shadow:0 7px 0 -2px var(--color-chipboard,#b9a47e),0 7px 0 0 var(--color-ink,#17212b),0 12px 0 -2px var(--cast);font-size:76px;font-weight:800;letter-spacing:-0.035em;line-height:.9;paint-order:stroke fill;-webkit-text-stroke:3px var(--color-ink,#17212b);text-shadow:0 3px 0 var(--color-chipboard,#b9a47e),0 5px 0 var(--color-ink,#17212b)}.ds-plaque span{color:var(--color-coral,#ff7163)}.ds-ribbon{position:relative;margin:-12px 0 0;padding:10px 24px;background:var(--color-lime,#d8ff4f);border:2px solid var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px var(--cast);font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-size:40px;font-weight:400;letter-spacing:.01em;line-height:1;text-align:center}.ds-stage{--band:10px;position:relative;width:100%;max-width:520px;box-sizing:border-box;padding:var(--band);background:var(--color-cobalt,#1557d8);border:2px solid var(--color-ink,#17212b);box-shadow:0 7px 0 -2px var(--color-chipboard,#b9a47e),0 7px 0 0 var(--color-ink,#17212b),0 14px 0 -2px var(--cast)}.ds-stud{position:absolute;width:calc(var(--band) - 4px);height:calc(var(--band) - 4px);background:#fff}.ds-stud-tl{top:2px;left:2px}.ds-stud-tr{top:2px;right:2px}.ds-stud-bl{bottom:2px;left:2px}.ds-stud-br{bottom:2px;right:2px}.ds-stage-inner{padding:44px 16px 20px;border:2px solid var(--color-ink,#17212b);background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px;font-size:14px;line-height:1.375}"
     },
     {
       "name": "Hunt Demo States",
       "kind": "custom",
-      "refersTo": "board-slot-firing",
-      "description": "The landing demo while a turn resolves: a firing cat fills lime (150ms in, 700ms out), the rival bar flashes coral on the same timing, and the activate button holds the lime fill. Hover a slot or the bar to see the fade.",
-      "html": "<div class=\"ds-demo\"><ol class=\"ds-fire-row\"><li class=\"ds-fire-slot\"><span class=\"ds-fire-mark\">Fires 2nd</span><b>Flameclaw</b></li><li class=\"ds-fire-slot ds-fire-now\"><span class=\"ds-fire-mark\">Fires 1st</span><b>Burrfang</b></li></ol><div class=\"ds-rival-bar\"><span class=\"ds-rival-name\">Alley Tom</span><span class=\"ds-rival-line\">Flips one card after each of your turns.</span></div><button class=\"ds-hunting\" disabled>Hunting</button></div>",
-      "css": ".ds-demo{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:grid;gap:8px;max-width:420px;color:var(--color-ink,#17212b)}.ds-fire-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:0;padding:8px;list-style:none;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b)}.ds-fire-slot{display:flex;flex-direction:column;align-items:center;gap:2px;min-height:96px;padding:4px;border:2px solid var(--color-ink,#17212b);background:var(--color-cream,#fff8e7);font-size:12px;font-weight:900;text-align:center;transition:background-color 700ms}.ds-fire-slot:hover,.ds-fire-now{background:var(--color-lime,#d8ff4f);transition-duration:150ms}.ds-fire-mark{align-self:flex-start;padding:0 4px;background:#fff;border:1px solid var(--color-ink,#17212b);font-size:10px;font-weight:700;line-height:16px}.ds-rival-bar{display:flex;align-items:stretch;border:2px solid var(--color-ink,#17212b);font-size:14px;font-weight:700}.ds-rival-name{padding:6px 8px;background:var(--color-coral,#ff7163);border-right:2px solid var(--color-ink,#17212b)}.ds-rival-line{flex:1;min-width:0;padding:6px 8px;background:var(--color-cream,#fff8e7);transition:background-color 700ms}.ds-rival-bar:hover .ds-rival-line{background:var(--color-coral,#ff7163);transition-duration:150ms}.ds-hunting{font:inherit;justify-self:start;min-height:56px;padding:16px 28px;border:1px solid var(--color-lime,#d8ff4f);border-radius:999px;background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b);font-size:16px;font-weight:600;letter-spacing:-0.025em;box-shadow:0 10px 20px rgb(216 255 79 / .24);cursor:not-allowed}@media (prefers-reduced-motion: reduce){.ds-fire-slot,.ds-rival-line{transition-duration:.01ms}}"
+      "refersTo": "demo-slot-firing",
+      "description": "The landing demo while a turn lands, as tabletop pieces: the lane chip lime and pressed, a firing slot lime and pressed with its line in the power list filled lime, the rival's last card coral, and the confirm lime, pressed, reading Hunting. Hover a slot or the last card to see the state.",
+      "html": "<div class=\"ds-demo\"><div class=\"ds-demo-mat\"><div class=\"ds-dpiece ds-chip\"><b>Hunt</b><span>Take 2 dice</span></div><ol class=\"ds-slots\"><li class=\"ds-dpiece ds-slot\"><span class=\"ds-fire-mark\">Fires 2nd</span><b>Flameclaw</b></li><li class=\"ds-dpiece ds-slot ds-slot-firing\"><span class=\"ds-fire-mark\">Fires 1st</span><b>Burrfang</b></li><li class=\"ds-space\">2 yarn</li></ol><ol class=\"ds-powers\"><li class=\"ds-power-firing\"><b>Burrfang.</b> When activated: gain 1 Dry food.</li><li><b>Flameclaw.</b> When activated: gain 1 Beef.</li></ol></div><div class=\"ds-dpiece ds-last\"><b>Alley Tom banks a cat worth 2</b><span>Flips one card after each of your turns.</span></div><button class=\"ds-dpiece ds-hunting\" disabled>Hunting</button></div>",
+      "css": ".ds-demo{font-family:var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);display:grid;gap:14px;max-width:440px;padding:14px 14px 20px;color:var(--color-ink,#17212b);background-color:var(--color-cream,#fff8e7);background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E\");background-size:16px 8px}.ds-dpiece{--e:2px;--sink:0px;--cast:var(--color-sky-deep,#73bde4);border:2px solid var(--color-ink,#17212b);box-shadow:0 calc(var(--e) - var(--sink) + 2px) 0 -2px var(--color-chipboard,#b9a47e),0 calc(var(--e) - var(--sink) + 2px) 0 0 var(--color-ink,#17212b),0 calc(var(--e) - var(--sink) + 7px) 0 -2px var(--cast);transition:transform 120ms steps(2,end),box-shadow 120ms steps(2,end),background-color 700ms steps(6,end)}.ds-demo-mat{display:grid;gap:10px;padding:10px 10px 14px;background:var(--color-sky-surface,#a9ddf5);border:2px solid var(--color-ink,#17212b);box-shadow:0 5px 0 -2px var(--color-chipboard,#b9a47e),0 5px 0 0 var(--color-ink,#17212b),0 10px 0 -2px color-mix(in srgb,#b9a47e 42%,#fff8e7)}.ds-chip{--sink:2px;transform:translateY(2px);justify-self:start;display:flex;flex-direction:column;gap:4px;min-height:48px;box-sizing:border-box;justify-content:center;padding:6px 16px 6px 10px;background:var(--color-lime,#d8ff4f)}.ds-chip b{font-family:'Jersey 20',var(--font-display, ui-rounded, 'Avenir Next', 'Trebuchet MS', system-ui, sans-serif);font-size:20px;font-weight:400;letter-spacing:.01em;line-height:1}.ds-chip span{font-size:12px;font-weight:700;line-height:1}.ds-slots{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:0;padding:0;list-style:none}.ds-slot{display:flex;flex-direction:column;align-items:center;gap:4px;min-height:112px;box-sizing:border-box;padding:4px 0 6px;background:var(--color-cream,#fff8e7);font-size:11px;font-weight:900;text-align:center}.ds-slot b{margin-top:auto}.ds-slot:hover,.ds-slot-firing{--sink:2px;transform:translateY(2px);background:var(--color-lime,#d8ff4f);transition-duration:0ms}.ds-fire-mark{align-self:flex-start;margin-left:2px;padding:0 4px;background:#fff;border:1px solid var(--color-ink,#17212b);font-size:11px;font-weight:700;line-height:16px}.ds-space{display:grid;place-items:center;min-height:112px;box-sizing:border-box;border:2px dashed rgb(23 33 43 / .55);background:rgb(255 255 255 / .45);font-size:11px;font-weight:700}.ds-powers{margin:0;padding:0;list-style:none;font-size:12px;line-height:1.375}.ds-powers li{padding:1px 4px}.ds-powers b{font-weight:900}.ds-power-firing{background:var(--color-lime,#d8ff4f);box-shadow:inset 0 0 0 2px var(--color-ink,#17212b)}.ds-last{--e:3px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);display:flex;flex-direction:column;padding:6px 10px;background:var(--color-coral,#ff7163)}.ds-last:hover{background:var(--color-cream,#fff8e7)}.ds-last b{font-size:14px;font-weight:900;line-height:1.375}.ds-last span{font-size:11px;font-weight:600;line-height:1.375}.ds-hunting{--sink:2px;--cast:color-mix(in srgb,#b9a47e 42%,#fff8e7);transform:translateY(2px);justify-self:start;min-height:48px;min-width:128px;padding:0 16px;background:var(--color-lime,#d8ff4f);color:var(--color-ink,#17212b);font-family:inherit;font-size:14px;font-weight:900;line-height:1.25;cursor:not-allowed}@media (prefers-reduced-motion:reduce){.ds-dpiece{transition-duration:.01ms}}"
     }
   ],
   "narrative": {
     "northStar": "Pieces on a Cream Table",
-    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.\n\nThe pieces come in two states of the same material, and the route decides which. Everywhere outside a run (the landing page, home, the codex, login, signup, and every dialog) a piece is flat: border and fill, no thickness. On the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the run summary) the screen is a tabletop, and the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. The scope is one class, `.tabletop`, opened by `TableSurface`; a piece carries the `piece` class everywhere and only gains its thickness inside it.\n\nThe match is a table you sit at, not a dashboard you read: the rival across the top, the shared supply between, the player's sky mat with three printed lanes in the centre, a scorepad to the side, and the player's own edge (prompt, essence, hand) docked along the bottom. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface, and it sits in the same world with flat pieces. It has no app shell and no white panel: a wordmark and two small account buttons above, a hairline footer below, and everything between laid straight on the cream table. It is built from the app's own pieces (cat cards, dice, essence pips, sprites, the rival bar, a flat Hunt row run by the real match engine) and adds one structure of its own, the ladder: the six rivals of a run read top to bottom along a 2px ink track.",
+    "overview": "HaduMon is a board game laid out on a warm cream table. Two materials share the screen and never blend. The page chrome (navigation, panels, dialogs, pill buttons, the account form) is soft: white surfaces, rounded corners, faint borders, one diffuse shadow. The game pieces (cat cards, lanes and spaces, dice, essence pips, score tags) are hard: square corners, a 2px near-black border, flat fills. A player can tell at a glance what is furniture and what is in play.\n\nThe pieces come in two states of the same material, and the scope decides which. On home, the codex, login, signup, and in every dialog a piece is flat: border and fill, no thickness. Inside the tabletop the same pieces are die-cut cardboard: each one has a chipboard edge straight down and an unblurred cast shadow, and it lies on a woven cream cloth. Two surfaces are tabletops: the run route (`/run`: clan pick, the opening hand, the match, the match result, reward pick, the run summary) and the landing page. The scope is one class, `.tabletop`. On the run route it is opened by `TableSurface`; the landing page opens it on its own root, because `TableSurface` also carries the signed-in ways off a run's table. A piece carries the `piece` class everywhere and only gains its thickness inside the scope.\n\nThe match is a table you sit at, not a dashboard you read, and nothing of the app stands around it: a white rail down the left holds the rival and the rounds and, under an ink line, the player's turn (scores, food, prompt, confirm); the shared supply and the player's sky mat with three printed lanes lie on the cloth in the centre; a score sheet, the relics and the log stand in a slim column to the right; and the hand is held as a fan along the bottom edge. There are no white rounded panels on the table. Counts are tokens, piles, and cubes; what the board says about itself is printed on it in a pixel face.\n\nThe cats are 16x16 pixel sprites: chibi, front-facing, a near-black outline, three fur tones taken from the cat's element, and eyes tinted by rarity. Hadu alone wears his own colours, a black-and-white tuxedo with a pink nose. They are drawn as inline SVG and scaled in whole pixels. The tabletop adds a small set of 8x8 pixel icons drawn the same way (yarn, die, paw, den, card, cached, tucked, goal, chevron). Sprites and these icons are the only imagery. There are no photographs, no raster creature art, no gradients, and no emoji.\n\nDensity follows the game. The table is compact (10px between zones, 6px between pieces) because every rule the player needs has to be on the card or the board. Home, codex, and auth breathe more (16 to 36px). Copy is dry and factual, in sentence case.\n\nThe public landing page (`src/components/landing/LandingPage.tsx`, shown at `/` to a signed-out visitor) is the one Persuade surface. It is the tabletop at page scale, laid out as the front of the game's box, with no app shell and no white panel. From the top: an ink lid strip with the two account buttons; a full-bleed sky mat printed with paws and yarn; on it a cream title plaque with the wordmark and Hadu perched on top, a lime ribbon carrying the h1, and a thick cobalt stage frame holding one playable Hunt round run by the real match engine; a crowd of cats standing around the frame; then one cream board on the cloth, folded into four panels (the lead, the cats, the rows, the rivals); a sky closing band; and an ink footer. It is built from the table's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, turn cubes, score tokens, table buttons) and adds only what the match table has no use for: the lid strip, the plaque and ribbon, the stage frame, the folded board, and the crowd.",
     "keyCharacteristics": [
       "Warm cream canvas; sky blue for the board and the home hero.",
       "Two materials: rounded white chrome, square 2px-ink game pieces.",
-      "Pieces are flat outside a run and die-cut cardboard with a straight-down edge inside the tabletop.",
+      "Pieces are flat on home, the codex, auth, and in dialogs, and die-cut cardboard with a straight-down edge inside the tabletop (the run route and the landing page).",
       "Cobalt is the action, lime is the player's, coral is the rival's.",
       "16x16 pixel cats and 8x8 pixel icons as inline SVG, the only imagery.",
-      "One rounded bold type voice, plus a pixel print face on the tabletop at 20px and 30px only.",
+      "One rounded bold type voice, plus a pixel print face on the tabletop at 20px and 30px, and at 40px for a heading on the landing page.",
+      "The landing page is the front of the box: lid strip, sky mat, title plaque, lime ribbon, cobalt stage frame, a crowd of cats, one folded cream board.",
       "Every state has a border, fill, or height change, never colour alone on text."
     ],
     "rules": [
       {
         "name": "The Lime Is Yours Rule",
-        "body": "Lime marks something the player chose, holds, or won. It is never decoration and never the rival's.",
+        "body": "Lime marks something the player chose, holds, or won. It is never decoration and never the rival's. One exception is named: the ribbon under the landing wordmark, which carries the page's h1, is lime although it is nothing the player chose, holds, or won. No other surface takes it.",
         "section": "colors"
       },
       {
@@ -706,7 +745,7 @@
       },
       {
         "name": "The Ink On Colour Rule",
-        "body": "Text on lime, coral, sky, cream, or an element hue is ink. White text appears only on cobalt. The one inverse is the small ink tag, which carries cream text.",
+        "body": "Text on lime, coral, sky, cream, or an element hue is ink. White text appears only on cobalt. The inverses are the small ink tag and, on the landing page, the lid strip and the footer, which carry cream text.",
         "section": "colors"
       },
       {
@@ -716,7 +755,7 @@
       },
       {
         "name": "The Two Sizes Of Print Rule",
-        "body": "The pixel face is drawn on a 20px grid, so it is set at 20px and 30px and nowhere between. It is for what is printed on the board (names, numerals, totals, screen headings on the table), never for rules text, and never outside the tabletop.",
+        "body": "The pixel face is drawn on a 20px grid, so on the match table it is set at 20px and 30px and nowhere between. The landing page adds one step, for a heading only: 30px on a phone and 40px from 640px, on the ribbon's h1 and each panel's h2. Print is for what is printed on the board (names, numerals, totals, headings on the table), never for rules text, and never outside the tabletop.",
         "section": "typography"
       },
       {
@@ -736,7 +775,7 @@
       },
       {
         "name": "The Scoped Thickness Rule",
-        "body": "A game piece casts no shadow outside the tabletop: on the landing page, home, the codex, auth, and in every dialog it is border and fill. Inside the tabletop every piece has an edge and a cast shadow, straight down and unblurred. No piece anywhere takes a blurred shadow or a sideways offset.",
+        "body": "A game piece casts no shadow outside the tabletop: on home, the codex, auth, and in every dialog it is border and fill. Inside the tabletop (the run route and the landing page) every piece has an edge and a cast shadow, straight down and unblurred. No piece anywhere takes a blurred shadow or a sideways offset.",
         "section": "elevation"
       },
       {
@@ -746,40 +785,43 @@
       },
       {
         "name": "The Three Heights Rule",
-        "body": "A thing on the table is print (0), a token or tile (2px), or a card (3px). Only a stack is taller, and its height is its count.",
+        "body": "A thing on the table is print (0), a token or tile (2px), or a card (3px). Only a stack is taller, and its height is its count. The landing page's title plaque and stage frame are the box's furniture, not things in play, and stand 5px.",
         "section": "elevation"
       }
     ],
     "dos": [
       "Do decide which material a new element is before styling it. In play: square, 2px ink border, flat fill. Around play: rounded, white, hairline, soft shadow.",
-      "Do decide which scope a piece is in. Inside `TableSurface` it is cardboard (give it the `piece` class and let the tabletop add the edge); anywhere else it stays flat.",
+      "Do decide which scope a piece is in. Inside the tabletop (`TableSurface` on the run route, the landing page's own root) it is cardboard: give it the `piece` class and let the tabletop add the edge. Anywhere else it stays flat.",
       "Do pick one of the three heights for a new thing on the table: print, token or tile (2px), card (3px).",
       "Do render every cat through `src/components/PixelSprite.tsx` at a whole-pixel multiple of 16 where the layout allows, and every mark on a piece through `src/components/PixelIcon.tsx` at a multiple of 8.",
       "Do use ink text on lime, coral, sky, and cream; white text only on cobalt.",
       "Do show state on the table with the frame (cobalt border, cobalt inner line, lime inner line) and with height (lifted 4px, pressed 2px), and reinforce a chosen token with a lime fill.",
-      "Do end every choice in a run at the docked edge or rail, with a sentence saying what will happen and one cobalt table button.",
+      "Do end every choice in a run in the turn block or a rail, with a sentence saying what will happen and one cobalt table button.",
+      "Do keep the run route free of app chrome: the three corner buttons are its only navigation.",
+      "Do keep what names a hand card (sprite, points, cost, name, Info) in its left strip, and tilt only a card at rest; anything being read stands upright.",
       "Do make actions on the table from `TableButton`: cobalt for the one confirm, cream for the rest.",
-      "Do set the pixel face at 20px or 30px, and only for print on the board.",
+      "Do set the pixel face at 20px or 30px, or at 40px for a heading on the landing page, and only for print on the board.",
       "Do give every key a visible hint on its piece, shown only for a fine pointer, and keep every keyed action reachable by tap.",
       "Do keep page copy and controls at 48px touch height or more; nothing interactive in play goes below 40px unless its hit area is extended.",
       "Do write counts and scores in tabular figures and labels in sentence case.",
       "Do give every loading surface a skeleton in the shape of its content, and every error a plain sentence and a retry.",
-      "Do build the landing page from the app's own components (cat cards, dice, essence pips, sprites, the rival bar) laid flat on the cream table, with no app shell around them."
+      "Do build the landing page from the tabletop's own pieces (cat cards, dice, food tokens, the mat, tray wells, nameplates, table buttons) inside its own `.tabletop` scope, with no app shell around them.",
+      "Do keep a crowd cat decorative: a whole multiple of 16, no label, no clicks, a flat cast only where it stands on the ground."
     ],
     "donts": [
       "Don't round the corners of a game piece.",
       "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. Outside the tabletop a piece has no shadow at all; inside it has only the straight-down edge and cast.",
-      "Don't bring the cardboard edge, the cloth, or the pixel face to the landing page, home, the codex, auth, or a dialog.",
+      "Don't bring the cardboard edge, the cloth, or the pixel face to home, the codex, auth, or a dialog.",
       "Don't put a 2px ink border or square corners on page chrome, and don't lay a white rounded panel or a pill button on the tabletop.",
       "Don't draw a ring outside a piece's border to show state.",
       "Don't use coral for a decision the player owes or for a card the player is trimming; coral is the rival's.",
-      "Don't set the pixel face at any size but 20px and 30px, or use it for rules text.",
+      "Don't set the pixel face at any size but 20px and 30px, or 40px for a landing heading, or use it for rules text.",
       "Don't set readable text below 10px, or below 11px on a piece from 640px up.",
       "Don't ease tabletop motion smoothly or fade pieces in; lifts, presses, flips, and rolls move in steps.",
       "Don't use gradients or emoji anywhere.",
       "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
       "Don't use an element hue for a panel, a button, or a heading.",
-      "Don't use lime for anything the rival owns, or coral for a reward.",
+      "Don't use lime for anything the rival owns, or coral for a reward. The landing ribbon is the only lime that is not the player's.",
       "Don't introduce currency, shop, or premium styling; nothing is for sale."
     ]
   }

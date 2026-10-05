@@ -11,13 +11,13 @@ Scope: `/run`, every screen of a run (clan pick, opening hand, the match, match 
 
 ## Direction contract
 
-THESIS: The match is a table you sit at, not a dashboard you read: rival across, supply between, your mat near you, hand at the edge. It refuses stacked white panels.
+THESIS: The match is a table you sit at, not a dashboard you read: the rival and the rounds down a rail on your left, the supply and your mat on the cloth, your hand fanned along the near edge. It refuses stacked white panels, and it refuses an app shell around the game.
 
 OWN-WORLD: Die-cut cardboard on a woven cream cloth. Ink-outlined pieces with a chipboard edge straight down and an unblurred cast shadow; one sky mat with printed lanes; counts as tokens; pixel print face.
 
 STORY: Read the lanes' printed rewards, play a cat, activate a lane, watch it fire, see the rival answer.
 
-FIRST VIEWPORT: At 1440x900, no scroll: rival strip top, supply tray, round tiles, three lanes filling the centre, scorepad right, hand docked at the bottom with the prompt and one confirm.
+FIRST VIEWPORT: At 1440x900, no scroll and no navbar: a white rail down the left with the gauntlet, the rival and the three round tiles above an ink line, and under it both scores, the food, the prompt and one confirm; the supply tray and three lanes filling the centre; the score sheet, relics and log in a slim column on the right under three corner buttons (Home, Codex, Log out); the hand fanned along the bottom edge, leaning, its lower part under the edge of the screen.
 
 FORM: Whole table, user-pinned over the roll; seed b97818a6. Code-led by the approved plan: no image generation in this harness.
 
@@ -26,6 +26,13 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 ## Build path
 
 `.impeccable/config.json` records comp-led. No comp round ran. The plan the user approved before the build says so in these words: "`.impeccable/config.json` says comp-led, but this harness has no image generation, so the build is code-led, as the landing page was." That approval is the downgrade; the user was told again at hand-off. The seed is the one `concept-seed --scope surface --mode operate` printed.
+
+## Layout by width
+
+- From 1280px: rail (19.5rem), table, right column (16rem). The page does not scroll at 900px tall.
+- A short screen beside the rail (under 848px tall from 1280px wide, under 912px from 1024px): the hand takes the phone's smaller card and the mat stands above the supply, so a raised card never covers a lane.
+- 1024 to 1279px: the same rail and table; the right column drops under the mat and the page scrolls. The cloth is laid again behind the hand, so nothing shows through the fan.
+- Under 1024px: one column (run strip beside the corner buttons, rival, round, mat, supply, score sheet, relics, log) and a white dock at the bottom holding the prompt, actions, food and score, then the fan. From 640px the dock sets the turn beside the fan.
 
 ## Signature interaction
 
@@ -45,7 +52,16 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 - A lane's reward ladder is printed inside the spaces: each space shows what the lane gives while that space is the next free one, and the lime marker sits on it. The full-lane step is in the end cap. The lane's name is on its activate tile.
 
 - Cats cost cat food (Beef, Fish, Chicken, Dry food, Pork, and a Treat that pays for anything), each drawn as its own pixel icon with no square around it.
-- Any 2 food pay for 1 a cat lacks. The player picks the two on the food tokens at the docked edge; the lanes only open for the play once the swap is whole. The rule is printed under the tokens.
+- Any 2 food pay for 1 a cat lacks. The player picks the two on the food tokens in the rail (the dock on a narrow table); the lanes only open for the play once the swap is whole. The rule is printed under the tokens.
+- `/run` has no app shell. Three 40px cream pieces in the top right corner of every run screen go Home, to the Codex, and to Log out behind its confirm.
+- The hand is a fan. `fanLayout` gives each card its place, a lean of at most 9 degrees and a drop of at most 28px; at rest the lower part of a card is under the screen edge. Hover, keyboard focus or being chosen stands a card upright and whole, over the others, in 160ms of 4 steps. Neighbours never move.
+- Only the strip of a card its neighbour leaves showing takes the pointer, so sweeping along the fan raises one card after another. Info sits at the bottom left of the card, inside that strip.
+- The hand face of a cat card is portrait. The points tag and the cost stand in its first 32px, the sprite beside them, the name under both: a neighbour may cut the sprite and the name, never the two numbers. A card that cannot be played now is washed with cream at 34% (text stays above 4.5:1), not made see-through, and its footer says what it lacks.
+- On a phone a strip is never thinner than 44px: a big hand runs off the side and is panned, and the dock grows to hold the chosen card whole.
+- In the rail the turn block reads score, food, prompt, confirm, so the prompt and its confirm are level with the hand. Its prompt and action rows keep reserved heights; on a screen under 848px tall only one action row is reserved. In the rail a lane button says only the lane ("Hunt"); the lane's own "Play here" space prints the cost.
+- A placed cat and a compact cat card lay out by their own width, so a name is never truncated to a letter or two: sprite over name on a narrow tile, name on its own line on a narrow card.
+- Bringing a zone into view is a cut, not a smooth scroll.
+- Every die keeps two lines for its name, so the dice in a row are one shape.
 - A placed cat's dialog lists the cats tucked under it, face up, wherever they came from.
 
 ## Keys
