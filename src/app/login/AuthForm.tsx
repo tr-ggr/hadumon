@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useState, type CSSProperties, type FormEvent } from "react";
 
+import { CrowdCat } from "~/components/landing/Crowd";
+import { StageFrame } from "~/components/landing/StageFrame";
 import { PixelSprite } from "~/components/PixelSprite";
-import { TableButton } from "~/components/ui";
+import { Field, TableButton, TableLink } from "~/components/ui";
 import { api } from "~/trpc/react";
 
 export interface AuthFormProps {
@@ -74,80 +76,62 @@ export function AuthForm({ mode }: AuthFormProps) {
   };
 
   return (
-    <main className="auth-page bg-sky-surface flex min-h-dvh items-center justify-center p-3 sm:p-6">
-      <div className="auth-shell bg-cream grid w-full max-w-[980px] overflow-hidden rounded-[28px] shadow-[0_28px_80px_rgb(13_60_157_/_0.2)] lg:grid-cols-[0.92fr_1.08fr]">
-        <div className="order-2 m-3 mt-0 flex min-h-36 flex-col justify-between overflow-hidden rounded-2xl bg-white px-5 pt-4 sm:min-h-52 lg:order-1 lg:m-5 lg:min-h-[600px] lg:px-8 lg:pt-8">
-          <div className="hidden lg:block">
-            <p className="text-cobalt text-sm font-extrabold tracking-[0.14em] uppercase">
-              A roguelike about cats
-            </p>
-            <p className="text-ink mt-3 max-w-[12ch] text-3xl leading-tight font-extrabold">
-              Six rivals. Twelve turns each.
-            </p>
-          </div>
-          <PixelSprite
-            catId="flameclaw"
-            size={320}
-            label="Flameclaw"
-            className="auth-mascot mx-auto mt-auto h-auto w-full max-w-[160px] pb-4 lg:max-w-[320px] lg:pb-8"
-          />
-        </div>
-
-        <div className="order-1 flex flex-col justify-center p-5 sm:p-8 lg:order-2 lg:p-12">
+    <div className="flex min-h-dvh flex-col">
+      <header className="lid bg-ink text-cream">
+        <div className="mx-auto flex w-full max-w-[1400px] items-center justify-between gap-3 px-3 pt-1 pb-2 sm:px-5">
           <Link
             href="/"
             aria-label="HaduMon home"
-            className="text-pixel text-ink mb-8 w-fit text-2xl tracking-[-0.035em] sm:text-3xl"
+            className="text-pixel text-xl sm:text-2xl"
           >
-            Hadu<span className="text-pink">Mon</span>
+            Hadu<span className="text-coral">Mon</span>
           </Link>
+          <TableLink href={copy.switchHref} size="sm">
+            {copy.switchLabel}
+          </TableLink>
+        </div>
+      </header>
 
-          <div className="max-w-md">
-            <h1 className="text-ink text-4xl sm:text-5xl">{copy.heading}</h1>
-            <p className="text-ink-soft mt-3 text-base leading-relaxed">
-              {copy.intro}
-            </p>
+      <main className="auth-page sky-band flex flex-1 items-center justify-center px-3 py-8 sm:px-6 sm:py-12">
+        <div className="grid w-full max-w-[920px] items-center gap-x-12 gap-y-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.8fr)]">
+          <section
+            className="board anim-land p-5 sm:p-8"
+            style={{ "--board-cast": "var(--color-sky-deep)" } as CSSProperties}
+          >
+            <h1 className="text-print text-3xl sm:text-[40px]">
+              {copy.heading}
+            </h1>
+            <p className="mt-2 text-base">{copy.intro}</p>
 
             <form
               onSubmit={submit}
               aria-busy={pending}
-              className="mt-7 space-y-5"
+              className="mt-6 space-y-4"
             >
-              <label className="block">
-                <span className="text-ink mb-2 block text-sm font-extrabold">
-                  Username
-                </span>
-                <input
-                  value={username}
-                  onChange={(event) => setUsername(event.target.value)}
-                  autoComplete="username"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                  required
-                  minLength={3}
-                  maxLength={20}
-                  disabled={pending}
-                  className="border-edge focus:border-cobalt min-h-12 w-full rounded-xl border bg-white px-4 text-base transition-colors outline-none disabled:opacity-60"
-                />
-              </label>
-
-              <label className="block">
-                <span className="text-ink mb-2 block text-sm font-extrabold">
-                  Password
-                </span>
-                <span className="relative block">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(event) => setPassword(event.target.value)}
-                    autoComplete={
-                      mode === "login" ? "current-password" : "new-password"
-                    }
-                    required
-                    minLength={8}
-                    disabled={pending}
-                    className="border-edge focus:border-cobalt min-h-12 w-full rounded-xl border bg-white px-4 pr-14 text-base transition-colors outline-none disabled:opacity-60"
-                  />
+              <Field
+                label="Username"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                autoComplete="username"
+                autoCapitalize="none"
+                spellCheck={false}
+                required
+                minLength={3}
+                maxLength={20}
+                disabled={pending}
+              />
+              <Field
+                label="Password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete={
+                  mode === "login" ? "current-password" : "new-password"
+                }
+                required
+                minLength={8}
+                disabled={pending}
+                trailing={
                   <button
                     type="button"
                     onClick={() => setShowPassword((visible) => !visible)}
@@ -155,18 +139,18 @@ export function AuthForm({ mode }: AuthFormProps) {
                       showPassword ? "Hide password" : "Show password"
                     }
                     aria-pressed={showPassword}
-                    className="text-cobalt absolute inset-y-0 right-1 flex min-w-12 items-center justify-center rounded-lg"
+                    className="min-h-10 min-w-12 px-2 text-xs font-black underline underline-offset-2"
                   >
-                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                    {showPassword ? "Hide" : "Show"}
                   </button>
-                </span>
-              </label>
+                }
+              />
 
               <div className="min-h-11" aria-live="polite">
                 {error ? (
                   <p
                     role="alert"
-                    className="bg-coral/10 text-ink rounded-xl px-3 py-2.5 text-sm font-semibold"
+                    className="border-ink border-2 bg-white px-3 py-2 text-sm font-bold"
                   >
                     {error}
                   </p>
@@ -174,74 +158,71 @@ export function AuthForm({ mode }: AuthFormProps) {
               </div>
 
               <TableButton
+                size="lg"
                 type="submit"
                 disabled={pending}
                 className="w-full"
-                size="lg"
               >
                 {pending ? copy.pending : copy.submit}
               </TableButton>
 
               {mode === "login" ? (
-                <button
-                  type="button"
+                <TableButton
+                  variant="secondary"
+                  size="md"
                   onClick={fillDemo}
                   disabled={pending}
-                  className="text-cobalt decoration-cobalt/30 hover:bg-sky-soft min-h-12 w-full rounded-full text-sm font-extrabold underline underline-offset-4 disabled:opacity-50"
+                  className="w-full"
                 >
                   Use demo account
-                </button>
+                </TableButton>
               ) : (
-                <div className="bg-sky-soft rounded-xl p-4">
-                  <p className="text-ink text-sm font-extrabold">
-                    Nothing is for sale
-                  </p>
-                  <p className="text-ink-soft mt-1 text-sm">
+                <div className="tray-well p-3">
+                  <p className="text-sm font-extrabold">Nothing is for sale</p>
+                  <p className="mt-1 text-sm">
                     No currency, no shop. An account only saves your run.
                   </p>
                 </div>
               )}
             </form>
 
-            <p className="text-ink-soft mt-6 text-sm">
+            <p className="mt-6 text-sm">
               {copy.switchText}{" "}
               <Link
                 href={copy.switchHref}
-                className="text-cobalt decoration-cobalt/30 font-extrabold underline underline-offset-4"
+                className="font-extrabold underline underline-offset-4"
               >
                 {copy.switchLabel}
               </Link>
             </p>
-          </div>
+          </section>
+
+          <StageFrame
+            className="auth-picture mx-auto w-full max-w-[220px] lg:max-w-none"
+            crowd={
+              <CrowdCat
+                catId="mistpaw"
+                size={64}
+                order={2}
+                cast={false}
+                className="right-6 bottom-full"
+              />
+            }
+          >
+            <div className="flex flex-col items-center px-4 pt-5 lg:px-8 lg:pt-8">
+              <p className="text-print text-center text-xl text-balance lg:text-3xl">
+                Six rivals. Twelve turns each.
+              </p>
+              <PixelSprite
+                catId="flameclaw"
+                size={256}
+                label="Flameclaw"
+                className="mt-3 h-auto w-full max-w-[160px] lg:mt-5 lg:max-w-[256px]"
+              />
+            </div>
+          </StageFrame>
         </div>
-      </div>
-    </main>
-  );
-}
-
-function EyeIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-5 fill-none stroke-current"
-      strokeWidth="2"
-    >
-      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-      <circle cx="12" cy="12" r="2.5" />
-    </svg>
-  );
-}
-
-function EyeOffIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className="size-5 fill-none stroke-current"
-      strokeWidth="2"
-    >
-      <path d="m3 3 18 18M10.6 6.2A9.8 9.8 0 0 1 12 6c6 0 9.5 6 9.5 6a17 17 0 0 1-2.1 2.8M6.2 6.2C3.8 8 2.5 12 2.5 12s3.5 6 9.5 6c1.1 0 2.2-.2 3.1-.5M9.9 9.9a3 3 0 0 0 4.2 4.2" />
-    </svg>
+      </main>
+    </div>
   );
 }

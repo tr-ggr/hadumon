@@ -1393,19 +1393,6 @@ body:has(.table-fit) [role="dialog"] {
   }
 }
 
-@keyframes auth-enter {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-.auth-shell {
-  animation: auth-enter 320ms cubic-bezier(0.16, 1, 0.3, 1) both;
-}
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1414,38 +1401,14 @@ body:has(.table-fit) [role="dialog"] {
     transition-duration: 0.01ms !important;
   }
 }
-@media (max-width: 767px) {
-  .page-wrap {
-    padding: 16px 12px 92px;
-  }
-}
-
+/* Signing in on a wide, short window: the board starts at the top and the
+   picture beside it is left out. */
 @media (min-width: 700px) and (max-height: 560px) {
-  .auth-page {
+  .tabletop .auth-page {
     align-items: flex-start;
-    padding-block: 12px;
+    padding-block: 16px;
   }
-  .auth-shell {
-    grid-template-columns: 0.72fr 1.28fr;
-  }
-  .auth-shell > :first-child {
-    min-height: 405px;
-    margin: 12px;
-    padding-top: 18px;
-    justify-content: center;
-  }
-  .auth-shell > :last-child {
-    padding: 24px 28px;
-  }
-  .auth-shell > :last-child > a {
-    margin-bottom: 14px;
-  }
-  .auth-shell form {
-    margin-top: 14px;
-    gap: 10px;
-  }
-  .auth-mascot {
-    margin-top: 0;
-    max-width: 240px;
+  .tabletop .auth-picture {
+    display: none;
   }
 }
