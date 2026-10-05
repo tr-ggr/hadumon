@@ -17,7 +17,7 @@ OWN-WORLD: Pieces on a Cream Table (DESIGN.md). The pages are cream boards with 
 
 STORY: Come in through The Archivist's window; the wall and the shut book come up out of the window's dark and its cover opens; pick a chapter from the tabs; turn through the cats four to a page and take one out of its pocket to read its whole card; filter them by element and rarity; read the relics, the clans, and the six rivals in the order a run meets them.
 
-FIRST VIEWPORT: The ink lid (Codex in lime and pressed, Play in cobalt). Under it the stone wall and, a beat after it has come up out of the dark, the open book, filling the window: at 1440x900 a spread of the first eight cats with their whole cards printed (compact cards under 1280 by 848px), "Cats" at the head of the left page and "19 of 26" at the head of the right, with "Codex" on a cream plate and the four chapter tabs down the book's left edge, Cats in lime; under the book the pager ("Previous", "Pages 1 and 2 of 20", "Next") at the foot of the screen, and the filter board just under the fold. On a 375x667 phone: the plate, the four tabs in a row, and the first page down to the top of its second row of cats.
+FIRST VIEWPORT: The ink lid (Codex in lime and pressed, Play in cobalt). Under it the stone wall and, a beat after it has come up out of the dark, the open book, filling the window: at 1440x900 a spread of the first eight cats with their whole cards printed (compact cards under 1280 by 848px), "Cats" at the head of the left page and "19 of 26" at the head of the right, with "Codex" on a cream plate and the four chapter tabs down the book's left edge, Cats in lime; under the book the pager ("Previous", "Pages 1 and 2 of 20", "Next") at the foot of the screen, and along the book's top edge the filter flags, six elements over the left page and six rarities over the right, "All" in lime on each. On a 375x667 phone: the plate, the four tabs in a row, and the first page down to the top of its second row of cats.
 
 FORM: Not recorded in the build. The book was planned with the user on 2026-10-05 (four cats to a page, a card that comes out of its pocket, an opening on every visit with no press, both filters kept); no seed key, pin or comp was handed to the documenter.
 
@@ -30,7 +30,8 @@ FINISH: built and documented in DESIGN.md on 2026-10-05. Checked in Chromium at 
 - From 1024px: the plate and the tabs stand in a column down the book's left edge, 12px apart.
 - Every page is in one grid cell, so the book is as tall as its tallest page on every spread and under every filter.
 - Per page: cats 4 (two by two) at every width; relics 4 on a single page and 6 on a page of a spread; clans 5 and 3; rivals 1. Two-up, a chapter with an odd number of pages ends on a blank page.
-- The pager is a board the width of the book, 20px under it; the filter board is 20px under that, while Cats is open.
+- The pager is a board the width of the book, 20px under it.
+- The cats' filters, while Cats is open: from 1024px, flags along the book's top edge in a row 42px tall that is kept above the book on every chapter, the elements over the left page and the rarities over the right; under 1024px, a board 20px under the pager.
 - Nothing is kept clear for the tower: the wall is behind the whole page. The room clips sideways at the column's outer edge.
 
 ## The pieces
@@ -42,7 +43,7 @@ FINISH: built and documented in DESIGN.md on 2026-10-05. Checked in Chromium at 
 - Pocket: a cat card that fills its share of the page. Unlocked, it is a button that lifts under a mouse and comes out as the full card in a dialog; its pocket is an empty tray well meanwhile. Locked, it is at 60% with its unlock hint and is not a button.
 - Relic and clan tile, rival card: as they were (white; a relic led by its drawing, a clan by its element mark; the rival's sprite, "Match N", its coral plate, flavor, trait, deck table and head start).
 - Pager: a board holding a cream "Previous" and "Next" with chevron key hints, and the readout between them in 14px bold.
-- Filter token: white, 44px; lime with the cobalt chosen frame when set. "All" leads each row.
+- Filter token: white, 44px; lime with the cobalt chosen frame when set. "All" leads each row. As a flag on the book's top edge it has no printed group label and its foot is tucked under the edge.
 
 ## Signature interaction
 
@@ -67,7 +68,8 @@ A page turned is paper (`page`); the cover opening is `cover`, with the soft thu
 ## Unresolved
 
 - The filter component and its inner control are still named `FilterChips` and `Chip` in code, though they are tokens now.
-- The filters are under the book, not over it: over it they would push the cover off a phone's first screen and move the book whenever Cats is entered or left. On a phone that puts them a screen below the page they change.
+- Under 1024px the filters are a board under the pager, a screen below the page they change on a phone: the chapter tabs have the book's top edge there, and over the book a board would push it down whenever Cats is entered. From 1024px they are on the book's top edge and on the first screen.
+- The flags share out their page's width, so six of them fit a 425px page only at 12px text with 6px side padding. That was measured with the platform face on Linux; a wider rounded face on another platform has not been checked at 1024px.
 - The book is as tall as its tallest page, which is a relics or clans page; at 1280px a cat card has spare room under its text.
 - A turn to a far chapter is one leaf, not a riffle.
 - Not checked in Safari or on an iOS device: the turn uses `perspective` with no `preserve-3d` or hidden backface to stay clear of the known trouble there.
