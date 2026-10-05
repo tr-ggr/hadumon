@@ -272,6 +272,17 @@ export const ICONS = {
     "o1oooooo",
     ".oooooo.",
   ],
+  /** Play: the way to the table. */
+  play: [
+    "oo......",
+    "o1oo....",
+    "o111oo..",
+    "o11111oo",
+    "o11111oo",
+    "o111oo..",
+    "o1oo....",
+    "oo......",
+  ],
   /** Logging out: a door, and the way through it. */
   exit: [
     "oooo....",

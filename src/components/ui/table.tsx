@@ -21,6 +21,8 @@ export function Label({
 const TABLE_BUTTON = {
   primary: "bg-cobalt hover:bg-cobalt-dark text-white",
   secondary: "bg-cream hover:bg-sky-soft text-ink",
+  /** The one of a set that is in force: the page you are on, a filter set. */
+  chosen: "bg-lime hover:bg-lime text-ink",
   /** Something is taken away for good. Ink, since coral is the rival's. */
   danger: "bg-ink hover:bg-ink/85 text-cream",
 };

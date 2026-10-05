@@ -36,7 +36,7 @@ function Section({
 }) {
   const label = SECTIONS.find((section) => section.id === id)?.label ?? id;
   return (
-    <div id={id} className="scroll-mt-20">
+    <div id={id} className="scroll-mt-16">
       <Board
         title={label}
         action={
@@ -112,10 +112,10 @@ export function CodexView() {
           <Section id="cats">
             <CardGridSkeleton count={6} />
           </Section>
-          <div id="relics" className="scroll-mt-20">
+          <div id="relics" className="scroll-mt-16">
             <BoardSkeleton title="Relics" lines={3} />
           </div>
-          <div id="clans" className="scroll-mt-20">
+          <div id="clans" className="scroll-mt-16">
             <BoardSkeleton title="Clans" lines={2} />
           </div>
         </>

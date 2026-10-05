@@ -1225,6 +1225,25 @@ body:has(.table-fit) [role="dialog"] {
 .tabletop .toast-stack {
   bottom: 1.25rem;
 }
+@media (max-width: 767px) {
+  .tabletop:has(.shell-dock) .toast-stack {
+    bottom: calc(var(--dock-h) + 1.25rem);
+  }
+}
+/*
+ * The shell around every page that is not a run: the lid across the top and,
+ * on a phone, the three ways about the app docked along the bottom. Their
+ * heights are named, so what stands behind the page can stop short of them.
+ */
+.tabletop {
+  --lid-h: 52px;
+  --dock-h: calc(4.75rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .tabletop {
+    --dock-h: 0px;
+  }
+}
 /*
  * The crowd: cats and oversized icons standing on the table. Each idles on a
  * 2px two-step bob and casts a flat shadow one sprite pixel deep.

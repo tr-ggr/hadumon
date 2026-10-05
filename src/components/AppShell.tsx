@@ -5,9 +5,12 @@ import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { LogoutDialog } from "~/components/LogoutDialog";
+import { PixelIcon } from "~/components/PixelIcon";
+import { MusicButton } from "~/components/run/music/MusicButton";
+import { SoundButton } from "~/components/run/sfx/SoundButton";
+import type { IconName } from "~/components/sprites/icons";
+import { tableButtonClass, type TableButtonSize } from "~/components/ui";
 import { api } from "~/trpc/react";
-
-type IconName = "home" | "play" | "codex";
 
 export interface NavItem {
   href: string;
@@ -18,10 +21,10 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/run", label: "Play", icon: "play" },
-  { href: "/codex", label: "Codex", icon: "codex" },
+  { href: "/codex", label: "Codex", icon: "book" },
 ];
 const BARE_ROUTES = ["/login", "/signup"];
-/** The table takes the whole screen: no rail, no bar. See `TableNav`. */
+/** The table takes the whole screen: no lid, no dock. See `TableNav`. */
 const TABLE_ROUTE = "/run";
 
 export function AppShell({
@@ -42,55 +45,68 @@ export function AppShell({
   // The table lays its own cloth edge to edge and carries its own way out.
   if (isActive(pathname, TABLE_ROUTE)) {
     return (
-      <div className="app-shell flex min-h-dvh flex-col">
+      <div className="flex min-h-dvh flex-col">
         <main className="flex min-w-0 flex-1 flex-col">{children}</main>
       </div>
     );
   }
   return (
-    <div className="app-shell min-h-dvh md:grid md:grid-cols-[12rem_minmax(0,1fr)] md:items-start">
-      <SideNav pathname={pathname} />
-      <div className="flex min-h-dvh min-w-0 flex-col">
-        <TopBar />
-        <main className="app-main mx-auto min-w-0 flex-1 px-3 py-4 pb-20 sm:px-5 md:pb-6 lg:px-6">
-          {children}
-        </main>
-      </div>
-      <BottomNav pathname={pathname} />
+    <div className="relative isolate flex min-h-dvh flex-col">
+      <Lid pathname={pathname} />
+      <main className="mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-3 pt-5 pb-28 sm:px-5 md:pb-12">
+        {children}
+      </main>
+      <Dock pathname={pathname} />
     </div>
   );
 }
 
 /**
- * Sticky account bar, shown at every width: the wordmark on mobile (the rail
- * carries it on desktop), who is signed in, and Log out behind a confirm.
+ * The lid of the box, across the top of every page but the table: the
+ * wordmark, the three ways about the app (from 768px; a phone has them in
+ * the dock), who is signed in, the sound, and Log out behind a confirm.
  */
-function TopBar() {
+function Lid({ pathname }: { pathname: string }) {
   const [confirming, setConfirming] = useState(false);
   const me = api.auth.me.useQuery(undefined, { retry: false });
   const displayName = me.data?.user.displayName;
+  const corner = tableButtonClass("secondary", "icon");
 
   return (
-    <header className="bg-cream/95 sticky top-0 z-30 border-b border-black/5 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-[1180px] items-center gap-3 px-3 py-2 sm:px-5 lg:px-6">
-        <Link
-          href="/"
-          className="text-pixel text-ink shrink-0 text-xl sm:text-2xl md:hidden"
-        >
+    <header className="lid bg-ink text-cream sticky top-0 z-30">
+      <div className="mx-auto flex w-full max-w-[1400px] items-center gap-3 px-3 pt-1 pb-2 sm:px-5">
+        <Link href="/" className="text-pixel shrink-0 text-xl sm:text-2xl">
           Hadu<span className="text-coral">Mon</span>
         </Link>
-        <div className="ml-auto flex min-w-0 items-center gap-1">
+        <nav
+          aria-label="Primary navigation"
+          className="ml-3 hidden gap-2.5 md:flex"
+        >
+          {NAV_ITEMS.map((item) => (
+            <NavButton
+              key={item.href}
+              item={item}
+              size="sm"
+              active={isActive(pathname, item.href)}
+            />
+          ))}
+        </nav>
+        <div className="ml-auto flex min-w-0 items-center gap-1.5">
           {displayName ? (
-            <span className="text-ink min-w-0 truncate px-2 text-sm font-bold">
+            <span className="mr-1 min-w-0 truncate text-sm font-bold">
               {displayName}
             </span>
           ) : null}
+          <SoundButton className="shrink-0" />
+          <MusicButton className="shrink-0" />
           <button
             type="button"
+            aria-label="Log out"
+            title="Log out"
             onClick={() => setConfirming(true)}
-            className="touch-target text-ink-soft hover:bg-sky-soft hover:text-ink shrink-0 rounded-full px-3 text-sm font-bold"
+            className={`${corner} shrink-0`}
           >
-            Log out
+            <PixelIcon name="exit" />
           </button>
         </div>
       </div>
@@ -100,19 +116,18 @@ function TopBar() {
   );
 }
 
-function SideNav({ pathname }: { pathname: string }) {
+/** The same three ways, docked along the bottom of a phone. */
+function Dock({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Primary navigation"
-      className="app-rail sticky top-0 hidden h-dvh w-48 shrink-0 flex-col gap-1 overflow-y-auto px-3 py-4 md:flex"
+      className="shell-dock rail fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 gap-2.5 px-3 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] md:hidden"
     >
-      <Link href="/" className="text-pixel text-ink mb-8 px-3 text-2xl">
-        Hadu<span className="text-coral">Mon</span>
-      </Link>
       {NAV_ITEMS.map((item) => (
-        <NavLink
+        <NavButton
           key={item.href}
           item={item}
+          size="md"
           active={isActive(pathname, item.href)}
         />
       ))}
@@ -120,63 +135,33 @@ function SideNav({ pathname }: { pathname: string }) {
   );
 }
 
-function NavLink({ item, active }: { item: NavItem; active: boolean }) {
+/**
+ * One way about the app, as a table button. The page you are on is lime and
+ * pressed in; Play is the cobalt one, since it is where the game is.
+ */
+function NavButton({
+  item,
+  size,
+  active,
+}: {
+  item: NavItem;
+  size: TableButtonSize;
+  active: boolean;
+}) {
+  const variant = active
+    ? "chosen"
+    : item.href === TABLE_ROUTE
+      ? "primary"
+      : "secondary";
   return (
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={`flex min-h-12 items-center gap-3 rounded-xl px-3 text-sm font-bold transition ${active ? "bg-cobalt text-white shadow-sm" : "text-ink-soft hover:bg-sky-soft hover:text-ink"}`}
+      className={tableButtonClass(variant, size, active ? "is-pressed" : "")}
     >
-      <Icon name={item.icon} />
-      <span>{item.label}</span>
+      <PixelIcon name={item.icon} />
+      {item.label}
     </Link>
-  );
-}
-
-function BottomNav({ pathname }: { pathname: string }) {
-  return (
-    <nav
-      aria-label="Primary navigation"
-      className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-3 gap-1 rounded-2xl border border-black/5 bg-white/95 p-2 shadow-[0_12px_36px_rgba(23,33,43,0.18)] backdrop-blur md:hidden"
-    >
-      {NAV_ITEMS.map((item) => {
-        const active = isActive(pathname, item.href);
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            aria-current={active ? "page" : undefined}
-            className={`flex min-h-12 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-bold ${active ? "bg-sky-soft text-cobalt" : "text-ink-soft"}`}
-          >
-            <Icon name={item.icon} />
-            <span>{item.label}</span>
-          </Link>
-        );
-      })}
-    </nav>
-  );
-}
-
-const ICON_PATHS: Record<IconName, string> = {
-  home: "M4 11 12 4l8 7v8a1 1 0 0 1-1 1h-4v-6H11v6H7a1 1 0 0 1-1-1z",
-  play: "M8 5v14l11-7z",
-  codex: "M5 4h10a4 4 0 0 1 4 4v12H9a4 4 0 0 1-4-4zM9 4v16M13 9h2",
-};
-
-function Icon({ name }: { name: IconName }) {
-  return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d={ICON_PATHS[name]} />
-    </svg>
   );
 }
 
