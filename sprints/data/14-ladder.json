@@ -1,0 +1,218 @@
+{
+  "ladder": [
+    {
+      "higher": 1,
+      "lower": 0,
+      "games": 600,
+      "winRate": 0.735,
+      "wins": 430,
+      "ties": 22,
+      "losses": 148,
+      "scored": 25.4,
+      "conceded": 20.71,
+      "msPerMatch": 3.4
+    },
+    {
+      "higher": 2,
+      "lower": 1,
+      "games": 600,
+      "winRate": 0.748,
+      "wins": 428,
+      "ties": 41,
+      "losses": 131,
+      "scored": 28.64,
+      "conceded": 24.11,
+      "msPerMatch": 7.5
+    },
+    {
+      "higher": 3,
+      "lower": 2,
+      "games": 600,
+      "winRate": 0.507,
+      "wins": 276,
+      "ties": 56,
+      "losses": 268,
+      "scored": 26.35,
+      "conceded": 26.22,
+      "msPerMatch": 24.8
+    },
+    {
+      "higher": 4,
+      "lower": 3,
+      "games": 300,
+      "winRate": 0.48,
+      "wins": 136,
+      "ties": 16,
+      "losses": 148,
+      "scored": 26.76,
+      "conceded": 26.61,
+      "msPerMatch": 156.8
+    },
+    {
+      "higher": 2,
+      "lower": 0,
+      "games": 600,
+      "winRate": 0.936,
+      "wins": 552,
+      "ties": 19,
+      "losses": 29,
+      "scored": 29.16,
+      "conceded": 19.28,
+      "msPerMatch": 5.5
+    },
+    {
+      "higher": 3,
+      "lower": 1,
+      "games": 600,
+      "winRate": 0.747,
+      "wins": 431,
+      "ties": 34,
+      "losses": 135,
+      "scored": 28.67,
+      "conceded": 23.98,
+      "msPerMatch": 26.1
+    },
+    {
+      "higher": 4,
+      "lower": 2,
+      "games": 300,
+      "winRate": 0.543,
+      "wins": 153,
+      "ties": 20,
+      "losses": 127,
+      "scored": 26.83,
+      "conceded": 26.2,
+      "msPerMatch": 125.1
+    }
+  ],
+  "seats": [
+    {
+      "level": 2,
+      "games": 600,
+      "winRate": 0.479,
+      "wins": 265,
+      "ties": 45,
+      "losses": 290,
+      "scored": 26.17,
+      "conceded": 26.45,
+      "playerSeatWins": 0.442,
+      "rivalSeatWins": 0.483,
+      "tieRate": 0.075,
+      "stillTiedAfter": {
+        "mostFoodLeft": 0.023,
+        "mostCats": 0.047,
+        "foodThenCats": 0.01
+      }
+    },
+    {
+      "level": 4,
+      "games": 300,
+      "winRate": 0.49,
+      "wins": 133,
+      "ties": 28,
+      "losses": 139,
+      "scored": 26.66,
+      "conceded": 27.05,
+      "playerSeatWins": 0.443,
+      "rivalSeatWins": 0.463,
+      "tieRate": 0.093,
+      "stillTiedAfter": {
+        "mostFoodLeft": 0.033,
+        "mostCats": 0.053,
+        "foodThenCats": 0.02
+      }
+    }
+  ],
+  "relics": [
+    {
+      "relic": "ember-charm",
+      "points": 3.89,
+      "winRate": 0.688,
+      "winRateWithout": 0.471
+    },
+    {
+      "relic": "tide-charm",
+      "points": 4.09,
+      "winRate": 0.783,
+      "winRateWithout": 0.538
+    },
+    {
+      "relic": "spark-charm",
+      "points": 4.49,
+      "winRate": 0.764,
+      "winRateWithout": 0.499
+    },
+    {
+      "relic": "briar-charm",
+      "points": 3.55,
+      "winRate": 0.662,
+      "winRateWithout": 0.447
+    },
+    {
+      "relic": "dusk-charm",
+      "points": 3.23,
+      "winRate": 0.663,
+      "winRateWithout": 0.48
+    },
+    {
+      "relic": "warm-saucer",
+      "points": 1.18,
+      "winRate": 0.549,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "ball-of-twine",
+      "points": 1.8,
+      "winRate": 0.601,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "bent-whisker",
+      "points": 2.01,
+      "winRate": 0.653,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "night-map",
+      "points": 1.11,
+      "winRate": 0.591,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "soft-landing",
+      "points": 1.21,
+      "winRate": 0.552,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "early-riser",
+      "points": 2.02,
+      "winRate": 0.632,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "lucky-collar",
+      "points": 2.44,
+      "winRate": 0.779,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "loud-bell",
+      "points": 0.96,
+      "winRate": 0.562,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "hoarders-basket",
+      "points": 2.43,
+      "winRate": 0.631,
+      "winRateWithout": 0.477
+    },
+    {
+      "relic": "quiet-corner",
+      "points": 3.14,
+      "winRate": 0.642,
+      "winRateWithout": 0.477
+    }
+  ]
+}

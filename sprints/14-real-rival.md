@@ -72,3 +72,72 @@ The two-seat game is built beside the scripted rival and nothing plays it yet bu
 - `duel.ts` is the driver: `openMatch(config, policy)` deals and has the rival keep; `advance(state, action, policy)` applies the player's action and then every rival action until the player is to act, so one request is still one list of events.
 
 Tests: `symmetry.test.ts` plays 30 random matches and checks at every step that swapping the seats mirrors the next state and its events; `duel.test.ts` covers the rules above and finishes 72 random matches across the six rivals, every listed action accepted.
+
+## Phase 4 — The bot, levels 0 to 4 (done), and Gate A
+
+`src/server/game/bot/` is the rival's mind. Nothing in the app calls it yet.
+
+- `observe(state, me)` builds an `Observation` from a whitelist: the shared table, the bot's own seat in full except the order of its deck, and the other seat's board, tray, food and counts. The cats a seat cannot see are one sorted list per seat. The seed, a deck's order, the other seat's hand and cats tucked face down are never in it. A bot is a function of an `Observation` and an RNG and is never handed the match, so what it cannot see it cannot use.
+- `imagine(seen, rng)` deals the unseen cats back out at random and gives the table a seed of its own, so a bot that looks ahead rolls its own dice and not the dice to come.
+- A bot's RNG is `createRng(\`${seed}:${step}:bot\`)`. Thinking is capped by a count of moves tried (`STEP_CAP`), never by the clock, so a position always gets the same answer.
+- `evaluate(state, me, weights)` is points on the table plus a guess at what the position turns into: the round goal as it stands, food by what it can pay for, cats in hand, the best cat it could play next, and each cat on the board for the turns it still has to work. A rival's style (`styles.ts`) tilts those weights by at most 30% and orders the habits that settle an even choice. Old Nine Lives has no tilt.
+- `rivalDecks.ts` builds a rival's deck: its clan's 16 starting cards plus one pick for each match already played, the best cat in the player's unlocked pool at or under that pick's cap, its own clan's first. The caps are the rarity the best of a reward's three cats typically has, measured from `makeOffer`: uncommon, uncommon, rare, rare, rare. (The plan guessed epic for the last; with weights counted per cat the median is rare.) Themes: Alley Tom and the Archivist thorn, the Dockside Twins mist, Madame Mittens flame, the Rooftop Syndicate volt, Old Nine Lives shade.
+
+| Level | Algorithm |
+|-------|-----------|
+| 0 | A fixed list: play the first cat that can be played; with an empty hand, prowl; with a cat only yarn keeps off the board, go to the Den; otherwise hunt. Declines every choice, never trades, needs no RNG |
+| 1 | One step ahead, counting points only; an even choice goes the way level 0 would |
+| 2 | One step ahead with the full evaluation; chooses its keep, rerolls a feeder it has no use for |
+| 3 | Level 2 with more ways to lay yarn and pay for a trade, averaged over 4 re-deals |
+| 4 | Level 3, then the other seat's best reply to its 8 best moves |
+
+### Gate A
+
+`pnpm tsx --conditions=react-server scripts/selfplay.ts` plays the bots against each other on fixed seeds and writes `sprints/data/14-ladder.json`. Every pairing is one deal played twice with the seats swapped, on plain starter decks with no relics. A tie counts as half a win.
+
+| Pairing | Higher level wins | Matches | Mean score |
+|---------|-------------------|---------|------------|
+| 1 v 0 | 73.5% | 600 | 25.4 to 20.7 |
+| 2 v 1 | 74.8% | 600 | 28.6 to 24.1 |
+| 2 v 0 | 93.6% | 600 | 29.2 to 19.3 |
+| 3 v 2 | 50.7% | 600 | 26.4 to 26.2 |
+| 4 v 3 | 48.0% | 300 | 26.8 to 26.6 |
+| 4 v 2 | 54.3% | 300 | 26.8 to 26.2 |
+
+The low levels separate: 0, 1 and 2 are three clear steps. Levels 3 and 4 do not clear the 56% bar over level 2: averaging over re-deals and reading one reply buy next to nothing in a game where the seats touch only through the feeder and the goals. Unless phase 5 changes that, 2, 3 and 4 are one level and the level table says so.
+
+The same bot in both seats, level 2 over 600 matches and level 4 over 300:
+
+| | Level 2 | Level 4 |
+|-|---------|---------|
+| Player's seat wins (leads rounds 1 and 3) | 44.2% | 44.3% |
+| Rival's seat wins | 48.3% | 46.3% |
+| Tied on points | 7.5% | 9.3% |
+| Still tied after most food left | 2.3% | 3.3% |
+| Still tied after food, then most cats | 1.0% | 2.0% |
+
+Leading is worth nothing measurable; if anything the seat that moves last in rounds 1 and 3 is a point or two of win rate ahead, inside the noise of these samples.
+
+**The tie rule.** "A tie goes to the rival" would hand it one match in eleven. The rule now in the engine, to be confirmed at Gate C: level on points, the match goes to the seat with more food left in hand (Wingspan's own tiebreak), then to the one with more cats on its board, and a match level on all three, one or two in a hundred, goes to the player. The result carries `tiebreak` (`food`, `cats`, `seat` or `null`).
+
+What a relic is worth to the seat that holds it, level 2 against level 2 on the same 600 deals with and without it:
+
+| Relic | Points | Win rate without | with |
+|-------|--------|------------------|------|
+| Ember Charm | +3.9 | 47.1% | 68.8% |
+| Tide Charm | +4.1 | 53.8% | 78.3% |
+| Spark Charm | +4.5 | 49.9% | 76.4% |
+| Briar Charm | +3.6 | 44.7% | 66.2% |
+| Dusk Charm | +3.2 | 48.0% | 66.3% |
+| Warm Saucer | +1.2 | 47.7% | 54.9% |
+| Ball of Twine | +1.8 | 47.7% | 60.1% |
+| Bent Whisker | +2.0 | 47.7% | 65.3% |
+| Night Map | +1.1 | 47.7% | 59.1% |
+| Soft Landing | +1.2 | 47.7% | 55.2% |
+| Early Riser | +2.0 | 47.7% | 63.2% |
+| Lucky Collar | +2.4 | 47.7% | 77.9% |
+| Loud Bell (new effect) | +1.0 | 47.7% | 56.2% |
+| Hoarder's Basket | +2.4 | 47.7% | 63.1% |
+| Quiet Corner | +3.1 | 47.7% | 64.2% |
+
+The clan relic alone is the player's biggest edge: three to four and a half points from the first match, which at equal skill is about twenty points of win rate. The Lucky Collar moves fewer points but takes them off the rival, so it wins as many matches as a charm.
