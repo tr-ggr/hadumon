@@ -360,7 +360,9 @@ describe("a match ending", () => {
     // A relic is due after the first win, and never one already held.
     expect(new Set(offer.relics).size).toBe(3);
     expect(offer.relics).not.toContain(run.relics[0]);
-    expect(offer.canTrim).toBe(true);
+    // A run starts at the floor, so there is nothing to trim yet.
+    expect(MIN_DECK).toBe(DECK_SIZE - STOLEN);
+    expect(offer.canTrim).toBe(false);
     expect(makeOffer(run)).toEqual(offer);
   });
 
@@ -374,8 +376,13 @@ describe("a match ending", () => {
 
 describe("chooseReward", () => {
   it("takes a card back, takes a relic, trims, and starts the next match", () => {
-    const won = finishMatch(newRun(), true);
-    const offer = won.reward!;
+    // A deck of one card over the floor, so a trim is on offer.
+    const first = finishMatch(newRun(), true);
+    const grown = { ...first, deck: [...first.deck, "flameclaw"] };
+    const won = { ...grown, reward: makeOffer(grown) };
+    const offer = won.reward;
+    expect(first.reward?.canTrim).toBe(false);
+    expect(offer.canTrim).toBe(true);
     const back = offer.reclaim[0]!;
     const trim = won.deck.find((id) => id !== back)!;
     const next = chooseReward(won, {
@@ -402,7 +409,7 @@ describe("chooseReward", () => {
     expect(next.match?.phase).toBe("setup");
     // The previous run state is untouched.
     expect(won.stolen).toHaveLength(STOLEN);
-    expect(won.deck).toHaveLength(DECK_SIZE - STOLEN);
+    expect(won.deck).toHaveLength(DECK_SIZE - STOLEN + 1);
   });
 
   it("is `applyReward` and the next match dealt", () => {

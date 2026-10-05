@@ -12,7 +12,7 @@
 
 import { rivalPolicy } from "./bot";
 import { getCat } from "./cats";
-import { STOLEN } from "./deck";
+import { DECK_SIZE, STOLEN } from "./deck";
 import { difficultyOf, rivalLevel, type DifficultyId } from "./difficulty";
 import { advance, openMatch } from "./duel";
 import { ELEMENTS, type Element } from "./elements";
@@ -34,8 +34,12 @@ import { createRng } from "./rng";
  */
 export const RUN_VERSION = 3;
 
-/** A deck can be trimmed down to this many cards and no further. */
-export const MIN_DECK = 12;
+/**
+ * A deck can be trimmed down to this many cards and no further: the size a
+ * run starts at. Measured, a deck of 16 already finds nothing to draw about
+ * three times a match by its end; a thinner one would only stall sooner.
+ */
+export const MIN_DECK = DECK_SIZE - STOLEN;
 /** Stolen cards a win offers, to take one back. */
 export const REWARD_RECLAIM = 3;
 export const REWARD_RELICS = 3;

@@ -20,7 +20,11 @@ import { describeProblem, validateDeck } from "~/server/game/deck";
 import { DIFFICULTIES } from "~/server/game/difficulty";
 import { profiles } from "~/server/db/schema/economy";
 import { ELEMENTS } from "~/server/game/elements";
-import { IllegalAction, type MatchEvent } from "~/server/game/match";
+import {
+  IllegalAction,
+  MAX_ACTION_ITEMS,
+  type MatchEvent,
+} from "~/server/game/match";
 import { payout } from "~/server/game/payout";
 import {
   abandonRun,
@@ -57,28 +61,28 @@ const slot = z.object({ row: z.enum(ROWS), col: index });
 const actionSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("keep"),
-    cats: z.array(index).max(8),
-    essence: z.array(z.enum(ELEMENTS)).max(8),
+    cats: z.array(index).max(MAX_ACTION_ITEMS),
+    essence: z.array(z.enum(ELEMENTS)).max(MAX_ACTION_ITEMS),
   }),
   z.object({
     type: z.literal("play"),
     hand: index,
     row: z.enum(ROWS),
-    swap: z.array(food).max(8).optional(),
+    swap: z.array(food).max(MAX_ACTION_ITEMS).optional(),
   }),
   z.object({
     type: z.literal("hunt"),
-    dice: z.array(index).max(8),
+    dice: z.array(index).max(MAX_ACTION_ITEMS),
     trade: index.optional(),
   }),
   z.object({
     type: z.literal("den"),
-    targets: z.array(slot).max(8),
+    targets: z.array(slot).max(MAX_ACTION_ITEMS),
     trade: food.optional(),
   }),
   z.object({
     type: z.literal("prowl"),
-    picks: z.array(z.union([z.literal("deck"), index])).max(8),
+    picks: z.array(z.union([z.literal("deck"), index])).max(MAX_ACTION_ITEMS),
     trade: slot.optional(),
   }),
   z.object({ type: z.literal("reroll") }),

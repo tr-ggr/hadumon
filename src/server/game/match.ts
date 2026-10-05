@@ -56,6 +56,14 @@ export const ROW_REWARD: Record<Row, readonly number[]> = {
 export const TRADE_CATS: readonly number[] = [1, 3];
 export const FEEDER_DICE = 5;
 export const TRAY_SIZE = 3;
+/**
+ * The most things one action may name: dice to take, yarn to lay, cats to
+ * draw, food to swap. A row's reward grows with relics and with every
+ * legendary whose relic adds to it, so this is set well clear of the largest
+ * a board can reach, and a test holds it there. The API refuses a longer
+ * list before it reaches the engine.
+ */
+export const MAX_ACTION_ITEMS = 16;
 export const SETUP_CATS = 5;
 export const SETUP_KEEP = 5;
 /** What each round's goal pays the higher count and the lower, one entry a round. */

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import { getCat } from "./cats";
+import { CAT_LIST, getCat, type Row } from "./cats";
+import { ELEMENTS } from "./elements";
 import { GOAL_IDS } from "./goals";
 import {
   auraTotal,
@@ -10,15 +11,19 @@ import {
   GOAL_LOSE_POINTS,
   GOAL_WIN_POINTS,
   IllegalAction,
+  MAX_ACTION_ITEMS,
   defaultSwap,
   payCost,
   playPayment,
   ROUND_TURNS,
+  ROW_REWARD,
   rowReward,
+  SETUP_CATS,
   swapOffer,
   type Essence,
   type PlacedCat,
 } from "./match";
+import { RELIC_LIST } from "./relics";
 import { createRng } from "./rng";
 import { starterDeck } from "./clans";
 import {
@@ -805,6 +810,33 @@ describe("pending choices", () => {
       dice: [0],
     }).state;
     expect(none.phase).toBe("turn");
+  });
+});
+
+describe("the size of an action", () => {
+  it("has room for the largest reward any board, relics and legendaries can reach", () => {
+    // Every relic that adds to a lane held at once, every legendary whose
+    // relic adds to every lane on the board at once, and the lane's trade.
+    const relicBonus = (key: "huntBonus" | "denBonus" | "prowlBonus") =>
+      RELIC_LIST.reduce((sum, relic) => sum + (relic.mods?.[key] ?? 0), 0);
+    const auras = CAT_LIST.reduce(
+      (sum, cat) => sum + (cat.aura?.kind === "reward" ? cat.aura.n : 0),
+      0,
+    );
+    const most = (row: Row, key: "huntBonus" | "denBonus" | "prowlBonus") =>
+      Math.max(...ROW_REWARD[row]) + relicBonus(key) + auras + 1;
+    const largest = Math.max(
+      most("hunt", "huntBonus"),
+      most("den", "denBonus"),
+      most("prowl", "prowlBonus"),
+    );
+    // Three legendaries add to every lane today, so a Den can lay nine.
+    expect(largest).toBeGreaterThan(8);
+    expect(largest).toBeLessThanOrEqual(MAX_ACTION_ITEMS);
+    // A cost is four food at most, and a swap pays two for each.
+    const dearest = Math.max(...CAT_LIST.map((cat) => cat.cost.length));
+    expect(dearest * 2).toBeLessThanOrEqual(MAX_ACTION_ITEMS);
+    expect(SETUP_CATS + ELEMENTS.length).toBeLessThanOrEqual(MAX_ACTION_ITEMS);
   });
 });
 
