@@ -57,9 +57,12 @@ export interface TurnPanelProps {
   heat: number;
   onSkip: () => void;
   /**
-   * Where the panel shows. The match renders it twice, in the rail beside
-   * the table and in the dock under it, and shows one of the two.
+   * The panel in the rail beside the table, or as the last column of a
+   * phone's table: the score leads and the prompt closes it. Without this
+   * it is the dock under a narrow table. The match renders both and shows
+   * one of the two.
    */
+  rail?: boolean;
   className?: string;
 }
 
@@ -67,7 +70,9 @@ export interface TurnPanelProps {
  * The player's turn: what is being decided and its confirm, the food held,
  * and the score. In the rail the score leads, then the food, and the prompt
  * and its confirm close it, level with the hand. In the dock under a narrow
- * table the prompt leads, since the hand is right below.
+ * table the prompt leads, since the hand is right below. As the last column
+ * of a phone's table it is the rail's order in less room: the prompt takes
+ * what height is left and scrolls, and its actions stay at the foot.
  */
 export function TurnPanel({
   match,
@@ -76,6 +81,7 @@ export function TurnPanel({
   rivalStep,
   heat,
   onSkip,
+  rail = false,
   className = "",
 }: TurnPanelProps) {
   const { mode, busy } = turn;
@@ -91,29 +97,40 @@ export function TurnPanel({
   return (
     <section
       aria-label="Your turn"
-      className={`min-w-0 flex-col gap-2 px-3 pt-2.5 pb-3 ${className}`}
+      data-turn={rail ? "rail" : "dock"}
+      className={`turn-panel min-w-0 flex-col gap-2 px-3 pt-2.5 pb-3 ${className}`}
     >
       {/* A phone's match keeps its sound and music buttons here: the corner
           has no room for them beside the gauntlet track. */}
-      <div className="flex items-start gap-2 lg:contents">
-        <div className="min-w-0 flex-1 lg:contents">
+      <div className={rail ? "contents" : "flex items-start gap-2"}>
+        <div className={rail ? "contents" : "min-w-0 flex-1"}>
           {playing === null ? (
-            <Prompt match={match} turn={turn} />
+            <Prompt match={match} turn={turn} rail={rail} />
           ) : (
-            <Row2 text={playing || "Settling the table."} rival={rivalStep}>
+            <Row2
+              text={playing || "Settling the table."}
+              rival={rivalStep}
+              rail={rail}
+            >
               <TableButton variant="secondary" onClick={onSkip}>
                 Skip
               </TableButton>
             </Row2>
           )}
         </div>
-        <div className="flex shrink-0 gap-1.5 sm:hidden">
-          <SoundButton />
-          <MusicButton />
-        </div>
+        {rail ? null : (
+          <div className="flex shrink-0 gap-1.5 sm:hidden">
+            <SoundButton />
+            <MusicButton />
+          </div>
+        )}
       </div>
-      <div className="mt-auto flex items-center justify-between gap-3 lg:contents">
-        <div className="flex min-w-0 flex-col gap-1">
+      <div
+        className={
+          rail ? "contents" : "mt-auto flex items-center justify-between gap-3"
+        }
+      >
+        <div className="turn-food flex min-w-0 flex-col gap-1">
           <ul
             aria-label="Your food"
             className="flex flex-wrap items-center gap-x-1 gap-y-2"
@@ -146,27 +163,33 @@ export function TurnPanel({
               );
             })}
           </ul>
-          <p className="text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
+          <p className="turn-note text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
             Any 2 food pay for 1 you lack.
           </p>
         </div>
-        <div className="flex shrink-0 gap-2.5 lg:order-first lg:grid lg:grid-cols-2 lg:pb-1.5">
+        <div
+          className={`turn-scores shrink-0 gap-2.5 ${rail ? "order-first grid grid-cols-2 pb-1.5" : "flex"}`}
+        >
           <ScoreToken
             side="you"
             label="You"
             said={`Your score ${match.score.total}`}
             value={match.score.total}
             heat={heat}
+            rail={rail}
             className="bg-lime"
           />
-          <ScoreToken
-            side="rival"
-            label="Rival"
-            said={`Rival score ${match.rival.score.total}`}
-            value={match.rival.score.total}
-            className="bg-coral"
-            wrapClassName="max-lg:hidden"
-          />
+          {/* Under a narrow table the rival's score is on the rival's side. */}
+          {rail ? (
+            <ScoreToken
+              side="rival"
+              label="Rival"
+              said={`Rival score ${match.rival.score.total}`}
+              value={match.rival.score.total}
+              rail
+              className="bg-coral"
+            />
+          ) : null}
         </div>
       </div>
     </section>
@@ -183,19 +206,20 @@ function ScoreToken({
   said,
   value,
   heat = 0,
+  rail,
   className,
-  wrapClassName = "",
 }: {
   side: "you" | "rival";
   label: string;
   said: string;
   value: number;
   heat?: number;
+  /** In the rail the label and the number share a row. */
+  rail: boolean;
   className: string;
-  wrapClassName?: string;
 }) {
   return (
-    <div className={`relative isolate ${wrapClassName}`}>
+    <div className="relative isolate">
       {side === "you" ? (
         <span
           aria-hidden
@@ -205,7 +229,7 @@ function ScoreToken({
       ) : null}
       <p
         data-score={side}
-        className={`piece border-ink text-ink flex flex-col items-center border-2 px-2 py-0.5 lg:flex-row lg:justify-between lg:px-2.5 lg:py-1 ${className}`}
+        className={`piece border-ink text-ink flex items-center border-2 ${rail ? "justify-between px-2.5 py-1" : "flex-col px-2 py-0.5"} ${className}`}
         aria-label={said}
       >
         <span aria-hidden className="text-[11px] leading-tight font-bold">
@@ -227,17 +251,21 @@ function ScoreToken({
 function Row2({
   text,
   rival = false,
+  rail,
   children,
 }: {
   text: ReactNode;
   /** The line is the rival's doing, and is marked as theirs. */
   rival?: boolean;
+  rail: boolean;
   children?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col gap-2 lg:order-last">
+    <div
+      className={`turn-prompt flex flex-col gap-2 ${rail ? "order-last" : ""}`}
+    >
       <p
-        className="text-ink flex text-sm leading-5 font-semibold lg:min-h-[3.75rem]"
+        className={`turn-text text-ink flex text-sm leading-5 font-semibold ${rail ? "min-h-[3.75rem]" : ""}`}
         aria-live="polite"
       >
         <span
@@ -248,7 +276,9 @@ function Row2({
           {text}
         </span>
       </p>
-      <div className="flex flex-wrap items-center gap-2 pb-1.5 lg:min-h-12 lg:content-start lg:[@media(min-height:53rem)]:min-h-[5.875rem]">
+      <div
+        className={`turn-actions flex flex-wrap items-center gap-2 pb-1.5 ${rail ? "min-h-12 content-start [@media(min-height:53rem)]:min-h-[5.875rem]" : ""}`}
+      >
         {children}
       </div>
     </div>
@@ -273,7 +303,15 @@ function tradeNote(
   return made ? ` Trade: ${made}` : ` Trade spot open: ${how}.`;
 }
 
-function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
+function Prompt({
+  match,
+  turn,
+  rail,
+}: {
+  match: MatchView;
+  turn: TurnControls;
+  rail: boolean;
+}) {
   const { mode, busy } = turn;
   const cancel = (
     <TableButton variant="secondary" disabled={busy} onClick={turn.cancel}>
@@ -283,7 +321,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
   );
 
   if (match.phase === "over") {
-    return <Row2 text="The match is over." />;
+    return <Row2 rail={rail} text="The match is over." />;
   }
 
   if (match.pending) {
@@ -291,7 +329,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
     const host = placed ? getCat(placed.catId).name : "A cat";
     if (match.pending.kind === "trade") {
       return (
-        <Row2 text={`${host}: spend 1 yarn for 1 Treat?`}>
+        <Row2 rail={rail} text={`${host}: spend 1 yarn for 1 Treat?`}>
           <TableButton
             variant="secondary"
             disabled={busy}
@@ -310,6 +348,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
     const chosenId = chosen === null ? undefined : match.hand[chosen];
     return (
       <Row2
+        rail={rail}
         text={`${host}: pick a cat in your hand to tuck under it and draw ${plural(match.pending.draw, "cat")}, or skip.`}
       >
         <TableButton
@@ -341,6 +380,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       if (reason === null && mode.swap.length < owed) {
         return (
           <Row2
+            rail={rail}
             text={`${name} is ${shortWords(short)} short. Give up any ${owed} of your food in its place: ${mode.swap.length} of ${owed} chosen.`}
           >
             <TableButton
@@ -357,6 +397,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       const spent = essenceSpent(match, mode.hand, mode.swap) ?? [];
       return (
         <Row2
+          rail={rail}
           text={
             reason ??
             `Play ${name} into a lane. It spends ${listWords(spent.map(essenceLabel))}.`
@@ -372,10 +413,12 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
               {/* In the rail the lane's own "Play here" space prints the cost. */}
               <span>
                 {ROW_LABELS[row]}
-                <span className="lg:hidden">
-                  {" · "}
-                  {yarnCostLabel(match.yarnCosts[row] ?? 0).toLowerCase()}
-                </span>
+                {rail ? null : (
+                  <>
+                    {" · "}
+                    {yarnCostLabel(match.yarnCosts[row] ?? 0).toLowerCase()}
+                  </>
+                )}
               </span>
             </TableButton>
           ))}
@@ -387,6 +430,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       const paid = mode.trade === null ? undefined : match.hand[mode.trade];
       return (
         <Row2
+          rail={rail}
           text={`Hunt: choose ${plural(turn.take, "die", "dice")} from the feeder. ${mode.dice.length} of ${turn.take} chosen.${tradeNote(
             match,
             "hunt",
@@ -418,6 +462,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
       );
       return (
         <Row2
+          rail={rail}
           text={
             limit === 0
               ? "Den: no cat on the board can hold yarn. Activating still fires the Den's powers and uses the turn."
@@ -460,6 +505,7 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
         : undefined;
       return (
         <Row2
+          rail={rail}
           text={`Prowl: draw ${plural(want, "cat")} from the tray or the deck. ${mode.picks.length} of ${want} chosen.${tradeNote(
             match,
             "prowl",
@@ -482,7 +528,10 @@ function Prompt({ match, turn }: { match: MatchView; turn: TurnControls }) {
     }
     default:
       return (
-        <Row2 text="Your turn. Play a cat from your hand, or activate a lane on the mat. Either way it is your whole turn." />
+        <Row2
+          rail={rail}
+          text="Your turn. Play a cat from your hand, or activate a lane on the mat. Either way it is your whole turn."
+        />
       );
   }
 }

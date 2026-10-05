@@ -243,11 +243,15 @@ src/
     PixelSprite.tsx       Inline-SVG renderer for the 16x16 cat sprites
     RivalSprite.tsx       The same renderer for the six rivals, in coral
     PixelIcon.tsx         The same renderer for the tabletop's 8x8 icons
-    sprites/              Cat, rival, icon and tower grids, and their palettes
+    sprites/              Cat, rival, icon, tower and habitat grids, and their palettes
     auth/                 The sign-in, sign-up, forgot and reset forms, the
                           screen they stand on, and the strength meter
     cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
     landing/              The signed-out page: stage frame, crowd, a playable Hunt round
+    mat/                  The player mat's pieces, shared by the match, the
+                          rival's board and the landing page: the lanes as
+                          data, the cost strip, a lane's tile, banner, spaces,
+                          trade marks and end, and the habitat scenery as CSS
     run/                  Screen components for a run
     codex/                The book: its pages as data (book.ts), a turn as a
                           reducer and a leaf plan (turn.ts), and the components

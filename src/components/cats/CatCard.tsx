@@ -282,7 +282,7 @@ export function CatCard({
         </p>
       ) : null}
 
-      <p className="border-ink/20 border-t pt-1.5 text-xs leading-snug">
+      <p className="card-power border-ink/20 border-t pt-1.5 text-xs leading-snug">
         {locked
           ? lockedHint
           : cat.power
@@ -291,7 +291,9 @@ export function CatCard({
       </p>
 
       {cat.aura && !locked ? (
-        <p className="text-xs leading-snug">{describeAura(cat.aura)}</p>
+        <p className="card-aura text-xs leading-snug">
+          {describeAura(cat.aura)}
+        </p>
       ) : null}
 
       {full && !locked ? (

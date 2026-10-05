@@ -17,7 +17,7 @@ OWN-WORLD: Die-cut cardboard on a woven cream cloth. Ink-outlined pieces with a 
 
 STORY: Read the lanes' printed rewards, play a cat, activate a lane, watch it fire, see the rival answer.
 
-FIRST VIEWPORT: At 1440x900, no scroll and no navbar: a white rail down the left with the gauntlet, the rival and the three round tiles above an ink line, and under it both scores, the food, the prompt and one confirm; the supply tray and three lanes filling the centre; the score sheet, relics and log in a slim column on the right under three corner buttons (Home, Codex, Log out); the hand fanned along the bottom edge, leaning, its lower part under the edge of the screen.
+FIRST VIEWPORT: At 1440x900, and at any window from 1024x600, no scroll and no navbar: a white rail down the left with the gauntlet, the rival and the three round tiles above an ink line, and under it both scores, the food, the prompt and one confirm; the supply tray and three lanes filling the centre; the score sheet, relics and log in a slim column on the right under three corner buttons (Home, Codex, Log out); the hand fanned along the bottom edge, leaning, its lower part under the edge of the screen.
 
 FORM: Whole table, user-pinned over the roll; seed b97818a6. Code-led by the approved plan: no image generation in this harness.
 
@@ -27,12 +27,19 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
 `.impeccable/config.json` records comp-led. No comp round ran. The plan the user approved before the build says so in these words: "`.impeccable/config.json` says comp-led, but this harness has no image generation, so the build is code-led, as the landing page was." That approval is the downgrade; the user was told again at hand-off. The seed is the one `concept-seed --scope surface --mode operate` printed.
 
-## Layout by width
+## The mat
 
-- From 1280px: rail (19.5rem), table, right column (16rem). The page does not scroll at 900px tall.
-- A short screen beside the rail (under 848px tall from 1280px wide, under 912px from 1024px): the hand takes the phone's smaller card and the mat stands above the supply, so a raised card never covers a lane.
-- 1024 to 1279px: the same rail and table; the right column drops under the mat and the page scrolls. The cloth is laid again behind the hand, so nothing shows through the fan.
-- Under 1024px: one column (run strip beside the corner buttons, rival, round, mat, supply, score sheet, relics, log) and a white dock at the bottom holding the prompt, actions, food and score, then the fan. From 640px the dock sets the turn beside the fan.
+The mat is laid out after the mat of base-game Wingspan (`src/components/mat/`). A strip along its top reads "Play a cat" and carries a cost tab over each column (the yarn a cat costs there, or "Free"), so no space prints a cost. Each lane is printed with its habitat as pixel scenery (`sprites/habitats.ts`): a garden for the Hunt, a room for the Den, the rooftops at night for the Prowl. A lane is its cobalt tile with an ink banner under it ("Then fire this row's powers, right to left"), four spaces, and its end. An empty space is a cream outline with the scenery through it, printing the lane's mark, the reward as icons, and on the second and fourth spaces the trade as pay, arrow, gain. Four columns, not Wingspan's five: `SLOTS`, the column costs and the reward ladders are the engine's.
+
+## Layout by window
+
+The window's size alone picks one of four (`run/layout.ts`, and the `fit-wide`, `fit-compact` and `turn-phone` variants in `globals.css`).
+
+- From 1024 by 600px (`fit-wide`): one screen, no scroll. Rail (19.5rem), table, and from 1280px the right column (16rem). The mat takes the height the supply (176px) and the hand's strip leave, up to 544px. From 1024 to 1279px a 40px bar over the mat stands in for the right column: "Scores and log" and the newest log line.
+- A short screen beside the rail (under 848px tall from 1280px wide, under 912px from 1024px): the hand takes the phone's smaller card and the mat stands above the supply, so a raised card stands over the supply and never a lane.
+- A window on its side, 720px wide or more and under 600px tall (`fit-compact`), which is a phone turned: supply column, mat, turn column, over a 56px strip of hand and a "Round N, More" button. The chosen card stands whole over the supply column.
+- A phone held upright that would fit turned is asked to turn (`TurnPhone`), and may play upright instead.
+- Anything else scrolls: one column under 1024px (run strip beside the corner buttons, rival, round, mat, supply, score sheet, relics, log) and a white dock at the bottom holding the prompt, actions, food and score, then the fan. From 640px the dock sets the turn beside the fan.
 
 ## Signature interaction
 
@@ -67,7 +74,7 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 - A placed cat's dialog lists the cats tucked under it, face up, wherever they came from.
 - A run is climbed. Between matches the whole run is shown as a grey ribbed tower, a floor per match, with Hadu on a ledge and a coral rival sprite at every window still to be passed. It plays at three points: walking in when a run starts, going up a floor once a reward is confirmed, and reaching the roof when the last match is won. It asks for nothing, rests 1.4 seconds on its last frame and moves on; any click or key leaves in one press. A loss does not climb.
 - The climb is held on the client only (`useRunController`), beside the last turn's playback, so a reload lands on the screen the run is really on. It is stepped from `RunView`, which outlives it, so the press that skips is swallowed and never reaches the next screen.
-- The tower is the one piece of scenery, and grey is its colour alone. It is pixel rows at the sprites' own pixel size, with windows cut as holes so a rival behind one is clipped to its shape. Hadu is the climber for every clan.
+- The tower and the three lanes' habitats are the scenery, and grey is the tower's colour alone. It is pixel rows at the sprites' own pixel size, with windows cut as holes so a rival behind one is clipped to its shape. Hadu is the climber for every clan.
 
 ## Keys
 
@@ -75,6 +82,7 @@ Three heights: printed (0), token or tile (2px edge), card (3px edge). Two added
 
 ## Unresolved
 
-- Drag-and-drop and habitat scenery on the match table are deferred.
+- Drag-and-drop on the match table is deferred.
+- The portrait prompt, the full-screen turn on Android and the usable width on iPhone Safari in landscape have been checked in an emulated phone, not on a real one.
 - Rival sprites are on the tower and in the codex so far: the nameplate and the landing page's rival fan still name a rival without drawing it. The codex draws it at 48px on its card.
 - The die-cut material is no longer scoped to the run. `.tabletop` is on the body, so home, the codex, sign-in, the landing page and every dialog are cardboard too; `TableSurface` is a tabletop of its own inside it, for the fit and the effects layer.

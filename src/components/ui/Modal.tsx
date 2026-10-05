@@ -46,6 +46,13 @@ const POP_OUT_MS = 220;
 const EASE_GIVE = "cubic-bezier(0.2, 0.9, 0.3, 1.25)";
 const EASE_OUT = "cubic-bezier(0.16, 1, 0.3, 1)";
 
+/**
+ * The dialogs that are open, in the order they opened. One dialog can open
+ * another over itself (the table's sheet opens the rival's board), and only
+ * the last of them answers Escape and holds Tab.
+ */
+const OPEN: object[] = [];
+
 /** A curve the stylesheet names; the Web Animations API takes no `var()`. */
 function curve(el: HTMLElement, name: string, fallback: string): string {
   return getComputedStyle(el).getPropertyValue(name).trim() || fallback;
@@ -73,7 +80,8 @@ function popFrames(panel: HTMLElement, from: DOMRect): Keyframe[] {
 /**
  * The app's one dialog: a board held over the table. Closes on Escape and on
  * a backdrop click, keeps Tab inside while it is open, and hands focus back
- * to whatever opened it.
+ * to whatever opened it. Under another dialog it does neither: the one on
+ * top has the keys.
  *
  * Focus starts on the first `[data-autofocus]` element, or on the dialog
  * itself when there is none. Portalled to `<body>` so a blurred or transformed
@@ -141,7 +149,11 @@ export function Modal({
         : null;
     (panel.querySelector<HTMLElement>("[data-autofocus]") ?? panel).focus();
 
+    const self = {};
+    OPEN.push(self);
+
     const onKeyDown = (event: KeyboardEvent) => {
+      if (OPEN[OPEN.length - 1] !== self) return;
       if (event.key === "Escape") {
         event.preventDefault();
         onCloseRef.current();
@@ -174,6 +186,7 @@ export function Modal({
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
+      OPEN.splice(OPEN.indexOf(self), 1);
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
       opener?.focus();

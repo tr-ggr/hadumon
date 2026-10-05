@@ -92,9 +92,13 @@ export function prefersCalm(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** A phone-sized table, which gets half the sparks. */
+/**
+ * A phone-sized table, which gets half the sparks: a phone held upright,
+ * or one on its side (the height under which the match is `fit-compact`).
+ */
 export function isCompact(): boolean {
-  return window.matchMedia("(max-width: 639.98px)").matches;
+  return window.matchMedia("(max-width: 639.98px), (max-height: 37.49rem)")
+    .matches;
 }
 
 /** True where a mouse can point at one card among several. */

@@ -3,6 +3,16 @@
 import { useEffect, useState } from "react";
 
 import { ElementMark } from "~/components/cats/CatCard";
+import {
+  EmptySpace,
+  LaneBanner,
+  LaneEnd,
+  LaneLabel,
+  LaneTile,
+} from "~/components/mat/LaneSpace";
+import { LANES } from "~/components/mat/lanes";
+import { MatHeader } from "~/components/mat/MatHeader";
+import { laneScene } from "~/components/mat/scene";
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
 import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
@@ -14,18 +24,14 @@ import {
   type LogTone,
 } from "~/components/run/describe";
 import {
-  COBALT,
   Die,
   EssenceToken,
-  INK,
   Label,
   LIME,
   Nameplate,
-  SpaceCost,
   TableButton,
   TableLink,
   TurnCube,
-  WHITE,
 } from "~/components/run/pieces";
 import { toggleDie } from "~/components/run/turn";
 import { rivalPolicy } from "~/server/game/bot";
@@ -39,6 +45,7 @@ import {
   ROW_REWARD,
   rowReward,
   SLOTS,
+  TRADE_CATS,
   type Action,
   type MatchState,
 } from "~/server/game/match";
@@ -186,7 +193,8 @@ function turnSteps(
 
 /**
  * One round of Hunt against Alley Tom, run by the real engine in the browser
- * and laid out as the match table is: the lane on its mat, the feeder in a
+ * and laid out as the match table is: the lane on its mat, under the tabs
+ * that say what each column costs, the feeder in a
  * well, the rival's side beside it. Nothing is saved; "Deal again" starts a
  * fresh seed. The root says what is happening in data attributes, so the
  * page around it can react.
@@ -265,23 +273,117 @@ export function HuntDemo() {
     >
       <div className="grid gap-x-4 gap-y-3.5 md:grid-cols-[minmax(0,1fr)_16rem] lg:grid-cols-[minmax(0,1fr)_18.5rem]">
         <div className="flex min-w-0 flex-col gap-3.5">
-          <section
-            aria-label="Hunt row"
-            className="mat flex flex-col gap-2.5 p-2 pb-3 sm:p-2.5 sm:pb-3.5"
-          >
-            <div className="flex items-stretch justify-between gap-3">
-              <div
-                className={`piece border-ink flex min-h-12 items-center gap-2.5 border-2 py-1.5 pr-4 pl-2.5 ${done ? "bg-cloth" : "bg-lime is-pressed"}`}
-              >
-                <PixelIcon name="paw" size={24} fill={WHITE} ink={INK} />
-                <div className="flex min-w-0 flex-col gap-1">
-                  <h2 className="text-print text-xl">Hunt</h2>
-                  <p className="text-xs leading-none font-bold">
-                    {done ? "Round over" : takeLabel}
-                  </p>
-                </div>
+          <section aria-label="Hunt row" className="mat">
+            <div className="mat-grid is-stacked">
+              <MatHeader costs={COLUMN_YARN_COST} />
+              <div className="lane lane-scene" style={laneScene("hunt")}>
+                <LaneLabel>
+                  <h2 className="sr-only">Hunt</h2>
+                  <LaneTile
+                    still
+                    row="hunt"
+                    on
+                    gives={done ? "Round over" : takeLabel}
+                    sub={LANES.hunt.sub}
+                    className={done ? "bg-cloth!" : ""}
+                  />
+                  <LaneBanner />
+                </LaneLabel>
+                <ol className="contents">
+                  {Array.from({ length: SLOTS }, (_, col) => {
+                    const placed = cats[col];
+                    if (!placed) {
+                      return (
+                        <EmptySpace
+                          key={col}
+                          row="hunt"
+                          col={col}
+                          cost={COLUMN_YARN_COST[col] ?? 0}
+                          reward={ROW_REWARD.hunt[col] ?? 0}
+                          next={col === cats.length}
+                          trade={TRADE_CATS.includes(col)}
+                        />
+                      );
+                    }
+                    const cat = getCat(placed.catId);
+                    return (
+                      <li key={col} className="mat-space">
+                        <div
+                          // Cats tucked underneath show as a thicker edge. The
+                          // left edge is the cat's element, as on its card.
+                          style={{
+                            ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px`,
+                            ["--element" as string]:
+                              ELEMENT_PALETTES[cat.element]["1"],
+                          }}
+                          className={`piece cat-tile border-ink bg-cream flex min-h-28 flex-col items-center gap-1 border-2 pt-1 pb-1.5 text-center ${firing === col ? "anim-fire" : ""}`}
+                        >
+                          <span className="border-ink ml-1.5 self-start border bg-white px-1 text-[10px] leading-4 font-bold sm:text-[11px]">
+                            Fires {ORDINALS[cats.length - 1 - col]}
+                          </span>
+                          <span className="relative">
+                            <PixelSprite
+                              catId={cat.id}
+                              size={48}
+                              decorative
+                              className="sm:h-16 sm:w-16"
+                            />
+                            {/* The firing tag has the tile's corner here, so the
+                                element hangs off the sprite's, clear of the ear. */}
+                            <span className="mark-rim absolute top-0 -left-2.5 flex">
+                              <ElementMark element={cat.element} label />
+                            </span>
+                            {placed.tucked > 0 ? (
+                              <span className="border-ink absolute -bottom-0.5 -left-1 flex items-center border bg-white pr-0.5 text-[11px] leading-none font-bold tabular-nums">
+                                <PixelIcon
+                                  name="tucked"
+                                  size={16}
+                                  fill={LIME}
+                                />
+                                <span aria-hidden>{placed.tucked}</span>
+                                <span className="sr-only">
+                                  Tucked {placed.tucked}
+                                </span>
+                              </span>
+                            ) : null}
+                          </span>
+                          <span
+                            lang="en"
+                            className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] hyphens-auto sm:text-[11px] sm:tracking-tight"
+                          >
+                            {cat.name}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <LaneEnd
+                  row="hunt"
+                  cats={SLOTS}
+                  reward={ROW_REWARD.hunt[SLOTS] ?? 0}
+                  here={cats.length === SLOTS}
+                />
               </div>
-              <p className="flex flex-col items-end justify-center gap-1.5">
+            </div>
+
+            <div className="border-ink flex items-start justify-between gap-3 border-t-2 px-2 pt-2 pb-2.5 sm:px-2.5">
+              <ol className="min-w-0 text-xs leading-snug">
+                {[...cats].reverse().map((placed, i) => {
+                  const col = cats.length - 1 - i;
+                  const cat = getCat(placed.catId);
+                  return (
+                    <li
+                      key={col}
+                      className={`px-1 py-px ${firing === col ? "bg-lime shadow-[inset_0_0_0_2px_var(--color-ink)]" : ""}`}
+                    >
+                      <span className="font-black">{cat.name}.</span>{" "}
+                      {cat.power ? describePower(cat.power) : "No power."}
+                    </li>
+                  );
+                })}
+              </ol>
+              <p className="flex shrink-0 flex-col items-end gap-1.5">
                 <span className="text-print text-xl">Round 1</span>
                 <span className="flex items-center gap-1" aria-hidden>
                   {Array.from({ length: ROUND_TURNS[0] }, (_, i) => (
@@ -295,101 +397,6 @@ export function HuntDemo() {
                 </span>
               </p>
             </div>
-
-            <div className="grid min-w-0 grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,0.6fr)_1.25rem] gap-x-1 sm:grid-cols-[repeat(3,minmax(0,1fr))_minmax(0,0.6fr)_2.75rem] sm:gap-x-1.5 lg:grid-cols-[repeat(4,minmax(0,1fr))_2.75rem]">
-              <ol className="contents">
-                {Array.from({ length: SLOTS }, (_, col) => {
-                  const placed = cats[col];
-                  if (!placed) {
-                    const cost = COLUMN_YARN_COST[col] ?? 0;
-                    const next = col === cats.length;
-                    return (
-                      <li
-                        key={col}
-                        className={`flex min-h-28 flex-col items-center justify-center gap-1.5 border-2 p-1 text-center text-[11px] leading-tight font-bold ${next ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
-                      >
-                        <span className="sr-only">Empty space {col + 1}. </span>
-                        <SpaceCost cost={cost} className="flex-col gap-1.5" />
-                      </li>
-                    );
-                  }
-                  const cat = getCat(placed.catId);
-                  return (
-                    <li key={col} className="min-w-0">
-                      <div
-                        // Cats tucked underneath show as a thicker edge. The
-                        // left edge is the cat's element, as on its card.
-                        style={{
-                          ["--e" as string]: `${2 + 2 * Math.min(placed.tucked, 2)}px`,
-                          ["--element" as string]:
-                            ELEMENT_PALETTES[cat.element]["1"],
-                        }}
-                        className={`piece cat-tile border-ink bg-cream flex h-full min-h-28 flex-col items-center gap-1 border-2 pt-1 pb-1.5 text-center ${firing === col ? "anim-fire" : ""}`}
-                      >
-                        <span className="border-ink ml-1.5 self-start border bg-white px-1 text-[10px] leading-4 font-bold sm:text-[11px]">
-                          Fires {ORDINALS[cats.length - 1 - col]}
-                        </span>
-                        <span className="relative">
-                          <PixelSprite
-                            catId={cat.id}
-                            size={48}
-                            decorative
-                            className="sm:h-16 sm:w-16"
-                          />
-                          {/* The firing tag has the tile's corner here, so the
-                              element hangs off the sprite's, clear of the ear. */}
-                          <span className="mark-rim absolute top-0 -left-2.5 flex">
-                            <ElementMark element={cat.element} label />
-                          </span>
-                          {placed.tucked > 0 ? (
-                            <span className="border-ink absolute -bottom-0.5 -left-1 flex items-center border bg-white pr-0.5 text-[11px] leading-none font-bold tabular-nums">
-                              <PixelIcon name="tucked" size={16} fill={LIME} />
-                              <span aria-hidden>{placed.tucked}</span>
-                              <span className="sr-only">
-                                Tucked {placed.tucked}
-                              </span>
-                            </span>
-                          ) : null}
-                        </span>
-                        <span
-                          lang="en"
-                          className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] hyphens-auto sm:text-[11px] sm:tracking-tight"
-                        >
-                          {cat.name}
-                        </span>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ol>
-              <p className="flex flex-col items-center justify-center gap-1.5">
-                <PixelIcon name="chevron" size={16} ink={COBALT} />
-                <span className="sr-only">Powers fire from right to left.</span>
-                <span
-                  className="text-pixel flex flex-col items-center gap-0.5 text-sm leading-none tabular-nums sm:flex-row"
-                  aria-hidden
-                >
-                  {ROW_REWARD.hunt[SLOTS]}
-                  <PixelIcon name="die" size={16} />
-                </span>
-              </p>
-            </div>
-
-            <ol className="text-xs leading-snug">
-              {[...cats].reverse().map((placed, i) => {
-                const col = cats.length - 1 - i;
-                const cat = getCat(placed.catId);
-                return (
-                  <li
-                    key={col}
-                    className={`px-1 py-px ${firing === col ? "bg-lime shadow-[inset_0_0_0_2px_var(--color-ink)]" : ""}`}
-                  >
-                    <span className="font-black">{cat.name}.</span>{" "}
-                    {cat.power ? describePower(cat.power) : "No power."}
-                  </li>
-                );
-              })}
-            </ol>
           </section>
 
           <div className="tray-well flex flex-col gap-2.5 px-2 pt-1.5 pb-2.5 sm:flex-row sm:items-end sm:justify-between sm:gap-4">

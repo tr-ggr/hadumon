@@ -57,7 +57,7 @@ const BAYER = [
   [15, 7, 13, 5],
 ] as const;
 
-function bayer(x: number, y: number): number {
+export function bayer(x: number, y: number): number {
   return BAYER[y % 4]?.[x % 4] ?? 0;
 }
 
@@ -65,7 +65,7 @@ function bayer(x: number, y: number): number {
  * `rows` rows going from `from` at the top to `to` at the bottom: the share
  * of `to` grows by a sixteenth at a time.
  */
-function dither(
+export function dither(
   from: string,
   to: string,
   rows: number,
@@ -80,7 +80,7 @@ function dither(
   });
 }
 
-function flat(pixel: string, rows: number, width: number): string[] {
+export function flat(pixel: string, rows: number, width: number): string[] {
   return Array.from({ length: rows }, () => pixel.repeat(width));
 }
 
@@ -106,13 +106,13 @@ export const SKY: readonly string[] = SKY_BANDS.reduce<string[]>(
 );
 
 /** A heap of cloud: where its middle is, how wide it swells, how high it starts. */
-type Heap = readonly [centre: number, radius: number, base: number];
+export type Heap = readonly [centre: number, radius: number, base: number];
 
 /**
  * A bank of cloud as a tile that repeats sideways: heaps along its top, lit
  * on their upper edge, and solid from there down. The sea covers its foot.
  */
-function cloudBank(
+export function cloudBank(
   width: number,
   height: number,
   heaps: readonly Heap[],
@@ -182,7 +182,7 @@ export const CLOUDS_NEAR: readonly string[] = cloudBank(
 );
 
 /** A number from 0 to 1 that is always the same for the same pixel. */
-function speck(x: number, y: number): number {
+export function speck(x: number, y: number): number {
   const mixed = Math.imul(x * 73 + 11, y * 151 + 7) ^ (x * 31 + y * 17);
   return ((((mixed >>> 0) % 997) + (y % 3) * 37) % 100) / 100;
 }

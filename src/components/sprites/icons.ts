@@ -250,6 +250,17 @@ export const ICONS = {
     "....oo..",
     "........",
   ],
+  /** Points right: what is paid, and then what it buys. */
+  arrow: [
+    "........",
+    "....o...",
+    "....oo..",
+    "ooooooo.",
+    "ooooooo.",
+    "....oo..",
+    "....o...",
+    "........",
+  ],
   /** The way home from the table. */
   home: [
     "...oo.o.",

@@ -1,136 +1,86 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
-import { PixelIcon } from "~/components/PixelIcon";
-import { ROW_ICONS, type IconName } from "~/components/sprites/icons";
-import { plural } from "~/components/run/describe";
-import { COBALT, INK, LIME, SpaceCost, WHITE } from "~/components/run/pieces";
+import {
+  EmptySpace,
+  LaneBanner,
+  LaneEnd,
+  LaneLabel,
+  LaneTile,
+} from "~/components/mat/LaneSpace";
+import { LANES } from "~/components/mat/lanes";
+import { MatHeader } from "~/components/mat/MatHeader";
+import { laneScene } from "~/components/mat/scene";
 import { ROW_LABELS, ROWS, type Row } from "~/server/game/cats";
-import { COLUMN_YARN_COST, ROW_REWARD, SLOTS } from "~/server/game/match";
-
-interface Lane {
-  unit: IconName;
-  /** What activating the lane says it gives, for a count. */
-  gives: (n: number) => string;
-  /** What the lane's reward is, in a sentence that takes two counts. */
-  pays: (empty: string, full: string) => string;
-}
-
-const LANES: Record<Row, Lane> = {
-  hunt: {
-    unit: "die",
-    gives: (n) => `Take ${plural(n, "die", "dice")}`,
-    pays: (empty, full) =>
-      `takes food from the feeder: ${empty} from an empty row, ${full} from a full one. Food is what cats cost.`,
-  },
-  den: {
-    unit: "yarn",
-    gives: (n) => `Lay ${n} yarn`,
-    pays: (empty, full) =>
-      `lays yarn on your cats: ${empty} from an empty row, ${full} from a full one. Each yarn is a point, and yarn pays for a row's later spaces.`,
-  },
-  prowl: {
-    unit: "card",
-    gives: (n) => `Draw ${plural(n, "cat")}`,
-    pays: (empty, full) =>
-      `draws cats into your hand: ${empty} from an empty row, ${full} from a full one. Those are the cats you play into rows.`,
-  },
-};
+import {
+  COLUMN_YARN_COST,
+  ROW_REWARD,
+  SLOTS,
+  TRADE_CATS,
+} from "~/server/game/match";
 
 /**
- * The player's mat at a glance: three lanes with the yarn a cat costs in each
- * space and, under its own label, what the row gives as it fills, printed
- * from the engine's own tables. A lane's tile picks it, and one sentence says
- * what it pays.
+ * The player's mat at a glance, as a match lays it out and printed from the
+ * engine's own tables: the yarn a cat costs on a tab over each column, and
+ * three lanes on their scenery with what each gives as it fills and where
+ * its trades are. A lane's tile picks it, and one sentence says what it pays.
  */
 export function LaneShowcase() {
   const [row, setRow] = useState<Row>("hunt");
-  const chosen = LANES[row];
   const ladder = ROW_REWARD[row];
 
   return (
     <div className="p-2.5 sm:p-3.5">
-      <div className="mat">
-        <p className="flex items-center justify-between gap-3 px-2.5 pt-2 text-xs font-bold sm:px-3">
-          Every power in a row fires right to left.
-          <PixelIcon name="chevron" size={16} ink={COBALT} />
-        </p>
-        {ROWS.map((id, index) => {
+      <div
+        className="mat mat-grid"
+        style={{ "--mat-label": "8.5rem" } as CSSProperties}
+      >
+        <MatHeader costs={COLUMN_YARN_COST} />
+        {ROWS.map((id) => {
           const lane = LANES[id];
           const on = id === row;
+          const gives = lane.gives(ROW_REWARD[id][0] ?? 0);
           return (
             <section
               key={id}
               aria-label={`${ROW_LABELS[id]} lane`}
-              className={`grid gap-x-3 gap-y-2.5 px-2 pt-2.5 pb-3.5 sm:grid-cols-[8.25rem_minmax(0,1fr)] sm:px-3 ${index > 0 ? "border-sky-deep border-t-2" : ""}`}
+              className="lane lane-scene"
+              style={laneScene(id)}
             >
-              <button
-                type="button"
-                aria-pressed={on}
-                aria-label={`${ROW_LABELS[id]}: ${lane.gives(ROW_REWARD[id][0] ?? 0)}`}
-                onClick={() => setRow(id)}
-                className={`piece border-ink flex min-h-12 items-center gap-2.5 border-2 px-2.5 py-1.5 text-left ${on ? "bg-lime text-ink is-pressed" : "bg-cobalt hover:bg-cobalt-dark liftable text-white"}`}
-              >
-                <PixelIcon
-                  name={ROW_ICONS[id]}
-                  size={24}
-                  fill={on ? WHITE : LIME}
-                  ink={on ? INK : id === "hunt" ? WHITE : INK}
+              <LaneLabel>
+                <LaneTile
+                  row={id}
+                  on={on}
+                  gives={gives}
+                  sub={lane.sub}
+                  aria-pressed={on}
+                  aria-label={`${ROW_LABELS[id]}: ${gives}`}
+                  onClick={() => setRow(id)}
+                  className={on ? "" : "liftable"}
                 />
-                <span className="flex min-w-0 flex-col gap-1">
-                  <span className="text-print text-xl">{ROW_LABELS[id]}</span>
-                  <span className="text-xs leading-none font-bold">
-                    {lane.gives(ROW_REWARD[id][0] ?? 0)}
-                  </span>
-                </span>
-              </button>
-
-              <ol className="grid min-w-0 grid-cols-[repeat(4,minmax(0,1fr))_1.75rem] gap-x-1.5 sm:grid-cols-[repeat(4,minmax(0,1fr))_2.25rem]">
-                {Array.from({ length: SLOTS + 1 }, (_, col) => {
-                  const reward = ROW_REWARD[id][col] ?? 0;
-                  const step = (
-                    <span className="text-pixel flex items-center gap-0.5 text-sm leading-none tabular-nums">
-                      <span aria-hidden>{reward}</span>
-                      <PixelIcon name={lane.unit} size={16} />
-                      <span className="sr-only">
-                        With {plural(col, "cat")} here: {lane.gives(reward)}.
-                      </span>
-                    </span>
-                  );
-                  if (col === SLOTS) {
-                    return (
-                      <li
-                        key={col}
-                        className="flex flex-col items-center justify-center gap-0.5 text-[11px] leading-none font-semibold"
-                      >
-                        <span aria-hidden>Full</span>
-                        {step}
-                      </li>
-                    );
-                  }
-                  const cost = COLUMN_YARN_COST[col] ?? 0;
-                  return (
-                    <li
-                      key={col}
-                      className={`@container flex min-h-14 flex-col justify-center gap-1 border-2 p-1 text-[11px] leading-none font-bold ${on ? "border-ink/55 border-dashed bg-white/45" : "border-sky-deep"}`}
-                    >
-                      <span className="sr-only">Space {col + 1}. </span>
-                      <SpaceCost
-                        cost={cost}
-                        compact
-                        className="flex-col gap-0.5"
-                      />
-                      <span className="border-ink/20 flex flex-col items-center gap-0.5 border-t pt-1">
-                        <span className="font-semibold" aria-hidden>
-                          Row
-                        </span>
-                        {step}
-                      </span>
-                    </li>
-                  );
-                })}
+                <LaneBanner />
+              </LaneLabel>
+              <ol className="contents">
+                {Array.from({ length: SLOTS }, (_, col) => (
+                  <EmptySpace
+                    key={col}
+                    row={id}
+                    col={col}
+                    cost={COLUMN_YARN_COST[col] ?? 0}
+                    reward={ROW_REWARD[id][col] ?? 0}
+                    // An empty lane's next space is its first.
+                    next={col === 0}
+                    trade={TRADE_CATS.includes(col)}
+                  />
+                ))}
               </ol>
+              <LaneEnd
+                row={id}
+                cats={SLOTS}
+                reward={ROW_REWARD[id][SLOTS] ?? 0}
+                here={false}
+              />
             </section>
           );
         })}
@@ -141,7 +91,7 @@ export function LaneShowcase() {
         className="piece border-ink mt-4 mb-1 border-2 bg-white px-3 py-2 text-sm leading-snug"
       >
         <span className="text-print mr-1 text-xl">{ROW_LABELS[row]}</span>{" "}
-        {chosen.pays(`${ladder[0]}`, `${ladder[SLOTS]}`)}
+        {LANES[row].pays(`${ladder[0]}`, `${ladder[SLOTS]}`)}
       </p>
     </div>
   );

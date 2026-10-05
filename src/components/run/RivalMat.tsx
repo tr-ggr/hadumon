@@ -1,6 +1,9 @@
 "use client";
 
+import type { CSSProperties } from "react";
+
 import { ElementMark } from "~/components/cats/CatCard";
+import { laneScene } from "~/components/mat/scene";
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
 import { ROW_ICONS } from "~/components/sprites/icons";
@@ -24,8 +27,9 @@ import {
 
 /**
  * The rival's side of the table, opened over the player's own: its three
- * lanes with every cat on them and what each holds, its tray, its food and
- * its relic. Its hand and its deck stay face down and are counted. Nothing
+ * lanes on the same scenery as the player's, with every cat on them and what
+ * each holds, its tray, its food and its relic. Its mat prints no costs and
+ * no rewards: those are the player's to read on their own. Its hand and its deck stay face down and are counted. Nothing
  * here can be acted on; it is the same board the rival's turns are played on.
  */
 export function RivalMat({
@@ -59,19 +63,21 @@ export function RivalMat({
           {rival.trait} It plays by your rules, on its own deck.
         </p>
 
-        <ol className="mat divide-sky-deep flex flex-col divide-y-2">
+        <ol
+          className="mat mat-grid is-plain"
+          style={{ "--mat-label": "6.5rem" } as CSSProperties}
+        >
           {ROWS.map((row) => (
-            <li
-              key={row}
-              className="grid items-center gap-x-3 gap-y-2 px-2 py-2 sm:grid-cols-[6.5rem_minmax(0,1fr)]"
-            >
-              <p className="flex items-center gap-2 text-sm font-black">
-                <PixelIcon name={ROW_ICONS[row]} size={24} fill={CORAL} />
-                {ROW_LABELS[row]}
-              </p>
+            <li key={row} className="lane lane-scene" style={laneScene(row)}>
+              <div className="mat-label flex items-start sm:items-center">
+                <p className="border-ink bg-cream flex items-center gap-2 border-2 px-1.5 py-1 text-sm font-black">
+                  <PixelIcon name={ROW_ICONS[row]} size={24} fill={CORAL} />
+                  {ROW_LABELS[row]}
+                </p>
+              </div>
               <ul
                 aria-label={`${rival.name}'s ${ROW_LABELS[row]}, ${plural(seat.board[row].length, "cat")}`}
-                className="grid grid-cols-4 gap-1.5"
+                className="contents"
               >
                 {Array.from({ length: SLOTS }, (_, col) => {
                   const placed = seat.board[row][col];
@@ -80,44 +86,49 @@ export function RivalMat({
                       <li
                         key={col}
                         aria-hidden
-                        className="border-sky-deep min-h-20 border-2 border-dashed"
+                        className="mat-space mat-empty"
                       />
                     );
                   }
                   const cat = getCat(placed.catId);
                   return (
-                    <li
-                      key={col}
-                      className="piece border-ink bg-cream relative flex min-h-20 flex-col items-center justify-center gap-1 border-2 px-0.5 py-1 text-center"
-                    >
-                      <span className="absolute top-0.5 left-1 flex">
-                        <ElementMark element={cat.element} />
-                      </span>
-                      <PixelSprite catId={placed.catId} size={40} decorative />
-                      <span
-                        lang="en"
-                        className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] sm:text-[11px] sm:tracking-tight"
-                      >
-                        {cat.name}
-                      </span>
-                      <YarnTrack
-                        held={placed.yarn}
-                        cap={cat.yarnCap}
-                        owner="rival"
-                        size={16}
-                        className="justify-center"
-                      />
-                      {placed.cached > 0 || placed.tucked > 0 ? (
-                        <span className="text-[11px] leading-none font-bold tabular-nums">
-                          {placed.cached > 0 ? `Cached ${placed.cached}` : ""}
-                          {placed.cached > 0 && placed.tucked > 0 ? " · " : ""}
-                          {placed.tucked > 0 ? `Tucked ${placed.tucked}` : ""}
+                    <li key={col} className="mat-space">
+                      <div className="piece border-ink bg-cream relative flex min-h-20 flex-col items-center justify-center gap-1 border-2 px-0.5 py-1 text-center">
+                        <span className="absolute top-0.5 left-1 flex">
+                          <ElementMark element={cat.element} />
                         </span>
-                      ) : null}
-                      <span className="sr-only">
-                        , {cat.points} points, {placed.yarn} of {cat.yarnCap}{" "}
-                        yarn
-                      </span>
+                        <PixelSprite
+                          catId={placed.catId}
+                          size={40}
+                          decorative
+                        />
+                        <span
+                          lang="en"
+                          className="w-full text-[10px] leading-tight font-black tracking-tighter [overflow-wrap:anywhere] sm:text-[11px] sm:tracking-tight"
+                        >
+                          {cat.name}
+                        </span>
+                        <YarnTrack
+                          held={placed.yarn}
+                          cap={cat.yarnCap}
+                          owner="rival"
+                          size={16}
+                          className="justify-center"
+                        />
+                        {placed.cached > 0 || placed.tucked > 0 ? (
+                          <span className="text-[11px] leading-none font-bold tabular-nums">
+                            {placed.cached > 0 ? `Cached ${placed.cached}` : ""}
+                            {placed.cached > 0 && placed.tucked > 0
+                              ? " · "
+                              : ""}
+                            {placed.tucked > 0 ? `Tucked ${placed.tucked}` : ""}
+                          </span>
+                        ) : null}
+                        <span className="sr-only">
+                          , {cat.points} points, {placed.yarn} of {cat.yarnCap}{" "}
+                          yarn
+                        </span>
+                      </div>
                     </li>
                   );
                 })}

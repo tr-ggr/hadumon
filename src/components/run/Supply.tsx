@@ -2,7 +2,10 @@
 
 import type { MatchView } from "~/server/game/view";
 
-import { CatPick } from "./CatPick";
+import { PixelSprite } from "~/components/PixelSprite";
+import { getCat } from "~/server/game/cats";
+
+import { CatPick, InfoButton } from "./CatPick";
 import { Die, KeyHint, Label, Pile, TableButton } from "./pieces";
 import { deckPicks, type Mode } from "./turn";
 
@@ -29,6 +32,11 @@ export interface SupplyProps {
 /**
  * The middle of the table, shared with the rival: the feeder's dice in their
  * tray, the three face-up cats, and the deck and discard piles.
+ *
+ * On a phone's table it is one narrow column, and its pieces are cut down
+ * to fit: the dice are their marks alone until a Hunt makes buttons of
+ * them, and a tray cat is a chip (`TrayChip`). `data-mode` says what is
+ * being chosen from it, for the stylesheet.
  */
 export function Supply({
   match,
@@ -54,10 +62,12 @@ export function Supply({
   return (
     <section
       aria-label="Supply"
-      className={`grid gap-3 lg:grid-cols-[16rem_minmax(0,1fr)] ${className}`}
+      data-supply
+      data-mode={hunting ? "hunt" : prowling ? "prowl" : "rest"}
+      className={`fit-compact:flex fit-compact:flex-col fit-compact:gap-1.5 grid gap-3 lg:grid-cols-[16rem_minmax(0,1fr)] ${className}`}
     >
-      <div className="flex flex-col gap-2.5">
-        <div className="tray-well flex-1 px-2 pt-1.5 pb-2.5">
+      <div className="fit-compact:gap-1.5 flex flex-col gap-2.5">
+        <div className="tray-well fit-compact:flex-none fit-compact:px-1 fit-compact:pt-1 fit-compact:pb-1.5 flex-1 px-2 pt-1.5 pb-2.5">
           <div className="flex min-h-5 items-center justify-between gap-2">
             <Label className="text-ink!">
               Feeder
@@ -77,7 +87,7 @@ export function Supply({
           {match.feeder.length === 0 ? (
             <p className="text-ink-soft mt-1 text-sm">The feeder is empty.</p>
           ) : (
-            <ul className="mt-1 grid grid-cols-5 gap-1.5">
+            <ul className="feeder-dice mt-1 grid grid-cols-5 gap-1.5">
               {match.feeder.map((face, index) => (
                 <li
                   key={index}
@@ -97,7 +107,7 @@ export function Supply({
           )}
         </div>
 
-        <div className="flex items-center gap-3 pl-1">
+        <div className="fit-compact:flex-wrap fit-compact:gap-x-2 fit-compact:gap-y-1.5 flex items-center gap-3 pl-1">
           <div data-pile="deck">
             <Pile count={match.deckCount} label="Your deck" />
           </div>
@@ -126,7 +136,7 @@ export function Supply({
               </StepButton>
             </div>
           ) : (
-            <p className="text-ink-soft text-[11px] leading-tight font-semibold">
+            <p className="text-ink-soft fit-compact:hidden text-[11px] leading-tight font-semibold">
               {deckNote} The discard is shuffled back in when the deck runs out.
             </p>
           )}
@@ -139,22 +149,29 @@ export function Supply({
             The tray is empty.
           </p>
         ) : (
-          <ul aria-label="Tray" className="grid h-full gap-3 sm:grid-cols-3">
+          <ul
+            aria-label="Tray"
+            className="fit-compact:flex fit-compact:h-auto fit-compact:flex-col fit-compact:gap-1 grid h-full gap-3 sm:grid-cols-3"
+          >
             {match.tray.map((catId, index) => {
               const picked = prowling && mode.picks.includes(index);
+              const pick = {
+                catId,
+                onDetail: () => onDetail(catId),
+                onSelect: prowling ? () => onTrayCard(index) : undefined,
+                selected: picked,
+                pickable: prowling,
+                disabled: busy || (prowling && !picked && full),
+              };
               return (
                 <li key={`${index}-${catId}`} data-tray={index}>
                   <CatPick
-                    catId={catId}
+                    {...pick}
                     verb="Draw"
-                    onDetail={() => onDetail(catId)}
-                    onSelect={prowling ? () => onTrayCard(index) : undefined}
-                    selected={picked}
-                    pickable={prowling}
                     hint={prowling ? String(index + 1) : undefined}
-                    disabled={busy || (prowling && !picked && full)}
-                    className="h-full"
+                    className="fit-compact:hidden h-full"
                   />
+                  <TrayChip {...pick} />
                 </li>
               );
             })}
@@ -162,6 +179,67 @@ export function Supply({
         )}
       </div>
     </section>
+  );
+}
+
+/**
+ * A tray cat on a phone's table, where a card has no room: its sprite, its
+ * name and what it scores. The chip is the select control while a Prowl is
+ * choosing; Info opens the whole card, and is a sibling of it, not inside.
+ */
+function TrayChip({
+  catId,
+  onDetail,
+  onSelect,
+  selected,
+  pickable,
+  disabled,
+}: {
+  catId: string;
+  onDetail: () => void;
+  onSelect?: () => void;
+  selected: boolean;
+  pickable: boolean;
+  disabled: boolean;
+}) {
+  const cat = getCat(catId);
+  const face = (
+    <>
+      <PixelSprite catId={catId} size={32} decorative className="shrink-0" />
+      <span className="flex min-w-0 flex-1 flex-col items-start gap-0.5">
+        <span className="w-full truncate text-[11px] leading-tight font-black">
+          {cat.name}
+        </span>
+        <span
+          className="text-pixel border-ink bg-lime border-2 px-1 text-xs leading-4"
+          aria-label={`${cat.points} points`}
+        >
+          {cat.points}
+        </span>
+      </span>
+    </>
+  );
+  const dress = `piece border-ink text-ink flex w-full items-center gap-1 border-2 py-0.5 pr-1 pl-0.5 text-left ${selected ? "bg-lime is-chosen" : pickable && !disabled ? "bg-cream is-open" : "bg-cream"}`;
+  return (
+    <div className="fit-compact:block relative hidden">
+      {onSelect ? (
+        <button
+          type="button"
+          onClick={onSelect}
+          disabled={disabled}
+          aria-pressed={selected}
+          aria-label={`Draw ${cat.name}`}
+          className={`${dress} disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          {face}
+        </button>
+      ) : (
+        <div className={dress}>{face}</div>
+      )}
+      <span className="absolute right-1 bottom-1.5 flex">
+        <InfoButton name={cat.name} onClick={onDetail} className="leading-4" />
+      </span>
+    </div>
   );
 }
 

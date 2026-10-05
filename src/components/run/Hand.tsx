@@ -29,7 +29,9 @@ export interface HandProps {
  * rest leans with the arc and hangs under the edge of the screen; hovered,
  * focused or chosen it stands upright with its whole face showing, and
  * leans a little toward a mouse held over it. Where each card sits comes
- * from `fanLayout`; the stylesheet does the rest.
+ * from `fanLayout`; the stylesheet does the rest. On a phone's table the
+ * fan is a strip along the foot, and the chosen card stands apart from it
+ * (`.hand-held`).
  */
 export function Hand({
   match,
@@ -62,80 +64,112 @@ export function Hand({
 
   const fan = fanLayout(count);
   const discount = auraTotal(match.board, "discount");
+  const heldId = chosen === null ? undefined : match.hand[chosen];
   return (
-    <ul
-      aria-label={`Your hand, ${plural(count, "cat")}`}
-      className={`hand-fan ${chosen === null ? "" : "is-held"} ${className}`}
-      style={
-        {
-          "--gaps": Math.max(1, count - 1),
-          "--last": count - 1,
-        } as CSSProperties
-      }
-    >
-      {match.hand.map((catId, index) => {
-        const place = fan[index];
-        const cat = getCat(catId);
-        const selected = chosen === index;
-        // A card that cannot be played stays a choice, so the prompt can say why.
-        const block =
-          match.phase === "turn" && !selected && !tucking
-            ? playBlock(match, index)
-            : null;
-        return (
-          <li
-            key={`${index}-${catId}`}
-            data-hand={index}
-            className={selected ? "is-raised" : undefined}
-            onPointerMove={lean}
-            onPointerLeave={settle}
-            style={
-              {
-                "--i": index,
-                "--t": place?.t ?? 0,
-                "--tilt": place?.tilt ?? 0,
-                "--drop": place?.drop ?? 0,
-              } as CSSProperties
-            }
+    <>
+      {/* On a phone's table the strip of hand shows the top of each card and
+          no more, so the chosen one is stood up whole beside the mat, over
+          the supply. It is listed first: a piece flown from the hand leaves
+          from the card that is showing. */}
+      {chosen !== null && heldId !== undefined ? (
+        <div data-held data-hand={chosen} className="hand-held">
+          <button
+            type="button"
+            onClick={() => onHandCard(chosen)}
+            disabled={busy}
+            aria-label={`Put ${getCat(heldId).name} back`}
+            className="block h-full w-full text-left disabled:cursor-not-allowed"
           >
-            <button
-              type="button"
-              onClick={() => onHandCard(index)}
-              disabled={busy || match.phase === "over"}
-              aria-pressed={selected}
-              aria-label={`${tucking ? "Choose" : "Play"} ${cat.name}`}
-              className="hand-pick block h-full w-full text-left disabled:cursor-not-allowed"
+            <CatCard
+              catId={heldId}
+              variant="hand"
+              discount={discount}
+              className="is-chosen h-full w-full"
+            />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
+            <InfoButton
+              name={getCat(heldId).name}
+              onClick={() => onDetail(heldId)}
+            />
+            <span className="text-cobalt text-[11px] font-bold">Chosen</span>
+          </div>
+        </div>
+      ) : null}
+      <ul
+        aria-label={`Your hand, ${plural(count, "cat")}`}
+        className={`hand-fan ${chosen === null ? "" : "is-held"} ${className}`}
+        style={
+          {
+            "--gaps": Math.max(1, count - 1),
+            "--last": count - 1,
+          } as CSSProperties
+        }
+      >
+        {match.hand.map((catId, index) => {
+          const place = fan[index];
+          const cat = getCat(catId);
+          const selected = chosen === index;
+          // A card that cannot be played stays a choice, so the prompt can say why.
+          const block =
+            match.phase === "turn" && !selected && !tucking
+              ? playBlock(match, index)
+              : null;
+          return (
+            <li
+              key={`${index}-${catId}`}
+              data-hand={index}
+              className={selected ? "is-raised" : undefined}
+              onPointerMove={lean}
+              onPointerLeave={settle}
+              style={
+                {
+                  "--i": index,
+                  "--t": place?.t ?? 0,
+                  "--tilt": place?.tilt ?? 0,
+                  "--drop": place?.drop ?? 0,
+                } as CSSProperties
+              }
             >
-              <CatCard
-                catId={catId}
-                variant="hand"
-                discount={discount}
-                className={`hand-face h-full w-full ${selected ? "is-chosen" : tucking && !busy ? "is-open" : ""}`}
-              />
-            </button>
-            {block ? <span aria-hidden className="hand-wash" /> : null}
-            {index < 9 ? (
-              <KeyHint className="pointer-events-none absolute -top-2.5 left-2">
-                {index + 1}
-              </KeyHint>
-            ) : null}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
-              <InfoButton name={cat.name} onClick={() => onDetail(catId)} />
-              {selected || block ? (
-                <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
-                  {selected ? (
-                    <span className="text-cobalt">Chosen</span>
-                  ) : block ? (
-                    PLAY_BLOCK_LABELS[block]
-                  ) : null}
-                </span>
-              ) : (
-                <Habitats rows={cat.rows} className="justify-end" />
-              )}
-            </div>
-          </li>
-        );
-      })}
-    </ul>
+              <button
+                type="button"
+                onClick={() => onHandCard(index)}
+                disabled={busy || match.phase === "over"}
+                aria-pressed={selected}
+                aria-label={`${tucking ? "Choose" : "Play"} ${cat.name}`}
+                className="hand-pick block h-full w-full text-left disabled:cursor-not-allowed"
+              >
+                <CatCard
+                  catId={catId}
+                  variant="hand"
+                  discount={discount}
+                  className={`hand-face h-full w-full ${selected ? "is-chosen" : tucking && !busy ? "is-open" : ""}`}
+                />
+              </button>
+              {block ? <span aria-hidden className="hand-wash" /> : null}
+              {index < 9 ? (
+                <KeyHint className="pointer-events-none absolute -top-2.5 left-2">
+                  {index + 1}
+                </KeyHint>
+              ) : null}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
+                <InfoButton name={cat.name} onClick={() => onDetail(catId)} />
+                {selected || block ? (
+                  <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
+                    {selected ? (
+                      <span className="text-cobalt">Chosen</span>
+                    ) : block ? (
+                      PLAY_BLOCK_LABELS[block]
+                    ) : null}
+                  </span>
+                ) : (
+                  <Habitats rows={cat.rows} className="justify-end" />
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </>
   );
 }

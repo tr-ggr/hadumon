@@ -22,6 +22,7 @@ export function RivalSide({
   news,
   flipping,
   onOpenMat,
+  sheet = false,
   className = "",
 }: {
   match: MatchView;
@@ -31,6 +32,8 @@ export function RivalSide({
   flipping: boolean;
   /** Opens the rival's board. */
   onOpenMat: () => void;
+  /** In the table's sheet, which is not on the table: no effect lands here. */
+  sheet?: boolean;
   className?: string;
 }) {
   const rival = getRival(match.rivalId);
@@ -52,8 +55,8 @@ export function RivalSide({
       />
 
       <p
-        data-score="rival"
-        className="piece border-ink bg-coral text-ink col-start-3 row-start-1 flex min-w-16 flex-col items-center justify-center border-2 px-2 py-1 lg:hidden"
+        data-score={sheet ? undefined : "rival"}
+        className={`piece border-ink bg-coral text-ink col-start-3 row-start-1 min-w-16 flex-col items-center justify-center border-2 px-2 py-1 ${sheet ? "hidden" : "flex lg:hidden"}`}
         aria-label={`Rival score ${score.total}: ${score.cats} from cats, ${score.yarn} yarn, ${score.goals} from goals`}
       >
         <span aria-hidden className="text-[11px] leading-tight font-bold">

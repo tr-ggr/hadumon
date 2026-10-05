@@ -100,16 +100,19 @@ export function CatPick({
 export function InfoButton({
   name,
   onClick,
+  className = "leading-5",
 }: {
   name: string;
   onClick: () => void;
+  /** Sets the control's height by its line, for a place with less room. */
+  className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={`${name} details`}
-      className="border-ink text-ink hover:bg-sky-soft pointer-events-auto relative shrink-0 border-2 bg-white px-1.5 text-[11px] leading-5 font-black before:absolute before:-inset-2 before:content-['']"
+      className={`border-ink text-ink hover:bg-sky-soft pointer-events-auto relative shrink-0 border-2 bg-white px-1.5 text-[11px] font-black before:absolute before:-inset-2 before:content-[''] ${className}`}
     >
       Info
     </button>

@@ -114,6 +114,38 @@
     @slot;
   }
 }
+/*
+ * How a match fits its window. The window's size alone picks the mode, so a
+ * short desktop window gets the phone's table and either can be tried
+ * without the other's device. `run/layout.ts` says the same in numbers.
+ *
+ * `fit-wide`: from 1024px by 600px the whole table is on one screen, with
+ * the rail down its left. `fit-compact`: a short window on its side, which
+ * is a phone turned, gets three columns over a strip of hand. `fit` is
+ * either. `turn-phone` is a phone held upright, which is asked to turn.
+ * Anything else is the page that scrolls.
+ */
+@custom-variant fit-wide {
+  @media (min-width: 64rem) and (min-height: 37.5rem) {
+    @slot;
+  }
+}
+@custom-variant fit-compact {
+  @media (orientation: landscape) and (min-width: 45rem) and (min-height: 17.5rem) and (max-height: 37.49rem) {
+    @slot;
+  }
+}
+@custom-variant fit {
+  @media (min-width: 64rem) and (min-height: 37.5rem),
+    (orientation: landscape) and (min-width: 45rem) and (min-height: 17.5rem) and (max-height: 37.49rem) {
+    @slot;
+  }
+}
+@custom-variant turn-phone {
+  @media (orientation: portrait) and (max-width: 37.49rem) and (hover: none) and (pointer: coarse) {
+    @slot;
+  }
+}
 /* The player's edge of the table, docked under it: white card, ink line. */
 @utility rail {
   --cast: color-mix(in srgb, var(--color-chipboard) 34%, var(--color-white));
@@ -295,6 +327,404 @@ body:has(.table-fit) [role="dialog"] {
   box-shadow: inset 0 3px 0 0 var(--cast-cloth);
 }
 /*
+ * A mat laid out as the player's board: a strip along the top with a tab
+ * over each column, then a lane to a row. It is one grid, and the strip and
+ * every lane are rows of it that take its columns (`subgrid`), so a tab is
+ * over its column whatever the mat's width. The columns are a lane's label,
+ * four spaces and the lane's end; under 640px there is no label column, and
+ * a lane's tile lies across the lane above its spaces.
+ *
+ * A lane is as tall as the tallest of them. Where the mat is given a height
+ * (a match that fits its window) the lanes share it out.
+ */
+.tabletop .mat-grid {
+  --mat-px: 2px;
+  --mat-label: 9.5rem;
+  --mat-end: 1.75rem;
+  --mat-pad: 0.5rem;
+  --mat-cols: repeat(4, minmax(0, 1fr)) var(--mat-end);
+  container: mat / inline-size;
+  display: grid;
+  grid-template-columns: var(--mat-cols);
+  grid-template-rows: auto;
+  grid-auto-rows: minmax(0, 1fr);
+  column-gap: 0.375rem;
+}
+/* A mat with no strip along its top, and no end to its lanes. */
+.tabletop .mat-grid.is-plain {
+  --mat-cols: repeat(4, minmax(0, 1fr));
+  grid-template-rows: none;
+}
+.tabletop .mat-grid > * {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  min-width: 0;
+  padding-inline: var(--mat-pad);
+}
+.tabletop .mat-grid > * + * {
+  border-top: 2px solid var(--color-ink);
+}
+.tabletop .mat-label {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+@media (min-width: 40rem) {
+  .tabletop .mat-grid {
+    --mat-end: 2.75rem;
+    --mat-pad: 0.75rem;
+    grid-template-columns: var(--mat-label) var(--mat-cols);
+  }
+  .tabletop .mat-label {
+    grid-column: 1;
+  }
+}
+/* A mat whose lanes keep their tile across the top at every width. */
+.tabletop .mat-grid.is-stacked {
+  grid-template-columns: var(--mat-cols);
+}
+.tabletop .mat-grid.is-stacked .mat-label {
+  grid-column: 1 / -1;
+}
+/* The strip: its tabs stand on the line under it. */
+.tabletop .mat-header {
+  align-items: end;
+}
+.tabletop .mat-tab {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+/*
+ * A lane, and the habitat printed along it: a garden for the Hunt, a room
+ * for the Den, the rooftops at night for the Prowl (`sprites/habitats.ts`).
+ * The picture is bands of tiles: the ground along the lane's bottom edge,
+ * the horizon standing on it with the sky's change of colour behind, and
+ * the sky repeating upward from there over the backdrop. So a taller lane
+ * shows more sky and a shorter one less; nothing is ever stretched.
+ *
+ * `--mat-px` is one pixel of the scenery, and always a whole number of the
+ * screen's: 2px, and 3px on a mat 60rem wide. `laneScene` sets the images,
+ * their sizes in scenery pixels, and what a piece casts on that ground.
+ */
+.tabletop .lane {
+  align-items: stretch;
+  row-gap: 0.5rem;
+  padding-block: 0.5rem 0.75rem;
+}
+.tabletop .lane-scene {
+  --ground: calc(var(--scene-ground-h) * var(--mat-px));
+  --horizon: calc(var(--scene-horizon-h) * var(--mat-px));
+  background-color: var(--scene-backdrop);
+  background-image:
+    var(--scene-ground), var(--scene-horizon), var(--scene-glow),
+    var(--scene-sky);
+  background-repeat: repeat-x, repeat-x, repeat-x, repeat;
+  background-position:
+    left bottom,
+    left 0 bottom var(--ground),
+    left 0 bottom var(--ground),
+    left 0 bottom calc(var(--ground) + var(--horizon));
+  background-size:
+    calc(var(--scene-ground-w) * var(--mat-px)) var(--ground),
+    calc(var(--scene-horizon-w) * var(--mat-px)) var(--horizon),
+    calc(4 * var(--mat-px)) var(--horizon),
+    calc(var(--scene-sky-w) * var(--mat-px))
+      calc(var(--scene-sky-h) * var(--mat-px));
+  image-rendering: pixelated;
+}
+@container mat (min-width: 60rem) {
+  .tabletop .lane-scene {
+    --mat-px: 3px;
+  }
+}
+/* The head of a lane: its tile and the banner. Side by side across a
+   phone's lane, the banner under the tile in the label column. */
+.tabletop .lane-label {
+  display: flex;
+  gap: 0.375rem;
+}
+.tabletop .lane-tile {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 3rem;
+}
+.tabletop .lane-banner {
+  flex: 0 1 9rem;
+  border: 2px solid var(--color-ink);
+}
+@media (min-width: 40rem) {
+  .tabletop .mat-grid:not(.is-stacked) .lane-label {
+    flex-direction: column;
+  }
+  .tabletop .lane-tile {
+    min-height: 3.75rem;
+  }
+  /* In the column the tile is as tall as its words, and takes what is left. */
+  .tabletop .mat-grid:not(.is-stacked) .lane-tile {
+    flex: 1 0 auto;
+  }
+  .tabletop .mat-grid:not(.is-stacked) .lane-banner {
+    flex: none;
+  }
+}
+/*
+ * A space of a lane. It answers to its own width, so what is printed in it
+ * and the cat placed on it are cut to what it has room for. Whatever fills
+ * it takes all of it.
+ */
+.tabletop .mat-space {
+  display: flex;
+  min-width: 0;
+  min-height: 6rem;
+}
+.tabletop .mat-space > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+@media (min-width: 40rem) {
+  .tabletop .mat-space {
+    min-height: 3.75rem;
+  }
+}
+@media (min-width: 64rem) {
+  .tabletop .mat-space {
+    min-height: 5rem;
+  }
+}
+/* An empty one: an outline, and the scenery through it. */
+.tabletop .mat-empty {
+  border: 2px solid var(--color-cream);
+}
+.tabletop .mat-empty.is-next {
+  border: 2px dashed var(--color-ink);
+  background: rgb(255 255 255 / 0.5);
+}
+.tabletop .mat-empty-body {
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.125rem;
+}
+@container (min-width: 10.5rem) {
+  .tabletop .mat-empty-body {
+    flex-flow: row wrap;
+    gap: 0.375rem;
+  }
+}
+.tabletop .mat-mark {
+  display: flex;
+}
+/* The end of a lane: one plate, stood in the middle of the strip. */
+.tabletop .mat-end {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+}
+/* A reward is drawn out, one icon each, where the space has the width for
+   four of them; the numeral is for a narrower one. A trade is spelled out
+   as what is paid and what it buys from 4.25rem, and is "+1" under that. */
+.tabletop .reward-drawn,
+.tabletop .trade-short {
+  display: none;
+}
+@container (min-width: 5rem) {
+  .tabletop .reward-drawn {
+    display: flex;
+  }
+  .tabletop .reward-drawn + .reward-numeral {
+    display: none;
+  }
+}
+@container (max-width: 4.24rem) {
+  .tabletop .trade-full {
+    display: none;
+  }
+  .tabletop .trade-short {
+    display: inline;
+  }
+}
+/*
+ * The mat of a match that fits its window. Its height is what the table
+ * leaves it, the lanes share that out, and a lane's parts are measured
+ * containers, so each prints what it has the height for: a short lane
+ * drops the banner and the tile's second line, a short space drops the
+ * lane's mark and counts its reward in a numeral, and a cat in a short
+ * space sits beside its name on a smaller sprite. The page that scrolls has
+ * none of this: there a lane is as tall as it needs to be.
+ */
+.tabletop [data-match] {
+  @variant fit {
+    .mat-note {
+      display: none;
+    }
+    .lane {
+      min-height: 0;
+      padding-block: 0.25rem 0.5rem;
+    }
+    .lane-label {
+      container: lane-label / size;
+      min-height: 0;
+    }
+    .mat-grid .lane-tile {
+      flex: 1 1 0;
+      min-height: 0;
+      padding-block: 0.125rem;
+    }
+    .lane-sub,
+    .lane-banner {
+      display: none;
+    }
+    .mat-space,
+    .mat-end {
+      container-type: size;
+      min-height: 0;
+    }
+    .mat-empty-body,
+    .cat-tile {
+      overflow: hidden;
+    }
+  }
+  /* The strip's second line, on a window with the height to spare for it. */
+  @variant fit-wide {
+    @media (min-height: 44rem) {
+      .mat-note {
+        display: block;
+      }
+    }
+  }
+}
+@container lane-label (min-height: 5.5rem) {
+  /* The banner, unless the tile has a trade to print in that room. */
+  .tabletop [data-match] .lane-label:not(:has(.lane-note)) .lane-banner {
+    display: flex;
+  }
+}
+@container lane-label (min-height: 7.75rem) {
+  .tabletop [data-match] .lane-banner,
+  .tabletop [data-match] .lane-sub {
+    display: flex;
+  }
+}
+/* Height queries find only a container that has a height: a fitted space. */
+@container (max-height: 5.25rem) {
+  .tabletop .mat-mark {
+    display: none;
+  }
+  .tabletop .end-way {
+    display: none;
+  }
+}
+@container (max-height: 4.5rem) {
+  .tabletop .mat-empty-body {
+    flex-flow: row wrap;
+  }
+  .tabletop .reward-drawn {
+    display: none;
+  }
+  .tabletop .reward-drawn + .reward-numeral {
+    display: flex;
+  }
+  .tabletop .space-cost {
+    display: none;
+  }
+}
+@container (max-height: 3.75rem) {
+  .tabletop .end-full {
+    display: none;
+  }
+}
+/* The shortest lane there is: the tile keeps its name and what it gives,
+   and a space too narrow for a reward and a trade side by side keeps the
+   reward. The prompt still says when a trade is open. */
+@container lane-label (max-height: 3.25rem) {
+  .tabletop [data-match] .lane-note {
+    display: none;
+  }
+}
+@container (max-height: 3.25rem) and (max-width: 5.99rem) {
+  .tabletop .trade-mark {
+    display: none;
+  }
+}
+/* A cat in a short space: the smaller sprite, beside its name where the
+   space is wide enough for that and over it where it is not. */
+@container (max-height: 5.5rem) {
+  .tabletop .cat-tile {
+    gap: 0.125rem;
+    padding-block: 0.125rem;
+  }
+  .tabletop .cat-tile .cat-sprite {
+    width: 2rem;
+    height: 2rem;
+  }
+}
+@container (max-height: 5.5rem) and (min-width: 6rem) {
+  .tabletop .cat-tile {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 0.375rem;
+    padding-inline: 0.375rem 0.125rem;
+    text-align: left;
+  }
+  .tabletop .cat-tile .cat-words {
+    align-items: flex-start;
+  }
+  .tabletop .cat-tile .cat-words > * {
+    justify-content: flex-start;
+  }
+}
+/* In the shortest space the yarn is a count, and a narrow one drops the
+   name: the sprite is the cat, and a press still opens its card. */
+.tabletop .cat-yarn-count {
+  display: none;
+}
+@container (max-height: 4rem) {
+  .tabletop .cat-tile .cat-yarn-track {
+    display: none;
+  }
+  .tabletop .cat-yarn-count {
+    display: flex;
+  }
+}
+@container (max-height: 4rem) and (max-width: 5.99rem) {
+  .tabletop .cat-tile .cat-name {
+    display: none;
+  }
+}
+/* A tray card on a fitted table is the supply's height, and its rules are
+   cut to the lines it has room for. The card's own Info opens all of it. */
+.tabletop [data-match] {
+  @variant fit-wide {
+    [data-tray] .card-power {
+      display: -webkit-box;
+      overflow: hidden;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+    }
+    [data-tray] .card-aura {
+      display: none;
+    }
+    @container (min-width: 11rem) {
+      [data-tray] .card-power {
+        -webkit-line-clamp: 4;
+      }
+      [data-tray] .cat-card:has(.card-aura) .card-power {
+        -webkit-line-clamp: 2;
+      }
+      [data-tray] .card-aura {
+        display: -webkit-box;
+        overflow: hidden;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+      }
+    }
+  }
+}
+/*
  * The hand, held as a fan along the player's edge. `fanLayout` gives each
  * card its place about the middle one (`--t`), its lean and its drop; the
  * lower part of a card at rest hangs under the edge of the screen. Hovered,
@@ -304,8 +734,11 @@ body:has(.table-fit) [role="dialog"] {
  * Only the strip of a card that its neighbour leaves showing takes the
  * pointer, so sweeping along the fan turns up one card after another even
  * though a raised face covers the strips beside it.
+ *
+ * The sizes are the match's, not the hand's: the table reads them too, to
+ * keep a raised card clear of the mat.
  */
-.tabletop .hand-zone {
+.tabletop [data-match] {
   --card-w: 9.5rem;
   --card-h: 13.5rem;
   --peek: 7.5rem;
@@ -314,13 +747,28 @@ body:has(.table-fit) [role="dialog"] {
   --rise: calc(var(--peek) - var(--card-h) - var(--clear));
   /* How far one unit of a card's drop hangs it; a small fan is shallower. */
   --drop-unit: 0.5px;
+  /* Which fitted layout is in force, for a script to read (`matchFit`). */
+  --match-fit: none;
+  @variant fit-wide {
+    --match-fit: wide;
+  }
+  @variant fit-compact {
+    --match-fit: compact;
+  }
+}
+/* A match that fits its window is the whole page, and the page stays put. */
+html:has([data-match]) {
+  @variant fit {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
 }
 /* Full-size cards: in a dock that is not a phone's, and beside the rail
    wherever the mat still clears a raised card (the `tall-table` sizes). */
 @media (min-width: 40rem) and (max-width: 63.99rem) and (min-height: 40rem),
   (min-width: 64rem) and (min-height: 57rem),
   (min-width: 80rem) and (min-height: 53rem) {
-  .tabletop .hand-zone {
+  .tabletop [data-match] {
     --card-h: 17rem;
     --card-w: 11.5rem;
     --peek: 12.5rem;
@@ -329,10 +777,21 @@ body:has(.table-fit) [role="dialog"] {
 }
 /* Beside the rail the hand is over the cloth. Room is kept above it for a
    raised card, so the mat is never under one, and the cloth is laid again
-   behind it, so whatever the page scrolls under the hand stays out of it. */
+   behind it, so whatever the page scrolls under the hand stays out of it.
+   Where the match fits its window the hand keeps only its own strip: a
+   raised card stands over the supply, or, where the mat is next to the
+   hand (`tall-table`), over room the mat's column leaves for it. */
 @media (min-width: 64rem) {
   .tabletop .hand-zone {
     padding-top: calc(0.25rem - var(--rise));
+    @variant fit-wide {
+      padding-top: 0;
+    }
+  }
+  .tabletop .mat-column {
+    @variant tall-table {
+      padding-bottom: calc(0.25rem - var(--rise));
+    }
   }
   .tabletop .hand-zone::before {
     content: "";
@@ -539,6 +998,192 @@ body:has(.table-fit) [role="dialog"] {
 @media (hover: none) {
   .tabletop .hand-fan > li.is-raised .hand-face {
     pointer-events: auto;
+  }
+}
+/*
+ * A phone's table: the match on a short window on its side (`fit-compact`).
+ * `[data-match]` is a grid of three columns over a strip: the supply cut
+ * down to a narrow column, the mat, and the turn; under them the hand as a
+ * strip that shows the top of each card, and the way in to the rest of the
+ * table. The wrappers the wider tables are built from are `contents` here,
+ * so these are the grid's own items.
+ *
+ * Nothing rises out of the strip. The chosen card is stood up whole in the
+ * supply's column (`.hand-held`), where it covers neither the mat nor the
+ * turn.
+ */
+.tabletop [data-match] {
+  @variant fit-compact {
+    --card-w: 8.5rem;
+    --card-h: 13rem;
+    --peek: 3.5rem;
+    display: grid;
+    grid-template-columns:
+      8.5rem minmax(26.25rem, 1fr)
+      minmax(8.75rem, 13rem);
+    grid-template-rows:
+      minmax(0, 1fr)
+      calc(var(--peek) + env(safe-area-inset-bottom, 0px));
+    gap: 0.375rem;
+    padding: 0.375rem max(0.375rem, env(safe-area-inset-right, 0px)) 0
+      max(0.375rem, env(safe-area-inset-left, 0px));
+
+    .match-supply {
+      grid-area: 1 / 1;
+      min-height: 0;
+      overflow: hidden auto;
+      scrollbar-width: none;
+    }
+    .match-mat {
+      --mat-label: 6.5rem;
+      --mat-end: 2rem;
+      --mat-pad: 0.25rem;
+      grid-area: 1 / 2;
+      height: 100%;
+      min-height: 0;
+    }
+    .lane-tile {
+      gap: 0.25rem;
+      padding-inline: 0.25rem;
+    }
+    .lane-tile > svg {
+      width: 1rem;
+      height: 1rem;
+    }
+    .mat-label > .text-print {
+      padding-left: 0.25rem;
+    }
+
+    /* The turn: a white card the height of the mat. Its prompt takes what
+       the scores and the food leave, and scrolls; its actions stay put. */
+    .turn-panel[data-turn="rail"] {
+      position: static;
+      grid-area: 1 / 3;
+      gap: 0.375rem;
+      min-height: 0;
+      margin: 0;
+      padding: 0.375rem 0.5rem;
+      border: 2px solid var(--color-ink);
+      overflow: hidden auto;
+    }
+    .turn-note {
+      display: none;
+    }
+    .turn-prompt {
+      flex: 1 1 auto;
+      gap: 0.375rem;
+      min-height: 0;
+    }
+    .turn-text {
+      flex: 1 1 0;
+      min-height: 2.5rem;
+      overflow-y: auto;
+    }
+    .turn-actions {
+      flex: none;
+      gap: 0.375rem;
+      min-height: 0;
+      padding-bottom: 0.375rem;
+    }
+
+    /* The supply: the dice are their marks, and buttons only for a Hunt. */
+    .feeder-dice {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.25rem 1px;
+    }
+    .die-name {
+      display: none;
+    }
+    .die {
+      width: 2.5rem;
+      height: 2.5rem;
+      min-height: 0;
+      padding: 0;
+    }
+    [data-supply]:not([data-mode="hunt"]) .die {
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+
+    /* The strip of hand, and the piece beside it. */
+    .hand-zone::before {
+      display: none;
+    }
+    .hand-fan {
+      grid-area: 2 / 1 / 3 / 3;
+      height: var(--peek);
+      margin-inline: 0;
+      overflow: visible;
+    }
+    .hand-fan > li {
+      --step: min(
+        calc(var(--card-w) * 0.82),
+        calc((100cqw - var(--card-w)) / var(--gaps))
+      );
+      --at: translateX(calc(var(--t) * var(--step)));
+      top: 0;
+      left: calc(50% - var(--card-w) / 2);
+      transform: var(--at);
+    }
+    .hand-fan > li:is(.is-raised, :hover, :has(:focus-visible)) {
+      transform: var(--at);
+    }
+    .hand-fan > li .hand-pick::after {
+      display: none;
+    }
+    .match-more {
+      display: inline-flex;
+      grid-area: 2 / 3;
+      align-self: start;
+    }
+    .hand-held {
+      position: relative;
+      z-index: 25;
+      display: block;
+      grid-area: 1 / 1;
+      align-self: end;
+      width: var(--card-w);
+      height: var(--card-h);
+      margin-bottom: 0.375rem;
+      animation: piece-land 240ms var(--ease-out) both;
+    }
+  }
+}
+/* The chosen card stood apart from the hand, and the way in to the sheet
+   along the table's foot: only on a phone's table. */
+.tabletop .hand-held,
+.tabletop .match-more {
+  display: none;
+}
+/* A phone's table has no corner: the ways off it are in its sheet. */
+.tabletop:has(> [data-match]) > nav {
+  @variant fit-compact {
+    display: none;
+  }
+}
+/*
+ * What a phone held upright is shown in place of the match (`TurnPhone`,
+ * which is only there while it is asking): a board on the cloth, over the
+ * whole table but under its corner, which still leads off it.
+ */
+.tabletop .turn-phone {
+  display: none;
+  @variant turn-phone {
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    display: grid;
+    place-items: center;
+    padding: 4rem 1rem 1rem;
+  }
+}
+html:has(.turn-phone) {
+  @variant turn-phone {
+    overflow: hidden;
   }
 }
 /* A key that does the same thing; shown only where there is a keyboard. */

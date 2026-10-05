@@ -8,8 +8,15 @@ import {
   type ReactNode,
 } from "react";
 
+import { MatHeader } from "~/components/mat/MatHeader";
 import { ROWS, type Row } from "~/server/game/cats";
-import type { Action, Essence, SlotRef } from "~/server/game/match";
+import {
+  columnYarnCost,
+  SLOTS,
+  type Action,
+  type Essence,
+  type SlotRef,
+} from "~/server/game/match";
 import { CLANS } from "~/server/game/run";
 import type { MatchView, RunView } from "~/server/game/view";
 
@@ -22,10 +29,11 @@ import {
   type RivalNews,
 } from "./describe";
 import { fly, launchFrom, type Launch } from "./flight";
+import { matchFit } from "./layout";
 import { markEnded } from "./fx/ended";
 import { useFrameFx } from "./fx/useFrameFx";
 import { EventLog, GoalNotice } from "./MatchPanels";
-import { RelicTiles } from "./pieces";
+import { RelicTiles, TableButton } from "./pieces";
 import { Hand } from "./Hand";
 import { RivalMat } from "./RivalMat";
 import { RivalSide } from "./RivalSide";
@@ -33,7 +41,9 @@ import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
 import { playCat, playSound } from "./sfx/engine";
 import { Supply } from "./Supply";
+import { TableSheet } from "./TableSheet";
 import { TurnPanel, type TurnControls } from "./TurnPanel";
+import { TurnPhone } from "./TurnPhone";
 import {
   canSwapMore,
   deckPicks,
@@ -64,6 +74,8 @@ function reveal(
   zone: Element | null | undefined,
   within?: Element | null,
 ): void {
+  // A match that fits its window has nothing out of view to bring in.
+  if (matchFit(document.querySelector("[data-match]")) !== null) return;
   const edge = document.querySelector("[data-edge]")?.getBoundingClientRect();
   const top = 8;
   const bottom = (edge?.top ?? window.innerHeight) - 4;
@@ -167,8 +179,15 @@ export interface MatchBoardProps {
  * shared supply, the player's mat of three lanes, and the hand held as a fan
  * along the bottom edge; the score sheet, relics and log stand to the right.
  * Under 1024px it is one column with the turn and the hand docked below, and
- * on a short screen the mat stands above the supply, clear of a raised card. A
- * turn that has just been answered is played back step by step before the
+ * on a short screen the mat stands above the supply, clear of a raised card.
+ *
+ * From 1024px by 600px the whole of it fits the window and nothing scrolls:
+ * the mat takes whatever height the supply and the hand leave (`fit-wide`).
+ * A short, wide window, which is a phone on its side, gets three columns
+ * over a strip of hand (`fit-compact`), and a phone held upright is asked to
+ * turn (`TurnPhone`). Any other window is the scrolling table it was.
+ *
+ * A turn that has just been answered is played back step by step before the
  * table takes input again, and each step sets off its own sound and effects.
  */
 export function MatchBoard({
@@ -205,6 +224,8 @@ export function MatchBoard({
     setDetail({ catId });
   };
   const [rivalMat, setRivalMat] = useState(false);
+  /** The scores, the rounds and the log, where the table has no room for them. */
+  const [sheet, setSheet] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
   const matRef = useRef<HTMLElement>(null);
   const supplyRef = useRef<HTMLDivElement>(null);
@@ -618,6 +639,18 @@ export function MatchBoard({
         ? { id: turn.id, text: frame.text }
         : news;
 
+  // The newest thing the log says, for a table that keeps the log put away.
+  const landedLines = playing ? frame?.lines : undefined;
+  const entry = log[0];
+  const said = entry
+    ? landedLines === undefined
+      ? entry.lines
+      : entry.lines.slice(0, landedLines)
+    : [];
+  const newest = entry
+    ? (said[said.length - 1]?.text ?? entry.title)
+    : "Nothing yet. Each move lands here.";
+
   const turnPanel = {
     match,
     turn: controls,
@@ -631,10 +664,11 @@ export function MatchBoard({
     <div
       ref={tableRef}
       data-match
-      className="flex flex-1 flex-col [overflow:clip] lg:flex-row"
+      className="fit:h-dvh fit:flex-none flex flex-1 flex-col [overflow:clip] lg:flex-row"
     >
       {/* Pieces in flight, floating numbers and sparks are drawn here, over
           the table and outside everything on it that shakes. */}
+      <TurnPhone />
       <div aria-hidden data-fx-layer className="fx-layer" />
       <h1 className="sr-only">
         Match {run.matchIndex + 1} of {run.gauntlet.length}
@@ -642,8 +676,11 @@ export function MatchBoard({
 
       {/* The rail: theirs above the line, yours below it. Under `lg` its
           parts fall into the one column, and the turn is shown in the dock. */}
-      <div className="lg:rail-side max-lg:contents lg:flex lg:w-[19.5rem] lg:shrink-0 lg:flex-col">
-        <div className="flex flex-col gap-2.5 px-3 pt-2.5 lg:pb-3">
+      <div className="lg:rail-side fit-wide:min-h-0 fit-compact:contents max-lg:contents lg:flex lg:w-[19.5rem] lg:shrink-0 lg:flex-col">
+        {/* Where the match fits its window, their side scrolls in place and
+            the turn under it stays where it is. A phone's table keeps their
+            side in the sheet. */}
+        <div className="fit-wide:min-h-0 fit-wide:flex-1 fit-wide:overflow-y-auto fit-compact:hidden flex flex-col gap-2.5 px-3 pt-2.5 lg:pb-3">
           {/* The corner buttons stand beside the track on a narrow table:
               three of them on a phone, four from 640px. */}
           <div className="max-lg:pr-36 sm:max-lg:pr-48 lg:hidden">
@@ -661,19 +698,41 @@ export function MatchBoard({
         </div>
         <TurnPanel
           {...turnPanel}
-          className="border-ink sticky bottom-0 z-20 mt-auto hidden border-t-2 bg-white lg:flex"
+          rail
+          className="border-ink fit-wide:static fit-wide:shrink-0 fit-compact:flex sticky bottom-0 z-20 mt-auto hidden border-t-2 bg-white lg:flex"
         />
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex flex-1 flex-col gap-x-4 gap-y-3 px-3 pt-2.5 pb-3 lg:pt-16 xl:flex-row xl:pt-2.5">
-          <div className="flex min-w-0 flex-col gap-3 xl:flex-1">
+      <div className="fit-wide:min-h-0 fit-compact:contents flex min-w-0 flex-1 flex-col">
+        <div className="fit-wide:min-h-0 fit-wide:max-xl:pt-2 fit-compact:contents flex flex-1 flex-col gap-x-4 gap-y-3 px-3 pt-2.5 pb-3 lg:pt-16 xl:flex-row xl:pt-2.5">
+          {/* Between 1024px and 1280px a fitted table has no room for the
+              pad beside it. A bar over the mat keeps the newest line of the
+              log and the way in to the rest; the corner buttons stand at its
+              right end. */}
+          <div className="fit-wide:max-xl:flex hidden h-10 shrink-0 items-center gap-3 pr-60">
+            <TableButton
+              variant="secondary"
+              onClick={() => setSheet(true)}
+              className="shrink-0"
+            >
+              Scores and log
+            </TableButton>
+            <p className="text-ink min-w-0 truncate text-sm font-semibold">
+              {newest}
+            </p>
+          </div>
+          <div className="mat-column fit-wide:min-h-0 fit-wide:flex-1 fit-compact:contents flex min-w-0 flex-col gap-3 xl:flex-1">
             <section
               ref={matRef}
               data-shake
               aria-label="Your mat"
-              className="mat divide-sky-deep tall-table:order-3 order-2 flex flex-col divide-y-2 xl:max-h-[30.5rem] xl:flex-1"
+              className="mat mat-grid match-mat tall-table:order-3 fit-wide:min-h-0 fit-wide:flex-1 fit-wide:basis-0 fit-wide:max-h-[34rem] order-2"
             >
+              <MatHeader
+                costs={Array.from({ length: SLOTS }, (_, col) =>
+                  columnYarnCost(match.mods, col),
+                )}
+              />
               {ROWS.map((row) => (
                 <BoardRow
                   key={row}
@@ -694,7 +753,7 @@ export function MatchBoard({
             <div
               ref={supplyRef}
               data-shake
-              className="tall-table:order-2 order-3"
+              className="match-supply tall-table:order-2 fit-wide:h-44 fit-wide:shrink-0 order-3"
             >
               <Supply
                 match={match}
@@ -716,7 +775,7 @@ export function MatchBoard({
           {/* Beside the table the pad takes the table's height and scrolls in
               place, so it never makes the page longer than the table. Its top
               is left to the corner buttons. */}
-          <div className="relative min-w-0 xl:w-64 xl:shrink-0">
+          <div className="fit-wide:max-xl:hidden fit-compact:hidden relative min-w-0 xl:w-64 xl:shrink-0">
             <aside className="flex flex-col gap-3.5 lg:max-xl:grid lg:max-xl:grid-cols-2 lg:max-xl:items-start xl:absolute xl:inset-0 xl:top-12 xl:gap-2.5 xl:overflow-y-auto xl:pb-3">
               <Scorepad match={match} className="lg:max-xl:row-span-2" />
               <section aria-label="Your relics">
@@ -735,9 +794,12 @@ export function MatchBoard({
             rail, only the hand, and the cloth shows and clicks through it. */}
         <div
           data-edge
-          className="hand-zone max-lg:rail sticky bottom-0 z-20 flex flex-col sm:max-lg:grid sm:max-lg:grid-cols-[17rem_minmax(0,1fr)] lg:pointer-events-none"
+          className="hand-zone max-lg:rail fit-wide:relative fit-wide:shrink-0 fit-compact:contents sticky bottom-0 z-20 flex flex-col sm:max-lg:grid sm:max-lg:grid-cols-[17rem_minmax(0,1fr)] lg:pointer-events-none"
         >
-          <TurnPanel {...turnPanel} className="flex lg:hidden" />
+          <TurnPanel
+            {...turnPanel}
+            className="fit-compact:hidden flex lg:hidden"
+          />
           <Hand
             match={match}
             mode={mode}
@@ -746,6 +808,15 @@ export function MatchBoard({
             onDetail={showCard}
             className="sm:max-lg:self-end"
           />
+          {/* A phone's table has one more piece along its foot: the round,
+              and the way in to everything the table has no room for. */}
+          <TableButton
+            variant="secondary"
+            onClick={() => setSheet(true)}
+            className="match-more"
+          >
+            Round {match.round + 1}, More
+          </TableButton>
         </div>
       </div>
 
@@ -753,6 +824,18 @@ export function MatchBoard({
         catId={detail?.catId ?? null}
         tucked={detail?.tucked}
         onClose={() => setDetail(null)}
+      />
+      <TableSheet
+        open={sheet}
+        onClose={() => setSheet(false)}
+        run={run}
+        match={match}
+        news={shownNews}
+        flipping={frame?.flipping ?? false}
+        log={log}
+        landed={playing ? frame?.lines : undefined}
+        strip={runStrip}
+        onOpenMat={() => setRivalMat(true)}
       />
       <RivalMat
         match={match}
