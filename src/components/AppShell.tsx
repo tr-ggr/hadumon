@@ -8,6 +8,7 @@ import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
 import { MusicButton } from "~/components/run/music/MusicButton";
 import { SoundButton } from "~/components/run/sfx/SoundButton";
+import { TowerBackdrop } from "~/components/tower/TowerBackdrop";
 import type { IconName } from "~/components/sprites/icons";
 import { tableButtonClass, type TableButtonSize } from "~/components/ui";
 import { api } from "~/trpc/react";
@@ -26,6 +27,7 @@ export const NAV_ITEMS: NavItem[] = [
 const BARE_ROUTES = ["/login", "/signup"];
 /** The table takes the whole screen: no lid, no dock. See `TableNav`. */
 const TABLE_ROUTE = "/run";
+const CODEX_ROUTE = "/codex";
 
 export function AppShell({
   children,
@@ -52,6 +54,7 @@ export function AppShell({
   }
   return (
     <div className="relative isolate flex min-h-dvh flex-col">
+      {isActive(pathname, CODEX_ROUTE) ? null : <TowerBackdrop />}
       <Lid pathname={pathname} />
       <main className="mx-auto w-full max-w-[1180px] min-w-0 flex-1 px-3 pt-5 pb-28 sm:px-5 md:pb-12">
         {children}

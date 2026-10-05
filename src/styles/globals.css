@@ -863,6 +863,77 @@ body:has(.table-fit) [role="dialog"] {
     --px: 6px;
   }
 }
+/*
+ * The tower again, standing behind every page that is not the table. It is
+ * fixed between the lid and the dock, under the page, and takes no clicks.
+ * Its pixel is the largest whole number the window has room for with the
+ * tower seen whole; the page reads the same number to keep the tower's side
+ * of itself clear.
+ */
+.tabletop {
+  --tower-px: 2px;
+}
+@media (min-width: 640px) and (min-height: 720px) {
+  .tabletop {
+    --tower-px: 3px;
+  }
+}
+@media (min-width: 1280px) and (min-height: 940px) {
+  .tabletop {
+    --tower-px: 4px;
+  }
+}
+@media (min-width: 1680px) and (min-height: 1160px) {
+  .tabletop {
+    --tower-px: 5px;
+  }
+}
+@media (min-width: 2000px) and (min-height: 1370px) {
+  .tabletop {
+    --tower-px: 6px;
+  }
+}
+.tabletop .tower-backdrop {
+  --px: var(--tower-px);
+  --pace: 1;
+  position: fixed;
+  inset: var(--lid-h) 0 var(--dock-h) 0;
+  z-index: -1;
+  pointer-events: none;
+}
+/* The side of a page kept clear for the tower: its width, and a gap. */
+.tabletop .beside-tower {
+  padding-right: calc(var(--tower-px) * 78 + 1rem);
+}
+@media (min-width: 640px) {
+  .tabletop .beside-tower,
+  .tabletop .beside-tower-wide {
+    padding-right: calc(var(--tower-px) * 78 + 2.5rem);
+  }
+}
+/* On a phone tall enough, a heading runs the whole width above the roof. */
+@media (max-width: 639px) and (min-height: 660px) {
+  .tabletop .beside-tower > .above-tower {
+    margin-right: calc(var(--tower-px) * -78 - 1rem);
+  }
+}
+/* A phone's first screen is the menu and the tower; what follows starts
+   under it and runs the whole width, over the tower as the page scrolls. */
+@media (max-width: 639px) {
+  .tabletop .first-screen {
+    min-height: calc(100dvh - var(--lid-h) - var(--dock-h) - 2.25rem);
+  }
+}
+/* The wordmark on a plaque that shares its page with other things. */
+.tabletop .wordmark.is-small {
+  font-size: 48px;
+}
+@media (min-width: 1024px) {
+  .tabletop .wordmark.is-small {
+    font-size: 64px;
+  }
+}
+
 /* The stage and its camera are shared with the tower that stands behind the
    rest of the app (`TowerStage`). The picture is never pushed further left
    than `--x-min`: nothing, on the climb, so Hadu's ledge stays in it. */

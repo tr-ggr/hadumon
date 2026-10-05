@@ -15,7 +15,8 @@ export function GauntletTrack({
   over = false,
   className = "",
 }: {
-  run: RunView;
+  /** A run, or as much of one as there is: no run is no results at all. */
+  run: Pick<RunView, "gauntlet" | "matchIndex" | "results">;
   /** The run has ended, so no rival is across the table any more. */
   over?: boolean;
   className?: string;
