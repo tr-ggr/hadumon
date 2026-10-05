@@ -3,11 +3,12 @@
  * is only ever shown the total, so this module must never be imported by
  * anything a browser loads.
  *
- * Half a coin a point is the floor. The bonuses are for going deeper, and
- * each win is worth more than the one before, so a run played on is always
- * worth more than one abandoned after an easy first match. A harder tier
- * multiplies the whole of it: measured, a run on a harder tier ends sooner,
- * and without that it paid less than the same play on Kitten.
+ * Half a coin a point is the floor, and it is the same on every tier. The
+ * bonuses are for going deeper, and each win is worth more than the one
+ * before, so a run played on is always worth more than one abandoned after
+ * an easy first match. A harder tier multiplies the bonuses, and by a good
+ * deal: measured, a run on a harder tier ends sooner, and with a smaller
+ * factor it paid less than the same play on Kitten.
  */
 
 import "server-only";
@@ -45,14 +46,14 @@ const SWEEP_BONUS = 4;
 const RECLAIM_BONUS = 2;
 
 /**
- * How much more a run is worth on a harder tier. Set so that a careful
+ * How much more every bonus is worth on a harder tier. Set so that a careful
  * player's run pays about the same on all three, and a better one's more
  * the harder it is.
  */
 const TIER_FACTOR: Record<DifficultyId, number> = {
   kitten: 1,
-  stray: 1.2,
-  apex: 1.5,
+  stray: 1.7,
+  apex: 2.8,
 };
 
 /** The coins a finished run pays, whole and never negative. */
@@ -68,5 +69,7 @@ export function payout(facts: PayoutFacts): number {
     SWEEP_BONUS * count(facts.goalsSwept) +
     RECLAIM_BONUS * count(facts.reclaimed);
   const tier = TIER_FACTOR[difficultyOf(facts.difficulty).id];
-  return Math.floor((count(facts.totalScore) * COIN_RATE + bonus) * tier);
+  return (
+    Math.floor(count(facts.totalScore) * COIN_RATE) + Math.round(bonus * tier)
+  );
 }
