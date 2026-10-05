@@ -5,6 +5,8 @@ import { PixelSprite } from "~/components/PixelSprite";
 import { RivalSprite } from "~/components/RivalSprite";
 import type { TowerStanding } from "~/components/run/climb";
 import { Tower as TowerFront } from "~/components/run/Tower";
+import { useLook } from "~/components/skins/SkinProvider";
+import { skySkin, towerSkin } from "~/components/skins/skins";
 import { SPRITE_SIZE } from "~/components/sprites/cats";
 import type { Tower } from "~/components/sprites/tower";
 
@@ -63,6 +65,7 @@ export function TowerScene({
   roofFlag,
   first,
 }: TowerSceneProps) {
+  const look = useLook();
   const rise =
     hadu === "roof"
       ? tower.height
@@ -72,7 +75,7 @@ export function TowerScene({
 
   return (
     <>
-      <TowerScenery tower={tower} />
+      <TowerScenery tower={tower} sky={skySkin(look.sky)} />
 
       {tower.floors.map((floor, index) => {
         const rivalId = gauntlet[index];
@@ -109,7 +112,11 @@ export function TowerScene({
         className="absolute bottom-0 left-0 w-full"
         style={{ height: px(tower.height) }}
       >
-        <TowerFront tower={tower} className="block h-full w-full" />
+        <TowerFront
+          tower={tower}
+          skin={towerSkin(look.tower)}
+          className="block h-full w-full"
+        />
       </div>
 
       {tower.floors.map((floor, index) =>

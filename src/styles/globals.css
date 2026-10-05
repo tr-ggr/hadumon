@@ -188,10 +188,12 @@
  * table is another inside it (`TableSurface`).
  */
 .tabletop {
+  /* A cloth skin sets `--cloth-fill`, `--cloth-shade`, `--cloth-weave` and
+     `--cloth-size` on the body; without one, the cloth is the cream one. */
   --cast-cloth: color-mix(
     in srgb,
-    var(--color-chipboard) 42%,
-    var(--color-cream)
+    var(--cloth-shade, var(--color-chipboard)) 42%,
+    var(--cloth-fill, var(--color-cream))
   );
   --cast: var(--cast-cloth);
   --weave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='8' shape-rendering='crispEdges'%3E%3Crect width='4' height='2' fill='%23f4ead4'/%3E%3Crect x='8' y='4' width='4' height='2' fill='%23f4ead4'/%3E%3C/svg%3E");
@@ -199,16 +201,16 @@
   --ease-give: cubic-bezier(0.2, 0.9, 0.3, 1.25);
   /* Arrives quickly and stops. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  background-color: var(--color-cream);
-  background-image: var(--weave);
-  background-size: 16px 8px;
+  background-color: var(--cloth-fill, var(--color-cream));
+  background-image: var(--cloth-weave, var(--weave));
+  background-size: var(--cloth-size, 16px 8px);
 }
 /* The cloth laid again inside something that is not cloth, such as a frame. */
 .tabletop .cloth {
   --cast: var(--cast-cloth);
-  background-color: var(--color-cream);
-  background-image: var(--weave);
-  background-size: 16px 8px;
+  background-color: var(--cloth-fill, var(--color-cream));
+  background-image: var(--cloth-weave, var(--weave));
+  background-size: var(--cloth-size, 16px 8px);
 }
 /*
  * The fit. A screen of a run that is one column (the opening hand, the
@@ -312,9 +314,10 @@ body:has(.table-fit) [role="dialog"] {
   --sink: 2px;
   transform: translateY(2px);
 }
+/* A board skin sets `--mat-fill` and `--mat-line` on the body. */
 .tabletop .mat {
-  --cast: var(--color-sky-deep);
-  background: var(--color-sky-surface);
+  --cast: var(--mat-line, var(--color-sky-deep));
+  background: var(--mat-fill, var(--color-sky-surface));
   border: 2px solid var(--color-ink);
   box-shadow:
     0 5px 0 -2px var(--color-chipboard),
@@ -799,9 +802,9 @@ html:has([data-match]) {
     inset: auto 0 0;
     z-index: -1;
     height: var(--peek);
-    background-color: var(--color-cream);
-    background-image: var(--weave);
-    background-size: 16px 8px;
+    background-color: var(--cloth-fill, var(--color-cream));
+    background-image: var(--cloth-weave, var(--weave));
+    background-size: var(--cloth-size, 16px 8px);
     pointer-events: auto;
   }
 }
@@ -1880,9 +1883,13 @@ html:has(.turn-phone) {
 }
 /* A sky mat that runs the width of the page, printed with paws and yarn. */
 .tabletop .sky-band {
-  --cast: var(--color-sky-deep);
-  background-color: var(--color-sky-surface);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27 shape-rendering=%27crispEdges%27 fill=%27%2373bde4%27%3E%3Crect x=%2720%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2720%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2724%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2732%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2736%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2740%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2744%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2748%27 width=%2716%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27100%27 width=%2720%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27108%27 width=%278%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27112%27 width=%278%27 height=%274%27/%3E%3Crect x=%27112%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27120%27 width=%278%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27124%27 width=%2720%27 height=%274%27/%3E%3Crect x=%27124%27 y=%27124%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27128%27 width=%278%27 height=%274%27/%3E%3C/svg%3E");
+  --cast: var(--mat-line, var(--color-sky-deep));
+  background-color: var(--mat-fill, var(--color-sky-surface));
+  /* The print is in the sky board's own blue: a skin goes without it. */
+  background-image: var(
+    --mat-print,
+    url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27160%27 height=%27160%27 shape-rendering=%27crispEdges%27 fill=%27%2373bde4%27%3E%3Crect x=%2720%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2720%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2720%27 width=%274%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2728%27 y=%2724%27 width=%278%27 height=%274%27/%3E%3Crect x=%2740%27 y=%2724%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2728%27 width=%274%27 height=%274%27/%3E%3Crect x=%2716%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2732%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2744%27 y=%2732%27 width=%274%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2736%27 width=%2716%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2740%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2720%27 y=%2744%27 width=%2724%27 height=%274%27/%3E%3Crect x=%2724%27 y=%2748%27 width=%2716%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27100%27 width=%2720%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27104%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27108%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27108%27 width=%278%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27112%27 width=%278%27 height=%274%27/%3E%3Crect x=%27112%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27112%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27108%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27116%27 width=%274%27 height=%274%27/%3E%3Crect x=%2796%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27104%27 y=%27120%27 width=%274%27 height=%274%27/%3E%3Crect x=%27116%27 y=%27120%27 width=%278%27 height=%274%27/%3E%3Crect x=%27100%27 y=%27124%27 width=%2720%27 height=%274%27/%3E%3Crect x=%27124%27 y=%27124%27 width=%274%27 height=%274%27/%3E%3Crect x=%27120%27 y=%27128%27 width=%278%27 height=%274%27/%3E%3C/svg%3E")
+  );
   background-size: 160px 160px;
 }
 .landing .hero-mat {
@@ -2886,6 +2893,63 @@ html:has(.turn-phone) {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+/*
+ * The chest at the foot of the tower, where a run begins. While the scene is
+ * arriving the hadu walks up to it in steps, the shut chest gives way to the
+ * open one, and the relics under it rise one after another. Once it has
+ * played, or with reduced motion, the chest is open and nothing moves.
+ */
+.tabletop .chest-stage .chest-shut {
+  visibility: hidden;
+}
+.tabletop .is-arriving .chest-walk {
+  animation: chest-walk 900ms steps(9, end) both;
+}
+.tabletop .is-arriving .chest-shut {
+  animation: chest-shut 900ms steps(1, end) both;
+}
+.tabletop .is-arriving .chest-open {
+  animation: chest-open 900ms steps(1, end) both;
+}
+.tabletop .is-arriving > .chest-rise {
+  animation: chest-rise 320ms var(--ease-give) both;
+  animation-delay: calc(1000ms + var(--i, 0) * 120ms);
+}
+@keyframes chest-walk {
+  from {
+    transform: translateX(-9rem);
+  }
+}
+@keyframes chest-shut {
+  from {
+    visibility: visible;
+  }
+  to {
+    visibility: hidden;
+  }
+}
+@keyframes chest-open {
+  from {
+    visibility: hidden;
+  }
+  to {
+    visibility: visible;
+  }
+}
+@keyframes chest-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabletop .is-arriving .chest-walk,
+  .tabletop .is-arriving .chest-shut,
+  .tabletop .is-arriving .chest-open,
+  .tabletop .is-arriving > .chest-rise {
+    animation: none !important;
   }
 }
 /* Signing in on a wide, short window: the board starts at the top and the

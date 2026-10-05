@@ -1,7 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 
+import { PixelIcon } from "~/components/PixelIcon";
+import { PixelSprite } from "~/components/PixelSprite";
 import { RelicIcon } from "~/components/RelicIcon";
 import { getRelic } from "~/server/game/relics";
 import { getRival } from "~/server/game/rival";
@@ -13,6 +15,12 @@ import { RelicTile } from "./pieces";
 import { playSound } from "./sfx/engine";
 import { RecapRow, StepHeading, StepRail, TableArea } from "./TableSurface";
 import { useSteps } from "./useSteps";
+
+/** The chest's own wood, as a value: a pixel icon takes colours, not classes. */
+const CHEST_COLOR = "#b98d55";
+/** When the lid goes back, and when the whole scene has played, in ms. */
+const CHEST_OPENS_MS = 900;
+const CHEST_SCENE_MS = 1800;
 
 /** The screens a run opens on, in the order they are shown. */
 export type ChestStep = "theft" | "chest" | "recap";
@@ -31,7 +39,8 @@ export interface ChestSceneProps {
 /**
  * How a run opens, one screen at a time: what the rivals took, the chest at
  * the foot of their tower and the one relic to take from it, then a recap
- * that holds the one confirm.
+ * that holds the one confirm. The player's hadu walks up to the chest and
+ * the relics rise out of it; with reduced motion the chest is simply open.
  */
 export function ChestScene({
   run,
@@ -43,6 +52,19 @@ export function ChestScene({
   const [relic, setRelic] = useState<string | null>(null);
   const { step, index, count, isFirst, next, back, goTo, heading } =
     useSteps(CHEST_STEPS);
+  // The walk up to the chest is shown once; coming back to the step, or
+  // choosing, finds it already open.
+  const [arrived, setArrived] = useState(false);
+  const onChest = step === "chest";
+  useEffect(() => {
+    if (!onChest || arrived) return;
+    const lid = setTimeout(() => playSound("settle"), CHEST_OPENS_MS);
+    const done = setTimeout(() => setArrived(true), CHEST_SCENE_MS);
+    return () => {
+      clearTimeout(lid);
+      clearTimeout(done);
+    };
+  }, [onChest, arrived]);
   const firstRival = getRival(run.gauntlet[0] ?? "alley-tom");
 
   const sentence: Record<ChestStep, string> = {
@@ -91,12 +113,42 @@ export function ChestScene({
               Somebody left it at the foot of the tower. Three relics are
               inside, and you can carry one. A relic lasts the whole run.
             </StepHeading>
-            <ul className="grid gap-x-3 gap-y-4 sm:grid-cols-3">
-              {chest.map((id) => {
+            {/* The scene plays once, the first time the chest is come to:
+                the hadu walks up, the lid goes back, the relics rise. */}
+            <div
+              aria-hidden
+              className={`mat chest-stage relative flex h-28 items-end justify-center gap-3 overflow-clip px-4 pb-3 ${arrived ? "" : "is-arriving"}`}
+            >
+              <span className="chest-walk relative block">
+                <PixelSprite catId="hadu" size={64} decorative />
+              </span>
+              <span className="relative block h-16 w-16">
+                <PixelIcon
+                  name="chest"
+                  size={64}
+                  fill={CHEST_COLOR}
+                  className="chest-shut absolute inset-0"
+                />
+                <PixelIcon
+                  name="chestOpen"
+                  size={64}
+                  fill={CHEST_COLOR}
+                  className="chest-open absolute inset-0"
+                />
+              </span>
+            </div>
+            <ul
+              className={`grid gap-x-3 gap-y-4 sm:grid-cols-3 ${arrived ? "" : "is-arriving"}`}
+            >
+              {chest.map((id, place) => {
                 const item = getRelic(id);
                 const chosen = relic === id;
                 return (
-                  <li key={id}>
+                  <li
+                    key={id}
+                    className="chest-rise"
+                    style={{ "--i": place } as CSSProperties}
+                  >
                     <button
                       type="button"
                       disabled={busy}

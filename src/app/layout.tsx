@@ -3,10 +3,15 @@ import "~/styles/globals.css";
 import { type Metadata } from "next";
 
 import { AppShell } from "~/components/AppShell";
+import { SkinProvider } from "~/components/skins/SkinProvider";
+import { skinVars } from "~/components/skins/skins";
 import { SoundRig } from "~/components/SoundRig";
 import { ToastProvider } from "~/components/ui";
 import { env } from "~/env";
+import { profileOf } from "~/server/api/routers/profile";
 import { getCurrentUser } from "~/server/auth/session";
+import { db } from "~/server/db";
+import { DEFAULT_LOOK } from "~/server/game/cosmetics";
 import { pixelFont } from "~/styles/fonts";
 import { TRPCReactProvider } from "~/trpc/react";
 
@@ -48,16 +53,28 @@ export default async function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   // Signed-out visitors get the landing page, which brings its own chrome.
   const user = await getCurrentUser();
+  // The look is read here so the first paint is already dressed in it.
+  const look = user
+    ? await profileOf(db, user)
+        .then((profile) => profile.look)
+        .catch(() => DEFAULT_LOOK)
+    : DEFAULT_LOOK;
 
   return (
     <html lang="en">
       {/* The whole app is one tabletop: every page is laid on the cloth, and a
-          dialog drawn on the body is cardboard like the rest. */}
-      <body className={`tabletop ${pixelFont.variable}`}>
+          dialog drawn on the body is cardboard like the rest. The skin's
+          colours are set here, on the body, so they reach both. */}
+      <body
+        className={`tabletop ${pixelFont.variable}`}
+        style={skinVars(look) as React.CSSProperties}
+      >
         <SoundRig />
         <TRPCReactProvider>
           <ToastProvider>
-            <AppShell authenticated={user !== null}>{children}</AppShell>
+            <SkinProvider initial={look} signedIn={user !== null}>
+              <AppShell authenticated={user !== null}>{children}</AppShell>
+            </SkinProvider>
           </ToastProvider>
         </TRPCReactProvider>
       </body>

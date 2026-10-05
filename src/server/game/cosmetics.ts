@@ -139,7 +139,7 @@ export const COSMETIC_LIST: readonly Cosmetic[] = [
       ["moss", "Moss Board", "common"],
       ["slate", "Slate Board", "uncommon"],
       ["rose", "Rose Board", "uncommon"],
-      ["midnight", "Midnight Board", "rare"],
+      ["lilac", "Lilac Board", "rare"],
       ["gilt", "Gilt Board", "epic"],
     ],
   ),
@@ -152,7 +152,7 @@ export const COSMETIC_LIST: readonly Cosmetic[] = [
       ["tartan", "Tartan", "uncommon"],
       ["tweed", "Tweed", "uncommon"],
       ["baize", "Green Baize", "rare"],
-      ["starfield", "Starfield", "epic"],
+      ["starlit", "Starlit Cloth", "epic"],
     ],
   ),
   ...slot(
@@ -169,10 +169,10 @@ export const COSMETIC_LIST: readonly Cosmetic[] = [
   ),
   ...slot(
     "sky",
-    ["day", "Day Sky"],
+    ["evening", "Evening Sky"],
     [
+      ["day", "Clear Day", "common"],
       ["dawn", "Dawn", "common"],
-      ["dusk", "Dusk", "common"],
       ["overcast", "Overcast", "uncommon"],
       ["snow", "Snowfall", "uncommon"],
       ["night", "Night", "rare"],

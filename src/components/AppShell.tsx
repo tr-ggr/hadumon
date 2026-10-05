@@ -13,6 +13,7 @@ import {
 
 import { LogoutDialog } from "~/components/LogoutDialog";
 import { PixelIcon } from "~/components/PixelIcon";
+import { PixelSprite } from "~/components/PixelSprite";
 import { MenuMusic } from "~/components/MenuMusic";
 import { MusicButton } from "~/components/run/music/MusicButton";
 import { playSound } from "~/components/run/sfx/engine";
@@ -21,6 +22,7 @@ import { useReducedMotion } from "~/components/run/useStepper";
 import { moveMs, placeFor } from "~/components/tower/places";
 import { TowerBackdrop } from "~/components/tower/TowerBackdrop";
 import type { IconName } from "~/components/sprites/icons";
+import { COIN_COLOR } from "~/components/sprites/palettes";
 import { tableButtonClass, type TableButtonSize } from "~/components/ui";
 import { AUTH_ROUTES } from "~/lib/auth/constants";
 import { api } from "~/trpc/react";
@@ -34,6 +36,8 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   { href: "/", label: "Home", icon: "home" },
   { href: "/run", label: "Play", icon: "play" },
+  { href: "/deck", label: "Deck", icon: "card" },
+  { href: "/shop", label: "Shop", icon: "pack" },
   { href: "/codex", label: "Codex", icon: "book" },
 ];
 /** The signed-out forms bring their own lid, signed in or not. */
@@ -186,19 +190,21 @@ function Shell({
 
 /**
  * The lid of the box, across the top of every page but the table: the
- * wordmark, the three ways about the app (from 768px; a phone has them in
- * the dock), who is signed in, the sound, and Log out behind a confirm.
+ * wordmark, the five ways about the app (from 768px; a phone has them in
+ * the dock), the player's coins and hadu, the sound, and Log out behind a
+ * confirm.
  */
 function Lid({ pathname }: { pathname: string }) {
   const [confirming, setConfirming] = useState(false);
   const me = api.auth.me.useQuery(undefined, { retry: false });
-  const displayName = me.data?.user.displayName;
+  const profile = api.profile.get.useQuery(undefined, { retry: false });
+  const displayName = profile.data?.name ?? me.data?.user.displayName;
   const corner = tableButtonClass("secondary", "icon");
 
   return (
     <header className="lid bg-ink text-cream sticky top-0 z-30">
       <div className="mx-auto flex w-full max-w-[1400px] items-center gap-3 px-3 pt-1 pb-2 sm:px-5">
-        <Link href="/" className="text-pixel shrink-0 text-xl sm:text-2xl">
+        <Link href="/" className="text-pixel shrink-0 text-xl sm:text-2xl md:max-lg:hidden">
           Hadu<span className="text-coral">Mon</span>
         </Link>
         <nav
@@ -215,11 +221,31 @@ function Lid({ pathname }: { pathname: string }) {
           ))}
         </nav>
         <div className="ml-auto flex min-w-0 items-center gap-1.5">
-          {displayName ? (
-            <span className="mr-1 min-w-0 truncate text-sm font-bold">
-              {displayName}
-            </span>
+          {profile.data ? (
+            <Link
+              href="/shop"
+              aria-label={`${profile.data.coins} ${profile.data.coins === 1 ? "coin" : "coins"}. Open the shop.`}
+              className="piece border-ink bg-cream text-ink hover:bg-sky-soft inline-flex h-10 shrink-0 items-center gap-1 border-2 px-2 text-sm font-black tabular-nums"
+            >
+              <PixelIcon name="coin" size={16} fill={COIN_COLOR} />
+              {profile.data.coins}
+            </Link>
           ) : null}
+          <Link
+            href="/profile"
+            aria-current={isActive(pathname, "/profile") ? "page" : undefined}
+            aria-label={
+              displayName ? `${displayName}: your profile` : "Your profile"
+            }
+            className={`piece border-ink text-ink inline-flex h-10 min-w-0 shrink-0 items-center gap-1.5 border-2 pr-2 pl-1 text-sm font-black ${isActive(pathname, "/profile") ? "bg-lime is-pressed" : "bg-cream hover:bg-sky-soft"}`}
+          >
+            <PixelSprite catId="hadu" size={32} decorative />
+            {displayName ? (
+              <span className="hidden max-w-28 truncate lg:inline">
+                {displayName}
+              </span>
+            ) : null}
+          </Link>
           <SoundButton className="shrink-0" />
           <MusicButton className="shrink-0" />
           <button
@@ -239,18 +265,19 @@ function Lid({ pathname }: { pathname: string }) {
   );
 }
 
-/** The same three ways, docked along the bottom of a phone. */
+/** The same five ways, docked along the bottom of a phone. */
 function Dock({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Primary navigation"
-      className="shell-dock rail fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 gap-2.5 px-3 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] md:hidden"
+      className="shell-dock rail fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 gap-1.5 px-2 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] md:hidden"
     >
       {NAV_ITEMS.map((item) => (
         <NavButton
           key={item.href}
           item={item}
           size="md"
+          stacked
           active={isActive(pathname, item.href)}
         />
       ))}
@@ -266,10 +293,13 @@ function NavButton({
   item,
   size,
   active,
+  stacked = false,
 }: {
   item: NavItem;
   size: TableButtonSize;
   active: boolean;
+  /** The icon over the label, for five across a phone. */
+  stacked?: boolean;
 }) {
   const variant = active
     ? "chosen"
@@ -280,7 +310,11 @@ function NavButton({
     <Link
       href={item.href}
       aria-current={active ? "page" : undefined}
-      className={tableButtonClass(variant, size, active ? "is-pressed" : "")}
+      className={tableButtonClass(
+        variant,
+        size,
+        `${active ? "is-pressed" : ""} ${stacked ? "min-w-0 flex-col gap-0.5 px-0.5! text-[11px]!" : ""}`,
+      )}
     >
       <PixelIcon name={item.icon} />
       {item.label}

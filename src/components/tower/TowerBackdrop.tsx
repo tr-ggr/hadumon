@@ -4,13 +4,9 @@ import { useMemo, useState } from "react";
 
 import { towerStanding } from "~/components/run/climb";
 import { CHIPBOARD } from "~/components/run/pieces";
-import {
-  STONE,
-  STONE_LIGHT,
-  STONE_RIB,
-  WALL,
-  buildTower,
-} from "~/components/sprites/tower";
+import { useLook } from "~/components/skins/SkinProvider";
+import { towerSkin, type TowerSkin } from "~/components/skins/skins";
+import { WALL, buildTower } from "~/components/sprites/tower";
 import { GAUNTLET, getRival } from "~/server/game/rival";
 import { api } from "~/trpc/react";
 
@@ -21,15 +17,24 @@ import { TowerStage } from "./TowerStage";
 
 const CREAM = "#fff8e7";
 
+/** The wall tile in each stone it has been asked for in. */
+const WALLS = new WeakMap<TowerSkin, string>();
+
 /** The wall tile as an image a stylesheet can repeat, drawn as the tower is. */
-const WALL_IMAGE = tileImage(WALL, {
-  ".": null,
-  "3": STONE_RIB,
-  "1": STONE,
-  "2": STONE_LIGHT,
-  c: CHIPBOARD,
-  w: CREAM,
-});
+function wallImage(skin: TowerSkin): string {
+  const built = WALLS.get(skin);
+  if (built) return built;
+  const image = tileImage(WALL, {
+    ".": null,
+    "3": skin.rib,
+    "1": skin.stone,
+    "2": skin.light,
+    c: CHIPBOARD,
+    w: CREAM,
+  });
+  WALLS.set(skin, image);
+  return image;
+}
 
 export interface TowerBackdropProps {
   /** Where the page being shown, or being gone to, is. */
@@ -50,6 +55,7 @@ export interface TowerBackdropProps {
  * clicks.
  */
 export function TowerBackdrop({ place, moving, hidden }: TowerBackdropProps) {
+  const look = useLook();
   const run = api.run.current.useQuery(undefined, { retry: 1 });
   const gauntlet = run.data?.view.gauntlet ?? GAUNTLET;
   const tower = useMemo(
@@ -102,7 +108,7 @@ export function TowerBackdrop({ place, moving, hidden }: TowerBackdropProps) {
       <div
         aria-hidden
         className="tower-room"
-        style={{ backgroundImage: WALL_IMAGE }}
+        style={{ backgroundImage: wallImage(towerSkin(look.tower)) }}
       />
     </div>
   );

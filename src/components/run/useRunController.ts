@@ -103,6 +103,11 @@ export function useRunController() {
       if (update.view.phase === "over" && "events" in update) {
         setFinal(update);
         utils.run.current.setData(undefined, null);
+        // What the run paid and handed over is on the account now.
+        void utils.profile.get.invalidate();
+        void utils.collection.get.invalidate();
+        void utils.codex.get.invalidate();
+        void utils.run.history.invalidate();
         return;
       }
       utils.run.current.setData(undefined, {

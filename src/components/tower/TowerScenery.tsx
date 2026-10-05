@@ -14,16 +14,40 @@ import {
   shore,
   type Span,
 } from "~/components/sprites/scenery";
+import { skySkin, type SkySkin } from "~/components/skins/skins";
 import type { Tower } from "~/components/sprites/tower";
 
 import { sceneHeight } from "./camera";
 import { tileImage } from "./tile";
 import { px } from "./TowerStage";
 
-const SKY_IMAGE = tileImage(SKY, SCENERY_COLORS);
-const SEA_IMAGE = tileImage(SEA, SCENERY_COLORS);
-const FAR_IMAGE = tileImage(CLOUDS_FAR, SCENERY_COLORS);
-const NEAR_IMAGE = tileImage(CLOUDS_NEAR, SCENERY_COLORS);
+interface Tiles {
+  sky: string;
+  sea: string;
+  far: string;
+  near: string;
+}
+
+/** The four tiles of the scene in one sky's colours, built once a sky. */
+const TILES = new WeakMap<SkySkin, Tiles>();
+
+function tilesFor(skin: SkySkin): Tiles {
+  const built = TILES.get(skin);
+  if (built) return built;
+  const [a, b, c, d] = skin.sky;
+  const [w, l, g] = skin.cloud;
+  const [s, n, f, h] = skin.sea;
+  const colors = { ...SCENERY_COLORS, a, b, c, d, w, l, g, s, n, f, h };
+  const tiles = {
+    sky: tileImage(SKY, colors),
+    sea: tileImage(SEA, colors),
+    far: tileImage(CLOUDS_FAR, colors),
+    near: tileImage(CLOUDS_NEAR, colors),
+  };
+  TILES.set(skin, tiles);
+  return tiles;
+}
+
 const FAR_WIDTH = CLOUDS_FAR[0]?.length ?? 0;
 const NEAR_WIDTH = CLOUDS_NEAR[0]?.length ?? 0;
 
@@ -103,13 +127,22 @@ function Shape({
 }
 
 /**
- * Where the tower stands, behind everything on it: an evening sky that
- * dithers from ember down to pale gold, two banks of cloud drifting along the
- * horizon, the sea, the rock under the tower's foot and the dark near shore.
+ * Where the tower stands, behind everything on it: a sky that dithers down
+ * to its palest at the horizon (an evening one, ember to pale gold, unless
+ * the player has another), two banks of cloud drifting along the horizon,
+ * the sea, the rock under the tower's foot and the dark near shore.
  * It is part of the picture, so the camera magnifies it with the tower and a
  * climb goes up past the clouds.
  */
-export function TowerScenery({ tower }: { tower: Tower }) {
+export function TowerScenery({
+  tower,
+  sky = skySkin(null),
+}: {
+  tower: Tower;
+  /** The sky it stands under; the evening one if left out. */
+  sky?: SkySkin;
+}) {
+  const tiles = tilesFor(sky);
   const ground = sceneHeight(tower);
   const horizon = ground - HORIZON;
   const stone = rock(tower.width);
@@ -123,7 +156,7 @@ export function TowerScenery({ tower }: { tower: Tower }) {
         className="scene-band scene-sky"
         style={{
           ...band(
-            SKY_IMAGE,
+            tiles.sky,
             [SKY_WIDTH, SKY.length],
             -HEIGHT,
             HEIGHT + horizon,
@@ -134,7 +167,7 @@ export function TowerScenery({ tower }: { tower: Tower }) {
       <span
         className="scene-band scene-drift-far"
         style={band(
-          FAR_IMAGE,
+          tiles.far,
           [FAR_WIDTH, CLOUDS_FAR.length],
           horizon - CLOUDS_FAR.length + FAR_SUNK,
           CLOUDS_FAR.length,
@@ -144,7 +177,7 @@ export function TowerScenery({ tower }: { tower: Tower }) {
       <span
         className="scene-band scene-drift-near"
         style={band(
-          NEAR_IMAGE,
+          tiles.near,
           [NEAR_WIDTH, CLOUDS_NEAR.length],
           horizon - CLOUDS_NEAR.length + NEAR_SUNK,
           CLOUDS_NEAR.length,
@@ -154,7 +187,7 @@ export function TowerScenery({ tower }: { tower: Tower }) {
       <span
         className="scene-band scene-sea"
         style={band(
-          SEA_IMAGE,
+          tiles.sea,
           [SEA_WIDTH, SEA.length],
           horizon,
           HORIZON + ROCK_DEPTH,

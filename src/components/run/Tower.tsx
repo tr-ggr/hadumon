@@ -1,19 +1,17 @@
+import { towerSkin, type TowerSkin } from "~/components/skins/skins";
 import { OUTLINE_COLOR } from "~/components/sprites/palettes";
-import {
-  STONE,
-  STONE_LIGHT,
-  STONE_RIB,
-  stackRuns,
-  type Tower as TowerGrid,
-} from "~/components/sprites/tower";
+import { stackRuns, type Tower as TowerGrid } from "~/components/sprites/tower";
 
-const COLORS = {
-  ".": null,
-  o: OUTLINE_COLOR,
-  "1": STONE,
-  "2": STONE_LIGHT,
-  "3": STONE_RIB,
-};
+/** The tower's legend in one skin's stone. */
+function colors(skin: TowerSkin) {
+  return {
+    ".": null,
+    o: OUTLINE_COLOR,
+    "1": skin.stone,
+    "2": skin.light,
+    "3": skin.rib,
+  };
+}
 
 /**
  * The front of the tower as crisp inline SVG, drawn the way the cats are.
@@ -22,9 +20,12 @@ const COLORS = {
  */
 export function Tower({
   tower,
+  skin = towerSkin(null),
   className = "",
 }: {
   tower: TowerGrid;
+  /** The stone it is built of; grey if left out. */
+  skin?: TowerSkin;
   className?: string;
 }) {
   return (
@@ -36,7 +37,7 @@ export function Tower({
       className={className}
       style={{ imageRendering: "pixelated" }}
     >
-      {stackRuns(tower.rows, COLORS).map((block) => (
+      {stackRuns(tower.rows, colors(skin)).map((block) => (
         <rect
           key={`${block.x}-${block.y}`}
           x={block.x}
