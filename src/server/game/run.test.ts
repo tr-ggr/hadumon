@@ -30,6 +30,8 @@ import {
   summarizeRun,
   takeChest,
   theft,
+  type MatchPay,
+  type PayMatch,
   type RunState,
 } from "./run";
 import { startingPool } from "./unlocks";
@@ -49,13 +51,28 @@ const newRun = (seed = "r", ticket = "t") => {
   return openChest(run, run.chest[0]!);
 };
 const player = standIn(1);
+/** Pays a match by its floor alone, so a test can tell which one was paid. */
+const pay: PayMatch = ({ floor }) => ({ coins: 10 + floor, factor: 1 + floor });
+/** A `pay` that also keeps what it was asked. */
+function recorder() {
+  const asked: MatchPay[] = [];
+  const record: PayMatch = (facts) => {
+    asked.push(facts);
+    return pay(facts);
+  };
+  return { asked, record };
+}
 const NOTHING = { reclaim: null, relic: null, trim: null };
 
 /**
  * Plays the current match to the player's last turn, then rigs the score
  * with a goal nobody played for, so the match ends the way a test needs.
  */
-function finishMatch(start: RunState, win: boolean): RunState {
+function finishMatch(
+  start: RunState,
+  win: boolean,
+  paid: PayMatch = pay,
+): RunState {
   let run = start;
   for (let guard = 0; guard < 300; guard++) {
     const match = run.match;
@@ -78,10 +95,13 @@ function finishMatch(start: RunState, win: boolean): RunState {
           },
         ],
       };
-      return actInRun({ ...run, match: rigged }, { type: "den", targets: [] })
-        .run;
+      return actInRun(
+        { ...run, match: rigged },
+        { type: "den", targets: [] },
+        paid,
+      ).run;
     }
-    run = actInRun(run, act(match, player)).run;
+    run = actInRun(run, act(match, player), paid).run;
   }
   throw new Error("match never reached its last turn");
 }
@@ -189,7 +209,7 @@ describe("the chest", () => {
     expect(() => openChest(run, outside)).toThrow(IllegalAction);
     expect(() => openChest(run, "toString")).toThrow(IllegalAction);
     expect(() => openChest(newRun(), run.chest[0]!)).toThrow(IllegalAction);
-    expect(() => actInRun(run, { type: "den", targets: [] })).toThrow(
+    expect(() => actInRun(run, { type: "den", targets: [] }, pay)).toThrow(
       IllegalAction,
     );
   });
@@ -297,7 +317,7 @@ describe("a run saved by an older game", () => {
   });
 
   it("retires as abandoned, keeping what its won matches earned", () => {
-    expect(retireRun(old)).toEqual({
+    expect(retireRun(old, pay)).toEqual({
       difficulty: "stray",
       matchesWon: 2,
       matchesPlayed: 2,
@@ -307,31 +327,57 @@ describe("a run saved by an older game", () => {
       deckElements: deckElements([]),
       goalsSwept: 0,
       reclaimed: 0,
+      // Neither match was paid as it ended, so both are paid now.
+      coins: 10 + 11,
     });
   });
 
+  it("pays each of its matches on its own floor and tier", () => {
+    const { asked, record } = recorder();
+    retireRun(old, record);
+    expect(asked).toEqual([
+      {
+        floor: 0,
+        score: 31,
+        won: true,
+        swept: false,
+        wonRun: false,
+        difficulty: "stray",
+      },
+      {
+        floor: 1,
+        score: 36,
+        won: true,
+        swept: false,
+        wonRun: false,
+        difficulty: "stray",
+      },
+    ]);
+  });
+
   it("retires cleanly whatever is left of it", () => {
-    expect(retireRun({})).toMatchObject({
+    expect(retireRun({}, pay)).toMatchObject({
       difficulty: "kitten",
       matchesWon: 0,
       matchesPlayed: 0,
       won: false,
       bestMatchScore: 0,
       totalScore: 0,
+      coins: 0,
     });
-    expect(retireRun(null).matchesWon).toBe(0);
-    expect(retireRun({ results: "none" }).totalScore).toBe(0);
+    expect(retireRun(null, pay).matchesWon).toBe(0);
+    expect(retireRun({ results: "none" }, pay).totalScore).toBe(0);
   });
 });
 
 describe("a match ending", () => {
   it("keeps the run in the match until it is over", () => {
     const run = newRun();
-    const { run: next } = actInRun(run, {
-      type: "keep",
-      cats: [0, 1, 2],
-      essence: ["flame", "mist"],
-    });
+    const { run: next } = actInRun(
+      run,
+      { type: "keep", cats: [0, 1, 2], essence: ["flame", "mist"] },
+      pay,
+    );
     expect(next.phase).toBe("match");
     expect(next.results).toEqual([]);
   });
@@ -344,9 +390,34 @@ describe("a match ending", () => {
     expect(run.results).toHaveLength(1);
     expect(run.results[0]?.won).toBe(false);
     expect(run.results[0]?.goals).toBeGreaterThanOrEqual(ROUND_TURNS.length);
-    expect(() => actInRun(run, { type: "den", targets: [] })).toThrow(
+    expect(() => actInRun(run, { type: "den", targets: [] }, pay)).toThrow(
       IllegalAction,
     );
+  });
+
+  it("pays a lost match as it ends, so the run keeps its coins", () => {
+    const { asked, record } = recorder();
+    const run = finishMatch(newRun(), false, record);
+    const lost = run.results[0]!;
+    expect(asked).toEqual([
+      {
+        floor: 0,
+        score: lost.player,
+        won: false,
+        swept: false,
+        wonRun: false,
+        difficulty: "kitten",
+      },
+    ]);
+    expect(lost).toMatchObject(pay(asked[0]!));
+    expect(summarizeRun(run).coins).toBe(lost.coins);
+  });
+
+  it("pays a won match before its reward is chosen", () => {
+    const run = finishMatch(newRun(), true);
+    expect(run.phase).toBe("reward");
+    expect(run.results[0]).toMatchObject({ won: true, coins: 10, factor: 1 });
+    expect(summarizeRun(run).coins).toBe(10);
   });
 
   it("opens a reward on a win: three stolen cards to take one back from", () => {
@@ -516,6 +587,28 @@ describe("a whole run", () => {
     );
   });
 
+  it("pays the last win as the run won, and no other", () => {
+    const { asked, record } = recorder();
+    let run = newRun("six");
+    for (const rivalId of GAUNTLET) {
+      run = finishMatch(run, true, record);
+      expect(run.results.at(-1)?.rivalId).toBe(rivalId);
+      if (run.phase === "reward") run = chooseReward(run, NOTHING);
+    }
+    expect(asked.map((facts) => facts.floor)).toEqual([0, 1, 2, 3, 4, 5]);
+    // Each match was paid on its own floor, and the run is their sum.
+    expect(run.results.map((r) => r.factor)).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(summarizeRun(run).coins).toBe(10 + 11 + 12 + 13 + 14 + 15);
+    expect(asked.map((facts) => facts.wonRun)).toEqual([
+      false,
+      false,
+      false,
+      false,
+      false,
+      true,
+    ]);
+  });
+
   it("counts a match swept when every round goal went to the player", () => {
     const run = finishMatch(newRun(), false);
     const record = run.results[0]!;
@@ -532,6 +625,13 @@ describe("a whole run", () => {
     ).toBe(0);
   });
 
+  it("keeps what its matches paid when it is abandoned", () => {
+    const won = finishMatch(newRun(), true);
+    const run = abandonRun(chooseReward(won, NOTHING));
+    expect(run.outcome).toBe("abandoned");
+    expect(summarizeRun(run).coins).toBe(summarizeRun(won).coins);
+  });
+
   it("can be abandoned once, at the chest or after it", () => {
     for (const start of [atChest(), newRun()]) {
       const run = abandonRun(start);
@@ -543,6 +643,7 @@ describe("a whole run", () => {
         won: false,
         bestMatchScore: 0,
         reclaimed: 0,
+        coins: 0,
       });
       expect(() => abandonRun(run)).toThrow(IllegalAction);
     }

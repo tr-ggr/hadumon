@@ -18,6 +18,7 @@ import type { MatchView, RunView } from "~/server/game/view";
 
 import { CatDetail, CatPick } from "./CatPick";
 import { plural } from "./describe";
+import { lastPaid, runCoins } from "./MatchCoins";
 import { MatchResult } from "./MatchResult";
 import { countCats } from "./packs";
 import { RelicTile } from "./pieces";
@@ -104,6 +105,7 @@ export function RewardPick({
         {step === "result" && match ? (
           <MatchResult
             match={match}
+            paid={lastPaid(run)}
             headingRef={heading}
             className="fitted:my-auto"
           />
@@ -279,7 +281,8 @@ export function RewardPick({
                 : `Your deck goes from ${run.deck.length} cards to ${deckAfter}.`}{" "}
               {stolenAfter === 0
                 ? "Nothing of it is still stolen."
-                : `${plural(stolenAfter, "card")} of it ${stolenAfter === 1 ? "is" : "are"} still stolen.`}
+                : `${plural(stolenAfter, "card")} of it ${stolenAfter === 1 ? "is" : "are"} still stolen.`}{" "}
+              {`The run has paid you ${plural(runCoins(run), "coin")} so far, and they stay yours however it ends.`}
             </p>
           </section>
         ) : null}

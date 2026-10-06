@@ -52,8 +52,10 @@ import {
   settleCats,
   SLOT_ODDS,
 } from "./packs";
-import { payout, type PayoutFacts } from "./payout";
+import { FLOOR_FACTOR, floorFactor, matchPayout } from "./payout";
 import { createRng } from "./rng";
+import type { MatchPay } from "./run";
+import { HIGH_SCORE } from "./unlocks";
 
 describe("the starter collection", () => {
   it("is three of ten commons and two of five uncommons", () => {
@@ -408,65 +410,89 @@ describe("the shelf", () => {
   });
 });
 
-describe("what a run pays", () => {
-  const run = (over: Partial<PayoutFacts> = {}): PayoutFacts => ({
-    totalScore: 0,
-    matchesWon: 0,
+describe("what a match pays", () => {
+  const match = (over: Partial<MatchPay> = {}): MatchPay => ({
+    floor: 0,
+    score: 0,
     won: false,
+    swept: false,
+    wonRun: false,
     difficulty: "kitten",
-    bestMatchScore: 0,
-    goalsSwept: 0,
-    reclaimed: 0,
     ...over,
   });
+  const coins = (over: Partial<MatchPay> = {}) =>
+    matchPayout(match(over)).coins;
 
-  it("is half a coin a point, rounded down, with nothing else earned", () => {
-    expect(payout(run())).toBe(0);
-    expect(payout(run({ totalScore: 51 }))).toBe(25);
-    expect(payout(run({ totalScore: 100 }))).toBe(50);
+  it("is half a coin a point on the first floor, rounded down", () => {
+    expect(coins()).toBe(0);
+    expect(coins({ score: 51 })).toBe(25);
+    expect(coins({ score: 60 })).toBe(30);
+  });
+
+  it("pays a lost match its points", () => {
+    expect(coins({ score: 60, floor: 3 })).toBeGreaterThan(0);
   });
 
   it("is whole and never negative, whatever it is handed", () => {
     for (const facts of [
-      run({ totalScore: -40, matchesWon: -2, goalsSwept: -1, reclaimed: -3 }),
-      run({ totalScore: 33.7, matchesWon: 2.9, bestMatchScore: 61.5 }),
-      run({ matchesWon: 99, won: true, difficulty: "apex" }),
+      match({ score: -40, floor: -2 }),
+      match({ score: 33.7, floor: 2.9, won: true }),
+      match({ score: 99, floor: 99, won: true, wonRun: true, swept: true }),
+      match({ score: 61.5, floor: 4, difficulty: "apex", won: true }),
     ]) {
-      const coins = payout(facts);
-      expect(Number.isInteger(coins)).toBe(true);
-      expect(coins).toBeGreaterThanOrEqual(0);
+      const paid = matchPayout(facts);
+      expect(Number.isInteger(paid.coins)).toBe(true);
+      expect(paid.coins).toBeGreaterThanOrEqual(0);
     }
   });
 
-  it("pays each win more than the one before it", () => {
-    const at = (wins: number) =>
-      payout(run({ totalScore: 50 * wins, matchesWon: wins }));
-    const steps = [1, 2, 3, 4, 5, 6].map((wins) => at(wins) - at(wins - 1));
-    for (let i = 1; i < steps.length; i++) {
-      expect(steps[i]).toBeGreaterThan(steps[i - 1]!);
+  it("pays the same match more the higher up the tower it is", () => {
+    for (const won of [false, true]) {
+      const at = (floor: number) => coins({ score: 60, won, floor });
+      for (let floor = 1; floor < FLOOR_FACTOR.length; floor++) {
+        expect(at(floor)).toBeGreaterThan(at(floor - 1));
+      }
     }
-    // So two runs given up after one win pay less than one run of two.
-    expect(at(2)).toBeGreaterThan(2 * at(1));
   });
 
-  it("pays a won run, a swept match and a card taken back", () => {
-    const base = run({ totalScore: 300, matchesWon: 6 });
-    expect(payout({ ...base, won: true })).toBeGreaterThan(payout(base));
-    expect(payout({ ...base, goalsSwept: 1 })).toBeGreaterThan(payout(base));
-    expect(payout({ ...base, reclaimed: 1 })).toBeGreaterThan(payout(base));
+  it("tells the factor it paid at, from one on the first floor up", () => {
+    expect(matchPayout(match()).factor).toBe(1);
+    for (let floor = 1; floor < FLOOR_FACTOR.length; floor++) {
+      expect(floorFactor(floor)).toBeGreaterThan(floorFactor(floor - 1));
+      expect(matchPayout(match({ floor })).factor).toBe(floorFactor(floor));
+    }
+    // Past the top of the tower, the top floor's.
+    expect(floorFactor(99)).toBe(floorFactor(FLOOR_FACTOR.length - 1));
+    expect(floorFactor(-1)).toBe(1);
   });
 
-  it("pays more for the same run on a harder tier", () => {
-    const base = run({ totalScore: 200, matchesWon: 4, reclaimed: 4 });
-    const kitten = payout(base);
-    const stray = payout({ ...base, difficulty: "stray" });
-    const apex = payout({ ...base, difficulty: "apex" });
+  it("pays a win, a sweep, a high score and the sixth win", () => {
+    const base = match({ score: 60, floor: 5 });
+    const won = { ...base, won: true };
+    const paid = (facts: MatchPay) => matchPayout(facts).coins;
+    expect(paid(won)).toBeGreaterThan(paid(base));
+    expect(paid({ ...won, swept: true })).toBeGreaterThan(paid(won));
+    expect(paid({ ...won, wonRun: true })).toBeGreaterThan(paid(won));
+    // The score lifted over the line the unlocks ask for pays its bonus too.
+    expect(paid({ ...won, score: HIGH_SCORE })).toBeGreaterThan(
+      paid({ ...won, score: HIGH_SCORE - 1 }) + 1,
+    );
+  });
+
+  it("pays more for the same win on a harder tier", () => {
+    const base = match({ score: 60, floor: 2, won: true, swept: true });
+    const kitten = matchPayout(base).coins;
+    const stray = matchPayout({ ...base, difficulty: "stray" }).coins;
+    const apex = matchPayout({ ...base, difficulty: "apex" }).coins;
     expect(stray).toBeGreaterThan(kitten);
     expect(apex).toBeGreaterThan(stray);
-    // The points themselves are worth the same on every tier.
-    expect(payout(run({ totalScore: 200, difficulty: "apex" }))).toBe(
-      payout(run({ totalScore: 200 })),
-    );
-    expect(payout(run({ totalScore: 200 }))).toBe(100);
+  });
+
+  it("pays points the same on every tier, floor by floor", () => {
+    for (let floor = 0; floor < FLOOR_FACTOR.length; floor++) {
+      expect(coins({ score: 60, floor, difficulty: "apex" })).toBe(
+        coins({ score: 60, floor }),
+      );
+    }
   });
 });

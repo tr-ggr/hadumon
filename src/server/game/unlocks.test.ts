@@ -28,6 +28,7 @@ const summary = (extra: Partial<RunSummary> = {}): RunSummary => ({
   deckElements: deckElements([]),
   goalsSwept: 0,
   reclaimed: 0,
+  coins: 0,
   ...extra,
 });
 

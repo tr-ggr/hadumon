@@ -45,7 +45,6 @@ import {
   type MatchState,
   type SideId,
 } from "~/server/game/match";
-import { payout } from "~/server/game/payout";
 import { RELIC_LIST } from "~/server/game/relics";
 import { themeOf } from "~/server/game/rivalDecks";
 import { summarizeRun } from "~/server/game/run";
@@ -312,7 +311,7 @@ function climbTower(
     dry += record.reduce((sum, match) => sum + match.dry, 0);
     const summary = summarizeRun(run);
     points += summary.totalScore;
-    coins += payout(summary);
+    coins += summary.coins;
     reached[wins] = (reached[wins] ?? 0) + 1;
     best.push(Math.max(0, ...record.map((match) => match.player)));
   }

@@ -15,6 +15,7 @@ import {
   type MatchState,
   type SideId,
 } from "../match";
+import { matchPayout } from "../payout";
 import { createRng } from "../rng";
 import {
   applyReward,
@@ -200,7 +201,7 @@ export function playGauntlet(config: GauntletConfig, player: Bot): Gauntlet {
       won: result.won,
       dry: count.dry,
     });
-    run = settleMatch(run, state);
+    run = settleMatch(run, state, matchPayout);
     if (run.phase === "reward" && run.reward) {
       run = applyReward(run, {
         reclaim: rarest(run.reward.reclaim),

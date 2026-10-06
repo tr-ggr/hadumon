@@ -60,6 +60,8 @@ function wins(count: number): RunView["results"] {
     won: true,
     goalsWon: 2,
     goals: 4,
+    coins: 15,
+    factor: 1,
   }));
 }
 

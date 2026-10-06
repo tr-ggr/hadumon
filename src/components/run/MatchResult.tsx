@@ -5,12 +5,14 @@ import { useEffect, useRef, useState, type Ref, type RefObject } from "react";
 import { getGoal } from "~/server/game/goals";
 import type { ScoreBreakdown } from "~/server/game/match";
 import { getRival } from "~/server/game/rival";
+import type { MatchRecord } from "~/server/game/run";
 import type { MatchView } from "~/server/game/view";
 
 import { tiebreakText } from "./describe";
 import { runFx } from "./fx/effects";
 import { clearEnded, justEnded } from "./fx/ended";
 import type { Intent } from "./fx/plan";
+import { MatchCoins } from "./MatchCoins";
 import { ScoreSheets } from "./Scorepad";
 import { playSound } from "./sfx/engine";
 import { useReducedMotion } from "./useStepper";
@@ -97,15 +99,19 @@ function useTally(
 
 /**
  * A finished match as a sheet off the scorepad: both scores, line by line,
- * and how each goal went. Straight after the match the player's sheet is
- * counted up; come back to it, or reload, and it is simply there.
+ * how each goal went, and the coins it paid. Straight after the match the
+ * player's sheet is counted up; come back to it, or reload, and it is simply
+ * there.
  */
 export function MatchResult({
   match,
+  paid,
   headingRef,
   className = "",
 }: {
   match: MatchView;
+  /** What the match paid as it ended, and the floor it was played on. */
+  paid?: { record: Pick<MatchRecord, "coins" | "factor">; floor: number };
   /** Given when the sheet is a step of its own, so focus can be sent to it. */
   headingRef?: Ref<HTMLHeadingElement>;
   className?: string;
@@ -153,6 +159,11 @@ export function MatchResult({
                 : "Not close."
               : `Short by ${margin}.`)}
         </p>
+        {paid ? (
+          <div className="mt-2.5">
+            <MatchCoins record={paid.record} floor={paid.floor} />
+          </div>
+        ) : null}
       </div>
 
       <div className="grid gap-x-8 gap-y-3 lg:grid-cols-[minmax(0,28rem)_minmax(0,1fr)]">

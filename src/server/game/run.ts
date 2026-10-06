@@ -32,7 +32,7 @@ import { createRng } from "./rng";
  * The shape of a stored run. A run saved under an older one cannot be read
  * by this game; it is closed as abandoned (`retireRun`).
  */
-export const RUN_VERSION = 3;
+export const RUN_VERSION = 4;
 
 /**
  * A deck can be trimmed down to this many cards and no further: the size a
@@ -85,7 +85,35 @@ export interface MatchRecord {
   goalsWon: number;
   /** Round goals the match had. */
   goals: number;
+  /** The coins the match paid, the moment it ended. */
+  coins: number;
+  /** What its floor of the tower multiplied them by. */
+  factor: number;
 }
+
+/** The facts of a finished match that its coins are counted from. */
+export interface MatchPay {
+  /** Index into `GAUNTLET`: 0 for the first rival. */
+  floor: number;
+  score: number;
+  won: boolean;
+  /** Every round goal went to the player. */
+  swept: boolean;
+  /** The match was the last of the gauntlet, and won. */
+  wonRun: boolean;
+  difficulty: DifficultyId;
+}
+
+export interface MatchPaid {
+  coins: number;
+  factor: number;
+}
+
+/**
+ * What a match pays. The formula is the server's (`payout.ts`), which this
+ * module cannot import: a browser loads it.
+ */
+export type PayMatch = (facts: MatchPay) => MatchPaid;
 
 export type RunPhase = "chest" | "match" | "reward" | "over";
 export type RunOutcome = "won" | "lost" | "abandoned";
@@ -254,16 +282,31 @@ const NO_ELEMENTS = deckElements([]);
 
 /**
  * What a run saved by an older game comes to when it is closed: abandoned,
- * with the matches it had won still counting. Only the fields every version
- * has written are read.
+ * with the matches it had won still counting. No older game paid a match as
+ * it ended, so each one it finished is paid now, on its own floor. Only the
+ * fields every version has written are read.
  */
-export function retireRun(stored: unknown): RunSummary {
+export function retireRun(stored: unknown, pay: PayMatch): RunSummary {
   const old = (stored ?? {}) as Partial<
     Pick<RunState, "difficulty" | "results">
   >;
   const results = Array.isArray(old.results) ? old.results : [];
+  const difficulty = difficultyOf(old.difficulty).id;
+  const coins = results.reduce(
+    (sum, r, floor) =>
+      sum +
+      pay({
+        floor,
+        score: Number(r?.player) || 0,
+        won: r?.won === true,
+        swept: false,
+        wonRun: false,
+        difficulty,
+      }).coins,
+    0,
+  );
   return {
-    difficulty: difficultyOf(old.difficulty).id,
+    difficulty,
     matchesWon: results.filter((r) => r?.won === true).length,
     matchesPlayed: results.length,
     won: false,
@@ -272,6 +315,7 @@ export function retireRun(stored: unknown): RunSummary {
     deckElements: NO_ELEMENTS,
     goalsSwept: 0,
     reclaimed: 0,
+    coins,
   };
 }
 
@@ -307,9 +351,26 @@ export interface RunActionResult {
  * A run once its match is over: the result goes on the record, and the run
  * ends on a loss or on the last win, or opens a reward.
  */
-export function settleMatch(run: RunState, state: MatchState): RunState {
+export function settleMatch(
+  run: RunState,
+  state: MatchState,
+  pay: PayMatch,
+): RunState {
   const result = state.result;
   if (state.phase !== "over" || !result) return { ...run, match: state };
+  const last = run.matchIndex >= GAUNTLET.length - 1;
+  const goalsWon = state.goalResults.filter(
+    (goal) => goal.playerPoints > goal.rivalPoints,
+  ).length;
+  const goals = state.goalResults.length;
+  const { coins, factor } = pay({
+    floor: run.matchIndex,
+    score: result.player.total,
+    won: result.won,
+    swept: goals > 0 && goalsWon === goals,
+    wonRun: result.won && last,
+    difficulty: run.difficulty,
+  });
   const next: RunState = {
     ...run,
     match: state,
@@ -320,17 +381,17 @@ export function settleMatch(run: RunState, state: MatchState): RunState {
         player: result.player.total,
         rival: result.rival.total,
         won: result.won,
-        goalsWon: state.goalResults.filter(
-          (goal) => goal.playerPoints > goal.rivalPoints,
-        ).length,
-        goals: state.goalResults.length,
+        goalsWon,
+        goals,
+        coins,
+        factor,
       },
     ],
   };
   if (!result.won) {
     next.phase = "over";
     next.outcome = "lost";
-  } else if (run.matchIndex >= GAUNTLET.length - 1) {
+  } else if (last) {
     next.phase = "over";
     next.outcome = "won";
   } else {
@@ -342,14 +403,18 @@ export function settleMatch(run: RunState, state: MatchState): RunState {
 
 /**
  * Applies the player's action and every rival action that follows it, and
- * when the match ends, moves the run on.
+ * when the match ends, pays it and moves the run on.
  */
-export function actInRun(run: RunState, action: Action): RunActionResult {
+export function actInRun(
+  run: RunState,
+  action: Action,
+  pay: PayMatch,
+): RunActionResult {
   if (run.phase !== "match" || !run.match) {
     throw new IllegalAction("There is no match in progress.");
   }
   const { state, events, trail } = advance(run.match, action, rivalPolicy);
-  return { run: settleMatch(run, state), events, trail };
+  return { run: settleMatch(run, state, pay), events, trail };
 }
 
 /**
@@ -417,6 +482,8 @@ export interface RunSummary {
   goalsSwept: number;
   /** Stolen cards taken back. */
   reclaimed: number;
+  /** What its matches have paid so far. */
+  coins: number;
 }
 
 export function summarizeRun(run: RunState): RunSummary {
@@ -434,5 +501,6 @@ export function summarizeRun(run: RunState): RunSummary {
       0,
       Math.min(STOLEN, run.built.length) - run.stolen.length,
     ),
+    coins: run.results.reduce((sum, r) => sum + r.coins, 0),
   };
 }

@@ -1308,7 +1308,7 @@
       "Don't use an element hue for a board, a button, or a heading. The sky behind the tower is the one ground they colour and a cat pack's wrapper the one face; on a cat piece the hue is a 4px edge and never the face.",
       "Don't set text straight on the tower's scene, smooth or blur the scene, or move any part of it in anything but whole tower pixels.",
       "Don't use lime for anything the rival owns, or coral for a reward. The title ribbon, on the landing page and on home, is the only lime that is not the player's.",
-      "Don't show a price in money, a payment control, a paid tier or premium styling (a gold finish, a sparkle, a \"best value\" badge, a countdown): coins are earned by playing, packs cost coins, and nothing is sold for money. Don't show coins or a pack without the sentence that says so, and don't show how a run's coins were worked out: only the total.",
+      "Don't show a price in money, a payment control, a paid tier or premium styling (a gold finish, a sparkle, a \"best value\" badge, a countdown): coins are earned by playing, packs cost coins, and nothing is sold for money. Don't show coins or a pack without the sentence that says so, and don't show how a match's coins were worked out: only what it paid and its floor's factor.",
       "Don't let a look change how anything is built, darken a board or a cloth past what ink can be read on (7:1), light the inside of a tower, or give two packs the same print.",
       "Don't add a save step to the wardrobe, or let a deck's change through without one.",
       "Don't print a cost in a lane's space, write on scenery, stretch a habitat or draw it at a fraction of a pixel, or put a transform, filter, contain or container-type on `[data-match]` or above it."

@@ -11,6 +11,7 @@ import type { Unlock } from "~/server/game/unlocks";
 import type { RunView } from "~/server/game/view";
 
 import { plural } from "./describe";
+import { factorText, lastPaid } from "./MatchCoins";
 import { MatchResult } from "./MatchResult";
 import { RelicTile, TableLink } from "./pieces";
 import { GauntletTrack } from "./RunStrip";
@@ -64,7 +65,7 @@ function UnlockPiece({ unlock }: { unlock: Unlock }) {
 export interface RunSummaryProps {
   view: RunView;
   unlocked: readonly Unlock[];
-  /** What the run paid. Only the total is ever known here. */
+  /** What the run paid: the sum of what each of its matches paid as it ended. */
   coins: number;
   onAgain: () => void;
 }
@@ -111,6 +112,7 @@ export function RunSummary({
         {step === "result" && lastMatch ? (
           <MatchResult
             match={lastMatch}
+            paid={lastPaid(view)}
             headingRef={heading}
             className="fitted:my-auto"
           />
@@ -154,8 +156,9 @@ export function RunSummary({
                 Coins
               </h2>
               <p className="text-ink mt-1 text-sm">
-                What the run paid. Coins open packs in the shop, and they are
-                only ever earned at this table.
+                What the run paid, match by match, each one the moment it ended.
+                Coins open packs in the shop, and they are only ever earned at
+                this table.
               </p>
             </div>
             <p className="piece piece-card border-ink text-ink flex w-fit items-center gap-3 border-2 bg-white py-3 pr-5 pl-3">
@@ -215,9 +218,15 @@ export function RunSummary({
                       </th>
                       <th
                         scope="col"
-                        className="py-1 pl-2 text-right font-bold"
+                        className="px-2 py-1 text-right font-bold"
                       >
                         Result
+                      </th>
+                      <th
+                        scope="col"
+                        className="py-1 pl-2 text-right font-bold"
+                      >
+                        Coins
                       </th>
                     </tr>
                   </thead>
@@ -236,11 +245,17 @@ export function RunSummary({
                         <td className="px-2 py-1.5 text-right tabular-nums">
                           {result.rival}
                         </td>
-                        <td className="py-1.5 pl-2 text-right">
+                        <td className="px-2 py-1.5 text-right">
                           <span
                             className={`border-ink border-2 px-1 font-bold ${result.won ? "bg-lime" : "bg-coral"}`}
                           >
                             {result.won ? "Won" : "Lost"}
+                          </span>
+                        </td>
+                        <td className="py-1.5 pl-2 text-right tabular-nums">
+                          {result.coins}{" "}
+                          <span className="text-xs">
+                            {factorText(result.factor)}
                           </span>
                         </td>
                       </tr>
@@ -258,6 +273,9 @@ export function RunSummary({
                         {total}
                       </td>
                       <td colSpan={2} />
+                      <td className="py-1.5 pl-2 text-right font-black tabular-nums">
+                        {coins}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>

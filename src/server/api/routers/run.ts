@@ -25,7 +25,7 @@ import {
   MAX_ACTION_ITEMS,
   type MatchEvent,
 } from "~/server/game/match";
-import { payout } from "~/server/game/payout";
+import { matchPayout } from "~/server/game/payout";
 import {
   abandonRun,
   actInRun,
@@ -108,7 +108,10 @@ export interface RunUpdate extends RunSnapshot {
   beats: RivalBeat[];
   /** What the run unlocked, set once when it ends. */
   unlocked: Unlock[];
-  /** The coins the run paid, set once when it ends; `null` until then. */
+  /**
+   * The coins the whole run paid, set once when it ends; `null` until then.
+   * Each match's own is on its record in `view.results`, paid as it ended.
+   */
   coins: number | null;
 }
 
@@ -177,11 +180,8 @@ async function retireStaleRun(
   tx: Transaction,
   run: Pick<Run, "id" | "userId" | "version" | "state">,
 ): Promise<void> {
-  const summary = retireRun(run.state);
-  // Only the fields every version has written are read.
-  const old = run.state as unknown as { results?: unknown } | null;
-  const finished = Array.isArray(old?.results) ? old.results.length : 0;
-  const coins = coinsFor(summary);
+  const summary = retireRun(run.state, matchPayout);
+  const { coins, matchesPlayed: finished } = summary;
   const [closed] = await tx
     .update(runs)
     .set({
@@ -196,7 +196,8 @@ async function retireStaleRun(
     .returning({ id: runs.id });
   // Closed by another request since it was read: that one paid for it.
   if (!closed) return;
-  await payRun(tx, run.userId, coins, finished);
+  await payCoins(tx, run.userId, coins);
+  await spendTicket(tx, run.userId, finished);
   await award(tx, run.userId, summary);
 }
 
@@ -224,11 +225,6 @@ function engine<T>(fn: () => T): T {
     }
     throw error;
   }
-}
-
-/** The coins a closed run pays. What it is counted from never leaves the server. */
-function coinsFor(summary: RunSummary): number {
-  return payout(summary);
 }
 
 /**
@@ -259,21 +255,30 @@ async function award(
   return unlocked;
 }
 
-/**
- * Pays a run that has just been closed, in the transaction that closed it.
- * A run that finished a match also uses up the ticket its chest and its
- * theft were drawn from; one given up before that keeps it, so starting
- * again deals the same.
- */
-async function payRun(
+/** Puts coins a run's matches paid on the account, in the run's transaction. */
+async function payCoins(
   tx: Transaction,
   userId: string,
   coins: number,
+): Promise<void> {
+  if (coins <= 0) return;
+  // The run row is locked already: run first, then profile, everywhere.
+  await lockProfile(tx, userId);
+  await addCoins(tx, userId, coins);
+}
+
+/**
+ * A closed run that finished a match uses up the ticket its chest and its
+ * theft were drawn from; one given up before that keeps it, so starting
+ * again deals the same.
+ */
+async function spendTicket(
+  tx: Transaction,
+  userId: string,
   finished: number,
 ): Promise<void> {
   // The run row is locked already: run first, then profile, everywhere.
   await lockProfile(tx, userId);
-  if (coins > 0) await addCoins(tx, userId, coins);
   if (finished > 0) {
     await tx
       .update(profiles)
@@ -282,9 +287,14 @@ async function payRun(
   }
 }
 
+/** What the matches on a run's record have paid between them. */
+function paidSoFar(state: RunState): number {
+  return state.results.reduce((sum, r) => sum + r.coins, 0);
+}
+
 /**
- * Writes the next state and, if the run just ended, closes it, pays its
- * coins and awards its unlocks.
+ * Writes the next state, pays a match that has just ended its coins and, if
+ * the run just ended, closes it and awards its unlocks.
  */
 async function persist(
   tx: Transaction,
@@ -296,7 +306,8 @@ async function persist(
   const summary = summarizeRun(state);
   const ended = state.phase === "over" && state.outcome !== null;
   const nextVersion = run.version + 1;
-  const coins = ended ? coinsFor(summary) : null;
+  // Only a match that ended in this call adds to the record's coins.
+  const paidNow = Math.max(0, summary.coins - paidSoFar(run.state));
 
   // Only a run still active is written, so one can never be closed, or
   // paid, twice.
@@ -307,12 +318,9 @@ async function persist(
       version: nextVersion,
       matchesWon: summary.matchesWon,
       score: summary.totalScore,
+      coins: summary.coins,
       ...(ended
-        ? {
-            status: state.outcome ?? "lost",
-            endedAt: new Date(),
-            coins: coins ?? 0,
-          }
+        ? { status: state.outcome ?? "lost", endedAt: new Date() }
         : {}),
     })
     .where(and(eq(runs.id, run.id), eq(runs.status, "active")))
@@ -324,11 +332,12 @@ async function persist(
     });
   }
 
+  await payCoins(tx, run.userId, paidNow);
   let unlocked: Unlock[] = [];
   if (ended) {
-    // The profile is locked by the payment, so the collection cannot move
+    // The profile is locked by the ticket, so the collection cannot move
     // under the prizes.
-    await payRun(tx, run.userId, coins ?? 0, state.results.length);
+    await spendTicket(tx, run.userId, state.results.length);
     unlocked = await award(tx, run.userId, summary);
   }
   return {
@@ -338,7 +347,7 @@ async function persist(
     events,
     beats,
     unlocked,
-    coins,
+    coins: ended ? summary.coins : null,
   };
 }
 
@@ -423,7 +432,9 @@ export const runRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }): Promise<RunUpdate> => {
       return ctx.db.transaction(async (tx) => {
         const run = await lockActiveRun(tx, ctx.user.id, input.version);
-        const result = engine(() => actInRun(run.state, input.action));
+        const result = engine(() =>
+          actInRun(run.state, input.action, matchPayout),
+        );
         // The first state on the trail is the player's own action.
         const beats = result.trail.slice(1).map(toRivalBeat);
         return persist(tx, run, result.run, result.events, beats);

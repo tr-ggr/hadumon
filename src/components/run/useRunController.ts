@@ -110,6 +110,11 @@ export function useRunController() {
         void utils.run.history.invalidate();
         return;
       }
+      // Only the action that won a match lands on its reward, and the match
+      // has paid its coins onto the account already.
+      if ("events" in update && update.view.phase === "reward") {
+        void utils.profile.get.invalidate();
+      }
       utils.run.current.setData(undefined, {
         id: update.id,
         version: update.version,

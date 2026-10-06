@@ -1,49 +1,42 @@
 /**
- * What a run pays in coins. The whole formula stays on the server: a player
- * is only ever shown the total, so this module must never be imported by
- * anything a browser loads.
+ * What a match pays in coins, paid the moment it ends, won or lost. The
+ * formula stays on the server: a player is shown what each match paid and
+ * the floor's factor, never the rest, so this module must never be imported
+ * by anything a browser loads.
  *
- * Half a coin a point is the floor, and it is the same on every tier. The
- * bonuses are for going deeper, and each win is worth more than the one
- * before, so a run played on is always worth more than one abandoned after
- * an easy first match. A harder tier multiplies the bonuses, and by a good
- * deal: measured, a run on a harder tier ends sooner, and with a smaller
- * factor it paid less than the same play on Kitten.
+ * Half a coin a point is the floor, and it is the same on every tier. A win,
+ * a swept match and a high score pay bonuses on top, and a harder tier
+ * multiplies the bonuses, by a good deal: measured, a run on a harder tier
+ * ends sooner, and with a smaller factor it paid less than the same play on
+ * Kitten. Then the whole of it is multiplied by how high up the tower the
+ * match was, so a deep run that ends in a loss has still paid well, and the
+ * player is stronger for the next one.
  */
 
 import "server-only";
 
 import { difficultyOf, type DifficultyId } from "./difficulty";
+import type { MatchPaid, MatchPay } from "./run";
 import { HIGH_SCORE, TOP_SCORE } from "./unlocks";
 
-/** The facts of a finished run that coins are counted from. */
-export interface PayoutFacts {
-  /** Points scored over every finished match, a lost one included. */
-  totalScore: number;
-  matchesWon: number;
-  won: boolean;
-  difficulty: DifficultyId;
-  bestMatchScore: number;
-  /** Matches in which the player took the higher share of every round goal. */
-  goalsSwept: number;
-  /** Stolen cards taken back. */
-  reclaimed: number;
-}
-
-/** Coins for each point scored. */
+/** Coins for each point scored, before the floor's factor. */
 export const COIN_RATE = 0.5;
 
-/** The bonus for each win of a run, by how many came before it. */
-const WIN_BONUS: readonly number[] = [4, 6, 8, 12, 16, 24];
-/** For beating all six. */
+/**
+ * What a match on each floor of the tower is multiplied by, from the first
+ * rival to the last. Depth is paid here and only here.
+ */
+export const FLOOR_FACTOR: readonly number[] = [1, 1.2, 1.4, 1.6, 1.8, 2];
+
+/** For a match won. */
+const WIN_BONUS = 8;
+/** For beating all six, paid with the last win. */
 const RUN_BONUS = 30;
-/** For a best match at each of the two scores the unlocks ask for. */
+/** For a match at each of the two scores the unlocks ask for. */
 const HIGH_BONUS = 6;
 const TOP_BONUS = 12;
-/** For each match whose every round goal went to the player. */
+/** For a match whose every round goal went to the player. */
 const SWEEP_BONUS = 4;
-/** For each stolen card taken back. */
-const RECLAIM_BONUS = 2;
 
 /**
  * How much more every bonus is worth on a harder tier. Set so that a careful
@@ -56,20 +49,24 @@ const TIER_FACTOR: Record<DifficultyId, number> = {
   apex: 2.8,
 };
 
-/** The coins a finished run pays, whole and never negative. */
-export function payout(facts: PayoutFacts): number {
-  const count = (n: number) => Math.max(0, Math.floor(n));
-  const wins = Math.min(count(facts.matchesWon), WIN_BONUS.length);
-  const depth = WIN_BONUS.slice(0, wins).reduce((sum, n) => sum + n, 0);
-  const best = count(facts.bestMatchScore);
+/** The factor a match on `floor` (0 for the first rival) is paid at. */
+export function floorFactor(floor: number): number {
+  const at = Math.min(Math.max(0, Math.floor(floor)), FLOOR_FACTOR.length - 1);
+  return FLOOR_FACTOR[at] ?? 1;
+}
+
+/** The coins a finished match pays, whole and never negative. */
+export function matchPayout(facts: MatchPay): MatchPaid {
+  const score = Math.max(0, Math.floor(facts.score));
   const bonus =
-    depth +
-    (facts.won ? RUN_BONUS : 0) +
-    (best >= TOP_SCORE ? TOP_BONUS : best >= HIGH_SCORE ? HIGH_BONUS : 0) +
-    SWEEP_BONUS * count(facts.goalsSwept) +
-    RECLAIM_BONUS * count(facts.reclaimed);
+    (facts.won ? WIN_BONUS : 0) +
+    (facts.wonRun ? RUN_BONUS : 0) +
+    (score >= TOP_SCORE ? TOP_BONUS : score >= HIGH_SCORE ? HIGH_BONUS : 0) +
+    (facts.swept ? SWEEP_BONUS : 0);
   const tier = TIER_FACTOR[difficultyOf(facts.difficulty).id];
-  return (
-    Math.floor(count(facts.totalScore) * COIN_RATE) + Math.round(bonus * tier)
-  );
+  const factor = floorFactor(facts.floor);
+  // A hair over, so a product that should come out whole is never floored
+  // a coin short by the float it is held in.
+  const coins = Math.floor((score * COIN_RATE + bonus * tier) * factor + 1e-9);
+  return { coins: Math.max(0, coins), factor };
 }
