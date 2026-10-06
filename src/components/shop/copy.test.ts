@@ -155,6 +155,6 @@ describe("the rules under the odds", () => {
   });
 
   it("says how many of a cat can be held", () => {
-    expect(copiesRule()).toBe("You can hold 3 of a cat, and 1 of a legendary.");
+    expect(copiesRule()).toBe("You can hold 4 of a cat, and 1 of a legendary.");
   });
 });

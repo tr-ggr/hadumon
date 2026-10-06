@@ -170,7 +170,7 @@ describe("the rival of a run", () => {
         expect(state.sides.rival.turnsLeft).toBe(0);
       }
     }
-  });
+  }, 30_000);
 
   it("plays the same match twice from the same seed", () => {
     const config = gauntletMatch(2, 1, "twice");

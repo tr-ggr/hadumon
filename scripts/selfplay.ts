@@ -250,7 +250,7 @@ const POOLS = {
 
 /**
  * The richest deck an account that owns everything can build on one
- * element: its rarest cats first, each to its cap, until there are 24.
+ * element: its rarest cats first, each to its cap, until there are 32.
  */
 function richDeck(element: Element): string[] {
   const cats = CAT_LIST.filter((cat) => cat.element === element).sort(

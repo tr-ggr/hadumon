@@ -11,7 +11,7 @@ import { getCat } from "./cats";
 export type Owned = Readonly<Record<string, number>>;
 
 /** The most copies of one cat an account can own, or play in a deck. */
-export const MAX_COPIES = 3;
+export const MAX_COPIES = 4;
 /** A legendary is one of a kind. */
 export const MAX_LEGENDARY = 1;
 

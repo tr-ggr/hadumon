@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ROWS } from "./cats";
+import { DECK_SIZE, STOLEN } from "./deck";
 import { applyAction, type MatchState, type Side } from "./match";
 import { chestRun, matchRun } from "~/test/runs";
 import { startingPool } from "./unlocks";
@@ -48,8 +49,8 @@ describe("run view", () => {
     const view = toRunView(run);
     expect(view.deck).toEqual([...run.deck].sort());
     expect(view.stolen).toEqual([...run.stolen].sort());
-    expect(view.deck).toHaveLength(16);
-    expect(view.stolen).toHaveLength(8);
+    expect(view.deck).toHaveLength(DECK_SIZE - STOLEN);
+    expect(view.stolen).toHaveLength(STOLEN);
     expect(view).not.toHaveProperty("clanId");
   });
 });

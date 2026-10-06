@@ -89,7 +89,7 @@ function finishMatch(start: RunState, win: boolean): RunState {
 const sorted = (cards: readonly string[]) => [...cards].sort();
 
 describe("startRun", () => {
-  it("stops at the chest, with eight of the deck's 24 cards stolen", () => {
+  it("stops at the chest, with eight of the deck's 32 cards stolen", () => {
     const run = atChest();
     expect(run.v).toBe(RUN_VERSION);
     expect(run.phase).toBe("chest");
@@ -99,7 +99,7 @@ describe("startRun", () => {
     expect(run.built).toHaveLength(DECK_SIZE);
     expect(run.stolen).toHaveLength(STOLEN);
     expect(run.deck).toHaveLength(DECK_SIZE - STOLEN);
-    // Nothing is made or lost: the deck and the stolen cards are the 24.
+    // Nothing is made or lost: the deck and the stolen cards are the 32.
     expect(sorted([...run.deck, ...run.stolen])).toEqual(sorted(defaultDeck()));
     expect(atChest("x")).toEqual(atChest("x"));
   });
@@ -134,7 +134,7 @@ describe("the chest", () => {
   });
 
   it("leaves out a charm for an element the deck is thin in", () => {
-    // The default deck is spread over five elements, under six cats of each.
+    // The default deck is spread over five elements, under eight cats of each.
     expect(
       Math.max(...Object.values(deckElements(defaultDeck()))),
     ).toBeLessThan(CHARM_CATS);
@@ -147,8 +147,8 @@ describe("the chest", () => {
 
   it("can hold the charm of an element the deck is built on", () => {
     const flames = [
-      ...Array.from({ length: 3 }, () => "flameclaw"),
-      ...Array.from({ length: 3 }, () => "emberkit"),
+      ...Array.from({ length: 4 }, () => "flameclaw"),
+      ...Array.from({ length: 4 }, () => "emberkit"),
       ...defaultDeck().filter((id) => getCat(id).element !== "flame"),
     ];
     expect(deckElements(flames).flame).toBe(CHARM_CATS);
@@ -196,7 +196,7 @@ describe("the chest", () => {
 });
 
 describe("the first match", () => {
-  it("is played with the sixteen cards that were not stolen", () => {
+  it("is played with the twenty-four cards that were not stolen", () => {
     const run = newRun();
     const side = run.match!.sides.player;
     const cards = [...side.setup, ...side.deck, ...side.tray, ...side.hand];
@@ -496,7 +496,7 @@ describe("a whole run", () => {
     expect(run.results.map((r) => r.rivalId)).toEqual([...GAUNTLET]);
     // The chest's relic, and one after matches 1, 3 and 5.
     expect(run.relics).toHaveLength(4);
-    expect(run.deck).toHaveLength(21);
+    expect(run.deck).toHaveLength(DECK_SIZE - STOLEN + 5);
     expect(run.stolen).toHaveLength(3);
     expect(sorted([...run.deck, ...run.stolen])).toEqual(sorted(run.built));
 

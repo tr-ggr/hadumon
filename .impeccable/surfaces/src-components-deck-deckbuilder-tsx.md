@@ -7,7 +7,7 @@ related_targets: ["src/app/deck/page.tsx","src/components/deck/build.ts","src/co
 
 # Deck — surface brief
 
-Scope: signed-in `/deck`. Visitor mode: Operate. Audience: a player between runs who wants to change what they bring to the next one. Job: see the 24 cards of the deck, take copies out, put copies in from the collection, and save. The rules of a deck (24 cards, at most three of a cat and one of a legendary, only cards owned) are `src/server/game/deck.ts` and `src/components/deck/build.ts`.
+Scope: signed-in `/deck`. Visitor mode: Operate. Audience: a player between runs who wants to change what they bring to the next one. Job: see the 32 cards of the deck, take copies out, put copies in from the collection, and save. The rules of a deck (32 cards, at most four of a cat and one of a legendary, only cards owned) are `src/server/game/deck.ts` and `src/components/deck/build.ts`.
 
 ## Direction contract
 
@@ -40,8 +40,8 @@ FINISH: documented from the build (commit `8d83093`) in DESIGN.md on 2026-10-06.
 - Did not load: one board with a sentence and "Try again".
 - Unchanged: the rail offers "Get more cats" and a held "Save deck".
 - Changed: "Undo changes" and "Save deck"; leaving the page is asked about first.
-- Short of 24: a dashed space in the tray counts the cards still to add.
-- Over 24: the count is on a marker and the deck cannot be saved.
+- Short of 32: a dashed space in the tray counts the cards still to add.
+- Over 32: the count is on a marker and the deck cannot be saved.
 - A press that does nothing (a fourth copy, a second legendary, a full deck): the buzz, and the rail says why until the next press that does something.
 - No cat matches the filters: a tray well with one sentence.
 - A run in progress: a line says the run keeps the deck it began with.

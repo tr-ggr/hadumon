@@ -86,10 +86,12 @@ describe("the starter collection", () => {
     expect(STARTER_COLLECTION.pyrelynx).toBeUndefined();
   });
 
-  it("keeps a card until its cap, three of a cat and one of a legendary", () => {
+  it("keeps a card until its cap, four of a cat and one of a legendary", () => {
     expect(copyCap("flameclaw")).toBe(MAX_COPIES);
+    expect(MAX_COPIES).toBe(4);
     expect(copyCap("hadu")).toBe(1);
     const { owned, gains } = gainCards(STARTER_COLLECTION, [
+      "flameclaw",
       "flameclaw",
       "joltpad",
       "joltpad",
@@ -97,14 +99,15 @@ describe("the starter collection", () => {
       "hadu",
     ]);
     expect(gains.map((gain) => gain.kept)).toEqual([
-      false,
       true,
       false,
+      true,
+      true,
       true,
       false,
     ]);
-    expect(owned.flameclaw).toBe(3);
-    expect(owned.joltpad).toBe(3);
+    expect(owned.flameclaw).toBe(4);
+    expect(owned.joltpad).toBe(4);
     expect(owned.hadu).toBe(1);
     expect(STARTER_COLLECTION.hadu).toBeUndefined();
   });
@@ -113,8 +116,8 @@ describe("the starter collection", () => {
 describe("a deck", () => {
   const deck = defaultDeck();
 
-  it("is 24 cards, of which a run opens with 8 stolen", () => {
-    expect(DECK_SIZE).toBe(24);
+  it("is 32 cards, of which a run opens with 8 stolen", () => {
+    expect(DECK_SIZE).toBe(32);
     expect(STOLEN).toBe(8);
     expect(deck).toHaveLength(DECK_SIZE);
   });
@@ -130,27 +133,29 @@ describe("a deck", () => {
   it("says when it is short, and when it is over", () => {
     const short = defaultDeck().slice(1);
     expect(validateDeck(short, STARTER_COLLECTION)).toEqual([
-      { kind: "size", have: 23 },
+      { kind: "size", have: 31 },
     ]);
-    expect(describeProblem({ kind: "size", have: 23 })).toBe(
-      "23 of 24 cards. Add 1 more.",
+    expect(describeProblem({ kind: "size", have: 31 })).toBe(
+      "31 of 32 cards. Add 1 more.",
     );
-    expect(describeProblem({ kind: "size", have: 25 })).toBe(
-      "25 of 24 cards. Take 1 out.",
+    expect(describeProblem({ kind: "size", have: 33 })).toBe(
+      "33 of 32 cards. Take 1 out.",
     );
   });
 
-  it("refuses a fourth copy, even of a cat owned four times over", () => {
-    const four = [...defaultDeck().slice(0, -2), "flameclaw", "flameclaw"];
-    expect(countCards(four).flameclaw).toBe(4);
-    const problems = validateDeck(four, {
+  it("refuses a fifth copy, even of a cat owned five times over", () => {
+    const deck = defaultDeck().filter((id) => id !== "flameclaw");
+    const five = [...deck.slice(2), ...Array<string>(5).fill("flameclaw")];
+    expect(five).toHaveLength(DECK_SIZE);
+    expect(countCards(five).flameclaw).toBe(5);
+    const problems = validateDeck(five, {
       ...STARTER_COLLECTION,
-      flameclaw: 4,
+      flameclaw: 5,
     });
     expect(problems).toEqual([
-      { kind: "copies", catId: "flameclaw", have: 4, cap: 3 },
+      { kind: "copies", catId: "flameclaw", have: 5, cap: 4 },
     ]);
-    expect(describeProblem(problems[0]!)).toContain("4 of Flameclaw");
+    expect(describeProblem(problems[0]!)).toContain("5 of Flameclaw");
   });
 
   it("refuses a second copy of a legendary", () => {
@@ -171,7 +176,7 @@ describe("a deck", () => {
     expect(validateDeck(rare, STARTER_COLLECTION)).toEqual([
       { kind: "owned", catId: "pyrelynx", have: 1, owned: 0 },
     ]);
-    const third = [...defaultDeck().slice(2), "gloomtail", "gloomtail"];
+    const third = [...defaultDeck().slice(1), "gloomtail"];
     expect(validateDeck(third, STARTER_COLLECTION)).toEqual([
       { kind: "owned", catId: "gloomtail", have: 3, owned: 2 },
     ]);
@@ -274,7 +279,7 @@ describe("cat packs", () => {
   it("turn a card past its cap into coins and keep the rest", () => {
     const { owned, cats, refund } = settleCats(
       ["flameclaw", "pyrelynx", "pyrelynx", "cinderpounce", "cinderpounce"],
-      STARTER_COLLECTION,
+      { ...STARTER_COLLECTION, flameclaw: 4, cinderpounce: 3 },
     );
     expect(cats.map((cat) => cat.kept)).toEqual([
       false,
@@ -285,7 +290,7 @@ describe("cat packs", () => {
     ]);
     expect(refund).toBe(DUPLICATE_REFUND.common + DUPLICATE_REFUND.uncommon);
     expect(owned.pyrelynx).toBe(2);
-    expect(owned.cinderpounce).toBe(3);
+    expect(owned.cinderpounce).toBe(4);
     expect(STARTER_COLLECTION.pyrelynx).toBeUndefined();
   });
 });

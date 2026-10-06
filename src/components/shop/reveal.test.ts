@@ -165,13 +165,13 @@ describe("pullNote", () => {
   });
 
   it("counts a second and third of the same cat in one pack", () => {
-    expect(pullNote(reveal, 2)?.text).toBe("Copy 2 of 3.");
-    expect(pullNote(reveal, 3)?.text).toBe("Copy 3 of 3.");
+    expect(pullNote(reveal, 2)?.text).toBe("Copy 2 of 4.");
+    expect(pullNote(reveal, 3)?.text).toBe("Copy 3 of 4.");
   });
 
   it("says what a cat with no room paid back, by how many it could hold", () => {
     const full = pullNote(reveal, 1)!;
-    expect(noteSentence(full)).toBe("Already have 3. 4 coins back.");
+    expect(noteSentence(full)).toBe("Already have 4. 4 coins back.");
     const one = pullNote(reveal, 4)!;
     expect(noteSentence(one)).toBe("Already have 1. 150 coins back.");
   });
@@ -180,7 +180,7 @@ describe("pullNote", () => {
     const blind = beginReveal("press-2", CATS, null, false);
     expect(pullNote(blind, 0)?.text).toBe("Kept.");
     expect(noteSentence(pullNote(blind, 1)!)).toBe(
-      "Already have 3. 4 coins back.",
+      "Already have 4. 4 coins back.",
     );
   });
 
@@ -206,7 +206,7 @@ describe("what the rail says", () => {
 
   it("names the card just turned and counts the rest", () => {
     expect(revealSentence(turn(dealt(), 1), 50)).toBe(
-      `${common.name}, common. Already have 3. 4 coins back. 4 to go.`,
+      `${common.name}, common. Already have 4. 4 coins back. 4 to go.`,
     );
     expect(revealSentence(turn(dealt(), 0), 46)).toBe(
       `${other.name}, common. New. 4 to go.`,

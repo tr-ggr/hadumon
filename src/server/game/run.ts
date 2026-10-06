@@ -2,7 +2,7 @@
  * Run state: one gauntlet attempt. Stored as jsonb on the `runs` row.
  *
  * A run is played with the deck its player built. It opens with eight of
- * the deck's 24 cards stolen and a chest of three relics to take one from,
+ * the deck's 32 cards stolen and a chest of three relics to take one from,
  * and then it is six matches against the rivals in `GAUNTLET`, each on a
  * deck of its own and played by the bot at the level the tier asks. The
  * board resets every match; the player's deck and relics carry through.
@@ -47,9 +47,9 @@ export const REWARD_RELICS = 3;
 export const CHEST_RELICS = 3;
 /**
  * A clan charm pays for its element's cats, so one is only put in the chest
- * of a deck that holds at least this many of them.
+ * of a deck that holds at least this many of them: a quarter of the deck.
  */
-export const CHARM_CATS = 6;
+export const CHARM_CATS = 8;
 
 /** What the account held when the run began. */
 export interface RunPool {
@@ -95,7 +95,7 @@ export interface RunState {
   seed: string;
   difficulty: DifficultyId;
   pool: RunPool;
-  /** The deck as its player built it: all 24 cards, sorted. */
+  /** The deck as its player built it: all 32 cards, sorted. */
   built: string[];
   /** The cards of it the rivals still hold. */
   stolen: string[];

@@ -11,7 +11,7 @@ import { getCat } from "~/server/game/cats";
 import { stackEdge } from "./packs";
 
 /** A stack shows the edge of this many cards under the top one, and no more. */
-const MAX_UNDER = 2;
+const MAX_UNDER = 3;
 
 export interface CardStackProps {
   catId: string;

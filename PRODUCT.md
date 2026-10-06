@@ -14,7 +14,7 @@ Secondary (unconfirmed, do not design for): friends and testers of the project.
 
 ## Product Purpose
 
-HaduMon is a web-based roguelike engine-builder about feline "Fakemon". The player builds a deck of 24 cats from a collection, and a run is a gauntlet of six matches to take it back: the rivals steal eight of its cards as a run begins, and each one beaten gives a card back. A rival plays the same game on a board of its own. In a match each side plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to collect its reward and fire every cat's power in it, turn about across four rounds of eight, seven, six and five turns each. Losing a match ends the run. A finished run pays coins, coins open packs, and packs fill the collection and dress the player's hadu, table and tower. Success for a new visitor is a created account and a finished first match; success for a player is a run that goes one rival further than the last, a deck they changed because of it, and a codex that fills in.
+HaduMon is a web-based roguelike engine-builder about feline "Fakemon". The player builds a deck of 32 cats from a collection, and a run is a gauntlet of six matches to take it back: the rivals steal eight of its cards as a run begins, and each one beaten gives a card back. A rival plays the same game on a board of its own. In a match each side plays cats into three habitat rows (Hunt, Den, Prowl) and activates a row to collect its reward and fire every cat's power in it, turn about across four rounds of eight, seven, six and five turns each. Losing a match ends the run. A finished run pays coins, coins open packs, and packs fill the collection and dress the player's hadu, table and tower. Success for a new visitor is a created account and a finished first match; success for a player is a run that goes one rival further than the last, a deck they changed because of it, and a codex that fills in.
 
 ## Positioning
 
@@ -29,7 +29,7 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 
 - Played in a browser; mobile-first UI that must work at 375px wide.
 - Session cadence: one match is a few minutes; a full run is six matches. A run in progress is saved after every action and resumes where it stopped.
-- New accounts start with a collection of 40 cards (three of each of ten commons, two of each of five uncommons), a default deck of 24 built from it, ten relics unlocked and no coins.
+- New accounts start with a collection of 40 cards (three of each of ten commons, two of each of five uncommons), a default deck of 32 built from it, ten relics unlocked and no coins.
 - One run at a time per account.
 
 ## Capabilities and Constraints
@@ -37,8 +37,8 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 - 102 cats: 40 common, 25 uncommon, 20 rare, 10 epic, 7 legendary. Every element has 8, 5, 4, 2 and 1 of them; Hadu and Stussy stand beside those. Rarity is a power tier: it sets how often a cat comes out of a pack, and a rival's deck is drawn as rare as the player's own. Each legendary also has a relic of its own, a lasting effect while it is on the board.
 - Five elements, each with the cat food its cats cost: Beef, Fish, Chicken, Dry food and Pork. A Treat pays for anything. There is no advantage wheel.
 - A match: two seats, each with 3 rows of 4 slots, its own deck, hand and three-card tray; 4 rounds of 8 / 7 / 6 / 5 turns each, the lead changing hands every round; one shared five-dice feeder; one goal per round, scored on what each side really has. A row holding exactly 1 or 3 cats offers a trade when it is activated: a cat from hand for a die, a food for a yarn, a yarn for a cat.
-- A deck: exactly 24 cards the account owns, at most three of a cat and one of a legendary, built on its own page and saved; one deck an account.
-- A run: pick a difficulty and play the saved deck. Eight of its cards are stolen as the run begins, so it opens with 16; a chest holds three relics to take one from; then six matches with bosses at 3 and 6. Each win but the last shows three of the stolen cards to take one back, and every other win offers a relic. No new cat is gained in a run. The board resets each match; the deck and relics carry through.
+- A deck: exactly 32 cards the account owns, at most four of a cat and one of a legendary, built on its own page and saved; one deck an account.
+- A run: pick a difficulty and play the saved deck. Eight of its cards are stolen as the run begins, so it opens with 24; a chest holds three relics to take one from; then six matches with bosses at 3 and 6. Each win but the last shows three of the stolen cards to take one back, and every other win offers a relic. No new cat is gained in a run. The board resets each match; the deck and relics carry through.
 - Coins: a run that ends, won, lost or given up, pays coins for the matches it finished. The player is shown the total and nothing of how it is worked out.
 - Packs: five cat packs, one an element, of five cats each, the last rare or better; two cosmetic packs, which never hold a piece the account has. A cat past its cap is paid back in coins, always less than the pack cost.
 - Cosmetics: what the player's hadu wears (hat, eyes, body, tail, aura), and the look of their board, tablecloth, tower and sky. They change no rule.

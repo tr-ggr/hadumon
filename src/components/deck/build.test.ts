@@ -24,17 +24,18 @@ describe("adding a card", () => {
     expect(deck).toHaveLength(DECK_SIZE);
     expect(deck.filter((id) => id === "pyrelynx")).toHaveLength(1);
     // Flame comes first, and a rare after its element's commons and uncommons.
-    expect(deck.indexOf("pyrelynx")).toBe(deck.indexOf("cinderpounce") + 1);
+    expect(deck.indexOf("pyrelynx")).toBe(deck.lastIndexOf("cinderpounce") + 1);
     expect(validateDeck(deck, owned)).toEqual([]);
   });
 
-  it("refuses a fourth copy, and says why", () => {
-    const three = addCard(saved, "flameclaw", owned);
-    expect(three.filter((id) => id === "flameclaw")).toHaveLength(3);
-    expect(addRefusal(three, "flameclaw", owned)).toBe(
-      "A deck holds 3 of a cat at most.",
+  it("refuses a fifth copy, and says why", () => {
+    const plenty = { ...owned, flameclaw: 5 };
+    const four = addCard(saved, "flameclaw", plenty);
+    expect(four.filter((id) => id === "flameclaw")).toHaveLength(4);
+    expect(addRefusal(four, "flameclaw", plenty)).toBe(
+      "A deck holds 4 of a cat at most.",
     );
-    expect(addCard(three, "flameclaw", owned)).toEqual(three);
+    expect(addCard(four, "flameclaw", plenty)).toEqual(four);
   });
 
   it("refuses a second copy of a legendary", () => {
@@ -60,11 +61,11 @@ describe("adding a card", () => {
     );
   });
 
-  it("lets a deck go over 24, for the rail to say so", () => {
-    const over = addCard(saved, "flameclaw", owned);
+  it("lets a deck go over 32, for the rail to say so", () => {
+    const over = addCard(saved, "emberkit", owned);
     expect(over).toHaveLength(DECK_SIZE + 1);
     expect(deckStatus(over, owned, saved).sentence).toBe(
-      "25 of 24 cards. Take 1 out.",
+      "33 of 32 cards. Take 1 out.",
     );
   });
 });
@@ -73,7 +74,7 @@ describe("taking a card out", () => {
   it("removes one copy and leaves the rest", () => {
     const deck = removeCard(saved, "flameclaw");
     expect(deck).toHaveLength(DECK_SIZE - 1);
-    expect(deck.filter((id) => id === "flameclaw")).toHaveLength(1);
+    expect(deck.filter((id) => id === "flameclaw")).toHaveLength(2);
     expect(removeCard(deck, "nyxaroth")).toEqual(deck);
     // The deck handed in is never changed.
     expect(saved).toHaveLength(DECK_SIZE);
@@ -94,10 +95,14 @@ describe("the shelf", () => {
 
   it("counts what is in the deck and says when no more can go in", () => {
     const rows = shelve(owned, saved, NO_FILTERS);
-    const flameclaw = rows.find((row) => row.cat.id === "flameclaw");
-    expect(flameclaw).toMatchObject({ owned: 3, inDeck: 2, refusal: null });
+    const emberkit = rows.find((row) => row.cat.id === "emberkit");
+    expect(emberkit).toMatchObject({ owned: 3, inDeck: 2, refusal: null });
     const gloomtail = rows.find((row) => row.cat.id === "gloomtail");
-    expect(gloomtail).toMatchObject({ owned: 2, inDeck: 1, refusal: null });
+    expect(gloomtail).toMatchObject({
+      owned: 2,
+      inDeck: 2,
+      refusal: "You own 2 of Gloomtail, and all 2 are in the deck.",
+    });
   });
 
   it("filters by element and rarity together", () => {
@@ -116,18 +121,18 @@ describe("the shelf", () => {
 describe("the deck as it is shown", () => {
   it("stacks the copies of a cat, in reading order", () => {
     const piles = stacks(saved);
-    expect(piles).toHaveLength(14);
+    expect(piles).toHaveLength(15);
     expect(piles[0]).toEqual(["emberkit", 2]);
     expect(piles.reduce((sum, [, copies]) => sum + copies, 0)).toBe(DECK_SIZE);
   });
 
   it("counts the cats of each element", () => {
     expect(elementCounts(saved)).toEqual([
-      ["flame", 5],
-      ["mist", 5],
-      ["volt", 4],
-      ["thorn", 5],
-      ["shade", 5],
+      ["flame", 7],
+      ["mist", 7],
+      ["volt", 6],
+      ["thorn", 6],
+      ["shade", 6],
     ]);
   });
 });
@@ -140,7 +145,7 @@ describe("the rail", () => {
       canSave: false,
       problems: [],
     });
-    expect(status.sentence).toMatch(/^24 cards, saved\./);
+    expect(status.sentence).toMatch(/^32 cards, saved\./);
     expect(sameDeck(saved, [...saved].reverse())).toBe(true);
   });
 
@@ -148,14 +153,14 @@ describe("the rail", () => {
     const deck = addCard(removeCard(saved, "duskmew"), "hadu", owned);
     const status = deckStatus(deck, owned, saved);
     expect(status).toMatchObject({ dirty: true, canSave: true });
-    expect(status.sentence).toMatch(/^24 cards\. Save it/);
+    expect(status.sentence).toMatch(/^32 cards\. Save it/);
   });
 
   it("says what is wrong, the size first, and will not save it", () => {
     const short = removeCard(saved, "duskmew");
     const status = deckStatus(short, owned, saved);
     expect(status.canSave).toBe(false);
-    expect(status.sentence).toBe("23 of 24 cards. Add 1 more.");
+    expect(status.sentence).toBe("31 of 32 cards. Add 1 more.");
     // A deck saved before a card left the collection is told so too.
     const stale = deckStatus(saved, { ...owned, gloomtail: 0 }, saved);
     expect(stale.dirty).toBe(false);

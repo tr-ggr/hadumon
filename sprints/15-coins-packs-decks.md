@@ -14,8 +14,8 @@ Settled with the user before the build:
 | Hidden | The whole formula stays on the server. A player only ever sees the total a run paid |
 | Packs | Cat packs hold only cats; cosmetic packs hold only cosmetics |
 | Catalogue | 75 new cats and Stussy (ginger, female, legendary): 102 in all |
-| Deck | Exactly 24 owned cards, at most 3 of a cat and 1 of a legendary |
-| Stolen cards | 8 of the 24 are stolen as a run begins: it opens with 16 and reaches 21 after five wins |
+| Deck | Exactly 32 owned cards, at most 4 of a cat and 1 of a legendary |
+| Stolen cards | 8 of the 32 are stolen as a run begins: it opens with 24 and reaches 29 after five wins |
 | Win reward | 3 of the cards still stolen are shown; take 1 back. Relic offers after matches 1, 3 and 5 stay. No new cat mid-run |
 | Clans | Gone from the player's run. A run opens at a chest of 3 relics to take 1 from |
 | Rounds | Four rounds of 8, 7, 6 and 5 turns (26 a seat), with four round goals |
@@ -27,7 +27,7 @@ Chosen during the build, and open to change:
 
 - A run that is lost or given up pays coins too, for the matches it finished.
 - One saved deck an account. Saving it does not change a run in progress.
-- A new account owns 40 cards (3 of each of the 10 original commons, 2 of each of the 5 original uncommons) and a default deck of 24 from them.
+- A new account owns 40 cards (3 of each of the 10 original commons, 2 of each of the 5 original uncommons) and a default deck of 32 from them.
 - The eleven trophy cats keep their unlock rules, which now hand over one copy; they are also in their element's pack.
 - A cat past its cap is paid back in coins by rarity. A cosmetic pack never holds a piece the account has, and cannot be bought once it holds none.
 - The fourth round's goal pays 7 to the higher count and 4 to the lower.
@@ -57,10 +57,10 @@ A match of 26 turns is not a match of 12 played for longer: boards fill, and wha
 - `RUN_VERSION = 3`. `RunConfig` is `{ seed, ticket, deck, pool, difficulty }`. A stored run from an older version is closed as abandoned and paid for the matches it finished.
 - `startRun` steals `STOLEN = 8` cards with an RNG seeded `${ticket}:theft`, builds the chest from `${ticket}:chest`, and stops in phase `chest` with no match dealt. `openChest(run, relicId)` takes the relic and deals the first match.
 - The ticket is `${userId}:${runTicket}`. `runTicket` only goes up when a run ends with a match finished, so giving a run up at the chest and starting again deals the same chest and the same theft. Changing the deck between two attempts does change what is stolen; that is accepted.
-- A chest holds 3 of the account's unlocked relics. A clan's charm is only put in for a deck with `CHARM_CATS = 6` or more cats of its element, unless there are too few relics without it.
+- A chest holds 3 of the account's unlocked relics. A clan's charm is only put in for a deck with `CHARM_CATS = 8` or more cats of its element, unless there are too few relics without it.
 - `RewardOffer.reclaim` is up to 3 different cats from the cards still stolen. `chooseReward` moves one copy from `stolen` to `deck`.
 - `takeChest`, `settleMatch` and `applyReward` are the run's bookkeeping without a match dealt. `playGauntlet`, the measuring harness, is built from them and from `matchConfig`, so it cannot drift from the game.
-- A rival's deck (`rivalDecks.ts`) is 16 cards and one more for each match before it. For each rarity above common it holds `floor(size x the player's share of that rarity)` cards; commons make up the rest. Within a rarity it takes its own clan's cats first, a copy of each in turn up to the cap and the one worth most first, then the other clans' the same way, from the cats the player owns. No more than half the deck is its own element (`themeShare`), the rarest cards first: see the measurements. For a new account's first match that is exactly the clan's old starter, which a test pins.
+- A rival's deck (`rivalDecks.ts`) is 24 cards and one more for each match before it. For each rarity above common it holds `floor(size x the player's share of that rarity)` cards; commons make up the rest. Within a rarity it takes its own clan's cats first, a copy of each in turn up to the cap and the one worth most first, then the other clans' the same way, from the cats the player owns. No more than half the deck is its own element (`themeShare`), the rarest cards first: see the measurements. For a new account's first match its own half is the clan's starter cats, which a test pins.
 - `MIN_DECK = 16`: a deck is not trimmed below the size a run starts at.
 - Unlocks are prizes. Clan rules are gone; a cat's rule hands over one copy as well as going on the ledger; Nyxaroth and Aurelynx ask for a run won with 12 or more Shade or Volt cats in the deck.
 - The view sends `stolen` sorted, `reward.reclaim`, and `chest` only while the chest waits. The seed, the pool and the deck as built stay on the server.
@@ -78,7 +78,7 @@ A match of 26 turns is not a match of 12 played for longer: boards fill, and wha
 Pure modules beside the engine:
 
 - `collection.ts`: the starter collection, which is never stored, the copy caps, and adding cards to a collection.
-- `deck.ts`: `DECK_SIZE = 24`, `validateDeck(deck, owned)`, the default deck, and each problem as a sentence.
+- `deck.ts`: `DECK_SIZE = 32`, `validateDeck(deck, owned)`, the default deck, and each problem as a sentence.
 - `packs.ts`: five cat packs, one an element, and two cosmetic packs. A cat pack is five slots: three are common 75% / uncommon 25%, the fourth uncommon 70% / rare 30%, the fifth rare 70% / epic 24% / legendary 6%. `openCatPack` and `openCosmeticPack` are pure functions of the pack and an RNG. A full-collection pack pays back 61.6 coins on average against a price of 100, and a test holds the refund under the price.
 - `cosmetics.ts`: 73 pieces over nine slots, one free a slot. Hadu slots hold 8 pack pieces each, table slots 6. The aura slot is `halo` in the code, because `Aura` already names a legendary's rule.
 - `payout.ts` (`import "server-only"`): half a coin a point on every tier, and bonuses for wins, each worth more than the one before, for a won run, a high best match, a swept match and cards taken back, all of them worth more on a harder tier. The numbers are in the file and nowhere else: the client is never sent more than a total. Vitest aliases `server-only` to an empty module.

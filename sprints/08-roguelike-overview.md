@@ -25,8 +25,8 @@ Banners and pity; idle expeditions and zones; auto-battle; levels, XP and upgrad
 ### Vocabulary
 
 - **Cat**: a card. 102 exist, defined in `src/server/game/cats.ts`: for each element 8 common, 5 uncommon, 4 rare, 2 epic and 1 legendary, and beside them Hadu and Stussy, two legendaries drawn from life.
-- **Collection**: the copies of each cat an account owns, at most 3 of a cat and 1 of a legendary. Every account starts with 40 cards.
-- **Deck**: the 24 cards a player builds from their collection and brings to a run.
+- **Collection**: the copies of each cat an account owns, at most 4 of a cat and 1 of a legendary. Every account starts with 40 cards.
+- **Deck**: the 32 cards a player builds from their collection and brings to a run.
 - **Coins**: what a finished run pays, and what a pack costs. Earned by playing and in no other way.
 - **Pack**: five cats of one element, or two cosmetics the account does not have.
 - **Hadu**: besides the cat, the player's avatar: Hadu dressed in the cosmetics they wear.
@@ -54,8 +54,8 @@ Banners and pity; idle expeditions and zones; auto-battle; levels, XP and upgrad
 
 ### Deck, collection and shop
 
-- An account owns copies of cats: the 40 it starts with (3 of each of the 10 original commons, 2 of each of the 5 original uncommons), which are never stored, plus what it has gained since. It never holds more than 3 of a cat or 1 of a legendary.
-- A deck is exactly 24 owned cards, at most 3 of a cat and 1 of a legendary. An account has one, built at `/deck`; until it saves one it has a default deck from its starting cards. Saving a deck does not change a run in progress.
+- An account owns copies of cats: the 40 it starts with (3 of each of the 10 original commons, 2 of each of the 5 original uncommons), which are never stored, plus what it has gained since. It never holds more than 4 of a cat or 1 of a legendary.
+- A deck is exactly 32 owned cards, at most 4 of a cat and 1 of a legendary. An account has one, built at `/deck`; until it saves one it has a default deck from its starting cards. Saving a deck does not change a run in progress.
 - A cat pack is one element's cats, five to a pack: three slots are common (75%) or uncommon (25%), the fourth uncommon (70%) or rare (30%), the fifth rare (70%), epic (24%) or legendary (6%). A cat the account already holds every copy of is paid back in coins by its rarity; a pack held in full pays back less than it costs.
 - A cosmetic pack holds two pieces the account does not have, the commoner ones likelier. It cannot be bought once the account has them all.
 - A pack is rolled on the server. A press of the button carries an id the browser made up for it, and a request sent twice is answered with the pack the first one opened.
@@ -64,10 +64,10 @@ Banners and pity; idle expeditions and zones; auto-battle; levels, XP and upgrad
 ### Run
 
 - Pick a difficulty; the run is played with the saved deck. A deck that is no longer legal is refused, not mended.
-- 8 of the 24 cards are stolen as the run begins, so it opens with 16. A chest holds 3 of the relics the account has unlocked, and the player takes 1; a clan's charm is only put in the chest of a deck with 6 or more cats of its element. Both are drawn from a ticket that only moves on once a run has finished a match, so giving a run up at the chest and starting again deals the same chest and the same theft.
+- 8 of the 32 cards are stolen as the run begins, so it opens with 24. A chest holds 3 of the relics the account has unlocked, and the player takes 1; a clan's charm is only put in the chest of a deck with 8 or more cats of its element. Both are drawn from a ticket that only moves on once a run has finished a match, so giving a run up at the chest and starting again deals the same chest and the same theft.
 - Then 6 matches. Matches 3 and 6 are bosses.
 - Difficulty is one of three tiers, and a tier gives the rival nothing: no points, no cards, no food. It adds its rank (Kitten 0, Stray 1, Apex 2) to the level every rival plays at, so a run meets levels 1 to 6, 2 to 7 or 3 to 8 of 8. The same seed deals the same table on all three.
-- A rival's deck is the size of the player's by the same match: 16 cards and one more for each match already played. It is drawn from the cats the player owns, to the rarity mix of the deck the player built (every rarity above common rounded down), under the same copy caps. Half of it is its own clan's element, its rarest cards first, and half is not. For a new account that is the clan's old 16-card starter. It holds its clan's charm and no other relic.
+- A rival's deck is the size of the player's by the same match: 24 cards and one more for each match already played. It is drawn from the cats the player owns, to the rarity mix of the deck the player built (every rarity above common rounded down), under the same copy caps. Half of it is its own clan's element, its rarest cards first, and half is not. For a new account its own half is the clan's starter cats. It holds its clan's charm and no other relic.
 - On screen the run is a tower of six floors, a rival at each window. The player's hadu walks in at the foot, goes up a floor after each win, and stands on the roof when the run is won. It is a picture of the gauntlet and changes no rule.
 - After a win: take back 1 of 3 stolen cards shown (each a different cat, or fewer if fewer are left), or none, and optionally trim one card from the deck (never below 16). After matches 1, 3 and 5: also choose 1 of 3 relics. No new cat is gained in a run.
 - Losing a match ends the run. One active run per account. A run saved by an older version of the game cannot be read and is closed as abandoned; it still pays for the matches it finished.

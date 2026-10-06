@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CAT_LIST, getCat, RARITIES, type Rarity } from "./cats";
 import { CLANS, starterDeck } from "./clans";
 import { copyCap } from "./collection";
-import { countCards, defaultDeck } from "./deck";
+import { countCards, DECK_SIZE, defaultDeck, STOLEN } from "./deck";
 import { ELEMENTS } from "./elements";
 import { GAUNTLET } from "./rival";
 import {
@@ -20,7 +20,6 @@ import { startingPool } from "./unlocks";
 const EVERY_CAT = CAT_LIST.map((cat) => cat.id);
 const NEW_ACCOUNT = startingPool().cats;
 const DEFAULT = defaultDeck();
-const sorted = (cards: readonly string[]) => [...cards].sort();
 const count = (deck: readonly string[], rarity: Rarity) =>
   deck.filter((id) => getCat(id).rarity === rarity).length;
 
@@ -30,10 +29,10 @@ function richDeck(): string[] {
     CAT_LIST.filter((cat) => cat.rarity === rarity).map((cat) => cat.id);
   return [
     ...of("legendary").slice(0, 2),
-    ...of("epic").slice(0, 4),
-    ...of("rare").slice(0, 6),
-    ...of("uncommon").slice(0, 6),
-    ...of("common").slice(0, 6),
+    ...of("epic").slice(0, 6),
+    ...of("rare").slice(0, 8),
+    ...of("uncommon").slice(0, 8),
+    ...of("common").slice(0, 8),
   ];
 }
 
@@ -52,7 +51,8 @@ describe("rival decks", () => {
     ]);
   });
 
-  it("are a run deck's size at the same match: 16 cards and one a match", () => {
+  it("are a run deck's size at the same match: 24 cards and one a match", () => {
+    expect(RIVAL_DECK).toBe(DECK_SIZE - STOLEN);
     for (const [pool, built] of [
       [EVERY_CAT, DEFAULT],
       [EVERY_CAT, richDeck()],
@@ -66,17 +66,22 @@ describe("rival decks", () => {
     }
   });
 
-  it("come out, for a new account's first match, as each clan's old starter", () => {
+  it("come out, for a new account's first match, half on its clan's starter cats", () => {
     for (const rivalId of GAUNTLET) {
-      expect(sorted(rivalDeck(rivalId, 0, NEW_ACCOUNT, DEFAULT))).toEqual(
-        sorted(starterDeck(themeOf(rivalId))),
-      );
+      const theme = themeOf(rivalId);
+      const deck = rivalDeck(rivalId, 0, NEW_ACCOUNT, DEFAULT);
+      const own = deck.filter((id) => getCat(id).element === theme);
+      expect(own).toHaveLength(themeShare(RIVAL_DECK));
+      for (const catId of own) expect(starterDeck(theme)).toContain(catId);
+      for (const [catId, copies] of Object.entries(countCards(deck))) {
+        expect(copies, catId).toBeLessThanOrEqual(copyCap(catId));
+      }
     }
   });
 
   it("are mixed as the player's deck is, every rarity above common rounded down", () => {
     const rich = richDeck();
-    expect(rich).toHaveLength(24);
+    expect(rich).toHaveLength(DECK_SIZE);
     for (const [matchIndex, rivalId] of GAUNTLET.entries()) {
       const size = RIVAL_DECK + matchIndex;
       const mix = rarityMix(rich, size);

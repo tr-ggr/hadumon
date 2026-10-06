@@ -2784,7 +2784,7 @@ html:has(.turn-phone) {
  * The copies of one cat as a stack: the card on top, and a plate for every
  * copy under it, each showing 6px more of its top edge. A plate is not a
  * piece, so a stack has one edge, which is as thick as the stack. Room is
- * kept above for two plates whether they are there or not, so a row of
+ * kept above for three plates whether they are there or not, so a row of
  * stacks stands on one line. Under a mouse the plates come further out and
  * turn.
  */
@@ -2792,11 +2792,11 @@ html:has(.turn-phone) {
   position: relative;
   display: block;
   width: 100%;
-  padding-top: 12px;
+  padding-top: 18px;
 }
 .tabletop .stack-under {
   position: absolute;
-  inset: 12px 0 0;
+  inset: 18px 0 0;
   border: 2px solid var(--color-ink);
   background: var(--color-cream);
   box-shadow:

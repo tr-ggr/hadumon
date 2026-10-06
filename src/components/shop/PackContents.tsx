@@ -369,7 +369,7 @@ function CatPackContents({
 }
 
 /** A stack shows the edge of this many cards under the top one, and no more. */
-const MAX_UNDER = 2;
+const MAX_UNDER = 3;
 
 /**
  * One cat of a pack as the small portrait a deck's stacks use (96 by 128),

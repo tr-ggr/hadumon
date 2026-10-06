@@ -2,7 +2,7 @@
 
 A web-based **roguelike engine-builder** about feline "Fakemon".
 
-You build a deck of 24 cats, and the rivals steal eight of them. A run is a
+You build a deck of 32 cats, and the rivals steal eight of them. A run is a
 gauntlet of **six matches** to take them back, against rivals who play the same
 game across the table. In a match you play pixel-art cats into three habitat
 rows and activate a row to take its reward and fire every cat's power in it,
@@ -45,7 +45,7 @@ is no idle play and no multiplayer.
 
 ## How a run plays
 
-- Build a **deck** at `/deck`: exactly 24 cards you own, at most three of a cat
+- Build a **deck** at `/deck`: exactly 32 cards you own, at most four of a cat
   and one of a legendary. A new account has a default one.
 - Pick how hard: **Kitten**, **Stray** or **Apex**. No tier gives a rival a
   point, a card or a food. A rival plays at one of eight levels, its place in
@@ -322,7 +322,7 @@ src/
       rivalDecks.ts       The deck and the charm each rival brings to a match
       clans.ts            The rivals' five clans: a starter deck and a charm each
       collection.ts       The cards an account owns, and the copy caps
-      deck.ts             The 24-card deck and what makes one legal
+      deck.ts             The 32-card deck and what makes one legal
       packs.ts            The seven packs and what opening one gives
       cosmetics.ts        What a hadu, a table and the tower can wear
       payout.ts           What a run pays in coins (server only)

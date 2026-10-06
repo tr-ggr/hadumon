@@ -19,8 +19,8 @@ Everything is pure, deterministic, and safe to import in client components.
 | `rival.ts` | `getRival(id)` → `{ name, boss, theme, trait, flavor }`, `RIVAL_LIST`, `GAUNTLET` |
 | `rivalDecks.ts` | `rivalDeck(rivalId, matchIndex, pool, built)` (the cats the player owns, and the deck the player built), `rarityMix(built, size)`, `rivalRelics(rivalId)` (its clan's charm), `themeOf(rivalId)`, `RIVAL_DECK` (16) |
 | `clans.ts` | `CLANS`, `CLAN_LIST` (`{ id, name, relicId, text }`), `starterDeck(clanId)` (a frozen list). Rivals only; `run.ts` no longer exports them |
-| `collection.ts` | `Owned` (copies by cat id), `STARTER_COLLECTION`, `ownedCards(gained)`, `copyCap(catId)`, `gainCards(owned, cards)`, `MAX_COPIES` (3), `MAX_LEGENDARY` (1) |
-| `deck.ts` | `DECK_SIZE` (24), `STOLEN` (8), `validateDeck(deck, owned)` → `DeckProblem[]`, `describeProblem`, `defaultDeck()`, `sortDeck`, `countCards` |
+| `collection.ts` | `Owned` (copies by cat id), `STARTER_COLLECTION`, `ownedCards(gained)`, `copyCap(catId)`, `gainCards(owned, cards)`, `MAX_COPIES` (4), `MAX_LEGENDARY` (1) |
+| `deck.ts` | `DECK_SIZE` (32), `STOLEN` (8), `validateDeck(deck, owned)` → `DeckProblem[]`, `describeProblem`, `defaultDeck()`, `sortDeck`, `countCards` |
 | `packs.ts` | `PACK_LIST`, `CAT_PACKS`, `COSMETIC_PACKS`, `PACK_PRICE`, `SLOT_ODDS`, `openCatPack(pack, rng)`, `openCosmeticPack(pack, gained, rng)`, `settleCats(cards, owned)`, `DUPLICATE_REFUND`, `packOf(catId)`, `PackResult` |
 | `cosmetics.ts` | `COSMETIC_LIST`, `COSMETIC_SLOTS` (`hat`, `eyes`, `body`, `tail`, `halo`, `mat`, `cloth`, `tower`, `sky`), `Look`, `DEFAULT_LOOK`, `lookOf(stored, gained)`, `ownsCosmetic` |
 | `payout.ts` | `payout(facts)`: the coins a finished run pays. Server only (`import "server-only"`); never import it from a client component |

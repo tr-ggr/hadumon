@@ -1,6 +1,6 @@
 /**
  * The decks the rivals play. A rival's deck is the size a run deck is by the
- * same match: 16 cards, and one more for each match already played. It is
+ * same match: 24 cards, and one more for each match already played. It is
  * drawn to the rarity mix of the deck the player built, so a player who
  * brings rares meets rares, and from the cats the player owns, so an account
  * never meets a cat it could not have. Half of it is its clan's element and
@@ -11,11 +11,12 @@
 import { getCat, RARITIES, type Rarity } from "./cats";
 import { CLANS } from "./clans";
 import { copyCap } from "./collection";
+import { DECK_SIZE, STOLEN } from "./deck";
 import type { Element } from "./elements";
 import { GAUNTLET, getRival } from "./rival";
 
 /** Cards in a rival's deck at the first match; a run deck's size with eight stolen. */
-export const RIVAL_DECK = 16;
+export const RIVAL_DECK = DECK_SIZE - STOLEN;
 
 export function themeOf(rivalId: string): Element {
   return getRival(rivalId).theme;

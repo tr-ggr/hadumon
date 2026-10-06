@@ -1,6 +1,6 @@
 /**
- * The deck a player builds from their collection and brings to a run: 24
- * cards, no more than three of one cat and one of a legendary. A run opens
+ * The deck a player builds from their collection and brings to a run: 32
+ * cards, no more than four of one cat and one of a legendary. A run opens
  * with eight of them stolen (`run.ts`).
  */
 
@@ -16,7 +16,7 @@ import { ELEMENTS } from "./elements";
 
 export { MAX_COPIES, MAX_LEGENDARY };
 
-export const DECK_SIZE = 24;
+export const DECK_SIZE = 32;
 /** How many of a deck's cards the rivals hold when a run begins. */
 export const STOLEN = 8;
 
@@ -91,7 +91,8 @@ export function describeProblem(problem: DeckProblem): string {
 
 /**
  * The deck a new account has before it builds one: two of each of its ten
- * commons and one of four of its uncommons, all from the starter collection.
+ * commons and five uncommons, and a third Flameclaw and Mistpaw, all from
+ * the starter collection.
  */
 const DEFAULT_DECK: readonly string[] = Object.freeze([
   ...[
@@ -105,11 +106,14 @@ const DEFAULT_DECK: readonly string[] = Object.freeze([
     "bramblepaw",
     "shadewhisker",
     "duskmew",
+    "cinderpounce",
+    "brumefang",
+    "joltpad",
+    "burrfang",
+    "gloomtail",
   ].flatMap((id) => [id, id]),
-  "cinderpounce",
-  "brumefang",
-  "burrfang",
-  "gloomtail",
+  "flameclaw",
+  "mistpaw",
 ]);
 
 export function defaultDeck(): string[] {
