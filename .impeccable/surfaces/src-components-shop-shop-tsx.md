@@ -2,7 +2,7 @@
 version: 1
 slug: "src-components-shop-shop-tsx"
 primary_target: "src/components/shop/Shop.tsx"
-related_targets: ["src/app/shop/page.tsx","src/app/shop/ShopView.tsx","src/components/shop/PackShelf.tsx","src/components/shop/PackWrapper.tsx","src/components/shop/PackReveal.tsx","src/components/shop/PackContents.tsx","src/components/shop/PieceTile.tsx","src/components/shop/packs.ts","src/components/shop/copy.ts","src/components/shop/reveal.ts","src/components/shop/useReveal.ts","src/components/shop/useOpenPack.ts","src/styles/globals.css"]
+related_targets: ["src/app/shop/page.tsx","src/app/shop/ShopView.tsx","src/components/shop/PackShelf.tsx","src/components/shop/PackWrapper.tsx","src/components/shop/PackOpening.tsx","src/components/shop/PackReveal.tsx","src/components/shop/PackContents.tsx","src/components/shop/PieceTile.tsx","src/components/shop/packs.ts","src/components/shop/copy.ts","src/components/shop/reveal.ts","src/components/shop/useReveal.ts","src/components/shop/useCut.ts","src/components/shop/fx.ts","src/components/shop/useOpenPack.ts","src/styles/globals.css"]
 ---
 
 # Shop — surface brief
@@ -15,7 +15,7 @@ THESIS: The shop is a room in the tower with one board on its wall: a shelf of s
 
 OWN-WORLD: Pieces on a Cream Table (DESIGN.md). Packs are crimped boosters in the colour of what is in them (an element's tone for a cat pack, Hadu's pink for Wardrobe, tower stone for Table and Tower), standing on a shelf drawn edge-on, each with a white price tag in print hung on the lip. A card face down is the player's own cobalt deck back with a white paw. The room's wall is the tower's stone, in the look the player wears.
 
-STORY: Come in through The Archivist's window; read the name of the pack in the middle and what it holds; turn the row; look at what is in a pack; read in the rail what it costs and what you have; open it; watch its top come off and its cards dealt; turn them one at a time or all at once; read under each what became of it; go build the deck or try the pieces on, or open another.
+STORY: Come in through The Archivist's window; read the name of the pack in the middle and what it holds; turn the row; look at what is in a pack; read in the rail what it costs and what you have; open it; watch the other packs drop away and the board go dark round it; cut its top off; watch the wrapper burn down to the card inside and the cards fly out; see which of them is rare before it is turned; turn them one at a time or all at once; read under each what became of it; go build the deck or try the pieces on, or open another.
 
 FIRST VIEWPORT: The ink lid (Shop in lime and pressed, Play in cobalt, the coin chip, the player's hadu). On the stone wall: "Shop" in print on a cream plate, then the board: the shown pack's name in print at 30px with its one line, the row of packs on the shelf with the larger one in the middle and the price tags under them, the two chevrons with the packs' marks between, one line on what the pack holds for this account with "What is in it", the 12px line "Coins are won at the table and nowhere else. Nothing here is sold for money.", and the board's rail with its sentence and the cobalt "Open pack".
 
@@ -34,6 +34,8 @@ FINISH: documented from the build (commit `2dfa1c0`, tidied in `ef0da59`) in DES
 
 - Name plate, board head, pack, shelf and price tag, the panel under the row, the rail, card back, pull tag, piece tile, pack contents: see "Shop" in DESIGN.md.
 - The pack in the middle is 192 by 276px and the others 128 by 184px. A pack with nothing left to find is printed dull under a white "Empty" strap.
+- The packs at the sides stand turned toward the middle, 28 degrees the nearest and 48 the rest.
+- The stage, the pack being opened, the fire and the band across a turned card: see "Shop" in DESIGN.md. The stage is the board above its rail, out to the board's border, at every width.
 
 ## States
 
@@ -42,22 +44,25 @@ FINISH: documented from the build (commit `2dfa1c0`, tidied in `ef0da59`) in DES
 - On the shelf, can open: "Open the Cinder Pack for 100 coins. You have 240." and "Open pack".
 - Short of coins: the rail says by how many, and "Open pack" is held. With no coins at all, a dashed outline under the row says where coins come from, with "Play a run".
 - Nothing left to find (a cosmetic pack): the pack is spent, the rail says "You have everything in this pack.", and "Open pack" is held.
-- Opening: sealed, torn, drawn; the rail holds "Skip".
-- Dealt: face-down cards; the rail holds "Turn them all" and "Turn a card" or "Turn a piece". A refund for a card not yet turned is held back from the balance, on the board and on the lid, until its card is up.
+- Picked: from the press until the shop answers. The other packs have dropped under the shelf, the board is under the ink wash, the shelf takes no press, and the rail says "Opening the Cinder Pack." over a held "Opening…". A refusal lifts the wash and brings the packs back up.
+- Opening: raised, ready, cut, burnt, flash (`reveal.ts`). Ready is only on the first pack of a visit: the rail says "Cut the top off: drag across it, or press Enter." and holds "Skip" and the cobalt "Cut it open". In every other phase it holds "Skip" alone.
+- Dealt: face-down cards, flown from the pack or, after a skip, simply dealt; a rare, an epic or a legendary has fire in its colour behind its top edge. The rail holds "Turn them all" and "Turn a card" or "Turn a piece". A refund for a card not yet turned is held back from the balance, on the board and on the lid, until its card is up.
 - All up: "Build your deck" or "Try them on", and "Open another".
 - A pack already opened by the same request: a notice says nothing more was spent.
-- Reduced motion: everything is face up at once.
+- Reduced motion: everything is face up at once, with no wash, no pack to cut and no fire; the side packs stand turned and do not drop.
 
 ## Motion and sound
 
-- See "The packs" and "Opening a pack" under Motion in DESIGN.md: 460ms sealed, the strip off in 300ms and held 340ms, the card back up and held 380ms, then dealt; a turn is the 380ms flip; "Turn them all" goes 170ms apart.
-- Turning the row is the rising blip; each cat turned up is heard in its own voice; a refusal is the buzz.
+- See "The packs" and "Opening a pack" under Motion in DESIGN.md. The first pack of a visit, then every pack after: picked 340ms at least; raised 450ms, 220ms; ready until the cut, none; cut 360ms, 220ms; burnt 900ms, 420ms; flash 520ms, 260ms; the cards flying 70ms apart and 520ms each, 30ms and 300ms. A turn is the 380ms flip; "Turn them all" goes 170ms apart, 420ms after an epic and 620ms after a legendary.
+- The cut is a drag along a 44px strip across the pack's top, Enter or Space, or the rail's button. "Skip" works in every phase.
+- Turning the row is the rising blip; the top coming off is paper, the wrapper burning a hiss, the flash a thump and a note, and each card landing a draw; each cat turned up is heard in its own voice; a refusal is the buzz.
 
 ## Accessibility
 
 - The row is a carousel whose packs are tabs with one tab stop; the panel under it is the tab panel. Each pack is named with its price and its state. The copies in shadow are inert and hidden.
 - The board's heading takes the focus when a pack opens, and the focus is back on "Open pack" when the opening is put away. A card turned by its own press leaves the focus on what it became.
-- Enter or Space turns the next card from anywhere that is not a control. The rail's sentence is read out when it changes.
+- Enter or Space cuts the pack while it waits, and then turns the next card, from anywhere that is not a control. The rail's sentence is read out when it changes.
+- The pack being opened is a picture and is not read out; the cut never needs a pointer. A face-down card that is rare or better says so in its name.
 
 ## Carried, not canonized
 

@@ -585,8 +585,8 @@
       },
       {
         "name": "pack-turn",
-        "value": "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25) on the slot; pack-grow scale(0.6667) to 1 and pack-shrink scale(1.5) to 1, 220ms on the same curve, transform-origin 50% 100%; filter brightness(0.58) saturate(0.6) on a copy past the row's end, 220ms steps(2, end)",
-        "purpose": "The shop's row of packs turning. The row is a ring drawn as a strip of places, so every pack moves one place along and none crosses: the pack that goes off one end slides out into shadow as its copy slides in at the other. The pack that changes size is drawn at its new size at once and scaled from the old one, so the swap is hidden under one move. Nothing grows on load."
+        "value": "transform 220ms cubic-bezier(0.2, 0.9, 0.3, 1.25) on the slot; rotate y 28deg toward the middle for the pack at its side and 48deg for the rest (perspective 720px on what holds the pack), 220ms on the same curve; pack-grow scale 0.6667 to 1 and pack-shrink scale 1.5 to 1, 220ms on the same curve, transform-origin 50% 100%; filter brightness(0.58) saturate(0.6) on a copy past the row's end, 220ms steps(2, end)",
+        "purpose": "The shop's row of packs turning. The row is a ring drawn as a strip of places, so every pack moves one place along and none crosses: the pack that goes off one end slides out into shadow as its copy slides in at the other. The pack that changes size is drawn at its new size at once and scaled from the old one, so the swap is hidden under one move. Nothing grows on load. The packs at the sides stand turned toward the one in the middle and are never seen from behind; the turn is the pack's `rotate` and the change of size the `scale` of what holds it, so neither undoes the other."
       },
       {
         "name": "pack-hover",
@@ -596,7 +596,7 @@
       {
         "name": "pack-shine",
         "value": "520ms linear, once; a 34% wide band of white at 50%, skewX(-18deg), translateX(-160%) to 360%",
-        "purpose": "The one flat band of light that crosses the pack in the middle when a mouse comes onto it: the fourth and last light on the tabletop. No gradient. Not shown under reduced motion."
+        "purpose": "The one flat band of light that crosses the pack in the middle when a mouse comes onto it: the fourth light on the tabletop. The same band, in a card's rarity colour at 64%, crosses a card turned over out of a pack, 190ms into its turn. No gradient. Not shown under reduced motion."
       },
       {
         "name": "pack-hop",
@@ -825,13 +825,18 @@
       },
       {
         "name": "pack-open",
-        "value": "sealed 460ms; top strip off in 300ms on cubic-bezier(0.16, 1, 0.3, 1) (42% right, 20px up, 16deg, to clear), held 340ms; card back up 34% in 300ms on cubic-bezier(0.2, 0.9, 0.3, 1.25), held 380ms; then dealt",
-        "purpose": "A bought pack opening where it stood in the middle of the shelf. One flat band crosses it and its sticker hops once as the strip comes off. The rail's only action meanwhile is a cream Skip."
+        "value": "first pack of a visit (every pack after): picked 340ms at least, side packs translate 0 360px in 260ms cubic-bezier(0.5, 0, 0.9, 0.55), 40ms apart, ink wash opacity 0.5 then 0.92 in 240ms steps(2, jump-none); raised 450ms (220ms), scale 1 to 1.25 about 50% 100% on the ARRIVE spring; ready until the cut (none), scissors 360ms steps(1, end) infinite, --cut 0 to 1 by a drag, cut through at 0.6, closing in 220ms; cut 360ms (220ms), strip translate 70% -260px rotate 64deg to clear on cubic-bezier(0.3, 0, 0.7, 0.4); burnt 900ms (420ms), pack back to scale 1 in 260ms, window translateY(100%) and wrapper translateY(-100%) in steps(8, end), fire frames 330ms steps(1, end) infinite; flash 520ms (260ms), white opacity 0.92, 0.55, 0.25, 0 in steps, star scale 0.5 to 1 and rotate 0 to 45deg in steps(4, jump-none); dealt, cards fly 520ms (300ms) each, 70ms (30ms) apart, on the ARRIVE spring, wash opacity 0.92, 0.5, 0 in 280ms after the last card's wait",
+        "purpose": "A bought pack opened where it stood in the middle of the shelf, on the board above its rail, darkened: the other packs drop away, it comes forward, its top is cut off by a drag, Enter, Space or the rail's Cut it open, its wrapper burns down behind a row of pixel fire to the card inside, it goes up in a flat white and a star, and its cards fly out to where they lie. Only transform, its own parts and opacity move. The rail holds a cream Skip throughout. Under reduced motion none of it plays and the cards are face up at once."
       },
       {
         "name": "pack-card-turn",
-        "value": "card-flip 380ms; back and face swap by visibility at 190ms; Turn them all: one card every 170ms",
+        "value": "card-flip 380ms; back and face swap by visibility at 190ms; Turn them all: one card every 170ms, 420ms after an epic and 620ms after a legendary; sparks 4, 8 or 12 for a rare, an epic or a legendary (half under 640px); an epic or a legendary scale to 1.18 on the POP spring, held, and back, 560ms and 820ms",
         "purpose": "Turning a dealt card face up: a press, Enter or Space, or the rail's Turn a card. The tag under it lands as a token does (240ms, after 190ms)."
+      },
+      {
+        "name": "card-tell",
+        "value": "fire frames 330ms steps(1, end) infinite, one pixel 2px; 8px over the card's top edge for a rare, 12px for an epic, 16px for a legendary",
+        "purpose": "What a card that is rare or better gives away while it is face down: a row of pixel fire in its rarity's colour behind its top edge, until it is turned. Its name says the rarity too. Not seen under reduced motion, where no card is face down."
       },
       {
         "name": "climb-stroll",
@@ -973,6 +978,11 @@
         "name": "menu-tune",
         "value": "track menu in src/components/run/music/tracks.ts: 88bpm, root F4, pentatonic, triangle lead, a rocking arpeggio and a bass, hat only; mounted in the shell by src/components/MenuMusic.tsx",
         "purpose": "Home, the codex and the 404. It carries from page to page without starting over and crossfades with the table's music. useMusic has one owner at a time, so a leaving page cannot hush the arriving one. Landing, login and signup have no tune."
+      },
+      {
+        "name": "pack-open",
+        "value": "page as the top comes off; flare (noise alone: a hiss going up with two cracks) as the wrapper burns; burst (a thump, a rush of air and a note) on the flash; draw as each card lands; settle on a skip",
+        "purpose": "A pack being opened in the shop."
       }
     ],
     "scenery": [
@@ -1299,19 +1309,19 @@
     ],
     "donts": [
       "Don't round a corner anywhere, or draw a pill, a 1px hairline border, or a blurred shadow. The build has none.",
-      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. A piece has only the straight-down edge and cast. The only light on the tabletop is the four named under Motion: score heat, a raised legendary's shimmer, the drift on a run's cloth, and the one flat band that crosses a pack under a mouse or as it is torn open. An aura is drawn in pixels behind the hadu and is not a glow.",
+      "Don't give a piece a blurred shadow, a diagonal offset shadow, or a glow. A piece has only the straight-down edge and cast. The only light on the tabletop is the five named under Motion: score heat, a raised legendary's shimmer, the drift on a run's cloth, the one flat band that crosses a pack under a mouse or as its top is cut off, and the opening of a pack (its flash, its star and the band across a turned card). An aura is drawn in pixels behind the hadu and is not a glow, and neither is the fire on a burning wrapper or behind a face-down card.",
       "Don't give a board the `piece` class or lay a board on a board. A board is not a piece, and the pieces on it keep their own edge.",
       "Don't bring back page chrome: no white panel, no side rail, no floating bar, no second kind of button.",
       "Don't draw a ring outside a piece's border to show state.",
       "Don't use coral for a decision the player owes, for a card the player is trimming, or for a destructive action. Coral is the rival's; Log out and Abandon run are ink.",
       "Don't set the pixel face at any size but 20px and 30px, or 40px for a page's one heading, or use it for rules text, a sentence of copy, or anything typed.",
       "Don't set readable text below 10px, or below 11px on a piece from 640px up.",
-      "Don't move a cardboard piece in steps, or a pixel sprite smoothly: pieces ease and spring, sprites hop a whole pixel at a time. The climb's camera moves the whole picture and is the one thing that eases a sprite across the screen. Don't fade pieces in.",
-      "Don't animate anything on the table but `transform` and `opacity` (the shadow on a pack past the end of its row is stepped, not animated), ease a shadow, or shake the table itself; a shake belongs to the mat, the supply and the climb's tower.",
+      "Don't move a cardboard piece in steps, or a pixel sprite smoothly: pieces ease and spring, sprites hop a whole pixel at a time. A wrapper burning down in the shop is not a piece moving: it stays where it is and is cut off, a step at a time. The climb's camera moves the whole picture and is the one thing that eases a sprite across the screen. Don't fade pieces in.",
+      "Don't animate anything on the table but `transform`, its own parts (`translate`, `rotate`, `scale`) and `opacity` (the shadow on a pack past the end of its row is stepped, not animated), ease a shadow, or shake the table itself; a shake belongs to the mat, the supply and the climb's tower.",
       "Don't put anything over the climb's picture but its bars, its subtitle, its title card and Skip, or give two cats the same pitch.",
       "Don't magnify the match or the climb with the fit, add a quarter step to the fit, or use `xl:` and wider breakpoints on a column screen: a fitted screen is 1120px wide to itself whatever the window says. The match fits its window by layout, never by `zoom`.",
       "Don't play a tune on the landing page, login or signup, mount the sound rig or the menu tune a second time, play an effect that the player's own action, a turn's playback, a beat of the climb or a page landing did not cause, write a note of music louder than 0.14, or ship an audio file.",
-      "Don't use gradients or emoji anywhere. Three of the four lights named under Motion are the only gradients (score heat, the legendary's shimmer, the cloth light), and each is a light, never a fill; the band that crosses a pack is flat. The sky behind the tower is a dither, not a gradient.",
+      "Don't use gradients or emoji anywhere. Three of the four lights named under Motion are the only gradients (score heat, the legendary's shimmer, the cloth light), and each is a light, never a fill; the band that crosses a pack is flat, and so is everything a pack is opened with: the wash, the white, the star's rays, the fire and the band across a turned card. The sky behind the tower is a dither, not a gradient.",
       "Don't use raster or smoothed creature art; a cat is its 16x16 sprite.",
       "Don't use the stone greys for anything but the tower, the wall inside it, the scene it stands in and the wrapper of the Table and Tower pack, write a stone's hex where a `--color-stone*` token will do (a tower look repaints them), or draw a rival in any colour but coral. The clouds and the rock's top in the tower's scene are stone too. Don't zoom the tower by anything but a whole number (1, 2 and 32 are the ones in use), frame its stage, or fill it with anything but its scene.",
       "Don't put anything on the tower's side of a page that is outside, let the backdrop take a click, or show a page before the camera has stopped.",
@@ -1319,7 +1329,7 @@
       "Don't set text straight on the tower's scene, smooth or blur the scene, or move any part of it in anything but whole tower pixels.",
       "Don't use lime for anything the rival owns, or coral for a reward. The title ribbon, on the landing page and on home, is the only lime that is not the player's.",
       "Don't show a price in money, a payment control, a paid tier or premium styling (a gold finish, a sparkle, a \"best value\" badge, a countdown): coins are earned by playing, packs cost coins, and nothing is sold for money. Don't show coins or a pack without the sentence that says so, and don't show how a match's coins were worked out: only what it paid and its floor's factor.",
-      "Don't let a look change how anything is built, darken a board or a cloth past what ink can be read on (7:1), light the inside of a tower, or give two packs the same print.",
+      "Don't let a look change how anything is built, darken a board or a cloth past what ink can be read on (7:1) (the shop's board under the wash while a pack is opened is the one exception, and nothing on it is to be read then: the rail stays white), light the inside of a tower, or give two packs the same print.",
       "Don't add a save step to the wardrobe, or let a deck's change through without one.",
       "Don't print a cost in a lane's space, write on scenery, stretch a habitat or draw it at a fraction of a pixel, or put a transform, filter, contain or container-type on `[data-match]` or above it."
     ]
