@@ -1,4 +1,8 @@
+import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
+import { PixelSprite } from "~/components/PixelSprite";
+import { getCat } from "~/server/game/cats";
+import { FOOD_LABELS } from "~/server/game/elements";
 import { getGoal } from "~/server/game/goals";
 import {
   GOAL_LOSE_POINTS,
@@ -8,7 +12,8 @@ import {
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
-import { plural } from "./describe";
+import { listWords, plural } from "./describe";
+import type { KeptCount } from "./goalHints";
 import { TurnCube } from "./pieces";
 
 /** Turns in a round of this match; a relic can lengthen the first. */
@@ -24,17 +29,18 @@ export function roundTurns(match: MatchView, round: number): number {
 export function RoundBoard({
   match,
   rail = false,
-  notes,
+  kept,
   className = "",
 }: {
   match: MatchView;
   /** Stacked in the rail beside the table, from `lg` up. */
   rail?: boolean;
   /**
-   * One list per round of what counts towards its goal, e.g. the hand being
-   * kept. A round with lines is lit and lists them.
+   * One entry per round of what is being kept that counts towards its goal.
+   * A round with anything counting is lit, and shows the cats' faces and the
+   * food.
    */
-  notes?: readonly (readonly string[])[];
+  kept?: readonly KeptCount[];
   className?: string;
 }) {
   return (
@@ -48,7 +54,7 @@ export function RoundBoard({
           match={match}
           round={round}
           rail={rail}
-          notes={notes?.[round] ?? []}
+          kept={kept?.[round] ?? null}
         />
       ))}
     </ol>
@@ -59,12 +65,12 @@ function RoundTile({
   match,
   round,
   rail,
-  notes,
+  kept,
 }: {
   match: MatchView;
   round: number;
   rail: boolean;
-  notes: readonly string[];
+  kept: KeptCount | null;
 }) {
   const goal = getGoal(match.goals[round] ?? "");
   const rival = getRival(match.rivalId).name;
@@ -85,7 +91,7 @@ function RoundTile({
   // will be.
   const compact = rail && !current;
   const line = compact;
-  const counted = notes.length > 0;
+  const counted = kept !== null && kept.cats.length + kept.food.length > 0;
 
   return (
     <li
@@ -158,19 +164,40 @@ function RoundTile({
         ) : null}
       </div>
 
-      {counted ? (
+      {kept && counted ? (
         <ul
           aria-label={`Counts towards ${goal.name}`}
-          className="space-y-0.5 text-xs leading-snug font-semibold"
+          className="flex flex-wrap gap-1.5 pt-0.5"
         >
-          {notes.map((note, index) => (
-            <li key={index}>{note}</li>
+          {/* A face says who counts; how is in its name, read and on hover. */}
+          {kept.cats.map(({ catId, hint }, index) => (
+            <li key={`${index}-${catId}`} className={KEPT_CHIP}>
+              <PixelSprite
+                catId={catId}
+                size={32}
+                label={`${getCat(catId).name}: ${hint}`}
+              />
+            </li>
           ))}
+          {kept.food.length > 0 ? (
+            <li
+              aria-label={`${listWords(kept.food.map((food) => FOOD_LABELS[food]))} kept`}
+              className={`${KEPT_CHIP} gap-0.5 px-1`}
+            >
+              {kept.food.map((food) => (
+                <EssencePip key={food} kind={food} size={20} />
+              ))}
+            </li>
+          ) : null}
         </ul>
       ) : null}
     </li>
   );
 }
+
+/** A kept cat's face, or the food kept, set on a lit round. */
+const KEPT_CHIP =
+  "border-ink bg-cream flex h-10 min-w-10 items-center justify-center border-2";
 
 function Marker({
   tone,

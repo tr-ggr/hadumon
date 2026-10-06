@@ -8,21 +8,18 @@ describe("keepHints", () => {
     expect(
       keepHints(["hunting-party", "full-den"], ["flameclaw", "pyrelynx"], []),
     ).toEqual([
-      ["Flameclaw: can live in the Hunt"],
-      ["Pyrelynx: can live in the Den"],
-    ]);
-  });
-
-  it("puts cats that count the same way on one line", () => {
-    expect(keepHints(["crowd"], ["flameclaw", "emberkit"], [])).toEqual([
-      ["Flameclaw and Emberkit: one more cat on the board"],
+      {
+        cats: [{ catId: "flameclaw", hint: "can live in the Hunt" }],
+        food: [],
+      },
+      { cats: [{ catId: "pyrelynx", hint: "can live in the Den" }], food: [] },
     ]);
   });
 
   it("counts kept food only towards a goal that counts food", () => {
     expect(keepHints(["pantry", "crowd"], [], ["flame", "mist"])).toEqual([
-      ["2 food kept"],
-      [],
+      { cats: [], food: ["flame", "mist"] },
+      { cats: [], food: [] },
     ]);
   });
 
@@ -30,6 +27,9 @@ describe("keepHints", () => {
     // Flameclaw fetches food; Pyrelynx caches it.
     expect(
       keepHints(["pantry", "stash"], ["flameclaw", "pyrelynx"], []),
-    ).toEqual([["Flameclaw: fetches food"], ["Pyrelynx: caches or tucks"]]);
+    ).toEqual([
+      { cats: [{ catId: "flameclaw", hint: "fetches food" }], food: [] },
+      { cats: [{ catId: "pyrelynx", hint: "caches or tucks" }], food: [] },
+    ]);
   });
 });

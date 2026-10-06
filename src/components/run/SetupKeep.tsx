@@ -79,7 +79,7 @@ export function SetupKeep({
   const keptCats = [...cats].sort((a, b) => a - b);
   const keptFood = ELEMENTS.filter((element) => essence.includes(element));
   const left = match.setup.length - cats.length;
-  const goalNotes = keepHints(
+  const goalCounts = keepHints(
     match.goals,
     keptCats.flatMap((dealt) => match.setup[dealt] ?? []),
     keptFood,
@@ -189,7 +189,7 @@ export function SetupKeep({
             <section aria-label="Round goals">
               <RoundBoard
                 match={match}
-                notes={goalNotes}
+                kept={goalCounts}
                 className="lg:grid-cols-4"
               />
             </section>

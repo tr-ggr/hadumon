@@ -9,39 +9,43 @@ import type { Element } from "~/server/game/elements";
 import { getGoal } from "~/server/game/goals";
 import { emptyPool } from "~/server/game/match";
 
-import { listWords } from "./describe";
+/** One kept cat that counts towards a goal, and how, e.g. "brings Shade". */
+export interface CountingCat {
+  catId: string;
+  hint: string;
+}
+
+/** What is kept that counts towards one round's goal. */
+export interface KeptCount {
+  cats: CountingCat[];
+  /** The kept food, when the goal counts food held; else empty. */
+  food: Element[];
+}
 
 /**
- * One list per round of the short lines saying how the kept cats and food
- * count towards its goal, e.g. "Flameclaw and Mistpaw: can live in the
- * Hunt". Cats that count the same way share a line. A round nothing kept
- * counts towards has an empty list.
+ * One entry per round: the kept cats that count towards its goal, each with
+ * how, and the kept food if the goal counts it. A round nothing kept counts
+ * towards has both lists empty.
  */
 export function keepHints(
   goals: readonly string[],
   catIds: readonly string[],
   food: readonly Element[],
-): string[][] {
+): KeptCount[] {
   const essence = emptyPool();
   for (const element of food) essence[element] += 1;
   return goals.map((goalId) => {
     const goal = getGoal(goalId);
-    const byHint = new Map<string, string[]>();
-    for (const catId of catIds) {
-      const cat = getCat(catId);
-      const hint = goal.hint(cat);
-      if (hint) byHint.set(hint, [...(byHint.get(hint) ?? []), cat.name]);
-    }
-    const lines = [...byHint].map(
-      ([hint, names]) => `${listWords(names)}: ${hint}`,
-    );
+    const cats = catIds.flatMap((catId) => {
+      const hint = goal.hint(getCat(catId));
+      return hint ? [{ catId, hint }] : [];
+    });
     // Food kept is food held, which a goal may count on its own.
     const held = goal.count({
       board: { hunt: [], den: [], prowl: [] },
       essence,
       hand: [],
     });
-    if (held > 0) lines.push(`${food.length} food kept`);
-    return lines;
+    return { cats, food: held > 0 ? [...food] : [] };
   });
 }
