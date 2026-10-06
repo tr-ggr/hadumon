@@ -285,6 +285,66 @@
       "points": 6.31,
       "winRate": 0.756,
       "winRateWithout": 0.517
+    },
+    {
+      "relic": "hunters-tally",
+      "points": 3.19,
+      "winRate": 0.654,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "moonlit-path",
+      "points": 5.39,
+      "winRate": 0.705,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "mouse-jar",
+      "points": 0,
+      "winRate": 0.517,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "old-blanket",
+      "points": 4.83,
+      "winRate": 0.681,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "paper-bag",
+      "points": 1.64,
+      "winRate": 0.609,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "night-bowl",
+      "points": 2.36,
+      "winRate": 0.642,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "night-owl",
+      "points": 1.62,
+      "winRate": 0.586,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "crowded-sill",
+      "points": 2.45,
+      "winRate": 0.614,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "patchwork-quilt",
+      "points": 4.26,
+      "winRate": 0.693,
+      "winRateWithout": 0.517
+    },
+    {
+      "relic": "alley-crown",
+      "points": 6.98,
+      "winRate": 0.784,
+      "winRateWithout": 0.517
     }
   ],
   "gauntlet": [

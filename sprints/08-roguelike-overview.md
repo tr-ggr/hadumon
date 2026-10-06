@@ -72,7 +72,7 @@ Banners and pity; idle expeditions and zones; auto-battle; levels, XP and upgrad
 - After a win: take back 1 of 3 stolen cards shown (each a different cat, or fewer if fewer are left), or none, and optionally trim one card from the deck (never below 16). After matches 1, 3 and 5: also choose 1 of 3 relics. No new cat is gained in a run.
 - Losing a match ends the run. One active run per account. A run saved by an older version of the game cannot be read and is closed as abandoned; it still pays for the matches it finished.
 - A run that ends pays coins, whatever way it ended.
-- Unlocks are prizes, each paid once. A relic's rule opens that relic for every chest and reward after it. Eleven cats have a rule too, which hands over one copy: among them Nyxaroth and Aurelynx for a run won with 12 or more Shade or Volt cats in the deck, and Hadu for a run won on Apex. Every cat is also in its element's pack. Three rules name a tier: the Loud Bell (beat Madame Mittens on Stray or harder), the Quiet Corner (win a run on Stray or harder), and Hadu.
+- Unlocks are prizes, each paid once. A relic's rule opens that relic for every chest and reward after it. Eleven cats have a rule too, which hands over one copy: among them Nyxaroth and Aurelynx for a run won with 12 or more Shade or Volt cats in the deck, and Hadu for a run won on Apex. Every cat is also in its element's pack. Four rules name a tier: the Loud Bell (beat Madame Mittens on Stray or harder), the Quiet Corner (win a run on Stray or harder), the Alley Crown (reach Old Nine Lives on Stray or harder), and Hadu.
 
 ### Engine contract
 

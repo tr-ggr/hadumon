@@ -29,7 +29,7 @@ Four claims the product can truthfully make and a neighbouring roguelike could n
 
 - Played in a browser; mobile-first UI that must work at 375px wide.
 - Session cadence: one match is a few minutes; a full run is six matches. A run in progress is saved after every action and resumes where it stopped.
-- New accounts start with a collection of 40 cards (three of each of ten commons, two of each of five uncommons), a default deck of 32 built from it, ten relics unlocked and no coins.
+- New accounts start with a collection of 40 cards (three of each of ten commons, two of each of five uncommons), a default deck of 32 built from it, fifteen relics unlocked and no coins.
 - One run at a time per account.
 
 ## Capabilities and Constraints

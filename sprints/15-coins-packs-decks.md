@@ -153,8 +153,20 @@ What a relic is worth to the seat that holds it: 600 matches a relic, the same d
 | Loud Bell | +2.8 | 51.7% to 66.7% |
 | Hoarder's Basket | +4.4 | 51.7% to 68.2% |
 | Quiet Corner | +6.3 | 51.7% to 75.6% |
+| Hunter's Tally | +3.2 | 51.7% to 65.4% |
+| Moonlit Path | +5.4 | 51.7% to 70.5% |
+| Old Blanket | +4.8 | 51.7% to 68.1% |
+| Paper Bag | +1.6 | 51.7% to 60.9% |
+| Patchwork Quilt | +4.3 | 51.7% to 69.3% |
+| Mouse Jar | +0.0 | 51.7% to 51.7% |
+| Night Bowl | +2.4 | 51.7% to 64.2% |
+| Night Owl | +1.6 | 51.7% to 58.6% |
+| Crowded Sill | +2.5 | 51.7% to 61.4% |
+| Alley Crown | +7.0 | 51.7% to 78.4% |
 
-At 2 points a cat the five charms measured +7.4 to +9.7, twice any other relic, because over 26 turns a board fills and a clan's deck fills it with its own element. A rival always holds its charm, and a player's chest only has one for a deck with six cats of an element, so that was a head start. At 1 point they sit beside the better relics. The Quiet Corner is now the strongest relic; it is a prize for a run won on Stray or harder.
+At 2 points a cat the five charms measured +7.4 to +9.7, twice any other relic, because over 26 turns a board fills and a clan's deck fills it with its own element. A rival always holds its charm, and a player's chest only has one for a deck with six cats of an element, so that was a head start. At 1 point they sit beside the better relics. The Alley Crown and the Quiet Corner are the strongest relics, and both are prizes for Stray or harder: the Crown for reaching Old Nine Lives there, the Corner for winning the run.
+
+The ten relics after the Quiet Corner came later. Five are open on a new account (Hunter's Tally to Patchwork Quilt above), so a new account's chest draws on fifteen; the other five are prizes. Hunter's Tally paid 2 points a Hunt cat when first measured, +6.8, more than any starting relic, and pays 1. Old Blanket paid a point for every two tucked cats, +2.0, and pays one for each. The Mouse Jar scores nothing here because no starter cat caches food: it pays a point for each cached one, and is the prize for a won run, by when a deck can hold the Flame cats that cache. The Alley Crown is measured on the clans' starter decks, 14 Common cats in 16; a deck built from packs holds fewer.
 
 ### Whole runs
 
