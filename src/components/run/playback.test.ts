@@ -510,6 +510,29 @@ describe("cues", () => {
     expect(cue?.delta.score).toBe(getCat("flameclaw").points - 1);
   });
 
+  it("takes a play's yarn from the cat it was sent with", () => {
+    const state: MatchState = {
+      ...dealt(),
+      board: {
+        hunt: [{ catId: "flameclaw", yarn: 1, cached: 0, tucked: 0 }],
+        den: [{ catId: "sparkmew", yarn: 2, cached: 0, tucked: 0 }],
+        prowl: [],
+      },
+      hand: ["flameclaw"],
+      essence: { flame: 3, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 },
+    };
+    const played = play(state, {
+      type: "play",
+      hand: 0,
+      row: "hunt",
+      yarnFrom: [{ row: "hunt", col: 0 }],
+    });
+    expect(played.frames[0]?.cue.delta.slots).toEqual([
+      { row: "hunt", col: 0, yarn: -1, cached: 0, tucked: 0 },
+    ]);
+    expect(played.frames[0]?.view.board.den[0]?.yarn).toBe(2);
+  });
+
   it("ends on a settle that changes nothing", () => {
     eachTurn([], ({ frames }) => {
       const cue = last(frames).cue;

@@ -6,7 +6,13 @@ import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
 import { ESSENCES, type Essence } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
 
-import { essenceLabel, listWords, plural, yarnCostLabel } from "./describe";
+import {
+  essenceLabel,
+  listWords,
+  payerWords,
+  plural,
+  yarnCostLabel,
+} from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
 import { MusicButton } from "./music/MusicButton";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
@@ -30,7 +36,12 @@ export interface TurnControls {
   busy: boolean;
   /** Dice a Hunt takes now. */
   take: number;
+  /** Plays the chosen card into a lane, or stops to ask who pays its yarn. */
   playInto: (row: Row) => void;
+  /** Takes back the last cat chosen to pay a play's yarn. */
+  undoPayer: () => void;
+  /** Leaves the play's yarn for its lane again, to choose another. */
+  backToLanes: () => void;
   /** Adds one essence to the swap a short play is choosing, or takes it back. */
   swapEssence: (kind: Essence) => void;
   undoSwap: () => void;
@@ -87,7 +98,10 @@ export function TurnPanel({
   const { mode, busy } = turn;
   // A play that is short turns the essence held into the thing to choose from.
   const swapping =
-    mode.kind === "play" && playing === null && swapOwed(match, mode.hand) > 0
+    mode.kind === "play" &&
+    mode.row === null &&
+    playing === null &&
+    swapOwed(match, mode.hand) > 0
       ? mode
       : null;
   // The Den's trade is paid for from the same row of food.
@@ -373,6 +387,40 @@ function Prompt({
     case "play": {
       const catId = match.hand[mode.hand];
       const name = catId ? getCat(catId).name : "this cat";
+      if (mode.row !== null) {
+        const cost = match.yarnCosts[mode.row] ?? 0;
+        const chosen = mode.yarnFrom.length;
+        const from =
+          chosen > 0 ? `, from ${payerWords(match.board, mode.yarnFrom)}` : "";
+        return (
+          <Row2
+            rail={rail}
+            text={`Seat ${name} in the ${ROW_LABELS[mode.row]}: it costs ${cost} yarn${from}. ${chosen === cost ? "Tap cats on your mat to change who pays." : `Tap cats on your mat to pay: ${chosen} of ${cost} chosen.`}`}
+          >
+            <TableButton
+              disabled={busy || chosen !== cost}
+              onClick={turn.confirm}
+            >
+              Play {name}
+              <Enter />
+            </TableButton>
+            <TableButton
+              variant="secondary"
+              disabled={busy || chosen === 0}
+              onClick={turn.undoPayer}
+            >
+              Undo
+            </TableButton>
+            <TableButton
+              variant="secondary"
+              disabled={busy}
+              onClick={turn.backToLanes}
+            >
+              Back
+            </TableButton>
+          </Row2>
+        );
+      }
       const rows = match.playable[mode.hand] ?? [];
       const reason = whyUnplayable(match, mode.hand);
       const owed = swapOwed(match, mode.hand);

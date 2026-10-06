@@ -370,6 +370,86 @@ describe("play", () => {
     ).toThrow(/yarn/);
   });
 
+  describe("yarn from chosen cats", () => {
+    const state = turnState({
+      hand: ["flameclaw"],
+      essence: pool({ flame: 1 }),
+      board: {
+        hunt: [placed("flameclaw", { yarn: 1 })],
+        den: [placed("sparkmew", { yarn: 2 })],
+        prowl: [],
+      },
+    });
+
+    it("takes the yarn from the cat named, not the richest", () => {
+      const { state: next } = applyAction(state, {
+        type: "play",
+        hand: 0,
+        row: "hunt",
+        yarnFrom: [{ row: "hunt", col: 0 }],
+      });
+      expect(next.board.hunt[0]?.yarn).toBe(0);
+      expect(next.board.den[0]?.yarn).toBe(2);
+    });
+
+    it("refuses payers that do not add up to the column's cost", () => {
+      expect(() =>
+        applyAction(state, {
+          type: "play",
+          hand: 0,
+          row: "hunt",
+          yarnFrom: [
+            { row: "den", col: 0 },
+            { row: "den", col: 0 },
+          ],
+        }),
+      ).toThrow(IllegalAction);
+      expect(() =>
+        applyAction(state, {
+          type: "play",
+          hand: 0,
+          row: "hunt",
+          yarnFrom: [],
+        }),
+      ).toThrow(IllegalAction);
+    });
+
+    it("refuses an empty slot, or more yarn than a cat holds", () => {
+      expect(() =>
+        applyAction(state, {
+          type: "play",
+          hand: 0,
+          row: "hunt",
+          yarnFrom: [{ row: "prowl", col: 0 }],
+        }),
+      ).toThrow(IllegalAction);
+
+      const deep = {
+        ...state,
+        hand: ["flameclaw"],
+        board: {
+          ...state.board,
+          hunt: [
+            placed("flameclaw", { yarn: 1 }),
+            placed("flameclaw"),
+            placed("flameclaw"),
+          ],
+        },
+      };
+      expect(() =>
+        applyAction(deep, {
+          type: "play",
+          hand: 0,
+          row: "hunt",
+          yarnFrom: [
+            { row: "hunt", col: 0 },
+            { row: "hunt", col: 0 },
+          ],
+        }),
+      ).toThrow(/holds only 1 yarn/);
+    });
+  });
+
   it("discounts column yarn with Soft Landing", () => {
     const base = fresh("t", ["soft-landing"]);
     const state: MatchState = {

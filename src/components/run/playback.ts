@@ -19,9 +19,11 @@ import { getCat, ROWS, type Effect } from "~/server/game/cats";
 import {
   auraTotal,
   columnYarnCost,
+  defaultYarnFrom,
   ESSENCES,
   playPayment,
   scoreBoard,
+  spendYarn,
   type Action,
   type Essence,
   type MatchEvent,
@@ -165,18 +167,6 @@ function addYarn(placed: PlacedCat, n: number): void {
 }
 
 /** Pays a column's yarn the way the engine does: from the richest cat first. */
-function spendYarn(view: MatchView, n: number): void {
-  for (let i = 0; i < n; i++) {
-    let richest: PlacedCat | null = null;
-    for (const row of ROWS) {
-      for (const placed of view.board[row]) {
-        if (placed.yarn > (richest?.yarn ?? 0)) richest = placed;
-      }
-    }
-    if (richest) richest.yarn -= 1;
-  }
-}
-
 /**
  * Adds `n` drawn cats to the hand. Draws land at the end of the hand, so the
  * finished hand says which cats they were; if it does not line up, the hand
@@ -217,7 +207,11 @@ function applyOwnAction(
           action.swap,
           auraTotal(view.board, "discount"),
         ) ?? view.essence;
-      spendYarn(view, columnYarnCost(view.mods, line.length));
+      spendYarn(
+        view.board,
+        action.yarnFrom ??
+          defaultYarnFrom(view.board, columnYarnCost(view.mods, line.length)),
+      );
       view.hand.splice(action.hand, 1);
       line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
       break;

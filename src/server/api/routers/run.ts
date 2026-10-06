@@ -69,6 +69,7 @@ const actionSchema = z.discriminatedUnion("type", [
     hand: index,
     row: z.enum(ROWS),
     swap: z.array(food).max(MAX_ACTION_ITEMS).optional(),
+    yarnFrom: z.array(slot).max(MAX_ACTION_ITEMS).optional(),
   }),
   z.object({
     type: z.literal("hunt"),

@@ -15,12 +15,16 @@ import { FOOD_LABELS, TREAT_LABEL } from "~/server/game/elements";
 import { getGoal } from "~/server/game/goals";
 import {
   auraTotal,
+  columnYarnCost,
+  defaultYarnFrom,
   swapOffer,
   type Action,
+  type Board,
   type Essence,
   type GoalResult,
   type MatchEvent,
   type Move,
+  type SlotRef,
   type Tiebreak,
 } from "~/server/game/match";
 import { getRival } from "~/server/game/rival";
@@ -61,6 +65,25 @@ export function plural(n: number, one: string, many = `${one}s`): string {
 /** What a lane space costs to seat a cat in, in words. */
 export function yarnCostLabel(cost: number): string {
   return cost === 0 ? "Free" : `${cost} yarn`;
+}
+
+/**
+ * The cats a play's yarn comes from: "Mistpaw", "Mistpaw and Flameclaw",
+ * and "Mistpaw (2)" for a cat giving more than one.
+ */
+export function payerWords(board: Board, from: readonly SlotRef[]): string {
+  const given = new Map<string, { slot: SlotRef; n: number }>();
+  for (const slot of from) {
+    const key = `${slot.row}-${slot.col}`;
+    given.set(key, { slot, n: (given.get(key)?.n ?? 0) + 1 });
+  }
+  return listWords(
+    [...given.values()].map(({ slot, n }) => {
+      const placed = board[slot.row][slot.col];
+      const name = placed ? getCat(placed.catId).name : "a cat";
+      return n > 1 ? `${name} (${n})` : name;
+    }),
+  );
 }
 
 /** "A", "A and B", "A, B and C". */
@@ -192,9 +215,21 @@ export function describeAction(before: MatchView, action: Action): string {
             playCost(catId, auraTotal(before.board, "discount")),
           )?.short ?? [])
         : [];
-      return swap.length > 0 && short.length > 0
-        ? `You played ${name} into ${rowName(action.row)}, giving up ${listWords(swap.map(essenceLabel))} in place of ${listWords(short.map(essenceLabel))}.`
-        : `You played ${name} into ${rowName(action.row)}.`;
+      const gave =
+        swap.length > 0 && short.length > 0
+          ? `, giving up ${listWords(swap.map(essenceLabel))} in place of ${listWords(short.map(essenceLabel))}`
+          : "";
+      const from =
+        action.yarnFrom ??
+        defaultYarnFrom(
+          before.board,
+          columnYarnCost(before.mods, before.board[action.row].length),
+        );
+      const took =
+        from.length > 0
+          ? `, taking ${from.length} yarn from ${payerWords(before.board, from)}`
+          : "";
+      return `You played ${name} into ${rowName(action.row)}${gave}${took}.`;
     }
     case "hunt": {
       const faces = action.dice.flatMap((i) => before.feeder[i] ?? []);

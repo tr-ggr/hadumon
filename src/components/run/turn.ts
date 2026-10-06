@@ -4,11 +4,19 @@
  * decides what is legal.
  */
 
-import { getCat, playCost, ROW_LABELS, ROWS } from "~/server/game/cats";
+import {
+  getCat,
+  playCost,
+  ROW_LABELS,
+  ROWS,
+  type Row,
+} from "~/server/game/cats";
 import {
   ESSENCES,
   auraTotal,
   boardYarnRoom,
+  placedCats,
+  totalYarn,
   playPayment,
   swapOffer,
   type Board,
@@ -23,8 +31,18 @@ import { essenceLabel, listWords } from "./describe";
 /** What the player is in the middle of choosing. */
 export type Mode =
   | { kind: "idle" }
-  /** `swap` is the essence chosen so far to give up for pips the cat is short. */
-  | { kind: "play"; hand: number; swap: Essence[] }
+  /**
+   * `swap` is the essence chosen so far to give up for pips the cat is short.
+   * Once a lane is chosen whose yarn could come from more than one cat,
+   * `row` is set and `yarnFrom` holds the cats paying, one entry per yarn.
+   */
+  | {
+      kind: "play";
+      hand: number;
+      swap: Essence[];
+      row: Row | null;
+      yarnFrom: SlotRef[];
+    }
   /**
    * The three lanes. `trade` is what the lane's trade spot is paid with, once
    * chosen: a hand card for the Hunt, a food for the Den, a cat's yarn for
@@ -37,6 +55,11 @@ export type Mode =
   | { kind: "tuck"; hand: number | null };
 
 export const IDLE: Mode = { kind: "idle" };
+
+/** A hand card raised to be played, with nothing about it chosen yet. */
+export function choosePlay(hand: number): Mode {
+  return { kind: "play", hand, swap: [], row: null, yarnFrom: [] };
+}
 
 /** How many dice a Hunt takes right now, one more with its trade made. */
 export function huntTake(view: MatchView, trading = false): number {
@@ -70,6 +93,36 @@ export function yarnRoom(
 }
 
 export { boardYarnRoom };
+
+/**
+ * True when the `cost` yarn of a play could come from more than one set of
+ * cats, so the player is asked. With one cat holding yarn, or exactly enough
+ * yarn on the mat, there is nothing to choose.
+ */
+export function yarnChoice(board: Board, cost: number): boolean {
+  const holders = placedCats(board).filter((placed) => placed.yarn > 0);
+  return cost > 0 && holders.length > 1 && totalYarn(board) > cost;
+}
+
+/**
+ * Taps a cat to pay a play's yarn. A cat with yarn not yet spoken for gives
+ * one more, and past `cost` the oldest choice gives way; a cat already giving
+ * all it holds is taken back out.
+ */
+export function togglePayer(
+  board: Board,
+  yarnFrom: readonly SlotRef[],
+  slot: SlotRef,
+  cost: number,
+): SlotRef[] {
+  const held = board[slot.row][slot.col]?.yarn ?? 0;
+  const same = (other: SlotRef) =>
+    other.row === slot.row && other.col === slot.col;
+  if (queuedYarn(yarnFrom, slot) >= held) {
+    return yarnFrom.filter((other) => !same(other));
+  }
+  return [...yarnFrom, slot].slice(-cost);
+}
 
 /** Tops `targets` up to `limit` in board order, keeping what is already chosen. */
 export function fillYarn(

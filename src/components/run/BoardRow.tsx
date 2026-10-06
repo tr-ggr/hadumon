@@ -78,8 +78,10 @@ export function BoardRow({
   const denTargets = mode.kind === "den" ? mode.targets : null;
   const denFull =
     denTargets !== null && denTargets.length >= denLimit(match, mode);
-  // A Prowl with its trade open is paid for with a yarn from a cat on the mat.
+  // A Prowl with its trade open is paid for with a yarn from a cat on the mat,
+  // and so is a play that has stopped to ask who pays for its lane.
   const paying = mode.kind === "prowl" && match.trades.prowl ? mode : null;
+  const seating = mode.kind === "play" && mode.row !== null ? mode : null;
   const ladder = rewardLadder(match, row);
 
   return (
@@ -124,18 +126,21 @@ export function BoardRow({
                   queued={
                     denTargets
                       ? queuedYarn(denTargets, slot)
-                      : paying?.trade?.row === row && paying.trade.col === col
-                        ? -1
-                        : 0
+                      : seating
+                        ? -queuedYarn(seating.yarnFrom, slot)
+                        : paying?.trade?.row === row && paying.trade.col === col
+                          ? -1
+                          : 0
                   }
                   laying={denTargets !== null}
-                  paying={paying !== null}
+                  paying={seating ? "play" : paying ? "prowl" : null}
                   disabled={
                     denTargets !== null
                       ? busy ||
                         denFull ||
                         yarnRoom(match.board, denTargets, slot) <= 0
-                      : paying !== null && (busy || placed.yarn <= 0)
+                      : (paying !== null || seating !== null) &&
+                        (busy || placed.yarn <= 0)
                   }
                   waiting={
                     match.pending?.slot.row === row &&
@@ -214,13 +219,13 @@ function PlacedSlot({
   slot: SlotRef;
   placed: PlacedCat;
   /**
-   * Yarn chosen for this cat in a Den that has not been sent, or -1 for the
-   * yarn it gives up to a Prowl's trade.
+   * Yarn chosen for this cat in a Den that has not been sent, or minus the
+   * yarn it gives up to a Prowl's trade or a play.
    */
   queued: number;
   laying: boolean;
-  /** A Prowl's trade is open and this cat's yarn could pay for it. */
-  paying: boolean;
+  /** What this cat's yarn could pay for right now: a Prowl's trade or a play. */
+  paying: "prowl" | "play" | null;
   disabled: boolean;
   waiting: boolean;
   firing: boolean;
@@ -237,9 +242,11 @@ function PlacedSlot({
       aria-label={
         laying
           ? `Lay yarn on ${cat.name}, holding ${yarn} of ${cat.yarnCap}`
-          : paying
+          : paying === "prowl"
             ? `Spend 1 yarn from ${cat.name} for 1 more cat, holding ${placed.yarn}`
-            : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
+            : paying === "play"
+              ? `Pay with yarn from ${cat.name}, holding ${placed.yarn}, ${-queued} chosen`
+              : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
       }
       // Cats tucked underneath show as a thicker edge. The left edge is the
       // cat's element, as on its card.

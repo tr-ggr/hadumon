@@ -159,9 +159,17 @@ export type Action =
   | { type: "keep"; cats: number[]; essence: Element[] }
   /**
    * `swap` is the essence given up for pips the pool cannot pay: two for each
-   * pip short, and none when nothing is short.
+   * pip short, and none when nothing is short. `yarnFrom` names the cats the
+   * column's yarn comes from, one entry per yarn, and a slot may repeat; left
+   * out, it comes from the cats holding the most.
    */
-  | { type: "play"; hand: number; row: Row; swap?: Essence[] }
+  | {
+      type: "play";
+      hand: number;
+      row: Row;
+      swap?: Essence[];
+      yarnFrom?: SlotRef[];
+    }
   /**
    * Indices into `feeder` of the dice to take. `trade` is the hand card
    * discarded for one die more.
@@ -629,13 +637,32 @@ function rollFeeder(ctx: Ctx): void {
   ctx.onRoll?.();
 }
 
-function spendYarn(board: Board, n: number): void {
+/**
+ * Where `n` yarn spent on a play comes from when nobody chooses: one at a
+ * time from the cat holding the most, the first in board order on a tie.
+ */
+export function defaultYarnFrom(board: Board, n: number): SlotRef[] {
+  const left = ROWS.flatMap((row) =>
+    board[row].map((placed, col) => ({ row, col, yarn: placed.yarn })),
+  );
+  const from: SlotRef[] = [];
   for (let i = 0; i < n; i++) {
-    const richest = placedCats(board).reduce<PlacedCat | null>(
-      (best, placed) => (placed.yarn > (best?.yarn ?? 0) ? placed : best),
+    const richest = left.reduce<(typeof left)[number] | null>(
+      (best, slot) => (slot.yarn > (best?.yarn ?? 0) ? slot : best),
       null,
     );
-    if (richest) richest.yarn -= 1;
+    if (!richest) break;
+    richest.yarn -= 1;
+    from.push({ row: richest.row, col: richest.col });
+  }
+  return from;
+}
+
+/** Takes one yarn from each slot named, a slot named twice giving two. */
+export function spendYarn(board: Board, from: readonly SlotRef[]): void {
+  for (const { row, col } of from) {
+    const placed = board[row][col];
+    if (placed && placed.yarn > 0) placed.yarn -= 1;
   }
 }
 
@@ -840,9 +867,25 @@ function play(ctx: Ctx, action: Extract<Action, { type: "play" }>): void {
   const col = line.length;
   const yarn = columnYarnCost(side.mods, col);
   if (totalYarn(side.board) < yarn) fail(`That column costs ${yarn} yarn.`);
+  const from = action.yarnFrom ?? defaultYarnFrom(side.board, yarn);
+  if (from.length !== yarn) {
+    fail(`That column costs ${yarn} yarn: name ${yarn} to spend.`);
+  }
+  for (const slot of from) {
+    const payer = ROWS.includes(slot.row)
+      ? side.board[slot.row][slot.col]
+      : undefined;
+    if (!payer) fail("There is no cat in that slot.");
+    const named = from.filter(
+      (other) => other.row === slot.row && other.col === slot.col,
+    ).length;
+    if (named > payer.yarn) {
+      fail(`${getCat(payer.catId).name} holds only ${payer.yarn} yarn.`);
+    }
+  }
 
   side.essence = paid;
-  spendYarn(side.board, yarn);
+  spendYarn(side.board, from);
   side.hand.splice(action.hand, 1);
   line.push({ catId, yarn: 0, cached: 0, tucked: 0, under: [] });
   ctx.emit({ type: "played", catId, row: action.row, col });

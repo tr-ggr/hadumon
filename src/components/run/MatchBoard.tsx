@@ -12,6 +12,7 @@ import { MatHeader } from "~/components/mat/MatHeader";
 import { ROWS, type Row } from "~/server/game/cats";
 import {
   columnYarnCost,
+  defaultYarnFrom,
   SLOTS,
   type Action,
   type Essence,
@@ -45,6 +46,7 @@ import { TurnPanel, type TurnControls } from "./TurnPanel";
 import { TurnPhone } from "./TurnPhone";
 import {
   canSwapMore,
+  choosePlay,
   deckPicks,
   denLimit,
   fillYarn,
@@ -54,6 +56,8 @@ import {
   prowlWant,
   swapOwed,
   toggleDie,
+  togglePayer,
+  yarnChoice,
   yarnRoom,
   type Mode,
 } from "./turn";
@@ -308,25 +312,61 @@ export function MatchBoard({
     reveal(supplyRef.current);
   };
 
+  /** A play as sent: the swap and the yarn's payers only when chosen. */
+  const playAction = (
+    hand: number,
+    row: Row,
+    swap: Essence[],
+    yarnFrom?: SlotRef[],
+  ): Action => ({
+    type: "play",
+    hand,
+    row,
+    ...(swap.length > 0 ? { swap } : {}),
+    ...(yarnFrom ? { yarnFrom } : {}),
+  });
+
+  // A play into a lane whose yarn could come from more than one cat stops
+  // to ask who pays; the usual payers are already marked.
+  const yarnOwed =
+    mode.kind === "play" && mode.row !== null
+      ? (match.yarnCosts[mode.row] ?? 0)
+      : 0;
+
   const controls: TurnControls = {
     mode,
     busy,
     take,
     playInto: (row) => {
       if (
-        mode.kind === "play" &&
-        (match.playable[mode.hand] ?? []).includes(row) &&
-        mode.swap.length === swapOwed(match, mode.hand)
+        mode.kind !== "play" ||
+        !(match.playable[mode.hand] ?? []).includes(row) ||
+        mode.swap.length !== swapOwed(match, mode.hand)
       ) {
-        act(
-          mode.swap.length > 0
-            ? { type: "play", hand: mode.hand, row, swap: mode.swap }
-            : { type: "play", hand: mode.hand, row },
-        );
+        return;
       }
+      // The lane being paid for, chosen again, plays.
+      if (mode.row === row) return controls.confirm();
+      const cost = match.yarnCosts[row] ?? 0;
+      if (yarnChoice(match.board, cost)) {
+        playSound("click");
+        setMode({ ...mode, row, yarnFrom: defaultYarnFrom(match.board, cost) });
+        return reveal(matRef.current);
+      }
+      act(playAction(mode.hand, row, mode.swap));
+    },
+    undoPayer: () => {
+      if (mode.kind !== "play") return;
+      playSound("click");
+      setMode({ ...mode, yarnFrom: mode.yarnFrom.slice(0, -1) });
+    },
+    backToLanes: () => {
+      if (mode.kind !== "play") return;
+      playSound("click");
+      setMode({ ...mode, row: null, yarnFrom: [] });
     },
     swapEssence: (kind: Essence) => {
-      if (mode.kind !== "play" || busy) return;
+      if (mode.kind !== "play" || mode.row !== null || busy) return;
       if (canSwapMore(match, mode.hand, mode.swap, kind)) {
         playSound("pick");
         return setMode({ ...mode, swap: [...mode.swap, kind] });
@@ -348,6 +388,13 @@ export function MatchBoard({
       setMode(IDLE);
     },
     confirm: () => {
+      if (
+        mode.kind === "play" &&
+        mode.row !== null &&
+        mode.yarnFrom.length === yarnOwed
+      ) {
+        act(playAction(mode.hand, mode.row, mode.swap, mode.yarnFrom));
+      }
       if (mode.kind === "hunt" && mode.dice.length === take) {
         act({
           type: "hunt",
@@ -410,6 +457,15 @@ export function MatchBoard({
   };
 
   const onSlot = (slot: SlotRef) => {
+    // A play stopped to ask who pays its yarn takes it from the cats tapped.
+    if (mode.kind === "play" && mode.row !== null) {
+      if ((match.board[slot.row][slot.col]?.yarn ?? 0) <= 0) {
+        return playSound("illegal");
+      }
+      const next = togglePayer(match.board, mode.yarnFrom, slot, yarnOwed);
+      playSound(next.length < mode.yarnFrom.length ? "click" : "pick");
+      return setMode({ ...mode, yarnFrom: next });
+    }
     // A Prowl with its trade open is paid for with a yarn from a cat here.
     if (mode.kind === "prowl" && match.trades.prowl) {
       const paying =
@@ -483,7 +539,7 @@ export function MatchBoard({
     // why; it sounds like the refusal it is. One that can speaks up.
     if (playBlock(match, index)) playSound("illegal");
     else playCat(catId);
-    setMode({ kind: "play", hand: index, swap: [] });
+    setMode(choosePlay(index));
   };
 
   const onDie = (index: number) => {
@@ -573,7 +629,7 @@ export function MatchBoard({
       if (mode.kind === "prowl") {
         return n < 0 ? changeDeckPicks(1) : onTrayCard(n);
       }
-      if (mode.kind === "den") {
+      if (mode.kind === "den" || (mode.kind === "play" && mode.row !== null)) {
         const slot = nthPlaced(n);
         return slot ? onSlot(slot) : undefined;
       }

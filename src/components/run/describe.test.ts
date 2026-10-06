@@ -13,6 +13,7 @@ import {
   goalText,
   latestRivalText,
   listWords,
+  payerWords,
   plural,
   moveText,
   tiebreakText,
@@ -27,7 +28,9 @@ import {
   shortWords,
   swapOwed,
   toggleDie,
+  togglePayer,
   whyUnplayable,
+  yarnChoice,
   yarnRoom,
 } from "./turn";
 
@@ -225,6 +228,38 @@ describe("describeAction", () => {
     );
   });
 
+  it("names the cats a play's yarn came from", () => {
+    const view = {
+      ...kept.after,
+      mods: { ...kept.after.mods, yarnDiscount: 0 },
+      hand: ["flameclaw"],
+      essence: { flame: 1, mist: 0, volt: 0, thorn: 0, shade: 0, wild: 0 },
+      board: {
+        hunt: [{ catId: "voltwhisk", yarn: 1, cached: 0, tucked: 0 }],
+        den: [{ catId: "mistpaw", yarn: 2, cached: 0, tucked: 0 }],
+        prowl: [],
+      },
+    };
+    expect(describeAction(view, { type: "play", hand: 0, row: "hunt" })).toBe(
+      "You played Flameclaw into the Hunt, taking 1 yarn from Mistpaw.",
+    );
+    expect(
+      describeAction(view, {
+        type: "play",
+        hand: 0,
+        row: "hunt",
+        yarnFrom: [{ row: "hunt", col: 0 }],
+      }),
+    ).toBe("You played Flameclaw into the Hunt, taking 1 yarn from Voltwhisk.");
+    expect(
+      payerWords(view.board, [
+        { row: "den", col: 0 },
+        { row: "hunt", col: 0 },
+        { row: "den", col: 0 },
+      ]),
+    ).toBe("Mistpaw (2) and Voltwhisk");
+  });
+
   it("answers a pending tuck by name", () => {
     const view = {
       ...kept.after,
@@ -314,6 +349,35 @@ describe("turn helpers", () => {
     expect(toggleDie([2], 2, 1)).toEqual([]);
     expect(toggleDie([0, 1], 3, 2)).toEqual([1, 3]);
     expect(huntTake(kept.after)).toBe(1);
+  });
+
+  it("asks who pays a play's yarn only when there is a choice", () => {
+    const board = {
+      hunt: [{ catId: "voltwhisk", yarn: 1, cached: 0, tucked: 0 }],
+      den: [{ catId: "mistpaw", yarn: 2, cached: 0, tucked: 0 }],
+      prowl: [],
+    };
+    expect(yarnChoice(board, 1)).toBe(true);
+    expect(yarnChoice(board, 0)).toBe(false);
+    // Every yarn on the mat is spent: nothing to choose.
+    expect(yarnChoice(board, 3)).toBe(false);
+    // One cat holds it all.
+    expect(yarnChoice({ ...board, hunt: [] }, 1)).toBe(false);
+  });
+
+  it("swaps who pays as cats are tapped", () => {
+    const board = {
+      hunt: [{ catId: "voltwhisk", yarn: 1, cached: 0, tucked: 0 }],
+      den: [{ catId: "mistpaw", yarn: 2, cached: 0, tucked: 0 }],
+      prowl: [],
+    };
+    const hunt = { row: "hunt" as const, col: 0 };
+    const den = { row: "den" as const, col: 0 };
+    // Past the cost the oldest choice gives way.
+    expect(togglePayer(board, [den], hunt, 1)).toEqual([hunt]);
+    expect(togglePayer(board, [den], den, 2)).toEqual([den, den]);
+    // A cat already giving all it holds is taken back out.
+    expect(togglePayer(board, [hunt, den], hunt, 2)).toEqual([den]);
   });
 
   it("says why a card cannot be played", () => {
