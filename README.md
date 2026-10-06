@@ -74,7 +74,27 @@ is no idle play and no multiplayer.
   progress keeps the deck it began with.
 - **Your profile** (`/profile`) is your hadu: Hadu in the hat, eyes, body, tail
   and aura you have put on him, and the board, tablecloth, tower and sky your
-  game is dressed in. None of it changes a rule.
+  game is dressed in. None of it changes a rule. It also holds your record
+  (run and match win rates, best scores, wins on each tier), your latest runs,
+  your achievements, a link to share, and whether other players can see your
+  runs.
+- **Achievements** are things done over every run, the ones played before
+  them included: win a run on Apex, score 87 in a match, open 50 packs. Each
+  pays its coins once, the first time it holds. They are counted when a run
+  ends and when a pack is opened.
+- **Players** (`/players`) is everyone else: a directory to find a player by
+  name, a leaderboard (runs won, best run, or win rate past five runs, on
+  any tier), and the runs lately finished by players who show theirs. A
+  profile is at `/players/<handle>`, where the handle is the username (or the
+  username and the start of the account's id, for a later account with the
+  same name). Profiles and run summaries can be opened signed out, so a link
+  can be shared.
+- **Runs** (`/runs`) is your whole record book, by tier and by ending, and
+  every run has a summary at `/runs/<id>`: every match with both score
+  sheets, the round goals and both boards as they were left, the deck as
+  built and what the rivals took and gave back, the chest and every relic,
+  and what the run unlocked and achieved. A run's coins are only ever shown
+  to its player.
 - **The codex** (`/codex`) lists all 102 cats with how many of each you own,
   the relics, and the six rivals.
 
@@ -210,6 +230,13 @@ profile, card, deck, cosmetic and pack tables and drop a run's clan column.
 They delete nothing else; a run saved before them is closed as abandoned the
 next time its owner opens the game.
 
+Migration `0008_players_achievements` adds the achievements table, a handle
+and a runs-shown setting to every profile, and a run's matches played, best
+match and summary. It makes a profile row for every account that has none,
+gives each one its handle, and fills in matches played and best match for the
+runs already played. It deletes nothing. A run that ended before it keeps no
+match detail, so its summary shows the scores and says the rest was not kept.
+
 Migration `0004_auth_clean_break` moves accounts to email sign-in and **deletes
 every user**, with their runs and unlocks: the old accounts had a username and
 no email to carry over. `0005_better_auth` then adds the new tables. Before the
@@ -269,6 +296,9 @@ src/
     deck/                 The deck builder
     shop/                 The packs, and opening one
     profile/              The player's hadu, and the table and tower skins
+    players/              Everyone else: the directory, the leaderboard and
+                          recent runs; [handle]/ a profile, [handle]/runs theirs
+    runs/                 Your record book; [id]/ one run's summary
     codex/                Every cat, relic and rival, owned or not, as a book:
                           it opens by itself, and its pages turn
   components/
@@ -282,6 +312,11 @@ src/
     skins/                The colours of every board, cloth, tower and sky,
                           and the provider that dresses the page in a look
     deck/  shop/  profile/  The three pages' components and their rules
+    players/              The record, achievements and runs boards a profile
+                          shows, the players page, and the frame a signed-out
+                          visitor sees a shared page in
+    runs/                 A run as a row of a list, the record book, and a
+                          run's summary page
     auth/                 The sign-in, sign-up, forgot and reset forms, the
                           screen they stand on, and the strength meter
     cats/                 CatCard, the food icons (EssencePip), ElementMark and Habitats (a cat's lanes)
@@ -305,13 +340,16 @@ src/
                           the strength estimate (zxcvbn, loaded on demand)
   server/
     api/                  tRPC root, context, routers (auth, run, codex,
-                          collection, shop, profile) and the coin and card
-                          helpers they share (economy.ts)
+                          collection, shop, profile, players) and the helpers
+                          they share: coins, cards and handles (economy.ts),
+                          paying achievements (achievements.ts), run pages
+                          and records (records.ts), profiles (players.ts)
     auth/                 The Better Auth config, scrypt hashing, the current
                           user, and the reset email
     db/                   Drizzle client, schema/ (users, sessions, accounts,
-                          verifications, rate limits, runs, unlocks, profiles,
-                          cards, decks, cosmetics, pack opens), seed.ts
+                          verifications, rate limits, runs, unlocks,
+                          achievements, profiles, cards, decks, cosmetics,
+                          pack opens), seed.ts
     game/                 The engine: pure, seeded, unit tested
       cats.ts             The 102 cats and their powers, as data
       match.ts            One match for two seats: actions, powers, goals, score
@@ -332,6 +370,9 @@ src/
       run.ts              The gauntlet: the theft, the chest, rewards,
                           match-to-match flow
       unlocks.ts          The prizes a finished run pays, each once
+      achievements.ts     What an account's career has done, each paid once
+      stats.ts            Win rates and the leaderboards
+      runRecord.ts        A finished run's summary, as anyone may read it
       view.ts             The redacted state the client is allowed to see
       rng.ts              Seeded deterministic RNG
   styles/globals.css      Tailwind v4 theme tokens and utilities
@@ -356,5 +397,8 @@ came to play the game for real: the bot, its eight levels, and the measurements
 the gauntlet was first set from.
 [`sprints/15-coins-packs-decks.md`](./sprints/15-coins-packs-decks.md) records
 coins, packs, the built deck, the stolen-deck run and the four-round match,
-with what was measured for them. Sprints 00 to 07 describe the earlier idle game and are kept as
+with what was measured for them.
+[`sprints/16-players-achievements.md`](./sprints/16-players-achievements.md)
+records profiles other players can read, achievements, and the summary every
+run keeps. Sprints 00 to 07 describe the earlier idle game and are kept as
 history.

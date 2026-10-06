@@ -4,7 +4,7 @@ HaduMon is a web-based roguelike engine-builder about feline-inspired "Fakemon" 
 
 Every rival match pays coins the moment it ends, won or lost, multiplied by how high up the tower it was, and they stay on the account however the run ends. Coins open packs in the shop: five cat packs, one an element, and two cosmetic packs. Cats go into the collection the deck is built from; cosmetics dress the player's hadu (their avatar and profile), their board and cloth, and the tower. Coins are only ever earned by playing: nothing is sold for money, and there is no idle play and no multiplayer. How coins are worked out stays on the server (`src/server/game/payout.ts`); a player is only ever shown what each match paid, its floor's factor and the run's total.
 
-`PRODUCT.md` describes the product, `sprints/08-roguelike-overview.md` the rules, `sprints/10-engine.md` the engine and API, `sprints/14-real-rival.md` the rival (its bot, its levels and the measurements they were first set from), and `sprints/15-coins-packs-decks.md` coins, packs, the deck, the stolen-deck run and the four-round match, with what was measured for them.
+`PRODUCT.md` describes the product, `sprints/08-roguelike-overview.md` the rules, `sprints/10-engine.md` the engine and API, `sprints/14-real-rival.md` the rival (its bot, its levels and the measurements they were first set from), and `sprints/15-coins-packs-decks.md` coins, packs, the deck, the stolen-deck run and the four-round match, with what was measured for them, and `sprints/16-players-achievements.md` player profiles, achievements and the summary every run keeps.
 
 ## Stack
 
