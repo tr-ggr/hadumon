@@ -1,5 +1,4 @@
 import { EssencePip } from "~/components/cats/CatCard";
-import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
 import { getCat } from "~/server/game/cats";
 import { FOOD_LABELS } from "~/server/game/elements";
@@ -12,9 +11,9 @@ import {
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
-import { listWords, plural } from "./describe";
+import { goalText, listWords, plural } from "./describe";
 import type { KeptCount } from "./goalHints";
-import { TurnCube } from "./pieces";
+import { GoalPays, GoalScore, RoundNumber, TurnCube } from "./pieces";
 
 /** Turns in a round of this match; a relic can lengthen the first and the last. */
 export function roundTurns(match: MatchView, round: number): number {
@@ -92,6 +91,9 @@ function RoundTile({
   const compact = rail && !current;
   const line = compact;
   const counted = kept !== null && kept.cats.length + kept.food.length > 0;
+  // Only the round being played, or a match not yet begun, spells its goal
+  // out; the others keep it on hover and for a screen reader.
+  const spelled = !scored && !compact && (current || !playing);
 
   return (
     <li
@@ -99,12 +101,13 @@ function RoundTile({
       className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : counted ? "bg-lime is-chosen flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-print text-xl">Round {round + 1}</h3>
-        {line && !scored ? (
-          <p className="lg:short:block hidden min-w-0 truncate text-xs font-black">
-            {goal.name}
-          </p>
-        ) : null}
+        <h3
+          title={goal.text}
+          className="flex min-w-0 items-center gap-1.5 text-sm font-black"
+        >
+          <RoundNumber round={round} />
+          <span className="truncate">{goal.name}</span>
+        </h3>
         <p
           className={`flex flex-wrap items-center justify-end gap-1 ${line ? "lg:short:hidden" : ""}`}
         >
@@ -121,48 +124,35 @@ function RoundTile({
         </p>
       </div>
 
-      <div
-        className={
-          compact && scored
-            ? "flex flex-col gap-1 lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-2"
-            : "contents"
-        }
-      >
+      {scored ? null : (
         <p
-          className={`flex items-start gap-1.5 text-xs leading-snug ${compact ? "lg:text-[11px]" : ""} ${line ? "lg:short:sr-only" : ""}`}
+          className={`flex items-start justify-between gap-2 text-xs leading-snug ${line ? "lg:short:sr-only" : ""}`}
         >
-          <PixelIcon name="goal" size={16} className="mt-px" />
-          <span className="min-w-0">
-            <span className="font-black">{goal.name}.</span>{" "}
-            {/* A round already scored keeps its name; how it went says the rest. */}
-            <span className={compact && scored ? "lg:sr-only" : ""}>
-              {goal.text}{" "}
-              <span className="font-bold whitespace-nowrap tabular-nums">
-                Pays {GOAL_WIN_POINTS[round]} or {GOAL_LOSE_POINTS[round]}.
-              </span>
-            </span>
-          </span>
+          <span className={spelled ? "min-w-0" : "sr-only"}>{goal.text}</span>
+          <GoalPays
+            win={GOAL_WIN_POINTS[round] ?? 0}
+            lose={GOAL_LOSE_POINTS[round] ?? 0}
+          />
         </p>
+      )}
 
-        {standing ? (
-          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
-            <Marker tone="lime">You {standing.player}</Marker>
-            <Marker tone="coral">
-              {rival} {standing.rival}
-            </Marker>
-            <span>
-              Now: you {standing.playerPoints}, rival {standing.rivalPoints}.
-            </span>
-          </p>
-        ) : scored ? (
-          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs leading-none font-bold tabular-nums">
-            <Marker tone="lime">You took {scored.playerPoints}</Marker>
-            <Marker tone="coral">
-              {rival} took {scored.rivalPoints}
-            </Marker>
-          </p>
-        ) : null}
-      </div>
+      {standing ? (
+        <GoalScore
+          player={standing.player}
+          rival={standing.rival}
+          playerPoints={standing.playerPoints}
+          rivalPoints={standing.rivalPoints}
+          sentence={`Now: you ${standing.player}, ${rival} ${standing.rival}. Points if it ended now: you ${standing.playerPoints}, ${rival} ${standing.rivalPoints}.`}
+        />
+      ) : scored ? (
+        <GoalScore
+          player={scored.player}
+          rival={scored.rival}
+          playerPoints={scored.playerPoints}
+          rivalPoints={scored.rivalPoints}
+          sentence={goalText(match.rivalId, scored)}
+        />
+      ) : null}
 
       {kept && counted ? (
         <ul
@@ -198,19 +188,3 @@ function RoundTile({
 /** A kept cat's face, or the food kept, set on a lit round. */
 const KEPT_CHIP =
   "border-ink bg-cream flex h-10 min-w-10 items-center justify-center border-2";
-
-function Marker({
-  tone,
-  children,
-}: {
-  tone: "lime" | "coral";
-  children: React.ReactNode;
-}) {
-  return (
-    <span
-      className={`border-ink border-2 px-1 py-0.5 ${tone === "lime" ? "bg-lime" : "bg-coral"}`}
-    >
-      {children}
-    </span>
-  );
-}

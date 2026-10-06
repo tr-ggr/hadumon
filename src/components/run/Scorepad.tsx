@@ -1,3 +1,7 @@
+import type { ReactNode } from "react";
+
+import { PixelIcon } from "~/components/PixelIcon";
+import type { IconName } from "~/components/sprites/icons";
 import { getGoal } from "~/server/game/goals";
 import {
   GOAL_LOSE_POINTS,
@@ -7,40 +11,49 @@ import {
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
 
-import type { ReactNode } from "react";
-
+import { goalText } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
+import { GoalPays, GoalScore, RoundNumber } from "./pieces";
 
-function Line({
-  label,
+/** The lines of a score sheet, each with the icon that stands for it. */
+const LINES = [
+  ["cats", "Cats", "paw"],
+  ["yarn", "Yarn", "yarn"],
+  ["cached", "Cached", "cached"],
+  ["tucked", "Tucked", "tucked"],
+  ["goals", "Goals", "goal"],
+  ["relics", "Relics", "chest"],
+] as const satisfies readonly (readonly [
+  keyof ScoreBreakdown,
+  string,
+  IconName,
+])[];
+
+/** A number on a sheet, in bold where it beats the other side's. */
+function Cell({
   value,
-  total = false,
+  ahead,
   tally,
 }: {
-  label: string;
   value: number;
-  total?: boolean;
+  ahead: boolean;
   /** Marks the number a finished match's tally ends on. */
   tally?: "total";
 }) {
   return (
-    <div
-      className={`flex justify-between gap-2 ${total ? "border-ink mt-0.5 items-center border-t-2 pt-1 font-black" : "items-baseline border-b border-black/10"}`}
+    <td
+      data-tally={tally}
+      className={`px-1 text-right tabular-nums ${ahead ? "font-black" : "font-normal"}`}
     >
-      <dt className="text-xs leading-[1.125rem]">{label}</dt>
-      <dd
-        data-tally={tally}
-        className={`tabular-nums ${total ? "text-print text-xl" : "text-xs leading-[1.125rem] font-bold"}`}
-      >
-        <RollingNumber value={value} />
-      </dd>
-    </div>
+      <RollingNumber value={value} />
+    </td>
   );
 }
 
 /**
- * Both score sheets, line by line: the same lines, since both sides are
- * scored the same way. Each defaults to the live score.
+ * Both score sheets as one table: a line's icon, then the player's number
+ * and the rival's under their coloured tags. Both sides are scored the same
+ * way, so each line is named once. Each defaults to the live score.
  */
 export function ScoreSheets({
   match,
@@ -56,32 +69,71 @@ export function ScoreSheets({
 }) {
   const rival = getRival(match.rivalId);
   return (
-    <div className="text-ink grid grid-cols-2 gap-3">
-      <dl>
-        <p className="border-ink bg-lime mb-1 inline-block border-2 px-1 text-xs leading-5 font-black">
-          You
-        </p>
-        <Line label="Cats" value={player.cats} />
-        <Line label="Yarn" value={player.yarn} />
-        <Line label="Cached" value={player.cached} />
-        <Line label="Tucked" value={player.tucked} />
-        <Line label="Goals" value={player.goals} />
-        <Line label="Relics" value={player.relics} />
-        <Line label="Total" value={player.total} total tally="total" />
-      </dl>
-      <dl>
-        <p className="border-ink bg-coral mb-1 inline-block max-w-full truncate border-2 px-1 align-bottom text-xs leading-5 font-black">
-          {rival.name}
-        </p>
-        <Line label="Cats" value={rivalScore.cats} />
-        <Line label="Yarn" value={rivalScore.yarn} />
-        <Line label="Cached" value={rivalScore.cached} />
-        <Line label="Tucked" value={rivalScore.tucked} />
-        <Line label="Goals" value={rivalScore.goals} />
-        <Line label="Relics" value={rivalScore.relics} />
-        <Line label="Total" value={rivalScore.total} total />
-      </dl>
-      {note ? <div className="col-span-2">{note}</div> : null}
+    <div className="text-ink space-y-1.5">
+      <table className="w-full border-collapse text-xs leading-[1.125rem]">
+        <thead>
+          <tr>
+            <th className="w-full text-left">
+              <span className="sr-only">Line</span>
+            </th>
+            <th className="pb-1 pl-1 text-right">
+              <span className="border-ink bg-lime inline-block border-2 px-1 leading-5 font-black">
+                You
+              </span>
+            </th>
+            <th className="pb-1 pl-1 text-right">
+              <span
+                title={rival.name}
+                className="border-ink bg-coral inline-block max-w-24 truncate border-2 px-1 align-bottom leading-5 font-black"
+              >
+                {rival.name}
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {LINES.map(([key, label, icon]) => (
+            <tr key={key} className="border-b border-black/10">
+              <th scope="row" className="py-px text-left font-normal">
+                <span className="flex items-center gap-1.5">
+                  <PixelIcon name={icon} size={16} label={label} />
+                  <span
+                    aria-hidden
+                    className="text-ink-soft hidden text-[11px] sm:inline"
+                  >
+                    {label}
+                  </span>
+                </span>
+              </th>
+              <Cell value={player[key]} ahead={player[key] > rivalScore[key]} />
+              <Cell
+                value={rivalScore[key]}
+                ahead={rivalScore[key] > player[key]}
+              />
+            </tr>
+          ))}
+        </tbody>
+        <tfoot>
+          <tr className="border-ink text-print border-t-2 text-xl">
+            <th scope="row" className="pt-1 text-left text-xs font-black">
+              <span aria-hidden className="text-print text-base">
+                =
+              </span>
+              <span className="sr-only">Total</span>
+            </th>
+            <Cell
+              value={player.total}
+              ahead={player.total > rivalScore.total}
+              tally="total"
+            />
+            <Cell
+              value={rivalScore.total}
+              ahead={rivalScore.total > player.total}
+            />
+          </tr>
+        </tfoot>
+      </table>
+      {note}
     </div>
   );
 }
@@ -97,7 +149,6 @@ export function Scorepad({
   match: MatchView;
   className?: string;
 }) {
-  const rival = getRival(match.rivalId).name;
   return (
     <section
       aria-label="Scorepad"
@@ -112,17 +163,37 @@ export function Scorepad({
           </p>
         }
       />
-      <ol className="space-y-1 text-xs leading-snug sm:hidden">
+      <ol className="space-y-1 sm:hidden">
         {match.goals.map((goalId, round) => {
+          const goal = getGoal(goalId);
           const scored = match.goalResults[round];
           return (
-            <li key={`${round}-${goalId}`}>
-              <span className="font-black">
-                Round {round + 1}, {getGoal(goalId).name}:
-              </span>{" "}
-              {scored
-                ? `you took ${scored.playerPoints}, ${rival} took ${scored.rivalPoints}.`
-                : `${getGoal(goalId).text} ${GOAL_WIN_POINTS[round]} to the higher count, ${GOAL_LOSE_POINTS[round]} to the lower.`}
+            <li
+              key={`${round}-${goalId}`}
+              className="flex items-center justify-between gap-2"
+            >
+              <span
+                title={goal.text}
+                className="flex min-w-0 items-center gap-1.5 text-xs font-black"
+              >
+                <RoundNumber round={round} />
+                <span className="truncate">{goal.name}</span>
+                <span className="sr-only">. {goal.text}</span>
+              </span>
+              {scored ? (
+                <GoalScore
+                  player={scored.player}
+                  rival={scored.rival}
+                  playerPoints={scored.playerPoints}
+                  rivalPoints={scored.rivalPoints}
+                  sentence={goalText(match.rivalId, scored)}
+                />
+              ) : (
+                <GoalPays
+                  win={GOAL_WIN_POINTS[round] ?? 0}
+                  lose={GOAL_LOSE_POINTS[round] ?? 0}
+                />
+              )}
             </li>
           );
         })}

@@ -40,9 +40,11 @@ export function MatchCoins({
       <span className="text-print text-xl tabular-nums">
         <span className="sr-only">You earned </span>+{coins}
       </span>
-      <span className="font-black">{coins === 1 ? "coin" : "coins"}</span>
+      <span className="sr-only">{coins === 1 ? "coin" : "coins"}</span>
       <span className="border-ink border-2 bg-white px-1 font-bold tabular-nums">
-        Floor {floor} {factorText(factor)}
+        <span className="sr-only">Floor {floor}, </span>
+        <span aria-hidden>F{floor} </span>
+        {factorText(factor)}
       </span>
     </p>
   );

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { EssencePip } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import { RelicIcon } from "~/components/RelicIcon";
@@ -247,6 +249,94 @@ export function TurnCube({ spent }: { spent: boolean }) {
     <span className="border-sky-deep block h-3 w-3 border-2" />
   ) : (
     <span className="piece border-ink bg-lime block h-3 w-3 border-2" />
+  );
+}
+
+/** A tag in a side's colour: lime for the player, coral for the rival. */
+export function Marker({
+  tone,
+  className = "",
+  children,
+}: {
+  tone: "lime" | "coral";
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={`border-ink border-2 px-1 py-0.5 ${tone === "lime" ? "bg-lime" : "bg-coral"} ${className}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+/** A round's number on a square, as the round tiles and the result print it. */
+export function RoundNumber({ round }: { round: number }) {
+  return (
+    <span className="border-ink text-print inline-flex h-7 min-w-7 items-center justify-center border-2 bg-white px-1 text-lg leading-none">
+      <span className="sr-only">Round </span>
+      {round + 1}
+    </span>
+  );
+}
+
+/**
+ * How a goal stands between the two sides, with no words: the goal flag, the
+ * player's count against the rival's (the higher in bold), and the points
+ * each takes on a tag in their colour. Its sentence is for a screen reader.
+ */
+export function GoalScore({
+  player,
+  rival,
+  playerPoints,
+  rivalPoints,
+  sentence,
+  className = "",
+}: {
+  player: number;
+  rival: number;
+  playerPoints: number;
+  rivalPoints: number;
+  sentence: string;
+  className?: string;
+}) {
+  return (
+    <p
+      className={`flex items-center gap-1.5 text-xs leading-none font-bold tabular-nums ${className}`}
+    >
+      <span className="sr-only">{sentence}</span>
+      <span aria-hidden className="flex items-center gap-1.5">
+        <PixelIcon name="goal" size={16} />
+        <span className="whitespace-nowrap">
+          <span className={player > rival ? "font-black" : "font-normal"}>
+            {player}
+          </span>
+          <span className="text-ink-soft px-0.5">:</span>
+          <span className={rival > player ? "font-black" : "font-normal"}>
+            {rival}
+          </span>
+        </span>
+        <PixelIcon name="arrow" size={16} />
+        <Marker tone="lime">+{playerPoints}</Marker>
+        <Marker tone="coral">+{rivalPoints}</Marker>
+      </span>
+    </p>
+  );
+}
+
+/** What a round's goal pays, as a medal and "4/1"; read out in full. */
+export function GoalPays({ win, lose }: { win: number; lose: number }) {
+  return (
+    <span className="flex shrink-0 items-center gap-1 text-xs font-bold tabular-nums">
+      <span className="sr-only">
+        Pays {win} to the higher count, {lose} to the lower.
+      </span>
+      <span aria-hidden className="flex items-center gap-1">
+        <PixelIcon name="medal" size={16} />
+        {win}/{lose}
+      </span>
+    </span>
   );
 }
 

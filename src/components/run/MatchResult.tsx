@@ -8,11 +8,12 @@ import { getRival } from "~/server/game/rival";
 import type { MatchRecord } from "~/server/game/run";
 import type { MatchView } from "~/server/game/view";
 
-import { tiebreakText } from "./describe";
+import { goalText, tiebreakText } from "./describe";
 import { runFx } from "./fx/effects";
 import { clearEnded, justEnded } from "./fx/ended";
 import type { Intent } from "./fx/plan";
 import { MatchCoins } from "./MatchCoins";
+import { GoalScore, Marker, RoundNumber } from "./pieces";
 import { ScoreSheets } from "./Scorepad";
 import { playSound } from "./sfx/engine";
 import { useReducedMotion } from "./useStepper";
@@ -146,18 +147,24 @@ export function MatchResult({
         >
           {result.won ? `You beat ${rival.name}` : `You lost to ${rival.name}`}
         </h2>
-        <p className="mt-1.5 text-sm">
-          <span
-            className={`border-ink mr-1.5 border-2 px-1 font-black tabular-nums ${result.won ? "bg-lime" : "bg-coral"}`}
-          >
-            {player.total} to {result.rival.total}
+        <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-sm leading-none font-black tabular-nums">
+          <span className="sr-only">
+            {player.total} to {result.rival.total}.
           </span>
-          {settled ??
-            (result.won
-              ? margin <= 3
-                ? "Close, and it still counts."
-                : "Not close."
-              : `Short by ${margin}.`)}
+          <span aria-hidden className="flex items-center gap-1.5">
+            <Marker tone="lime">{player.total}</Marker>
+            <span>:</span>
+            <Marker tone="coral">{result.rival.total}</Marker>
+            {margin > 0 ? (
+              <span className="text-ink-soft">
+                {result.won ? "+" : "−"}
+                {margin}
+              </span>
+            ) : null}
+          </span>
+          {settled ? (
+            <span className="text-xs font-normal">{settled}</span>
+          ) : null}
         </p>
         {paid ? (
           <div className="mt-2.5">
@@ -173,16 +180,35 @@ export function MatchResult({
           rivalScore={result.rival}
         />
 
-        <ol className="space-y-1.5">
-          {match.goalResults.map((goal, round) => (
-            <li key={round} className="text-sm leading-snug">
-              <span className="font-bold">
-                Round {round + 1}, {getGoal(goal.goalId).name}:
-              </span>{" "}
-              you {goal.player}, {rival.name} {goal.rival}. You took{" "}
-              {goal.playerPoints}, {rival.name} took {goal.rivalPoints}.
-            </li>
-          ))}
+        <ol
+          aria-label="Rounds"
+          className="grid content-start items-center gap-x-2 gap-y-1.5 self-start text-xs sm:grid-cols-[auto_minmax(0,1fr)_auto]"
+        >
+          {match.goalResults.map((goal, round) => {
+            const { name, text } = getGoal(goal.goalId);
+            return (
+              <li
+                key={round}
+                className="flex items-center justify-between gap-2 sm:col-span-3 sm:grid sm:grid-cols-subgrid"
+              >
+                <RoundNumber round={round} />
+                <span
+                  aria-hidden
+                  title={text}
+                  className="min-w-0 flex-1 truncate font-black"
+                >
+                  {name}
+                </span>
+                <GoalScore
+                  player={goal.player}
+                  rival={goal.rival}
+                  playerPoints={goal.playerPoints}
+                  rivalPoints={goal.rivalPoints}
+                  sentence={goalText(match.rivalId, goal)}
+                />
+              </li>
+            );
+          })}
         </ol>
       </div>
     </section>
