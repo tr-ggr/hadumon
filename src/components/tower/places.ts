@@ -6,14 +6,14 @@ import { cameraFor, sceneHeight, windowCentre, type Camera } from "./camera";
 /**
  * Every page that is not a match is somewhere at the tower. Home is outside,
  * with the whole tower in view. The way to the table is the door: close on
- * wherever the run stands. The codex, the deck, the shop and the profile are
- * rooms inside, reached through the window of the rival who keeps everything
- * on file.
+ * wherever the run stands. The codex, the deck, the shop, the profile, the
+ * other players and the record of runs are rooms inside, reached through the
+ * window of the rival who keeps everything on file.
  */
 export type Place = "outside" | "door" | "room";
 
 /** The pages kept in rooms of the tower. */
-const ROOMS = ["/codex", "/deck", "/shop", "/profile"];
+const ROOMS = ["/codex", "/deck", "/shop", "/profile", "/players", "/runs"];
 
 export function placeFor(pathname: string): Place {
   if (

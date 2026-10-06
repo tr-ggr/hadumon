@@ -1,5 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   index,
   integer,
@@ -32,6 +33,14 @@ export const profiles = createTable(
     look: jsonb("look").$type<Record<string, string>>().notNull().default({}),
     /** Goes up by one whenever a run ends with a match finished. */
     runTicket: integer("run_ticket").notNull().default(0),
+    /**
+     * The name the account's profile is found under, unique: its username,
+     * or the username and the start of its id if another account had it
+     * first. Set when the row is made.
+     */
+    handle: text("handle").unique(),
+    /** Whether other players may see the account's runs. */
+    runsPublic: boolean("runs_public").notNull().default(true),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

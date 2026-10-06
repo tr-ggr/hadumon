@@ -117,7 +117,9 @@ export function RunView() {
         <RunSummary
           key={run.final.id}
           view={run.final.view}
+          runId={run.final.id}
           unlocked={run.final.unlocked}
+          achievements={run.final.achievements}
           coins={run.final.coins ?? 0}
           onAgain={run.clearFinal}
         />

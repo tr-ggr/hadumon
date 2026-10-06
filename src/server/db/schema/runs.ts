@@ -11,7 +11,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-import type { RunState } from "~/server/game/run";
+import type { RunState, RunSummary } from "~/server/game/run";
 import { createTable } from "./_table";
 import { users } from "./auth";
 
@@ -43,8 +43,18 @@ export const runs = createTable(
     state: jsonb("state").$type<RunState>().notNull(),
     matchesWon: integer("matches_won").notNull().default(0),
     score: integer("score").notNull().default(0),
-    /** What the run paid when it ended; 0 while it is being played. */
+    /** What the run's matches have paid so far. */
     coins: integer("coins").notNull().default(0),
+    /** Matches finished, the lost one included. */
+    matchesPlayed: integer("matches_played").notNull().default(0),
+    /** The best score of a single match. */
+    bestMatch: integer("best_match").notNull().default(0),
+    /**
+     * What the run came to, written when it ends, for profiles and
+     * achievements to read without the whole state. `null` on a run that
+     * ended before it was kept.
+     */
+    summary: jsonb("summary").$type<RunSummary>(),
     startedAt: timestamp("started_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -52,6 +62,7 @@ export const runs = createTable(
   },
   (t) => [
     index("runs_user_started_idx").on(t.userId, t.startedAt),
+    index("runs_status_ended_idx").on(t.status, t.endedAt),
     // Hard guarantee: an account can never have two active runs.
     uniqueIndex("runs_one_active_per_user")
       .on(t.userId)
@@ -73,11 +84,39 @@ export const unlocks = createTable(
       .references(() => users.id, { onDelete: "cascade" }),
     kind: text("kind").notNull(),
     key: text("key").notNull(),
+    /** The run that earned it, while that run is kept. */
+    runId: uuid("run_id").references(() => runs.id, { onDelete: "set null" }),
     unlockedAt: timestamp("unlocked_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
   },
-  (t) => [primaryKey({ columns: [t.userId, t.kind, t.key] })],
+  (t) => [
+    primaryKey({ columns: [t.userId, t.kind, t.key] }),
+    index("unlocks_run_idx").on(t.runId),
+  ],
+);
+
+/**
+ * The achievements an account has been paid for (`game/achievements.ts`),
+ * each once, with what it paid and the run that earned it, if a run did.
+ */
+export const achievements = createTable(
+  "achievements",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    runId: uuid("run_id").references(() => runs.id, { onDelete: "set null" }),
+    coins: integer("coins").notNull().default(0),
+    earnedAt: timestamp("earned_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.key] }),
+    index("achievements_run_idx").on(t.runId),
+  ],
 );
 
 export const runsRelations = relations(runs, ({ one }) => ({
@@ -92,3 +131,4 @@ export type Run = typeof runs.$inferSelect;
 export type NewRun = typeof runs.$inferInsert;
 export type RunStatus = Run["status"];
 export type Unlock = typeof unlocks.$inferSelect;
+export type AchievementRow = typeof achievements.$inferSelect;

@@ -25,6 +25,9 @@ describe("placeFor", () => {
     expect(placeFor("/")).toBe("outside");
     expect(placeFor("/nowhere")).toBe("outside");
     expect(placeFor("/running")).toBe("outside");
+    expect(placeFor("/runs")).toBe("room");
+    expect(placeFor("/runs/0b6f1c3e-0000-4000-8000-000000000000")).toBe("room");
+    expect(placeFor("/players/hadu")).toBe("room");
   });
 });
 

@@ -1,6 +1,7 @@
 import { authRouter } from "~/server/api/routers/auth";
 import { codexRouter } from "~/server/api/routers/codex";
 import { collectionRouter } from "~/server/api/routers/collection";
+import { playersRouter } from "~/server/api/routers/players";
 import { profileRouter } from "~/server/api/routers/profile";
 import { runRouter } from "~/server/api/routers/run";
 import { shopRouter } from "~/server/api/routers/shop";
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
   collection: collectionRouter,
   shop: shopRouter,
   profile: profileRouter,
+  players: playersRouter,
 });
 
 // export type definition of API

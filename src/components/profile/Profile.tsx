@@ -7,7 +7,20 @@ import { HaduAvatar } from "~/components/HaduAvatar";
 import { PixelIcon } from "~/components/PixelIcon";
 import { playSound } from "~/components/run/sfx/engine";
 import { COIN_COLOR } from "~/components/sprites/palettes";
-import { Board, TableLink, useToast } from "~/components/ui";
+import {
+  AchievementsBoard,
+  PrivacyBoard,
+  RecentRunsBoard,
+  ShareButton,
+  StatsBoard,
+} from "~/components/players/PlayerBoards";
+import {
+  Board,
+  BoardSkeleton,
+  TableButton,
+  TableLink,
+  useToast,
+} from "~/components/ui";
 import {
   cosmeticsIn,
   getCosmetic,
@@ -135,7 +148,14 @@ export function Profile({ profile }: { profile: ProfileData }) {
     <ProfileFrame
       aside={
         <>
-          <Mirror name={name} coins={coins} look={look} />
+          <Mirror name={name} coins={coins} look={look}>
+            <div className="flex flex-wrap gap-2">
+              <ShareButton path={`/players/${profile.handle}`} />
+              <TableLink href={`/players/${profile.handle}`} size="sm">
+                As others see it
+              </TableLink>
+            </div>
+          </Mirror>
           <StatusCard className="w-full max-lg:hidden">{sentence}</StatusCard>
         </>
       }
@@ -148,6 +168,7 @@ export function Profile({ profile }: { profile: ProfileData }) {
         </StatusCard>
       }
     >
+      <OwnRecord />
       <Shelf
         title="Wardrobe"
         intro="Press a piece to put it on. The first of a row takes it off again."
@@ -166,7 +187,56 @@ export function Profile({ profile }: { profile: ProfileData }) {
         gained={gained}
         onPress={press}
       />
+      <PrivacyBoard runsPublic={profile.runsPublic} />
     </ProfileFrame>
+  );
+}
+
+/** The account's own record, runs and achievements, as other players see them. */
+function OwnRecord() {
+  // Runs end and achievements are earned on other pages: ask again here.
+  const record = api.profile.record.useQuery(undefined, {
+    refetchOnMount: "always",
+    retry: 1,
+  });
+
+  if (record.isPending) {
+    return (
+      <>
+        <BoardSkeleton title="Record" lines={2} />
+        <BoardSkeleton title="Runs" lines={4} />
+      </>
+    );
+  }
+  if (record.error) {
+    return (
+      <Board title="Record">
+        <div role="alert" className="flex flex-col items-start gap-3">
+          <p className="text-sm">The record book would not open.</p>
+          <TableButton
+            variant="secondary"
+            size="md"
+            disabled={record.isFetching}
+            onClick={() => void record.refetch()}
+          >
+            {record.isFetching ? "Trying…" : "Try again"}
+          </TableButton>
+        </div>
+      </Board>
+    );
+  }
+  const own = record.data;
+  return (
+    <>
+      <StatsBoard stats={own.stats} />
+      <RecentRunsBoard
+        runs={own.recentRuns}
+        allHref="/runs"
+        name={own.name}
+        isSelf
+      />
+      <AchievementsBoard held={own.achievements} />
+    </>
   );
 }
 
@@ -177,10 +247,13 @@ export function Profile({ profile }: { profile: ProfileData }) {
  * board casts on stone.
  */
 export function ProfileFrame({
+  title = "Profile",
   aside,
   rail,
   children,
 }: {
+  /** The page's one h1, on its cream plate. */
+  title?: string;
   /** Under the page's name: the hadu on its mat. */
   aside: ReactNode;
   /**
@@ -194,8 +267,8 @@ export function ProfileFrame({
     <div className="in-room mx-auto w-full max-w-[1180px] [--cast:var(--board-cast)] [--mat-cast:var(--board-cast)]">
       <div className="grid items-start gap-5 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <header className="flex flex-col items-start gap-4 lg:sticky lg:top-[calc(var(--lid-h)+1.25rem)]">
-          <h1 className="piece border-ink bg-cream text-print border-2 px-3 py-2 text-3xl sm:text-[40px]">
-            Profile
+          <h1 className="piece border-ink bg-cream text-print max-w-full border-2 px-3 py-2 text-3xl break-words sm:text-[40px]">
+            {title}
           </h1>
           {aside}
         </header>
@@ -206,19 +279,29 @@ export function ProfileFrame({
   );
 }
 
-/** The hadu, large, standing on a mat, with whose it is and what they hold. */
-function Mirror({
+/**
+ * The hadu, large, standing on a mat, with whose it is and what they hold.
+ * Another player's hadu has their name on a white plate, since lime is the
+ * viewer's own, and no coins: those are only ever shown to their owner.
+ */
+export function Mirror({
   name,
   coins,
   look,
+  own = true,
+  children,
 }: {
   name: string;
-  coins: number;
+  coins?: number;
   look: Look;
+  /** True when it is the viewer's own hadu. */
+  own?: boolean;
+  /** Anything else that stands on the plate's line: a share button. */
+  children?: ReactNode;
 }) {
   return (
     <section
-      aria-label="Your hadu"
+      aria-label={own ? "Your hadu" : `${name}'s hadu`}
       className="mat flex w-full items-center gap-2 p-3 sm:gap-6 sm:p-5 lg:flex-col lg:gap-3"
     >
       {/* The margin is the air an aura stands in: a quarter of the hadu. */}
@@ -226,19 +309,24 @@ function Mirror({
         <HaduAvatar
           look={look}
           size={160}
-          label={`Your hadu. ${wornSentence(look)}`}
+          label={`${own ? "Your" : `${name}'s`} hadu. ${wornSentence(look)}`}
           className="h-32 w-32 lg:h-40 lg:w-40"
         />
       </span>
       <div className="flex min-w-0 flex-col items-start gap-2.5 lg:items-center">
-        <p className="piece border-ink bg-lime text-print max-w-full border-2 px-2.5 py-1 text-xl break-words">
+        <p
+          className={`piece border-ink text-print max-w-full border-2 px-2.5 py-1 text-xl break-words ${own ? "bg-lime" : "bg-white"}`}
+        >
           {name}
         </p>
-        <p className="piece border-ink inline-flex min-h-8 items-center gap-1.5 border-2 bg-white px-2 text-sm font-extrabold tabular-nums">
-          <PixelIcon name="coin" size={16} fill={COIN_COLOR} />
-          {coins}
-          <span className="font-bold">{coins === 1 ? "coin" : "coins"}</span>
-        </p>
+        {coins !== undefined ? (
+          <p className="piece border-ink inline-flex min-h-8 items-center gap-1.5 border-2 bg-white px-2 text-sm font-extrabold tabular-nums">
+            <PixelIcon name="coin" size={16} fill={COIN_COLOR} />
+            {coins}
+            <span className="font-bold">{coins === 1 ? "coin" : "coins"}</span>
+          </p>
+        ) : null}
+        {children}
       </div>
     </section>
   );

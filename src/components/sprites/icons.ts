@@ -420,6 +420,28 @@ export const ICONS = {
     "o1o.....",
     "ooo.....",
   ],
+  /** An achievement: a medal on its ribbon. */
+  medal: [
+    "o1o..o1o",
+    "o1o..o1o",
+    ".o1oo1o.",
+    "..oooo..",
+    ".o1111o.",
+    "o11oo11o",
+    ".o1111o.",
+    "..oooo..",
+  ],
+  /** The other players: a cat's face, ears up. */
+  players: [
+    "o......o",
+    "oo....oo",
+    "o1oooo1o",
+    "o111111o",
+    "o1o11o1o",
+    "o111111o",
+    ".o1111o.",
+    "..oooo..",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICONS;

@@ -112,6 +112,8 @@ export function useRunController() {
         void utils.collection.get.invalidate();
         void utils.codex.get.invalidate();
         void utils.run.history.invalidate();
+        void utils.profile.record.invalidate();
+        void utils.players.invalidate();
         return;
       }
       // Only the action that won a match lands on its reward, and the match

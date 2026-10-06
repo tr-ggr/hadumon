@@ -13,6 +13,7 @@ import {
   readProfile,
   spendCoins,
 } from "~/server/api/economy";
+import { grantAchievements } from "~/server/api/achievements";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { cosmetics, packOpens } from "~/server/db/schema/economy";
 import {
@@ -26,6 +27,7 @@ import {
   settleCats,
   type PackResult,
 } from "~/server/game/packs";
+import type { Achievement } from "~/server/game/achievements";
 import { createRng } from "~/server/game/rng";
 
 export interface ShelfPack {
@@ -41,6 +43,8 @@ export interface Opened {
   coins: number;
   /** True if this request had been answered before: nothing was bought. */
   replayed: boolean;
+  /** Achievements the pack completed, each paid once; their coins are in `coins`. */
+  achievements: Achievement[];
 }
 
 export const shopRouter = createTRPCRouter({
@@ -92,6 +96,7 @@ export const shopRouter = createTRPCRouter({
             result: before.result,
             coins: profile.coins,
             replayed: true,
+            achievements: [],
           };
         }
 
@@ -152,7 +157,9 @@ export const shopRouter = createTRPCRouter({
           price,
           result,
         });
-        return { result, coins, replayed: false };
+        const earned = await grantAchievements(tx, userId, null);
+        coins += earned.reduce((sum, a) => sum + a.coins, 0);
+        return { result, coins, replayed: false, achievements: earned };
       });
     }),
 });

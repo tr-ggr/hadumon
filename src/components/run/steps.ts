@@ -7,7 +7,8 @@ export type SetupStep = "rival" | "table" | "keep" | "recap";
 /** The screens after a match is won, in the order they are shown. */
 export type RewardStep = "result" | "reclaim" | "relic" | "trim" | "recap";
 /** The screens after a run has ended, in the order they are shown. */
-export type SummaryStep = "result" | "unlocks" | "coins" | "summary";
+export type SummaryStep =
+  "result" | "unlocks" | "achievements" | "coins" | "summary";
 
 /**
  * Every match opens the same way, so the list is fixed: there is always a
@@ -42,17 +43,20 @@ export function rewardSteps(
 
 /**
  * An abandoned run has no last match to show, a run that unlocked nothing
- * has no unlocks screen, and a run that paid nothing has no coins to count:
+ * has no unlocks screen, a run that completed no achievement has no
+ * achievements screen, and a run that paid nothing has no coins to count:
  * each would be a click through nothing.
  */
 export function summarySteps(
   view: RunView,
   unlocked: readonly Unlock[],
   coins = 0,
+  achievements = 0,
 ): SummaryStep[] {
   const steps: SummaryStep[] = [];
   if (view.outcome !== "abandoned" && view.match?.result) steps.push("result");
   if (unlocked.length > 0) steps.push("unlocks");
+  if (achievements > 0) steps.push("achievements");
   if (coins > 0) steps.push("coins");
   steps.push("summary");
   return steps;

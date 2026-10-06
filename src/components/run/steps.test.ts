@@ -116,6 +116,21 @@ describe("summarySteps", () => {
     expect(summarySteps(ended(), [], 0)).toEqual(["result", "summary"]);
   });
 
+  it("shows the achievements after the unlocks and before the coins", () => {
+    expect(summarySteps(ended(), UNLOCKS, 40, 2)).toEqual([
+      "result",
+      "unlocks",
+      "achievements",
+      "coins",
+      "summary",
+    ]);
+    expect(summarySteps(ended(), [], 0, 1)).toEqual([
+      "result",
+      "achievements",
+      "summary",
+    ]);
+  });
+
   it("has no unlocks step when nothing was unlocked", () => {
     expect(summarySteps(ended(), [])).toEqual(["result", "summary"]);
   });

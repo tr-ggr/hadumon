@@ -39,6 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/deck", label: "Deck", icon: "card" },
   { href: "/shop", label: "Shop", icon: "pack" },
   { href: "/codex", label: "Codex", icon: "book" },
+  { href: "/players", label: "Players", icon: "players" },
 ];
 /** The signed-out forms bring their own lid, signed in or not. */
 const BARE_ROUTES = AUTH_ROUTES;
@@ -273,12 +274,12 @@ function Lid({ pathname }: { pathname: string }) {
   );
 }
 
-/** The same five ways, docked along the bottom of a phone. */
+/** The same six ways, docked along the bottom of a phone. */
 function Dock({ pathname }: { pathname: string }) {
   return (
     <nav
       aria-label="Primary navigation"
-      className="shell-dock rail fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 gap-1.5 px-2 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] md:hidden"
+      className="shell-dock rail fixed inset-x-0 bottom-0 z-30 grid grid-cols-6 gap-1 px-1.5 pt-2.5 pb-[calc(0.875rem+env(safe-area-inset-bottom,0px))] md:hidden"
     >
       {NAV_ITEMS.map((item) => (
         <NavButton
@@ -306,7 +307,7 @@ function NavButton({
   item: NavItem;
   size: TableButtonSize;
   active: boolean;
-  /** The icon over the label, for five across a phone. */
+  /** The icon over the label, for six across a phone. */
   stacked?: boolean;
 }) {
   const variant = active

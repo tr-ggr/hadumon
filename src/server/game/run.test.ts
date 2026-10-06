@@ -649,3 +649,42 @@ describe("a whole run", () => {
     }
   });
 });
+
+describe("the run's record", () => {
+  it("keeps how a finished match ended, after its board is gone", () => {
+    const run = finishMatch(newRun(), false);
+    const match = run.match!;
+    const record = run.results[0]!;
+    expect(record.detail).toBeDefined();
+    const detail = record.detail!;
+    expect(detail.level).toBe(match.level);
+    expect(detail.breakdown.player.total).toBe(record.player);
+    expect(detail.breakdown.rival.total).toBe(record.rival);
+    expect(detail.goalResults).toEqual(match.goalResults);
+    expect(detail.relics.player).toEqual(match.sides.player.relics);
+    for (const side of ["player", "rival"] as const) {
+      for (const row of ["hunt", "den", "prowl"] as const) {
+        expect(detail.boards[side][row].map((cat) => cat.catId)).toEqual(
+          match.sides[side].board[row].map((cat) => cat.catId),
+        );
+        // The cats tucked under a card stay face down.
+        for (const cat of detail.boards[side][row]) {
+          expect(cat).not.toHaveProperty("under");
+        }
+      }
+    }
+  });
+
+  it("puts a reward on the record of the match that earned it", () => {
+    const won = finishMatch(newRun(), true);
+    expect(won.results[0]!.reward).toBeUndefined();
+    const choice = {
+      reclaim: won.reward!.reclaim[0]!,
+      relic: won.reward!.relics[0] ?? null,
+      trim: null,
+    };
+    const next = applyReward(won, choice);
+    expect(next.results[0]!.reward).toEqual(choice);
+    expect(won.results[0]!.reward).toBeUndefined();
+  });
+});

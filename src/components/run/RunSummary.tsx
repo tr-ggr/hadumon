@@ -3,6 +3,7 @@
 import { CatCard } from "~/components/cats/CatCard";
 import { PixelIcon } from "~/components/PixelIcon";
 import { COIN_COLOR } from "~/components/sprites/palettes";
+import type { Achievement } from "~/server/game/achievements";
 import { getCat } from "~/server/game/cats";
 import { DIFFICULTY } from "~/server/game/difficulty";
 import { getRelic } from "~/server/game/relics";
@@ -63,8 +64,12 @@ function UnlockPiece({ unlock }: { unlock: Unlock }) {
 }
 
 export interface RunSummaryProps {
+  /** The run, for the way to its record. */
+  runId: string;
   view: RunView;
   unlocked: readonly Unlock[];
+  /** Achievements the run completed, each paid once on top of its coins. */
+  achievements: readonly Achievement[];
   /** What the run paid: the sum of what each of its matches paid as it ended. */
   coins: number;
   onAgain: () => void;
@@ -73,12 +78,14 @@ export interface RunSummaryProps {
 /**
  * The end of a run, one screen at a time: the last match, what the run
  * unlocked, the coins it paid, then the run as a whole. It exists only in
- * memory; a reload starts fresh, and the record book on the home mat keeps
- * what each run paid.
+ * memory; a reload starts fresh, and the run's record (`/runs/<id>`) keeps
+ * all of it.
  */
 export function RunSummary({
+  runId,
   view,
   unlocked,
+  achievements,
   coins,
   onAgain,
 }: RunSummaryProps) {
@@ -86,7 +93,7 @@ export function RunSummary({
   const total = view.results.reduce((sum, result) => sum + result.player, 0);
   const lastMatch = view.outcome === "abandoned" ? null : view.match;
 
-  const steps = summarySteps(view, unlocked, coins);
+  const steps = summarySteps(view, unlocked, coins, achievements.length);
   const { step, index, count, isFirst, isLast, next, back, heading } =
     useSteps(steps);
   const following = steps[index + 1];
@@ -94,12 +101,15 @@ export function RunSummary({
   const ahead =
     following === "unlocks"
       ? "What this run unlocked is next."
-      : following === "coins"
-        ? "What this run paid is next."
-        : "The run, match by match, is next.";
+      : following === "achievements"
+        ? "What this run achieved is next."
+        : following === "coins"
+          ? "What this run paid is next."
+          : "The run, match by match, is next.";
   const sentence: Record<SummaryStep, string> = {
     result: ahead,
     unlocks: ahead,
+    achievements: ahead,
     coins: ahead,
     summary: "A new run starts with your deck and a tier.",
   };
@@ -139,6 +149,43 @@ export function RunSummary({
                 <li key={`${unlock.kind}:${unlock.key}`}>
                   <span className="sr-only">{unlockLabel(unlock)}</span>
                   <UnlockPiece unlock={unlock} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+
+        {step === "achievements" ? (
+          <section className="fitted:my-auto space-y-3 pt-2">
+            <div className="max-w-[65ch]">
+              <h2
+                ref={heading}
+                tabIndex={-1}
+                className="text-print text-ink text-3xl"
+              >
+                Achievements
+              </h2>
+              <p className="text-ink mt-1 text-sm">
+                {plural(achievements.length, "achievement")} done for the first
+                time. Each pays its coins once, and they are on your account
+                already, on top of what the run paid.
+              </p>
+            </div>
+            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {achievements.map((achievement) => (
+                <li
+                  key={achievement.key}
+                  className="piece piece-card border-ink text-ink flex gap-3 border-2 bg-white p-3"
+                >
+                  <PixelIcon name="medal" size={32} fill={COIN_COLOR} />
+                  <div className="min-w-0">
+                    <p className="text-print text-xl">{achievement.name}</p>
+                    <p className="text-sm">{achievement.hint}</p>
+                    <p className="mt-1 inline-flex items-center gap-1 text-sm font-black tabular-nums">
+                      <PixelIcon name="coin" size={16} fill={COIN_COLOR} />+
+                      {plural(achievement.coins, "coin")}
+                    </p>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -287,7 +334,8 @@ export function RunSummary({
               {unlocked.length === 0 ? "Nothing new unlocked this time." : ""}
             </p>
 
-            <div className="fitted:mb-auto pt-1 pb-2">
+            <div className="fitted:mb-auto flex flex-wrap gap-2 pt-1 pb-2">
+              <TableLink href={`/runs/${runId}`}>View run summary</TableLink>
               <TableLink href="/codex">Open the codex</TableLink>
             </div>
           </>

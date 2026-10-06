@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 
 import { TRPCError } from "@trpc/server";
-import { and, desc, eq, ne, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
 
 import {
@@ -11,9 +11,16 @@ import {
   ownedBy,
   savedDeck,
 } from "~/server/api/economy";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { grantAchievements } from "~/server/api/achievements";
+import { historyInput, historyOf, recordOf } from "~/server/api/records";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 import type { DbOrTx, Transaction } from "~/server/db";
 import { runs, unlocks, type Run } from "~/server/db/schema/runs";
+import type { Achievement } from "~/server/game/achievements";
 import { ROWS } from "~/server/game/cats";
 import { gainCards, ownedIds } from "~/server/game/collection";
 import { describeProblem, validateDeck } from "~/server/game/deck";
@@ -108,6 +115,8 @@ export interface RunUpdate extends RunSnapshot {
   beats: RivalBeat[];
   /** What the run unlocked, set once when it ends. */
   unlocked: Unlock[];
+  /** The achievements the run earned, each paid once, set when it ends. */
+  achievements: Achievement[];
   /**
    * The coins the whole run paid, set once when it ends; `null` until then.
    * Each match's own is on its record in `view.results`, paid as it ended.
@@ -187,7 +196,10 @@ async function retireStaleRun(
     .set({
       version: run.version + 1,
       matchesWon: summary.matchesWon,
+      matchesPlayed: summary.matchesPlayed,
+      bestMatch: summary.bestMatchScore,
       score: summary.totalScore,
+      summary,
       coins,
       status: "abandoned",
       endedAt: new Date(),
@@ -198,7 +210,8 @@ async function retireStaleRun(
   if (!closed) return;
   await payCoins(tx, run.userId, coins);
   await spendTicket(tx, run.userId, finished);
-  await award(tx, run.userId, summary);
+  await award(tx, run.userId, summary, run.id);
+  await grantAchievements(tx, run.userId, run.id);
 }
 
 /** The account's active run, if it has one; an unreadable one is closed first. */
@@ -236,12 +249,13 @@ async function award(
   tx: Transaction,
   userId: string,
   summary: RunSummary,
+  runId: string,
 ): Promise<Unlock[]> {
   const unlocked = earnedUnlocks(summary, await heldUnlocks(tx, userId));
   if (unlocked.length === 0) return unlocked;
   await tx
     .insert(unlocks)
-    .values(unlocked.map((unlock) => ({ userId, ...unlock })))
+    .values(unlocked.map((unlock) => ({ userId, runId, ...unlock })))
     .onConflictDoNothing();
   const cats = unlocked.filter((u) => u.kind === "cat").map((u) => u.key);
   if (cats.length > 0) {
@@ -317,10 +331,12 @@ async function persist(
       state,
       version: nextVersion,
       matchesWon: summary.matchesWon,
+      matchesPlayed: summary.matchesPlayed,
+      bestMatch: summary.bestMatchScore,
       score: summary.totalScore,
       coins: summary.coins,
       ...(ended
-        ? { status: state.outcome ?? "lost", endedAt: new Date() }
+        ? { status: state.outcome ?? "lost", endedAt: new Date(), summary }
         : {}),
     })
     .where(and(eq(runs.id, run.id), eq(runs.status, "active")))
@@ -334,11 +350,14 @@ async function persist(
 
   await payCoins(tx, run.userId, paidNow);
   let unlocked: Unlock[] = [];
+  let earned: Achievement[] = [];
   if (ended) {
     // The profile is locked by the ticket, so the collection cannot move
     // under the prizes.
     await spendTicket(tx, run.userId, state.results.length);
-    unlocked = await award(tx, run.userId, summary);
+    unlocked = await award(tx, run.userId, summary, run.id);
+    // Read after the run row is closed, so the career counts this run.
+    earned = await grantAchievements(tx, run.userId, run.id);
   }
   return {
     id: run.id,
@@ -347,6 +366,7 @@ async function persist(
     events,
     beats,
     unlocked,
+    achievements: earned,
     coins: ended ? summary.coins : null,
   };
 }
@@ -475,24 +495,27 @@ export const runRouter = createTRPCRouter({
       });
     }),
 
-  /** Finished runs, newest first. */
+  /** The account's finished runs, newest first, a page at a time. */
   history: protectedProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(50).default(10) }))
-    .query(({ ctx, input }) =>
-      ctx.db
-        .select({
-          id: runs.id,
-          difficulty: runs.difficulty,
-          status: runs.status,
-          matchesWon: runs.matchesWon,
-          score: runs.score,
-          coins: runs.coins,
-          startedAt: runs.startedAt,
-          endedAt: runs.endedAt,
-        })
-        .from(runs)
-        .where(and(eq(runs.userId, ctx.user.id), ne(runs.status, "active")))
-        .orderBy(desc(runs.startedAt))
-        .limit(input.limit),
-    ),
+    .input(historyInput)
+    .query(({ ctx, input }) => historyOf(ctx.db, ctx.user.id, input, true)),
+
+  /**
+   * Everything a finished run did, for its details page. Anyone may read
+   * the run of an account that shows its runs; only its player sees what it
+   * paid. A run in play, a private one and a missing one all read as not
+   * found.
+   */
+  record: publicProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const record = await recordOf(ctx.db, input.id, ctx.user?.id ?? null);
+      if (!record) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "There is no such run to show.",
+        });
+      }
+      return record;
+    }),
 });

@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, gte, sql } from "drizzle-orm";
+import { and, eq, gte, isNull, sql } from "drizzle-orm";
 
 import type { DbOrTx, Transaction } from "~/server/db";
+import { users } from "~/server/db/schema/auth";
 import {
   cards,
   cosmetics,
@@ -36,24 +37,104 @@ export async function lockProfile(
       message: "No profile row",
     });
   }
+  if (profile.handle === null) {
+    return { ...profile, handle: await claimHandle(tx, userId) };
+  }
   return profile;
+}
+
+/**
+ * The handles an account may be found under, best first: its username,
+ * then the username with more and more of its id. A username has no
+ * hyphen, so a handle with one never belongs to another account's name.
+ */
+export function handleCandidates(name: string, userId: string): string[] {
+  const base = name.toLowerCase();
+  const id = userId.replace(/-/g, "").toLowerCase();
+  return [
+    base,
+    `${base}-${id.slice(0, 4)}`,
+    `${base}-${id.slice(0, 8)}`,
+    `${base}-${id}`,
+  ];
+}
+
+/**
+ * Gives a profile without a handle the first free one and returns it; a
+ * profile that has one keeps it. The row must exist.
+ */
+export async function claimHandle(db: DbOrTx, userId: string): Promise<string> {
+  const [row] = await db
+    .select({ handle: profiles.handle, name: users.name })
+    .from(profiles)
+    .innerJoin(users, eq(users.id, profiles.userId))
+    .where(eq(profiles.userId, userId))
+    .limit(1);
+  if (!row) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "No profile row",
+    });
+  }
+  if (row.handle !== null) return row.handle;
+  for (const candidate of handleCandidates(row.name, userId)) {
+    const [taken] = await db
+      .select({ userId: profiles.userId })
+      .from(profiles)
+      .where(eq(profiles.handle, candidate))
+      .limit(1);
+    if (taken) continue;
+    const [claimed] = await db
+      .update(profiles)
+      .set({ handle: candidate })
+      .where(and(eq(profiles.userId, userId), isNull(profiles.handle)))
+      .returning({ handle: profiles.handle });
+    if (claimed?.handle) return claimed.handle;
+    // Claimed by another request since it was read: that one's stands.
+    return claimHandle(db, userId);
+  }
+  throw new TRPCError({
+    code: "INTERNAL_SERVER_ERROR",
+    message: "No handle is free",
+  });
+}
+
+/** The account's handle, making its profile row and handle if it has neither. */
+export async function ensureHandle(
+  db: DbOrTx,
+  userId: string,
+): Promise<string> {
+  await db.insert(profiles).values({ userId }).onConflictDoNothing();
+  return claimHandle(db, userId);
 }
 
 /** What a profile holds, without making or locking a row. */
 export async function readProfile(
   db: DbOrTx,
   userId: string,
-): Promise<Pick<Profile, "coins" | "look" | "runTicket">> {
+): Promise<
+  Pick<Profile, "coins" | "look" | "runTicket" | "handle" | "runsPublic">
+> {
   const [profile] = await db
     .select({
       coins: profiles.coins,
       look: profiles.look,
       runTicket: profiles.runTicket,
+      handle: profiles.handle,
+      runsPublic: profiles.runsPublic,
     })
     .from(profiles)
     .where(eq(profiles.userId, userId))
     .limit(1);
-  return profile ?? { coins: 0, look: {}, runTicket: 0 };
+  return (
+    profile ?? {
+      coins: 0,
+      look: {},
+      runTicket: 0,
+      handle: null,
+      runsPublic: true,
+    }
+  );
 }
 
 /** Adds coins to a profile whose row exists. Returns the new balance. */

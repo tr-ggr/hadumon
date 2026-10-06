@@ -11,7 +11,7 @@
  */
 
 import { rivalPolicy } from "./bot";
-import { getCat } from "./cats";
+import { getCat, ROWS, type Row } from "./cats";
 import { DECK_SIZE, STOLEN } from "./deck";
 import { difficultyOf, rivalLevel, type DifficultyId } from "./difficulty";
 import { advance, openMatch } from "./duel";
@@ -19,9 +19,15 @@ import { ELEMENTS, type Element } from "./elements";
 import {
   IllegalAction,
   type Action,
+  type Board,
+  type GoalResult,
   type MatchConfig,
   type MatchEvent,
   type MatchState,
+  type PlacedCat,
+  type ScoreBreakdown,
+  type SideId,
+  type Tiebreak,
 } from "./match";
 import { getRelic } from "./relics";
 import { GAUNTLET } from "./rival";
@@ -89,6 +95,59 @@ export interface MatchRecord {
   coins: number;
   /** What its floor of the tower multiplied them by. */
   factor: number;
+  /**
+   * How the match ended, kept for the run's record once its board is gone.
+   * Missing on a match recorded before it was kept.
+   */
+  detail?: MatchDetail;
+  /** What the reward after it took. Missing after a loss or the last win. */
+  reward?: RewardChoice;
+}
+
+/** A board as it stood when its match ended; tucked cats are only counted. */
+export type FinalBoard = Record<Row, Omit<PlacedCat, "under">[]>;
+
+export interface MatchDetail {
+  /** How well the rival played, 0 the least. */
+  level: number;
+  breakdown: Record<SideId, ScoreBreakdown>;
+  goalResults: GoalResult[];
+  /** Set only when the scores were level. */
+  tiebreak: Tiebreak | null;
+  boards: Record<SideId, FinalBoard>;
+  relics: Record<SideId, string[]>;
+}
+
+function finalBoard(board: Board): FinalBoard {
+  const rows = {} as FinalBoard;
+  for (const row of ROWS) {
+    rows[row] = board[row].map(({ catId, yarn, cached, tucked }) => ({
+      catId,
+      yarn,
+      cached,
+      tucked,
+    }));
+  }
+  return rows;
+}
+
+/** What a finished match leaves on the run's record besides its scores. */
+export function matchDetail(state: MatchState): MatchDetail | undefined {
+  if (!state.result) return undefined;
+  return {
+    level: state.level,
+    breakdown: { player: state.result.player, rival: state.result.rival },
+    goalResults: state.goalResults,
+    tiebreak: state.result.tiebreak,
+    boards: {
+      player: finalBoard(state.sides.player.board),
+      rival: finalBoard(state.sides.rival.board),
+    },
+    relics: {
+      player: state.sides.player.relics,
+      rival: state.sides.rival.relics,
+    },
+  };
 }
 
 /** The facts of a finished match that its coins are counted from. */
@@ -385,6 +444,7 @@ export function settleMatch(
         goals,
         coins,
         factor,
+        detail: matchDetail(state),
       },
     ],
   };
@@ -455,6 +515,10 @@ export function applyReward(run: RunState, choice: RewardChoice): RunState {
     phase: "match",
     match: null,
     reward: null,
+    // The reward goes on the record of the match that earned it.
+    results: run.results.map((record, i) =>
+      i === run.results.length - 1 ? { ...record, reward: choice } : record,
+    ),
   };
 }
 

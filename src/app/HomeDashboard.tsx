@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, type CSSProperties, type ReactNode } from "react";
+import { type CSSProperties, type ReactNode } from "react";
 
 import { countUnlocked } from "~/components/codex/entries";
 import { HaduAvatar } from "~/components/HaduAvatar";
 import { Nameplate } from "~/components/run/pieces";
 import { GauntletTrack } from "~/components/run/RunStrip";
+import { RunRow } from "~/components/runs/RunRow";
 import { useLook } from "~/components/skins/SkinProvider";
 import { Board, Skeleton, TableButton, TableLink } from "~/components/ui";
 import { difficultyOf } from "~/server/game/difficulty";
@@ -17,7 +18,6 @@ export interface HomeDashboardProps {
 }
 
 type RunSnapshot = NonNullable<RouterOutputs["run"]["current"]>;
-type PastRun = RouterOutputs["run"]["history"][number];
 
 const HISTORY_LIMIT = 5;
 /** A gauntlet nobody has started: every rival still to come. */
@@ -273,11 +273,18 @@ function RecentRuns() {
     { limit: HISTORY_LIMIT },
     { refetchOnMount: "always", retry: 1 },
   );
-  // Fixed once per mount so every row is measured against the same moment.
-  const [now] = useState(() => Date.now());
 
   return (
-    <Board title="Record book">
+    <Board
+      title="Record book"
+      action={
+        history.data && history.data.runs.length > 0 ? (
+          <TableLink href="/runs" size="sm">
+            See all runs
+          </TableLink>
+        ) : null
+      }
+    >
       {history.isPending ? (
         <div role="status" aria-busy="true" className="grid gap-2">
           <span className="sr-only">Loading recent runs…</span>
@@ -297,79 +304,20 @@ function RecentRuns() {
             {history.isFetching ? "Trying…" : "Try again"}
           </TableButton>
         </div>
-      ) : history.data.length === 0 ? (
+      ) : history.data.runs.length === 0 ? (
         <p className="text-ink-soft">
           Nothing on record. Finish a run, win or lose, and it is written down
           here.
         </p>
       ) : (
         <ol className="divide-ink/15 divide-y-2 divide-dashed">
-          {history.data.map((past) => (
-            <PastRunRow key={past.id} run={past} now={now} />
+          {history.data.runs.map((past) => (
+            <RunRow key={past.id} run={past} />
           ))}
         </ol>
       )}
     </Board>
   );
-}
-
-/** How a past run ended, as the colour of its tag: the player's, the rival's, nobody's. */
-const OUTCOME_TAG: Record<PastRun["status"], string> = {
-  won: "bg-lime",
-  lost: "bg-coral",
-  abandoned: "bg-white",
-  active: "bg-white",
-};
-
-function PastRunRow({ run, now }: { run: PastRun; now: number }) {
-  const ended = run.endedAt ?? run.startedAt;
-
-  return (
-    <li className="flex flex-col gap-1.5 py-3 first:pt-0 last:pb-0">
-      <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-        <p className="min-w-0 font-bold break-words">
-          {difficultyOf(run.difficulty).name}
-        </p>
-        <span
-          className={`border-ink border-2 px-1.5 text-xs leading-5 font-black ${OUTCOME_TAG[run.status]}`}
-        >
-          {outcomeText(run)}
-        </span>
-      </div>
-      <p className="text-ink-soft text-sm tabular-nums">
-        {run.matchesWon} of {GAUNTLET.length} won · score {run.score} ·{" "}
-        {run.coins} {run.coins === 1 ? "coin" : "coins"} ·{" "}
-        <time dateTime={ended.toISOString()} title={ended.toLocaleString()}>
-          {timeAgo(ended.getTime(), now)}
-        </time>
-      </p>
-    </li>
-  );
-}
-
-/** "Won", "Lost to Madame Mittens", or "Abandoned". */
-function outcomeText(run: PastRun): string {
-  if (run.status === "won") return "Won";
-  if (run.status === "abandoned") return "Abandoned";
-  // A lost run stopped at the match after its last win.
-  const rivalId = GAUNTLET[run.matchesWon];
-  return rivalId ? `Lost to ${getRival(rivalId).name}` : "Lost";
-}
-
-const AGO_UNITS: readonly [Intl.RelativeTimeFormatUnit, number][] = [
-  ["day", 86_400_000],
-  ["hour", 3_600_000],
-  ["minute", 60_000],
-];
-
-function timeAgo(then: number, now: number): string {
-  const elapsed = now - then;
-  const format = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  for (const [unit, size] of AGO_UNITS) {
-    if (elapsed >= size)
-      return format.format(-Math.floor(elapsed / size), unit);
-  }
-  return "just now";
 }
 
 function CodexProgress() {
