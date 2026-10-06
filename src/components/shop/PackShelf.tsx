@@ -76,6 +76,12 @@ export interface PackShelfProps {
   /** What `packTabId` and the panel under the row were given. */
   idBase: string;
   panelId: string;
+  /**
+   * The pack in the middle has been picked and the shop is being asked for
+   * it: the others drop away under the shelf, and nothing here takes a
+   * press. If the shop refuses, they come back up.
+   */
+  picked?: boolean;
 }
 
 /**
@@ -91,6 +97,9 @@ export interface PackShelfProps {
  * the pack that goes off one end slides out as its copy slides in at the
  * other. The copies past the two ends are pictures in shadow: they are not
  * tabs, take no press and are not read out.
+ *
+ * The packs at the sides stand turned toward the one in the middle, the
+ * further out the further round, and never so far as to show their backs.
  */
 export function PackShelf({
   items,
@@ -99,6 +108,7 @@ export function PackShelf({
   onLook,
   idBase,
   panelId,
+  picked = false,
 }: PackShelfProps) {
   const count = items.length;
   const index = Math.max(
@@ -116,6 +126,12 @@ export function PackShelf({
   const swipe = useRef<{ x: number; y: number } | null>(null);
   /** A swipe that ends on a pack would press it; that press is not meant. */
   const swiped = useRef(false);
+  /**
+   * Whether the packs at the sides are on their way back up, after a pick
+   * the shop refused. It is so until the row is next turned.
+   */
+  const [pick, setPick] = useState({ picked, back: false });
+  if (pick.picked !== picked) setPick({ picked, back: !picked });
 
   // The pack shown is the caller's to say. Told of one this row did not turn
   // to, it goes there the short way round.
@@ -133,6 +149,7 @@ export function PackShelf({
     }
     if (next.pack.id === shown) return;
     playSound("pick");
+    if (pick.back) setPick({ picked, back: false });
     setTurn({ at: at + by, was: at });
     onShow(next.pack.id);
   };
@@ -180,6 +197,7 @@ export function PackShelf({
         variant="secondary"
         size="icon"
         aria-label="Previous pack"
+        disabled={picked}
         onClick={() => show(-1)}
         className="col-start-2 row-start-2"
       >
@@ -190,6 +208,9 @@ export function PackShelf({
         role="tablist"
         aria-label="Packs"
         data-turned={was === null ? undefined : ""}
+        data-picked={picked ? "" : undefined}
+        data-back={pick.back ? "" : undefined}
+        inert={picked}
         onKeyDown={onKeyDown}
         onPointerDown={onPointerDown}
         onPointerUp={onPointerUp}
@@ -263,6 +284,7 @@ export function PackShelf({
         variant="secondary"
         size="icon"
         aria-label="Next pack"
+        disabled={picked}
         onClick={() => show(1)}
         className="col-start-4 row-start-2"
       >
@@ -279,8 +301,8 @@ export function PackShelf({
 
 /**
  * The stage the packs stand on, and the shelf under them: a board seen
- * edge-on, with a price hung on its lip under every pack. The reveal stands
- * the pack it opens on the same stage, so that pack does not move.
+ * edge-on, with a price hung on its lip under every pack. A pack that is
+ * picked is opened where it stands (`PackOpening`), so it does not move.
  */
 export function ShelfStage({
   children,
@@ -288,7 +310,7 @@ export function ShelfStage({
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className="relative isolate col-span-5 row-start-1 -mx-4 pb-5 sm:mx-0">
+    <div className="pack-shelf relative isolate col-span-5 row-start-1 -mx-4 pb-5 sm:mx-0">
       <div className={`pack-stage ${className}`} {...props}>
         {children}
       </div>

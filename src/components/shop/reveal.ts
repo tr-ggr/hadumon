@@ -4,7 +4,7 @@
  * says it is however often the page is rendered or its queries refetched.
  */
 
-import { getCat, RARITY_LABELS } from "~/server/game/cats";
+import { getCat, RARITY_LABELS, type Rarity } from "~/server/game/cats";
 import { copyCap, type Owned } from "~/server/game/collection";
 import { getCosmetic, SLOT_LABELS } from "~/server/game/cosmetics";
 import type { PackResult } from "~/server/game/packs";
@@ -12,24 +12,68 @@ import type { PackResult } from "~/server/game/packs";
 import { coins } from "./copy";
 
 /**
- * How far the wrapper has got. It stands sealed, its top is torn off, the
- * cards show at its mouth, and then they lie on the board face down.
+ * How far the wrapper has got. The pack comes forward, waits to be cut, has
+ * its top cut off, burns away, goes up in a flash, and then its cards lie on
+ * the board face down.
  */
-export const PHASES = ["sealed", "torn", "drawn", "dealt"] as const;
+export const PHASES = [
+  "raised",
+  "ready",
+  "cut",
+  "burnt",
+  "flash",
+  "dealt",
+] as const;
 export type Phase = (typeof PHASES)[number];
 
-/** How long each phase is held before the next, in milliseconds. */
-export const PHASE_MS: Record<Exclude<Phase, "dealt">, number> = {
-  sealed: 460,
-  torn: 340,
-  drawn: 380,
+/**
+ * How a pack is opened: in full the first time of a visit, cut short for
+ * every one after, and with reduced motion (`calm`) not at all.
+ */
+export type Pace = "full" | "short" | "calm";
+type Played = Exclude<Pace, "calm">;
+
+/**
+ * How long each phase is held before the next, in milliseconds. A phase with
+ * no time waits for a press (`ready`, which the short opening leaves out) or
+ * is where the wrapper ends (`dealt`).
+ */
+export const PHASE_MS: Record<Played, Partial<Record<Phase, number>>> = {
+  full: { raised: 450, cut: 360, burnt: 900, flash: 520 },
+  short: { raised: 220, cut: 220, burnt: 420, flash: 260 },
 };
+
+/**
+ * How the cards leave the pack once it is open: each `gap` after the one
+ * before, and `fly` on its way.
+ */
+export const DEAL_MS: Record<Played, { gap: number; fly: number }> = {
+  full: { gap: 70, fly: 520 },
+  short: { gap: 30, fly: 300 },
+};
+
+/** How long the shelf's other packs are given to drop away before the cut. */
+export const PICK_MS = 340;
+
+/** The gap between two cards when the rest are turned one after another. */
+export const TURN_GAP_MS = 170;
+/** How much longer the next card waits after one of these. */
+const HOLD_MS: Partial<Record<Rarity, number>> = { epic: 250, legendary: 450 };
+
+/** The rarities a card gives away while it is still face down. */
+const TOLD: readonly Rarity[] = ["rare", "epic", "legendary"];
 
 export interface Reveal {
   /** The request that opened the pack: one reveal to a press. */
   id: string;
   result: PackResult;
   phase: Phase;
+  pace: Pace;
+  /**
+   * True once the wrapper has played to its end, so the cards fly out of it.
+   * A reveal that was skipped, or shown calm, has them simply there.
+   */
+  flown: boolean;
   /** Whether each thing that came out is face up, in the pack's order. */
   up: readonly boolean[];
   /** The card turned last, for the rail to speak of; `null` before any. */
@@ -52,19 +96,22 @@ export function pulled(result: PackResult): number {
 }
 
 /**
- * A reveal as it starts. With `calm` (reduced motion) nothing is torn and
+ * A reveal as it starts. With `calm` (reduced motion) nothing is cut and
  * nothing is turned: everything is face up from the first frame.
  */
 export function beginReveal(
   id: string,
   result: PackResult,
   before: Owned | null,
-  calm: boolean,
+  pace: Pace,
 ): Reveal {
+  const calm = pace === "calm";
   return {
     id,
     result,
-    phase: calm ? "dealt" : "sealed",
+    phase: calm ? "dealt" : "raised",
+    pace,
+    flown: false,
     up: Array.from({ length: pulled(result) }, () => calm),
     last: null,
     byHand: false,
@@ -73,15 +120,66 @@ export function beginReveal(
   };
 }
 
-/** The next phase of the wrapper; a dealt pack stays dealt. */
+/** How long the phase a reveal is in is held; `null` if nothing times it. */
+export function phaseMs(reveal: Reveal): number | null {
+  if (reveal.pace === "calm") return null;
+  return PHASE_MS[reveal.pace][reveal.phase] ?? null;
+}
+
+/**
+ * The next phase of the wrapper, as its timer has it. A pack waiting to be
+ * cut stays waiting, since the cut is a press (`cutOpen`), and a dealt pack
+ * stays dealt. The short opening has no wait: it goes from raised to cut.
+ */
 export function advance(reveal: Reveal): Reveal {
+  if (reveal.phase === "ready") return reveal;
   const next = PHASES[PHASES.indexOf(reveal.phase) + 1];
-  return next ? { ...reveal, phase: next } : reveal;
+  if (!next) return reveal;
+  if (next === "ready" && reveal.pace !== "full") {
+    return { ...reveal, phase: "cut" };
+  }
+  return next === "dealt"
+    ? { ...reveal, phase: next, flown: true }
+    : { ...reveal, phase: next };
+}
+
+/** The top comes off a pack that was waiting for it, and no other. */
+export function cutOpen(reveal: Reveal): Reveal {
+  return reveal.phase === "ready" ? { ...reveal, phase: "cut" } : reveal;
 }
 
 /** Straight to the cards on the board, for a press that will not wait. */
 export function deal(reveal: Reveal): Reveal {
   return reveal.phase === "dealt" ? reveal : { ...reveal, phase: "dealt" };
+}
+
+/** How rare the thing at `index` is; `null` if nothing is there. */
+export function rarityOf(reveal: Reveal, index: number): Rarity | null {
+  if (reveal.result.kind === "cosmetics") {
+    const id = reveal.result.pieces[index];
+    return id === undefined ? null : getCosmetic(id).rarity;
+  }
+  const pull = reveal.result.cats[index];
+  return pull ? getCat(pull.catId).rarity : null;
+}
+
+/**
+ * What a card gives away while it is face down: its rarity if it is rare or
+ * better, and nothing otherwise.
+ */
+export function tell(reveal: Reveal, index: number): Rarity | null {
+  const rarity = rarityOf(reveal, index);
+  return rarity !== null && TOLD.includes(rarity) ? rarity : null;
+}
+
+/**
+ * How long the next card waits when the rest are turned one after another
+ * and the card at `index` was the last: longer after an epic, and longer
+ * still after a legendary, which are given the board to themselves.
+ */
+export function holdAfter(reveal: Reveal, index: number | null): number {
+  const rarity = index === null ? null : rarityOf(reveal, index);
+  return TURN_GAP_MS + ((rarity && HOLD_MS[rarity]) ?? 0);
 }
 
 /** The first thing still face down, or -1 when everything is up. */
@@ -198,7 +296,8 @@ export function summary(reveal: Reveal, balance: number): string {
 
 /**
  * The rail's sentence while a pack is open. Before the cards are out it says
- * what is happening; after a turn it names the card; and when everything is
+ * what is happening, and what to do when the pack waits to be cut; after a
+ * turn it names the card; and when everything is
  * up it sums the pack. A turn by hand still names its card before the sum,
  * so the last card is heard like the others; the rest turned all at once are
  * not read out one by one.
@@ -206,7 +305,7 @@ export function summary(reveal: Reveal, balance: number): string {
 export function revealSentence(reveal: Reveal, balance: number): string {
   const total = reveal.up.length;
   const down = reveal.up.filter((is) => !is).length;
-  const things = reveal.result.kind === "cats" ? "cards" : "pieces";
+  const thing = reveal.result.kind === "cats" ? "card" : "piece";
   if (down === 0) {
     const named =
       reveal.last !== null && reveal.byHand
@@ -216,9 +315,22 @@ export function revealSentence(reveal: Reveal, balance: number): string {
   }
   if (reveal.turningAll) return "Turning them all over.";
   if (reveal.last === null) {
-    return reveal.phase === "dealt"
-      ? `${total} ${things}, face down. Turn them over.`
-      : "Tearing it open.";
+    switch (reveal.phase) {
+      case "raised":
+        return "Off the shelf it comes.";
+      case "ready":
+        return "Cut the top off: drag across it, or press Enter.";
+      case "cut":
+        return "The top is off.";
+      case "burnt":
+        return "The wrapper burns away.";
+      case "flash":
+        return total === 1 ? "Out it comes." : "Out they come.";
+      case "dealt":
+        return total === 1
+          ? `1 ${thing}, face down. Turn it over.`
+          : `${total} ${thing}s, face down. Turn them over.`;
+    }
   }
   return `${pullLine(reveal, reveal.last)} ${down} to go.`;
 }

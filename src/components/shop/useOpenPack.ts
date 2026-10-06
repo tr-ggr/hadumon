@@ -13,9 +13,9 @@ export interface OpenPack {
   /**
    * A press on Open. Dropped while a request is on its way; otherwise sent
    * under that pack's request id, which is a new one unless the last press
-   * on it was never answered.
+   * on it was never answered. Says whether it was sent.
    */
-  open: (packId: string) => void;
+  open: (packId: string) => boolean;
   /** True from the press until the server has answered or failed. */
   pending: boolean;
 }
@@ -97,7 +97,7 @@ export function useOpenPack({
   const open = useCallback(
     (packId: string) => {
       const pressed = press(presses.current, packId, () => crypto.randomUUID());
-      if (pressed.requestId === null) return;
+      if (pressed.requestId === null) return false;
       const requestId = pressed.requestId;
       presses.current = pressed.state;
       const before = utils.collection.get.getData() ?? null;
@@ -115,6 +115,7 @@ export function useOpenPack({
           },
         },
       );
+      return true;
     },
     [mutate, onOpened, onRefused, utils],
   );

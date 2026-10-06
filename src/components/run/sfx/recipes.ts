@@ -61,6 +61,8 @@ export const SFX_NAMES = [
   "slam",
   "page",
   "cover",
+  "flare",
+  "burst",
 ] as const;
 export type SfxName = (typeof SFX_NAMES)[number];
 
@@ -289,6 +291,22 @@ export function recipe(name: SfxName, step = 0): Voice {
       return [
         noise("lowpass", 520, 1100, 0.14, 0.24),
         tone("sine", 190, 150, 0.06, 0.2),
+      ];
+    case "flare":
+      // A wrapper catching: the hiss going up, and paper cracking under it.
+      return [
+        noise("highpass", 2400, 5200, 0.13, 0.38),
+        noise("bandpass", 700, 1600, 0.1, 0.32, 0.03),
+        noise("bandpass", 3100, 2700, 0.12, 0.02, 0.13),
+        noise("bandpass", 3600, 3200, 0.1, 0.02, 0.27),
+      ];
+    case "burst":
+      // What was in the pack let out at once: a thump, the air, and a chime.
+      return [
+        noise("bandpass", 1200, 4200, 0.2, 0.14),
+        tone("sine", 190, 70, 0.34, 0.18),
+        tone("triangle", E5, G5, 0.16, 0.2, 0.02),
+        tone("sine", C6, C6, 0.07, 0.26, 0.05),
       ];
   }
 }

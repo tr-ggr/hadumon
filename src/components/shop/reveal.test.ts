@@ -7,17 +7,27 @@ import {
   advance,
   allUp,
   beginReveal,
+  cutOpen,
   deal,
+  DEAL_MS,
   heldBack,
+  holdAfter,
   nextDown,
   noteSentence,
+  PHASE_MS,
+  phaseMs,
+  PHASES,
   pulled,
   pullLine,
   pullNote,
   revealSentence,
   summary,
+  tell,
   turn,
+  TURN_GAP_MS,
   turnRest,
+  type Pace,
+  type Phase,
   type Reveal,
 } from "./reveal";
 
@@ -25,6 +35,8 @@ const common = CAT_LIST.find((cat) => cat.rarity === "common")!;
 const other = CAT_LIST.find(
   (cat) => cat.rarity === "common" && cat.id !== common.id,
 )!;
+const rare = CAT_LIST.find((cat) => cat.rarity === "rare")!;
+const epic = CAT_LIST.find((cat) => cat.rarity === "epic")!;
 const legendary = CAT_LIST.find((cat) => cat.rarity === "legendary")!;
 
 /** Five cats: a new one twice, a full one, another kept, a full legendary. */
@@ -46,46 +58,136 @@ const PIECES: PackResult = {
   pieces: ["hat-wool-cap", "tail-ringed"],
 };
 
-const begin = (result: PackResult = CATS, calm = false) =>
-  beginReveal("press-1", result, { [common.id]: 3, [legendary.id]: 1 }, calm);
-/** Past the tearing, with the cards on the board. */
+const begin = (result: PackResult = CATS, pace: Pace = "full") =>
+  beginReveal("press-1", result, { [common.id]: 3, [legendary.id]: 1 }, pace);
+/** Past the wrapper, with the cards on the board. */
 const dealt = (result: PackResult = CATS) => deal(begin(result));
 const turnEvery = (reveal: Reveal) =>
   reveal.up.reduce((now, _, index) => turn(now, index), reveal);
+/** A wrapper played as its timer plays it, with the cut made when it waits. */
+const played = (pace: Pace) => {
+  const phases: Phase[] = [];
+  let reveal = begin(CATS, pace);
+  for (let i = 0; i < PHASES.length + 1; i++) {
+    phases.push(reveal.phase);
+    reveal = reveal.phase === "ready" ? cutOpen(reveal) : advance(reveal);
+  }
+  return { phases, reveal };
+};
 
 describe("beginReveal", () => {
-  it("starts sealed, with everything face down", () => {
+  it("starts with the pack raised and everything face down", () => {
     const reveal = begin();
-    expect(reveal.phase).toBe("sealed");
+    expect(reveal.phase).toBe("raised");
     expect(reveal.up).toEqual([false, false, false, false, false]);
     expect(pulled(reveal.result)).toBe(5);
     expect(allUp(reveal)).toBe(false);
   });
 
-  it("with reduced motion, starts with everything turned over and nothing to tear", () => {
-    const reveal = begin(CATS, true);
+  it("with reduced motion, starts with everything turned over and nothing to cut", () => {
+    const reveal = begin(CATS, "calm");
     expect(reveal.phase).toBe("dealt");
     expect(reveal.up).toEqual([true, true, true, true, true]);
     expect(allUp(reveal)).toBe(true);
     expect(heldBack(reveal)).toBe(0);
+    expect(phaseMs(reveal)).toBeNull();
+    expect(reveal.flown).toBe(false);
   });
 });
 
 describe("the wrapper", () => {
-  it("is torn, drawn and dealt in that order, and then stays dealt", () => {
-    const phases = [];
-    let reveal = begin();
-    for (let i = 0; i < 5; i++) {
-      phases.push(reveal.phase);
-      reveal = advance(reveal);
+  it("is raised, cut, burnt and dealt in that order, and then stays dealt", () => {
+    expect(played("full").phases).toEqual([...PHASES, "dealt"]);
+  });
+
+  it("waits to be cut the first time, and not on a pack opened after it", () => {
+    const waiting = advance(begin());
+    expect(waiting.phase).toBe("ready");
+    expect(phaseMs(waiting)).toBeNull();
+    // Its timer never takes it past the wait: only the cut does.
+    expect(advance(waiting)).toBe(waiting);
+    expect(cutOpen(waiting).phase).toBe("cut");
+    expect(played("short").phases).toEqual([
+      "raised",
+      "cut",
+      "burnt",
+      "flash",
+      "dealt",
+      "dealt",
+      "dealt",
+    ]);
+  });
+
+  it("is cut only while it waits for it", () => {
+    const raised = begin();
+    expect(cutOpen(raised)).toBe(raised);
+    const there = dealt();
+    expect(cutOpen(there)).toBe(there);
+  });
+
+  it("times every phase but the wait and the end, and the short one faster", () => {
+    for (const phase of PHASES) {
+      const full = PHASE_MS.full[phase];
+      const short = PHASE_MS.short[phase];
+      if (phase === "ready" || phase === "dealt") {
+        expect(full, phase).toBeUndefined();
+        expect(short, phase).toBeUndefined();
+        continue;
+      }
+      expect(full, phase).toBeGreaterThan(0);
+      expect(short, phase).toBeLessThan(full!);
     }
-    expect(phases).toEqual(["sealed", "torn", "drawn", "dealt", "dealt"]);
+    const whole = (pace: "full" | "short") =>
+      Object.values(PHASE_MS[pace]).reduce((sum, ms) => sum + ms, 0) +
+      DEAL_MS[pace].fly +
+      DEAL_MS[pace].gap * 4;
+    // Four to five seconds with a cut made in good time, and under two after.
+    expect(whole("full")).toBeGreaterThan(2800);
+    expect(whole("full")).toBeLessThan(3600);
+    expect(whole("short")).toBeLessThan(2000);
   });
 
   it("can be skipped straight to the cards", () => {
     expect(deal(begin()).phase).toBe("dealt");
     const there = dealt();
     expect(deal(there)).toBe(there);
+  });
+
+  it("sends its cards flying only when it was played to its end", () => {
+    expect(played("full").reveal.flown).toBe(true);
+    expect(played("short").reveal.flown).toBe(true);
+    expect(dealt().flown).toBe(false);
+    expect(deal(advance(begin())).flown).toBe(false);
+  });
+});
+
+describe("tell", () => {
+  const pack = (ids: readonly string[]): PackResult => ({
+    kind: "cats",
+    packId: "cinder-pack",
+    cats: ids.map((catId) => ({ catId, kept: true, refund: 0 })),
+    refund: 0,
+  });
+  const reveal = dealt(pack([common.id, rare.id, epic.id, legendary.id]));
+
+  it("gives away a card that is rare or better, and no other", () => {
+    expect(tell(reveal, 0)).toBeNull();
+    expect(tell(reveal, 1)).toBe("rare");
+    expect(tell(reveal, 2)).toBe("epic");
+    expect(tell(reveal, 3)).toBe("legendary");
+    expect(tell(reveal, 9)).toBeNull();
+  });
+
+  it("reads a piece's rarity as it does a cat's", () => {
+    expect(tell(dealt(PIECES), 0)).toBeNull();
+  });
+
+  it("holds the board longer after an epic, and longer still after a legendary", () => {
+    expect(holdAfter(reveal, null)).toBe(TURN_GAP_MS);
+    expect(holdAfter(reveal, 0)).toBe(TURN_GAP_MS);
+    expect(holdAfter(reveal, 1)).toBe(TURN_GAP_MS);
+    expect(holdAfter(reveal, 2)).toBe(TURN_GAP_MS + 250);
+    expect(holdAfter(reveal, 3)).toBe(TURN_GAP_MS + 450);
   });
 });
 
@@ -177,7 +279,7 @@ describe("pullNote", () => {
   });
 
   it("says only that a cat was kept when what was held is not known", () => {
-    const blind = beginReveal("press-2", CATS, null, false);
+    const blind = beginReveal("press-2", CATS, null, "full");
     expect(pullNote(blind, 0)?.text).toBe("Kept.");
     expect(noteSentence(pullNote(blind, 1)!)).toBe(
       "Already have 4. 4 coins back.",
@@ -191,8 +293,24 @@ describe("pullNote", () => {
 });
 
 describe("what the rail says", () => {
-  it("says the pack is being torn before the cards are out", () => {
-    expect(revealSentence(begin(), 46)).toBe("Tearing it open.");
+  it("says what the wrapper is doing before the cards are out", () => {
+    const said = played("full")
+      .phases.slice(0, 5)
+      .map((phase) => revealSentence({ ...begin(), phase }, 46));
+    expect(said).toEqual([
+      "Off the shelf it comes.",
+      "Cut the top off: drag across it, or press Enter.",
+      "The top is off.",
+      "The wrapper burns away.",
+      "Out they come.",
+    ]);
+    const one: PackResult = { ...PIECES, pieces: ["hat-wool-cap"] };
+    expect(revealSentence({ ...begin(one), phase: "flash" }, 46)).toBe(
+      "Out it comes.",
+    );
+    expect(revealSentence(dealt(one), 46)).toBe(
+      "1 piece, face down. Turn it over.",
+    );
   });
 
   it("says what is on the board once they are", () => {
@@ -232,7 +350,7 @@ describe("what the rail says", () => {
   });
 
   it("sums a pack shown all at once, with reduced motion", () => {
-    expect(revealSentence(begin(PIECES, true), 90)).toBe(
+    expect(revealSentence(begin(PIECES, "calm"), 90)).toBe(
       "2 new pieces. You have 90 coins.",
     );
   });

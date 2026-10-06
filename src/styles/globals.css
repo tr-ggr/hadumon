@@ -2623,7 +2623,9 @@ body:has(.table-fit) .toast-stack {
   --e: 8px;
   --line: var(--color-ink);
   color: var(--color-ink);
-  transition: transform 150ms var(--ease-give);
+  transition:
+    transform 150ms var(--ease-give),
+    rotate 220ms var(--ease-give);
 }
 .tabletop .pack-lean {
   position: relative;
@@ -2760,11 +2762,13 @@ body:has(.table-fit) .toast-stack {
   --sink: 2px;
   transform: translateY(2px);
 }
-/* The one band of light that crosses a pack: flat, and cut on a slant. */
+/* The one band of light that crosses a pack: flat, and cut on a slant. A
+   card turned over in the shop is crossed by the same band in its rarity's
+   tone (`--tone`). */
 .tabletop .card-shimmer.is-band::before {
   inset: -10% auto -10% 0;
   width: 34%;
-  background: rgb(255 255 255 / 0.5);
+  background: var(--tone, rgb(255 255 255 / 0.5));
   transform: translateX(-160%) skewX(-18deg);
 }
 @keyframes pack-shine {
@@ -2799,6 +2803,13 @@ body:has(.table-fit) .toast-stack {
  * places are the same packs in shadow (`data-ghost`): one shows at each end
  * of a wide stage, so a pack leaving the row has somewhere to go and the one
  * coming in has somewhere to come from.
+ *
+ * The packs at the sides stand turned toward the one in the middle, as
+ * cardboard stood on a shelf is: 28 degrees for the nearest and 48 for the
+ * rest, so no pack is ever seen from behind. This is the one place a piece
+ * is turned in depth. The turn is the `rotate` of the pack and the change of
+ * size the `scale` of what holds it, so neither undoes the other or the
+ * `transform` a hover and a press move a pack by.
  */
 .tabletop .pack-stage {
   container-type: inline-size;
@@ -2850,26 +2861,35 @@ body:has(.table-fit) .toast-stack {
 }
 /* The light on a pack changes as its shadow does: in two steps, not eased. */
 .tabletop .pack-size {
+  perspective: 720px;
   transform-origin: 50% 100%;
   transition: filter 220ms steps(2, end);
+}
+.tabletop .pack-slot:not([data-slot="0"]) .pack {
+  rotate: y calc(var(--dir, 0) * -28deg);
+}
+.tabletop
+  .pack-slot:not([data-slot="0"], [data-slot="1"], [data-slot="-1"])
+  .pack {
+  rotate: y calc(var(--dir, 0) * -48deg);
 }
 .tabletop .pack-slot[data-ghost] .pack-size {
   filter: brightness(0.58) saturate(0.6);
 }
 @keyframes pack-grow {
   from {
-    transform: scale(0.6667);
+    scale: 0.6667;
   }
   to {
-    transform: scale(1);
+    scale: 1;
   }
 }
 @keyframes pack-shrink {
   from {
-    transform: scale(1.5);
+    scale: 1.5;
   }
   to {
-    transform: scale(1);
+    scale: 1;
   }
 }
 .tabletop .pack-stage[data-turned] .pack-slot[data-slot="0"] .pack-size {
@@ -2903,6 +2923,392 @@ body:has(.table-fit) .toast-stack {
   }
   .tabletop .pack-slot[data-slot="0"]:hover .pack-mascot {
     animation: pack-hop 360ms steps(1, end) 1;
+  }
+}
+/*
+ * A pack picked off the shelf (`data-picked`: from the press on "Open pack"
+ * until the shop has answered). The packs at its sides drop away under the
+ * shelf, the nearest first, and are cut off at its foot. The one in the
+ * middle is drawn by `PackOpening`, over the wash and in the same place, so
+ * the shelf's own is put out of sight. A pick the shop refuses brings the
+ * others back up (`data-back`).
+ */
+.tabletop .pack-shelf:has(> .pack-stage:is([data-picked], [data-back])) {
+  clip-path: inset(-120px 0 0);
+}
+.tabletop .pack-stage[data-picked] .pack-slot:not([data-slot="0"]) .pack-size {
+  animation: pack-drop 260ms cubic-bezier(0.5, 0, 0.9, 0.55) both;
+  animation-delay: calc((var(--n, 1) - 1) * 40ms);
+}
+.tabletop .pack-stage[data-back] .pack-slot:not([data-slot="0"]) .pack-size {
+  animation: pack-back 300ms var(--ease-give) both;
+  animation-delay: calc((var(--n, 1) - 1) * 40ms);
+}
+@keyframes pack-drop {
+  to {
+    translate: 0 360px;
+  }
+}
+@keyframes pack-back {
+  from {
+    translate: 0 360px;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .tabletop .pack-stage[data-picked] .pack-slot[data-slot="0"] .pack {
+    visibility: hidden;
+  }
+}
+/*
+ * The shop's board above its rail is the stage a pack is opened on
+ * (`.pack-room`, `data-staged` from the pick until the cards are out). An
+ * ink wash comes down over everything on it in two steps, and lifts in two
+ * as the cards land, or at once if the shop refused. The pack being opened
+ * (`.pack-opening`) and the cards dealt from it (`.pull-row`) are over the
+ * wash; the light a pack goes up in (`.pack-flash`) is over them, flat
+ * white, in three steps. The wash and the light are flat colour whose
+ * opacity is all that changes, and they are the only time a board is
+ * darkened. Nothing drawn on the stage leaves it.
+ */
+.tabletop .pack-room {
+  position: relative;
+  isolation: isolate;
+  margin: -1rem -1rem 0;
+  padding: 1rem 1rem 1.25rem;
+}
+@media (min-width: 640px) {
+  .tabletop .pack-room {
+    margin: -1.25rem -1.25rem 0;
+    padding: 1.25rem;
+  }
+}
+.tabletop .pack-room[data-staged] {
+  overflow: clip;
+}
+/* The pack's name takes the focus to be read out, under the wash: its ring
+   would be a line across the dark. */
+.tabletop .pack-room[data-staged] h2:focus {
+  outline-color: transparent;
+}
+.tabletop .pack-wash,
+.tabletop .pack-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+.tabletop .pack-wash {
+  z-index: 2;
+  background: var(--color-ink);
+}
+.tabletop .pack-wash[data-wash="on"] {
+  animation: pack-wash-on 240ms steps(2, jump-none) both;
+}
+.tabletop .pack-wash[data-wash="off"] {
+  animation: pack-wash-off 280ms steps(1, start) var(--lift-wait, 0ms) both;
+}
+@keyframes pack-wash-on {
+  from {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0.92;
+  }
+}
+@keyframes pack-wash-off {
+  0% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.tabletop .pack-flash {
+  z-index: 4;
+  background: var(--color-white);
+}
+.tabletop .pack-room[data-staged="flash"] .pack-flash {
+  animation: pack-flash var(--t-flash) steps(1, end) both;
+}
+@keyframes pack-flash {
+  0% {
+    opacity: 0.92;
+  }
+  30% {
+    opacity: 0.55;
+  }
+  60% {
+    opacity: 0.25;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/*
+ * The pack being opened: laid over the stage where the shelf's stage is, with
+ * its pack where the middle of the shelf is, at the same size. `data-phase`
+ * moves it. It comes forward (`.pack-stand`, on a spring `shop/fx.ts` plays)
+ * while its top is cut, and goes back to its own size to burn. It takes no
+ * pointer but along the strip the cut is dragged on.
+ */
+.tabletop .pack-opening {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 3;
+  height: 312px;
+  pointer-events: none;
+}
+.tabletop .pack-open-slot {
+  position: absolute;
+  bottom: 22px;
+  left: calc(50% - 96px);
+}
+@supports (width: round(1.5px, 1px)) {
+  .tabletop .pack-open-slot {
+    left: calc(round(down, 50%, 1px) - 96px);
+  }
+}
+.tabletop .pack-stand {
+  position: relative;
+  transform-origin: 50% 100%;
+}
+/* `RAISED` in `shop/fx.ts` is this number. */
+.tabletop
+  .pack-opening:is(
+    [data-phase="raised"],
+    [data-phase="ready"],
+    [data-phase="cut"]
+  )
+  .pack-stand {
+  scale: 1.25;
+}
+/* The strip the cut is dragged along: 44px, over the line, and a little past
+   the pack at each end. The scissors ride the cut (`--cut`, 0 to 1, set by
+   `useCut`), and snip while they wait. */
+.tabletop .pack-snip {
+  position: absolute;
+  inset: -2px -28px auto;
+  z-index: 30;
+  height: 44px;
+  cursor: ew-resize;
+  pointer-events: auto;
+  touch-action: none;
+}
+.tabletop .pack-scissors {
+  --rim: var(--color-ink);
+  position: absolute;
+  top: 6px;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  transform: translateX(calc(var(--cut, 0) * 192px));
+}
+.tabletop .pack-scissors > svg {
+  position: absolute;
+  inset: 0;
+  animation: pack-snip 360ms steps(1, end) infinite;
+}
+.tabletop .pack-scissors > svg + svg {
+  animation-delay: -180ms;
+}
+@keyframes pack-snip {
+  0% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+/* The top crimp and the band under it: the strip that is cut off. Its line
+   is dashed until the cut has passed, and the strip lifts from the end the
+   cut began at. Cut through, it comes off up and to the right, turning. */
+.tabletop .pack-strip {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex: none;
+  flex-direction: column;
+  transform-origin: 100% 100%;
+}
+.tabletop .pack-cutline {
+  position: absolute;
+  inset: auto 2px -1px;
+  height: 2px;
+  background-image: var(--dash);
+  background-size: 8px 2px;
+  image-rendering: pixelated;
+}
+.tabletop .pack-cutline.is-done {
+  background: var(--color-white);
+  transform: scaleX(var(--cut, 0));
+  transform-origin: 0 50%;
+}
+.tabletop .pack-lean[data-seal="ready"] .pack-strip {
+  rotate: calc(var(--cut, 0) * 3deg);
+}
+.tabletop .pack-lean[data-seal="cut"] .pack-strip {
+  animation: pack-strip-off var(--t-cut, 360ms) cubic-bezier(0.3, 0, 0.7, 0.4)
+    both;
+}
+.tabletop
+  .pack-lean:is([data-seal="burning"], [data-seal="burnt"])
+  .pack-strip {
+  visibility: hidden;
+}
+@keyframes pack-strip-off {
+  0% {
+    rotate: 3deg;
+  }
+  25% {
+    translate: 0 -10px;
+    rotate: 10deg;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    translate: 70% -260px;
+    rotate: 64deg;
+    opacity: 0;
+  }
+}
+/* What is in the pack: the back of a card, behind the wrapper. */
+.tabletop .pack-card {
+  position: absolute;
+  inset: 8% 12% 6%;
+  z-index: -10;
+  display: grid;
+}
+/* The wrapper burns down from its cut edge in eight steps. Its window moves
+   down as what is in the window moves up by as much, so the wrapper stays
+   where it is and is cut off from the top; the fire stands on the edge it
+   has burned to and moves down with the window. */
+.tabletop .pack-burn,
+.tabletop .pack-burn-in {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+}
+.tabletop .pack-lean[data-seal="burning"] .pack-burn {
+  /* Open at the sides and the foot, for the edge and the cast under it. */
+  clip-path: inset(0 -12px -40px);
+  animation: pack-burn-down var(--t-burnt, 900ms) steps(8, end) both;
+}
+.tabletop .pack-lean[data-seal="burning"] .pack-burn-in {
+  animation: pack-burn-up var(--t-burnt, 900ms) steps(8, end) both;
+}
+.tabletop .pack-lean[data-seal="burnt"] .pack-burn {
+  visibility: hidden;
+}
+@keyframes pack-burn-down {
+  to {
+    transform: translateY(100%);
+  }
+}
+@keyframes pack-burn-up {
+  to {
+    transform: translateY(-100%);
+  }
+}
+.tabletop .pack-flames {
+  position: absolute;
+  inset: calc(8px + var(--u) * 2) -6px 0;
+  z-index: 12;
+  pointer-events: none;
+  animation: pack-burn-down var(--t-burnt, 900ms) steps(8, end) both;
+}
+.tabletop .pack-flames > .fire {
+  --px: 3px;
+  position: absolute;
+  inset: -18px 0 auto;
+  height: 24px;
+}
+/*
+ * A row of fire (`Fire`): three frames of one tile, one on another and shown
+ * in turn. `--px` is the size of one pixel of it, and `--fire-1` to
+ * `--fire-3` the frames, in two tones with an ink edge. The wrapper burns
+ * behind one in its own two tones; a card that is rare or better has one in
+ * its rarity's colour behind its top edge while it is face down, standing
+ * `--tell` over it.
+ */
+.tabletop .fire {
+  display: block;
+  pointer-events: none;
+}
+.tabletop .fire > i {
+  position: absolute;
+  inset: 0;
+  background-position: 50% 0;
+  background-repeat: repeat-x;
+  background-size: calc(var(--px, 2px) * 8) calc(var(--px, 2px) * 8);
+  image-rendering: pixelated;
+  animation: fire-frame 330ms steps(1, end) infinite;
+}
+.tabletop .fire > i:nth-child(1) {
+  background-image: var(--fire-1);
+}
+.tabletop .fire > i:nth-child(2) {
+  background-image: var(--fire-2);
+  animation-delay: -220ms;
+}
+.tabletop .fire > i:nth-child(3) {
+  background-image: var(--fire-3);
+  animation-delay: -110ms;
+}
+@keyframes fire-frame {
+  0% {
+    opacity: 1;
+  }
+  33%,
+  100% {
+    opacity: 0;
+  }
+}
+.tabletop .card-tell {
+  position: absolute;
+  inset: calc(var(--tell, 8px) * -1) 6px auto;
+  z-index: -1;
+  height: 16px;
+}
+/* The star a pack goes up in: twelve flat rays behind the card, in the
+   wrapper's lighter tone, larger and further round at each of four steps. */
+.tabletop .pack-star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: -380px 0 0 -380px;
+  visibility: hidden;
+}
+.tabletop .pack-opening[data-phase="flash"] .pack-star {
+  visibility: visible;
+  animation: pack-star var(--t-flash, 520ms) steps(4, jump-none) both;
+}
+@keyframes pack-star {
+  from {
+    scale: 0.5;
+    rotate: 0deg;
+  }
+  to {
+    scale: 1;
+    rotate: 45deg;
+  }
+}
+/* What came out of a pack, over the wash while it lifts. Five cards in one
+   row lie in an arch, the one in the middle highest (`--out` is how far a
+   card is from the middle); in more rows than one they lie level. */
+.tabletop .pull-row {
+  position: relative;
+  z-index: 3;
+  container-type: inline-size;
+}
+@container (min-width: 698px) {
+  .tabletop .pull-row[data-count="5"] > li {
+    translate: 0 calc(var(--out, 0) * 8px);
   }
 }
 /*
@@ -2992,14 +3398,29 @@ body:has(.table-fit) .toast-stack {
   animation: card-prev 220ms var(--ease-out) both;
 }
 /* Reduced motion: a pack is where it stands and a card is simply there.
-   Nothing grows, hops, is dealt or comes in from the side. */
+   Nothing grows, hops, drops, is dealt or comes in from the side. A pack
+   that is bought is not opened on a stage: there is no wash, no light and no
+   pack to cut, and its cards are face up at once, so no fire is seen. */
 @media (prefers-reduced-motion: reduce) {
   .tabletop .pack-size,
   .tabletop .pack-mascot,
+  .tabletop .pack-strip,
+  .tabletop .pack-burn,
+  .tabletop .pack-burn-in,
+  .tabletop .pack-flames,
+  .tabletop .pack-star,
+  .tabletop .pack-scissors > svg,
+  .tabletop .fire > i,
   .tabletop .deal,
   .tabletop .card-next,
   .tabletop .card-prev {
     animation: none !important;
+  }
+  .tabletop .pack-wash,
+  .tabletop .pack-flash,
+  .tabletop .pack-opening,
+  .tabletop .fire > i + i {
+    display: none;
   }
   .tabletop .card-stack .stack-under,
   .tabletop .card-stack:hover .stack-under,

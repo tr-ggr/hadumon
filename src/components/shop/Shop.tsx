@@ -7,10 +7,12 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 
 import { CatDetail } from "~/components/run/CatPick";
+import { prefersCalm } from "~/components/run/fx/dom";
 import {
   Board,
   KeyHint,
@@ -31,10 +33,18 @@ import { api, type RouterOutputs } from "~/trpc/react";
 
 import { leftToFind, packPhrase, shelfSentence, standing } from "./copy";
 import { PackContents } from "./PackContents";
+import { PackOpening, paceStyle } from "./PackOpening";
 import { PackReveal } from "./PackReveal";
 import { PackShelf, packTabId, type ShelfItem } from "./PackShelf";
 import { packHolds } from "./packs";
-import { allUp, heldBack, revealSentence } from "./reveal";
+import {
+  allUp,
+  DEAL_MS,
+  heldBack,
+  PICK_MS,
+  pulled,
+  revealSentence,
+} from "./reveal";
 import { useOpenPack } from "./useOpenPack";
 import { useReveal } from "./useReveal";
 
@@ -57,7 +67,13 @@ export interface ShopProps {
  * The shop: a shelf of packs and, when one is bought, its opening. The two
  * share one board and one rail. On the shelf the rail says what the pack in
  * the middle costs and holds the one confirm; while a pack is open it says
- * what came out and holds the turn.
+ * what came out and holds the cut, and then the turn.
+ *
+ * From the press that buys a pack until its cards are out, the board above
+ * the rail is a darkened stage (`.pack-room`): an ink wash comes down over
+ * the shelf, and the pack is opened on top of it (`PackOpening`), where it
+ * stood. The first pack of a visit is opened in full and every one after it
+ * cut short.
  *
  * The opening is state of its own (`useReveal`), not something read off a
  * query, so the shelf being fetched again under it changes nothing it shows.
@@ -79,7 +95,19 @@ export function Shop({
   /** Why the last press opened nothing; gone at the next press or pack. */
   const [refusal, setRefusal] = useState<string | null>(null);
 
-  const { reveal, start, turnCard, step, turnAll, close } = useReveal();
+  const { reveal, start, turnCard, step, skip, turnAll, close } = useReveal();
+  /** How many packs this visit has opened: the first is opened in full. */
+  const opened = useRef(0);
+  /**
+   * The pack that has been picked off the shelf and not yet opened or
+   * refused: from the press, through the request, until its reveal starts.
+   */
+  const [picked, setPicked] = useState<string | null>(null);
+  const pressedAt = useRef(0);
+  const starting = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(starting.current), []);
+  /** Whether the stage has been dark at all: only then is there a wash to lift. */
+  const [washed, setWashed] = useState(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const confirmId = `${idBase}-confirm`;
   /** Set when a reveal is put away, so the focus goes back to the confirm. */
@@ -87,17 +115,31 @@ export function Shop({
 
   const { open, pending } = useOpenPack({
     onOpened: useCallback(
-      (requestId, opened, before) => {
+      (requestId, pack, before) => {
         setRefusal(null);
-        if (opened.replayed) {
+        if (pack.replayed) {
           notify("That pack was already open. Nothing more was spent.");
         }
-        start(requestId, opened.result, before);
+        const begin = () => {
+          const pace = opened.current === 0 ? "full" : "short";
+          opened.current += 1;
+          setPicked(null);
+          start(requestId, pack.result, before, pace);
+        };
+        // However fast the shop answers, the other packs are given the time
+        // to drop away first. With reduced motion nothing drops.
+        const wait = prefersCalm()
+          ? 0
+          : PICK_MS - (performance.now() - pressedAt.current);
+        clearTimeout(starting.current);
+        if (wait > 0) starting.current = setTimeout(begin, wait);
+        else begin();
       },
       [notify, start],
     ),
     onRefused: useCallback(
       (sentence: string) => {
+        setPicked(null);
         setRefusal(sentence);
         notify(sentence, "error");
       },
@@ -129,6 +171,16 @@ export function Shop({
   const balance = shelf.coins - (reveal ? heldBack(reveal) : 0);
   const state = standing(price, left, balance);
   const done = reveal ? allUp(reveal) : false;
+  /** The pack on the darkened stage: picked, or being opened. */
+  const staged = reveal
+    ? reveal.phase === "dealt"
+      ? null
+      : reveal.phase
+    : picked !== null
+      ? "picked"
+      : null;
+  if (staged !== null && !washed) setWashed(true);
+  const busy = pending || picked !== null;
 
   // The lid shows the same purse, read from the profile. While a refund is
   // held back for a card not yet turned, the lid is held back with it.
@@ -189,7 +241,7 @@ export function Shop({
 
   const sentence = reveal
     ? revealSentence(reveal, balance)
-    : pending
+    : busy
       ? `Opening ${packPhrase(pack)}.`
       : (refusal ?? shelfSentence(pack, price, left, balance));
 
@@ -197,74 +249,118 @@ export function Shop({
     <>
       <ShopHeader />
       <Board>
-        <div className="mb-1">
-          <h2
-            ref={heading}
-            tabIndex={-1}
-            className="text-print text-3xl outline-offset-4"
-          >
-            {pack.name}
-          </h2>
-          <p className="mt-1 max-w-[65ch] text-sm">{pack.text}</p>
-        </div>
-
-        {reveal ? (
-          <PackReveal
-            reveal={reveal}
-            onTurn={turnCard}
-            onDetail={setDetail}
-            pieceDrawing={pieceDrawing}
-          />
-        ) : (
-          <>
-            <PackShelf
-              items={items}
-              shown={shown}
-              onShow={show}
-              onLook={setLooking}
-              idBase={idBase}
-              panelId={panelId}
-            />
-            <div
-              role="tabpanel"
-              id={panelId}
-              aria-labelledby={packTabId(idBase, pack.id)}
-              className="mt-4 flex flex-col gap-3"
+        <div
+          data-shop
+          className="pack-room"
+          data-staged={staged ?? undefined}
+          style={
+            {
+              ...paceStyle(reveal?.pace ?? "full"),
+              // The wash lifts as the cards land, and at once if they did not fly.
+              "--lift-wait": `${reveal?.flown && reveal.pace !== "calm" ? DEAL_MS[reveal.pace].fly : 0}ms`,
+            } as CSSProperties
+          }
+        >
+          <div className="mb-1">
+            <h2
+              ref={heading}
+              tabIndex={-1}
+              className="text-print text-3xl outline-offset-4"
             >
-              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-                <p className="min-w-0 text-sm font-semibold tabular-nums">
-                  <Holding pack={pack} left={left} owned={owned} />
-                </p>
-                <TableButton
-                  variant="secondary"
-                  onClick={() => setLooking(pack.id)}
+              {pack.name}
+            </h2>
+            <p className="mt-1 max-w-[65ch] text-sm">{pack.text}</p>
+          </div>
+
+          <div className="relative">
+            {staged !== null ? (
+              <PackOpening
+                packId={pack.id}
+                holds={
+                  reveal
+                    ? pulled(reveal.result)
+                    : (items.find((item) => item.pack.id === pack.id)?.holds ??
+                      0)
+                }
+                phase={staged}
+                pace={reveal?.pace ?? "full"}
+                onCut={step}
+              />
+            ) : null}
+            {!reveal ? (
+              <>
+                <PackShelf
+                  items={items}
+                  shown={shown}
+                  onShow={show}
+                  onLook={setLooking}
+                  idBase={idBase}
+                  panelId={panelId}
+                  picked={picked !== null}
+                />
+                <div
+                  role="tabpanel"
+                  id={panelId}
+                  aria-labelledby={packTabId(idBase, pack.id)}
+                  inert={picked !== null}
+                  className="mt-4 flex flex-col gap-3"
                 >
-                  What is in it
-                </TableButton>
-              </div>
-              {/* Why a pack cannot be opened is the rail's to say. An empty
-                  purse also gets the way to fill it. */}
-              {!state.can && state.reason === "short" && balance <= 0 ? (
-                <div className="border-ink/40 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-2 border-dashed px-3 py-2.5">
-                  <p className="text-sm">
-                    No coins yet. A run is where they come from.
+                  <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                    <p className="min-w-0 text-sm font-semibold tabular-nums">
+                      <Holding pack={pack} left={left} owned={owned} />
+                    </p>
+                    <TableButton
+                      variant="secondary"
+                      onClick={() => setLooking(pack.id)}
+                    >
+                      What is in it
+                    </TableButton>
+                  </div>
+                  {/* Why a pack cannot be opened is the rail's to say. An
+                      empty purse also gets the way to fill it. */}
+                  {!state.can && state.reason === "short" && balance <= 0 ? (
+                    <div className="border-ink/40 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-2 border-dashed px-3 py-2.5">
+                      <p className="text-sm">
+                        No coins yet. A run is where they come from.
+                      </p>
+                      <TableLink href="/run" size="sm">
+                        Play a run
+                      </TableLink>
+                    </div>
+                  ) : null}
+                  <p className="text-ink-soft max-w-[65ch] text-xs">
+                    Coins are won at the table and nowhere else. Nothing here is
+                    sold for money.
                   </p>
-                  <TableLink href="/run" size="sm">
-                    Play a run
-                  </TableLink>
                 </div>
-              ) : null}
-              <p className="text-ink-soft max-w-[65ch] text-xs">
-                Coins are won at the table and nowhere else. Nothing here is
-                sold for money.
-              </p>
-            </div>
-          </>
-        )}
+              </>
+            ) : reveal.phase === "dealt" ? (
+              <PackReveal
+                reveal={reveal}
+                onTurn={turnCard}
+                onDetail={setDetail}
+                pieceDrawing={pieceDrawing}
+              />
+            ) : (
+              // The room the pack is opened in, where the shelf was.
+              <div aria-hidden className="h-[332px]" />
+            )}
+          </div>
+
+          {/* The dark that comes down on the stage, and the light a pack
+              goes up in. Neither is there with reduced motion. */}
+          <span
+            aria-hidden
+            className="pack-wash"
+            data-wash={staged !== null ? "on" : washed ? "off" : undefined}
+          />
+          <span aria-hidden className="pack-flash" />
+          <div aria-hidden data-fx-layer className="fx-layer" />
+        </div>
 
         {/* The board's own edge: it stays at the foot of the window while
             the board runs under it, clear of a phone's dock. */}
-        <div className="rail sticky bottom-(--dock-h) z-20 -mx-4 mt-5 -mb-4 flex flex-col gap-2 px-4 py-2.5 sm:-mx-5 sm:-mb-5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="rail sticky bottom-(--dock-h) z-20 -mx-4 -mb-4 flex flex-col gap-2 px-4 py-2.5 sm:-mx-5 sm:-mb-5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
           <p
             aria-live="polite"
             className="text-ink min-w-0 text-sm font-semibold tabular-nums"
@@ -276,20 +372,35 @@ export function Shop({
               <TableButton
                 id={confirmId}
                 size="md"
-                disabled={pending || !state.can}
+                disabled={busy || !state.can}
                 onClick={() => {
                   setRefusal(null);
-                  open(pack.id);
+                  pressedAt.current = performance.now();
+                  if (open(pack.id)) setPicked(pack.id);
                 }}
                 className="flex-1 sm:flex-none"
               >
-                {pending ? "Opening…" : "Open pack"}
+                {busy ? "Opening…" : "Open pack"}
               </TableButton>
+            ) : reveal.phase === "ready" ? (
+              <>
+                <TableButton variant="secondary" size="md" onClick={skip}>
+                  Skip
+                </TableButton>
+                <TableButton
+                  size="md"
+                  onClick={step}
+                  className="flex-1 sm:flex-none"
+                >
+                  Cut it open
+                  <KeyHint>Enter</KeyHint>
+                </TableButton>
+              </>
             ) : reveal.phase !== "dealt" ? (
               <TableButton
                 variant="secondary"
                 size="md"
-                onClick={step}
+                onClick={skip}
                 className="flex-1 sm:flex-none"
               >
                 Skip

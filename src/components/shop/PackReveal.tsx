@@ -1,20 +1,27 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
 import { Habitats } from "~/components/cats/Habitats";
 import { PixelIcon } from "~/components/PixelIcon";
 import { InfoButton } from "~/components/run/CatPick";
-import { COIN_COLOR } from "~/components/sprites/palettes";
-import { getCat } from "~/server/game/cats";
+import { placed, prefersCalm } from "~/components/run/fx/dom";
+import { COIN_COLOR, RARITY_PALETTES } from "~/components/sprites/palettes";
+import { getCat, RARITY_LABELS, type Rarity } from "~/server/game/cats";
 import { getCosmetic } from "~/server/game/cosmetics";
 
 import { coins } from "./copy";
-import { OpenedPack } from "./PackWrapper";
-import { ShelfStage } from "./PackShelf";
+import { flyOut, turnedOver } from "./fx";
+import { Fire, fireStyle } from "./PackWrapper";
 import { PieceTile } from "./PieceTile";
-import { pulled, pullNote, type Reveal } from "./reveal";
+import { pulled, pullNote, rarityOf, tell, type Reveal } from "./reveal";
 
 export interface PackRevealProps {
   reveal: Reveal;
@@ -27,13 +34,31 @@ export interface PackRevealProps {
 }
 
 /**
- * A pack being opened. It stands where it stood in the middle of the shelf
- * while its top is torn off and its cards show at the mouth; then the cards
- * lie on the board face down, each a button that turns it over.
+ * How far down the board the middle of the pack was while it was opened:
+ * where its cards fly out from.
+ */
+const PACK_MIDDLE = 152;
+
+/** How far a card's fire stands over its top edge, by what it gives away. */
+const TELL_PX: Partial<Record<Rarity, number>> = {
+  rare: 8,
+  epic: 12,
+  legendary: 16,
+};
+
+/**
+ * What came out of a pack, on the board: its cards face down, each a button
+ * that turns it over. If the wrapper was played to its end they fly here
+ * from where the pack stood; skipped, they are simply dealt.
  *
- * Nothing here keeps time or state: `reveal` says how far the pack has got
- * and which cards are up, and every move is a change of that. Rendering this
- * again, as a refetch does, plays nothing.
+ * A card that is rare or better gives it away while it is face down, by a
+ * row of fire in its rarity's colour behind its top edge. Turned, any card
+ * is crossed by a band in its rarity's tone; a rare one throws sparks, and
+ * an epic or a legendary comes forward and is held there.
+ *
+ * Nothing here keeps time or state: `reveal` says which cards are up, and
+ * every move is a change of that. Rendering this again, as a refetch does,
+ * plays nothing.
  */
 export function PackReveal({
   reveal,
@@ -42,30 +67,32 @@ export function PackReveal({
   pieceDrawing,
 }: PackRevealProps) {
   const total = pulled(reveal.result);
+  const list = useRef<HTMLUListElement>(null);
   const cards = useRef<(HTMLLIElement | null)[]>([]);
+
+  // The cards leave the pack once, as the board they lie on is laid.
+  const { id, flown, pace } = reveal;
+  useLayoutEffect(() => {
+    if (!flown || pace === "calm" || !list.current || prefersCalm()) return;
+    const board = placed(list.current);
+    flyOut(
+      cards.current,
+      { x: board.left + board.width / 2, y: board.top + PACK_MIDDLE },
+      pace,
+    );
+  }, [id, flown, pace]);
 
   // A card turned from the rail may be under it, or off the screen: it is
   // brought just clear in one cut. Its scroll margins are the lid above and
-  // the rail and a phone's dock below.
+  // the rail and a phone's dock below. Then it throws what its rarity does.
   const last = reveal.last;
+  const turned = last === null ? null : rarityOf(reveal, last);
   useEffect(() => {
-    if (last === null) return;
-    cards.current[last]?.scrollIntoView({ block: "nearest" });
-  }, [last]);
-
-  if (reveal.phase !== "dealt") {
-    return (
-      <ShelfStage>
-        <div className="pack-slot" data-slot="0">
-          <OpenedPack
-            packId={reveal.result.packId}
-            holds={total}
-            seal={reveal.phase}
-          />
-        </div>
-      </ShelfStage>
-    );
-  }
+    const card = last === null ? null : cards.current[last];
+    if (!card) return;
+    card.scrollIntoView({ block: "nearest" });
+    if (turned) turnedOver(card, turned);
+  }, [id, last, turned]);
 
   /** The card's own press: turn it, and leave the focus on what it became. */
   const turnHere = (index: number) => {
@@ -92,8 +119,10 @@ export function PackReveal({
 
   return (
     <ul
+      ref={list}
       aria-label="What came out of the pack"
-      className="flex min-h-[332px] flex-wrap content-center justify-center gap-x-3 gap-y-4 py-2"
+      data-count={total}
+      className="pull-row flex min-h-[332px] flex-wrap content-center justify-center gap-x-3 gap-y-4 py-2"
     >
       {Array.from({ length: total }, (_, index) => {
         const up = reveal.up[index] === true;
@@ -101,23 +130,34 @@ export function PackReveal({
         // rendering the list again plays nothing. One that was up from the
         // start (reduced motion) never had a turn to play.
         const turnedHere = up && reveal.last !== null;
+        const rarity = rarityOf(reveal, index) ?? "common";
         return (
           <li
             key={index}
             ref={(node) => {
               cards.current[index] = node;
             }}
-            className="deal flex max-w-[168px] min-w-0 grow basis-[130px] scroll-mt-20 scroll-mb-52 flex-col gap-3"
-            style={{ "--i": index } as CSSProperties}
+            // Cards that flew here have landed already: only dealt ones land.
+            className={`relative flex max-w-[168px] min-w-0 grow basis-[130px] scroll-mt-20 scroll-mb-52 flex-col gap-3 ${flown ? "" : "deal"}`}
+            style={
+              {
+                "--i": index,
+                // How far from the middle of the row it lies.
+                "--out": Math.abs(index - (total - 1) / 2),
+              } as CSSProperties
+            }
           >
             <div
-              className={`grid flex-1 bg-transparent! ${turnedHere ? "anim-flip" : ""}`}
+              className={`relative grid flex-1 bg-transparent! ${turnedHere ? "anim-flip" : ""}`}
             >
-              <div className={`${LAYER} ${up ? "invisible" : "visible"}`}>
+              <div
+                className={`relative isolate ${LAYER} ${up ? "invisible" : "visible"}`}
+              >
                 <CardBack
                   index={index}
                   total={total}
                   kind={reveal.result.kind}
+                  tell={tell(reveal, index)}
                   disabled={up}
                   onTurn={() => turnHere(index)}
                 />
@@ -142,6 +182,15 @@ export function PackReveal({
                   />
                 )}
               </div>
+              {/* The band that crosses a card as it turns, in its rarity. */}
+              <span
+                className={`card-shimmer is-band ${turnedHere ? "opacity-100! before:animate-[pack-shine_520ms_linear_190ms_both]" : ""}`}
+                style={
+                  {
+                    "--tone": `color-mix(in srgb, ${RARITY_PALETTES[rarity].outline} 64%, transparent)`,
+                  } as CSSProperties
+                }
+              />
             </div>
             <PullTag reveal={reveal} index={index} up={up} />
           </li>
@@ -164,18 +213,57 @@ const LAYER =
 /**
  * A card face down: the cobalt back of the player's own deck, with its paw.
  * It is the control that turns the card, and it goes when the card is up,
- * halfway through the turn, when the card is edge-on.
+ * halfway through the turn, when the card is edge-on. One that is rare or
+ * better has fire behind its top edge (`tell`), taller the rarer it is, and
+ * says so to a screen reader too.
  */
 function CardBack({
   index,
   total,
   kind,
+  tell,
   disabled,
   onTurn,
 }: {
   index: number;
   total: number;
   kind: "cats" | "cosmetics";
+  tell: Rarity | null;
+  disabled: boolean;
+  onTurn: () => void;
+}) {
+  const told = tell ? `, ${RARITY_LABELS[tell].toLowerCase()}` : "";
+  return (
+    <>
+      {tell ? (
+        <Fire
+          className="card-tell"
+          style={
+            {
+              ...fireStyle(
+                RARITY_PALETTES[tell].outline,
+                RARITY_PALETTES[tell].glow,
+              ),
+              "--tell": `${TELL_PX[tell] ?? 0}px`,
+            } as CSSProperties
+          }
+        />
+      ) : null}
+      <CardBackButton
+        label={`Turn over ${kind === "cats" ? "card" : "piece"} ${index + 1} of ${total}${told}`}
+        disabled={disabled}
+        onTurn={onTurn}
+      />
+    </>
+  );
+}
+
+function CardBackButton({
+  label,
+  disabled,
+  onTurn,
+}: {
+  label: string;
   disabled: boolean;
   onTurn: () => void;
 }) {
@@ -184,7 +272,7 @@ function CardBack({
       type="button"
       onClick={onTurn}
       disabled={disabled}
-      aria-label={`Turn over ${kind === "cats" ? "card" : "piece"} ${index + 1} of ${total}`}
+      aria-label={label}
       className="piece piece-card liftable border-ink bg-cobalt grid min-h-[216px] place-items-center border-2 p-2"
     >
       <span className="border-cobalt-dark grid h-full w-full place-items-center border-2">

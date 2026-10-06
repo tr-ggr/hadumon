@@ -442,6 +442,63 @@ export const ICONS = {
     ".o1111o.",
     "..oooo..",
   ],
+  /** Scissors, open: what takes the top off a pack. */
+  scissors: [
+    "oo....oo",
+    "o1o..oo.",
+    "oooooo..",
+    "...oo...",
+    "oooooo..",
+    "o1o..oo.",
+    "oo....oo",
+    "........",
+  ],
+  /** The same scissors, shut on the cut. */
+  scissorsShut: [
+    "oo......",
+    "o1o.....",
+    "ooooooo.",
+    "...ooooo",
+    "ooooooo.",
+    "o1o.....",
+    "oo......",
+    "........",
+  ],
+  /**
+   * A row of fire in three frames. Each is one tile of the row and meets
+   * itself at its sides; its foot is solid, to stand behind an edge. The
+   * white is the fire's core.
+   */
+  fire1: [
+    "...o....",
+    "..o1o...",
+    "..o1o...",
+    ".o111o.o",
+    "oo1w1oo1",
+    "11ww1111",
+    "1www11w1",
+    "11111111",
+  ],
+  fire2: [
+    "........",
+    "....o..o",
+    "o..o1oo1",
+    "o.o11oo1",
+    "1o111o11",
+    "111w11w1",
+    "1ww1www1",
+    "11111111",
+  ],
+  fire3: [
+    "........",
+    "..o.....",
+    ".o1o....",
+    ".o11o...",
+    "o111o.o.",
+    "o1w11o1o",
+    "11ww1w11",
+    "11111111",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type IconName = keyof typeof ICONS;

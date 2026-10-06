@@ -108,6 +108,21 @@ describe("recipes", () => {
     expect(voiceSeconds(recipe("cover"))).toBeLessThan(0.3);
   });
 
+  it("burns a wrapper as noise alone, and lets its cards out on a thump and a note", () => {
+    expect(recipe("flare").every((note) => note.wave === "noise")).toBe(true);
+    const burst = recipe("burst");
+    expect(burst.some((note) => note.wave === "noise")).toBe(true);
+    expect(burst.some((note) => note.wave === "sine" && note.to < 100)).toBe(
+      true,
+    );
+    // The burst is the louder of the two, and neither outlasts its phase.
+    const loudest = (name: "flare" | "burst") =>
+      Math.max(...recipe(name).map((note) => note.gain));
+    expect(loudest("flare")).toBeLessThan(loudest("burst"));
+    expect(voiceSeconds(recipe("flare"))).toBeLessThanOrEqual(0.42);
+    expect(voiceSeconds(recipe("burst"))).toBeLessThanOrEqual(0.36);
+  });
+
   it("gives the rival a lower voice of another timbre than a power", () => {
     const power = recipe("power", 0)[0]!;
     const rival = recipe("rivalFlip")[0]!;
