@@ -24,11 +24,17 @@ export function roundTurns(match: MatchView, round: number): number {
 export function RoundBoard({
   match,
   rail = false,
+  notes,
   className = "",
 }: {
   match: MatchView;
   /** Stacked in the rail beside the table, from `lg` up. */
   rail?: boolean;
+  /**
+   * One list per round of what counts towards its goal, e.g. the hand being
+   * kept. A round with lines is lit and lists them.
+   */
+  notes?: readonly (readonly string[])[];
   className?: string;
 }) {
   return (
@@ -42,6 +48,7 @@ export function RoundBoard({
           match={match}
           round={round}
           rail={rail}
+          notes={notes?.[round] ?? []}
         />
       ))}
     </ol>
@@ -52,10 +59,12 @@ function RoundTile({
   match,
   round,
   rail,
+  notes,
 }: {
   match: MatchView;
   round: number;
   rail: boolean;
+  notes: readonly string[];
 }) {
   const goal = getGoal(match.goals[round] ?? "");
   const rival = getRival(match.rivalId).name;
@@ -76,11 +85,12 @@ function RoundTile({
   // will be.
   const compact = rail && !current;
   const line = compact;
+  const counted = notes.length > 0;
 
   return (
     <li
       aria-current={current ? "step" : undefined}
-      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
+      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : counted ? "bg-lime is-chosen flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-print text-xl">Round {round + 1}</h3>
@@ -147,6 +157,17 @@ function RoundTile({
           </p>
         ) : null}
       </div>
+
+      {counted ? (
+        <ul
+          aria-label={`Counts towards ${goal.name}`}
+          className="space-y-0.5 text-xs leading-snug font-semibold"
+        >
+          {notes.map((note, index) => (
+            <li key={index}>{note}</li>
+          ))}
+        </ul>
+      ) : null}
     </li>
   );
 }

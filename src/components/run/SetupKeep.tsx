@@ -10,6 +10,7 @@ import type { MatchView, RunView } from "~/server/game/view";
 
 import { CatDetail, CatPick } from "./CatPick";
 import { listWords, plural } from "./describe";
+import { keepHints } from "./goalHints";
 import { Die, Label, Nameplate, Pile, RelicTiles } from "./pieces";
 import { RoundBoard, roundTurns } from "./RoundBoard";
 import { playCat, playSound } from "./sfx/engine";
@@ -78,6 +79,11 @@ export function SetupKeep({
   const keptCats = [...cats].sort((a, b) => a - b);
   const keptFood = ELEMENTS.filter((element) => essence.includes(element));
   const left = match.setup.length - cats.length;
+  const goalNotes = keepHints(
+    match.goals,
+    keptCats.flatMap((dealt) => match.setup[dealt] ?? []),
+    keptFood,
+  );
 
   const sentence: Record<SetupStep, string> = {
     rival: "What is on the table is next.",
@@ -176,8 +182,17 @@ export function SetupKeep({
             <StepHeading title={`Keep ${SETUP_KEEP}`} headingRef={heading}>
               You were dealt five cats and one of each cat food. Keep any{" "}
               {SETUP_KEEP} in total. Cats cost food to play, so a hand of five
-              cats is a hand you cannot afford.
+              cats is a hand you cannot afford. The round goals light up for
+              what you keep.
             </StepHeading>
+
+            <section aria-label="Round goals">
+              <RoundBoard
+                match={match}
+                notes={goalNotes}
+                className="lg:grid-cols-4"
+              />
+            </section>
 
             <ul
               aria-label="Cats you were dealt"
