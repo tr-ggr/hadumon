@@ -3,7 +3,7 @@
 import type { CSSProperties } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
-import { Habitats } from "~/components/cats/Habitats";
+import { habitatsLabel } from "~/components/cats/Habitats";
 import { getCat } from "~/server/game/cats";
 import { auraTotal } from "~/server/game/match";
 import type { MatchView } from "~/server/game/view";
@@ -84,13 +84,17 @@ export function Hand({
               catId={heldId}
               variant="hand"
               discount={discount}
-              className="is-chosen h-full w-full"
+              className="is-chosen h-full w-full pb-6"
             />
           </button>
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1">
+            <span className="sr-only">
+              {habitatsLabel(getCat(heldId).rows)}.
+            </span>
             <InfoButton
               name={getCat(heldId).name}
               onClick={() => onDetail(heldId)}
+              className="leading-4"
             />
             <span className="text-cobalt text-[11px] font-bold">Chosen</span>
           </div>
@@ -143,17 +147,24 @@ export function Hand({
                   catId={catId}
                   variant="hand"
                   discount={discount}
-                  className={`hand-face h-full w-full ${selected ? "is-chosen" : tucking && !busy ? "is-open" : ""}`}
+                  className={`hand-face h-full w-full pb-6 ${selected ? "is-chosen" : tucking && !busy ? "is-open" : ""}`}
                 />
               </button>
               {block ? <span aria-hidden className="hand-wash" /> : null}
               {index < 9 ? (
-                <KeyHint className="pointer-events-none absolute -top-2.5 left-2">
+                <KeyHint className="pointer-events-none absolute -top-3 -left-1">
                   {index + 1}
                 </KeyHint>
               ) : null}
-              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5">
-                <InfoButton name={cat.name} onClick={() => onDetail(catId)} />
+              {/* The card's foot is bare paper for these: the way to the
+                  whole card, and why this one cannot be played. */}
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1">
+                <span className="sr-only">{habitatsLabel(cat.rows)}.</span>
+                <InfoButton
+                  name={cat.name}
+                  onClick={() => onDetail(catId)}
+                  className="leading-4"
+                />
                 {selected || block ? (
                   <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
                     {selected ? (
@@ -162,9 +173,7 @@ export function Hand({
                       PLAY_BLOCK_LABELS[block]
                     ) : null}
                   </span>
-                ) : (
-                  <Habitats rows={cat.rows} className="justify-end" />
-                )}
+                ) : null}
               </div>
             </li>
           );

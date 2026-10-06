@@ -27,6 +27,14 @@
   --color-stone-light: #d0dae2;
   --color-stone-rib: #6e7f90;
   --color-stone-deep: #3a4857;
+  /* A cat card and nothing else: its printed face and the flecks in it, the
+     grey of its tab, and its power band by what sets the power off. */
+  --color-paper: #f7f3ea;
+  --color-paper-fleck: #e3dccd;
+  --color-card-tab: #c9c4bc;
+  --color-band-activated: #dda482;
+  --color-band-between: #f0b2d0;
+  --color-band-round-end: #7fcabd;
   --font-display:
     ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
   --font-body: ui-rounded, "Avenir Next", "Trebuchet MS", system-ui, sans-serif;
@@ -91,6 +99,15 @@
   font-weight: 400;
   letter-spacing: 0.01em;
   line-height: 1;
+}
+/* A cat card's name on its plate: narrow hand-drawn capitals. On a cat card
+   only, one word, and never under 14px, where its strokes thin to hairs. */
+@utility text-plate {
+  font-family: var(--font-plate), var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  text-transform: uppercase;
 }
 /* A screen too short to hold the supply, the mat and a full-size hand at
    once; the rail and the table tighten for it. */
@@ -160,12 +177,434 @@
   background: var(--color-white);
   border-right: 2px solid var(--color-ink);
 }
-/* The bands of a cat card: its rarity along the top and its element down the
-   left edge, which starts under the first. A variable, so the tabletop can add
-   to it. */
+/* The bands of a stack of cards and of a card in a pack's list: the rarity
+   along the top and the element down the left edge, which starts under the
+   first. A variable, so the tabletop can add to it. */
 .cat-card {
   --piece-inset: inset 0 3px 0 var(--rarity), inset 4px 0 0 var(--element);
   box-shadow: var(--piece-inset);
+}
+/*
+ * The cat card: the one printed thing on the table, where everything else is
+ * die-cut board. A flecked paper face with rounded corners; a grey tab hung
+ * from its top left with the lanes, the cost and the element; a white name
+ * plate with a thin rule and the rarity along its foot; the cat; and the
+ * power on a band right across, coloured by what sets it off. Its 2px line,
+ * chipboard edge and cast are a piece's, so it still sits on the table.
+ *
+ * The root is the container the rest answers to, and a container cannot
+ * restyle itself, so the grid is `.card-body` inside it. Padding a parent
+ * adds for a control of its own lands on the root, under the grid.
+ */
+.paper-card {
+  --corner: 8px;
+  /* The flecks are `--color-paper-fleck`, written out: a URL takes no variable. */
+  --fleck: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' shape-rendering='crispEdges' fill='%23e3dccd'%3E%3Crect x='5' y='7' width='2' height='1'/%3E%3Crect x='29' y='3' width='1' height='2'/%3E%3Crect x='17' y='19' width='1' height='1'/%3E%3Crect x='40' y='15' width='2' height='1'/%3E%3Crect x='9' y='31' width='1' height='2'/%3E%3Crect x='33' y='28' width='2' height='1'/%3E%3Crect x='23' y='41' width='1' height='1'/%3E%3Crect x='44' y='37' width='1' height='2'/%3E%3Crect x='2' y='44' width='2' height='1'/%3E%3C/svg%3E");
+  /* A ring is the frame of the piece it is on, not of a card laid in it. */
+  --piece-ring: initial;
+  container: card / inline-size;
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  overflow: clip;
+  border-radius: var(--corner);
+  background-color: var(--color-paper);
+  background-image: var(--fleck);
+  background-position: var(--fleck-x, 0) var(--fleck-y, 0);
+}
+/* The chosen and due frames. An inset shadow on the root is under the tab
+   and the band, which reach the card's edge, so it is drawn over them. */
+.paper-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: calc(var(--corner) - 2px);
+  box-shadow: var(--piece-ring, none);
+  pointer-events: none;
+}
+.paper-card[data-variant="full"] {
+  --corner: 12px;
+  aspect-ratio: 5 / 7;
+}
+.card-body {
+  display: grid;
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-template-columns: 38px minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "tab plate"
+    "tab art"
+    "score art"
+    "band band"
+    "foot foot";
+}
+/* Flush with the top left corner, so a fanned hand's strip is all tab. Marks
+   are 16px, two to a line; one alone is centred. */
+.card-tab {
+  --mark: 16px;
+  grid-area: tab;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 2px 3px;
+  border-radius: 0 0 var(--corner) var(--corner);
+  background: var(--color-card-tab);
+}
+.card-tab > * {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  width: calc(var(--mark) * 2 + 2px);
+}
+.card-free {
+  font-size: 11px;
+  font-weight: 800;
+  line-height: var(--mark);
+}
+.card-plate {
+  container: plate / inline-size;
+  grid-area: plate;
+  align-self: start;
+  margin: 4px 4px 0 3px;
+  padding: 3px 5px 7px;
+  border: 1px solid var(--color-ink);
+  background: var(--color-white);
+  box-shadow: inset 0 -4px 0 var(--rarity);
+}
+/* A name is one word and is never cut: it is set as large as its plate has
+   room for, by its letters (0.385em is the widest a letter of this face
+   averages over a name), up to the card's own size for a name. */
+.card-name {
+  overflow: hidden;
+  font-size: clamp(
+    14px,
+    calc(100cqw / (var(--name-len, 9) * 0.385)),
+    var(--name-size, 22px)
+  );
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-kind {
+  overflow: hidden;
+  margin-top: 1px;
+  color: var(--color-ink-soft);
+  font-size: 11px;
+  font-style: italic;
+  line-height: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* A plate too narrow for both words keeps the archetype; the rarity is the
+   bar under it, and is still read out. */
+@container plate (max-width: 99.9px) {
+  .card-rarity {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .card-archetype {
+    display: inline-block;
+    text-transform: capitalize;
+  }
+}
+/* Upright, the points stand under the tab and the yarn a cat holds in the
+   corner of its picture. */
+.card-stats {
+  display: contents;
+}
+.card-score {
+  grid-area: score;
+  align-self: start;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-top: 4px;
+  font-size: 18px;
+  line-height: 16px;
+}
+/* Over the corner of the picture, so it wears the rim a mark over a sprite
+   does, in the paper's colour. */
+.paper-card .card-yarn {
+  --rim: var(--color-paper);
+  grid-area: art;
+  align-self: end;
+  justify-self: end;
+  margin: 0 4px 3px 0;
+}
+/* The cat stands a little left of centre, clear of the yarn. */
+.card-art {
+  grid-area: art;
+  display: grid;
+  min-height: 0;
+  padding-right: 12px;
+  place-items: center;
+}
+.card-sprite {
+  width: 64px;
+  height: 64px;
+}
+.paper-card[data-locked] .card-sprite {
+  filter: grayscale(1);
+}
+.card-band {
+  grid-area: band;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 4px 6px;
+  border-block: 1px solid color-mix(in srgb, var(--color-ink) 25%, transparent);
+  background: var(--color-white);
+  font-size: 11px;
+  line-height: 15px;
+}
+.card-band[data-timing="activated"] {
+  background: var(--color-band-activated);
+}
+.card-band[data-timing="between"] {
+  background: var(--color-band-between);
+}
+.card-band[data-timing="roundEnd"] {
+  background: var(--color-band-round-end);
+}
+.paper-card[data-locked] .card-band {
+  background: var(--color-white);
+}
+/* What sets the power off, in small heavy capitals of the body's own face:
+   the plate's face is too fine at this size. */
+.card-trigger {
+  font-size: 0.82em;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.card-foot {
+  grid-area: foot;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px 8px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+/* In a hand: every card's band is the same four lines, and a power longer
+   than that is cut. The card's Info has the rest. */
+.paper-card[data-variant="hand"] {
+  .card-band {
+    min-height: 70px;
+  }
+  .card-power,
+  .card-aura {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 4;
+  }
+  &[data-aura] :is(.card-power, .card-aura) {
+    -webkit-line-clamp: 2;
+  }
+  /* The smallest hand, a phone on its side: a tab drawn tighter, so the
+     three cats of every lane still have their points clear of the band. */
+  @container card (max-width: 8.99rem) {
+    .card-plate {
+      --name-size: 20px;
+      padding-inline: 3px;
+    }
+    .card-score {
+      margin-top: 2px;
+      font-size: 16px;
+    }
+    .card-sprite {
+      width: 48px;
+      height: 48px;
+    }
+    .card-tab {
+      gap: 1px;
+      padding-block: 1px 2px;
+    }
+    .card-tab > * {
+      row-gap: 1px;
+    }
+  }
+  @container card (min-width: 11rem) {
+    .card-plate {
+      --name-size: 26px;
+    }
+    .card-score {
+      font-size: 20px;
+    }
+    .card-sprite {
+      width: 80px;
+      height: 80px;
+    }
+    &[data-aura] .card-sprite {
+      width: 64px;
+      height: 64px;
+    }
+    .card-band {
+      min-height: 93px;
+      font-size: 12px;
+      line-height: 16.5px;
+    }
+    .card-power {
+      -webkit-line-clamp: 5;
+    }
+    &[data-aura] :is(.card-power, .card-aura) {
+      -webkit-line-clamp: 3;
+    }
+  }
+}
+/* On its own, read at leisure: everything larger, nothing cut, and a foot
+   with the lanes in words and what is said of the cat. */
+.paper-card[data-variant="full"] {
+  /* Nothing of it is cut: a card with more to say than its shape holds
+     grows, where a card in a hand keeps its size and is cut. */
+  .card-body {
+    min-height: auto;
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+  .card-tab {
+    --mark: 24px;
+    gap: 3px;
+    padding: 3px 2px 5px;
+  }
+  .card-free {
+    font-size: 14px;
+  }
+  .card-plate {
+    --name-size: 36px;
+    margin: 6px 6px 0 5px;
+    padding: 6px 9px 10px;
+  }
+  .card-kind {
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 16px;
+  }
+  .card-score {
+    gap: 3px;
+    margin-top: 6px;
+    font-size: 28px;
+    line-height: 24px;
+  }
+  .card-art {
+    padding-right: 0;
+  }
+  .card-yarn {
+    margin: 0 10px 8px 0;
+  }
+  .card-sprite {
+    width: 128px;
+    height: 128px;
+  }
+  /* Set narrower than its 20rem, the picture gives way before the words. */
+  @container card (max-width: 18.99rem) {
+    .card-sprite {
+      width: 96px;
+      height: 96px;
+    }
+  }
+  .card-band {
+    min-height: 82px;
+    gap: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+/* In a tray or an offer: the tab at the left, the plate across the top, and
+   the cat with its points and yarn beside it. A card wide enough for it has
+   them all on one line. The band runs down to whatever the card is stood on. */
+.paper-card[data-variant="compact"] {
+  .card-body {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-areas:
+      "tab plate plate"
+      "tab art stats"
+      "band band band";
+  }
+  .card-plate {
+    --name-size: 20px;
+  }
+  .card-art {
+    justify-items: start;
+    padding: 3px 0 3px 4px;
+  }
+  .card-sprite {
+    width: 48px;
+    height: 48px;
+  }
+  .card-stats {
+    grid-area: stats;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 4px;
+    padding-right: 5px;
+    /* Ten points is a figure wider and may stand on the picture's edge, so
+       the two marks wear one rim between them. */
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(2px 0 0 var(--color-paper))
+      drop-shadow(-2px 0 0 var(--color-paper));
+  }
+  .card-score {
+    margin: 0;
+    font-size: 16px;
+  }
+  .card-yarn {
+    margin: 0;
+    filter: none;
+  }
+  .card-band {
+    justify-content: flex-start;
+    border-bottom: 0;
+    font-size: 12px;
+    line-height: 16px;
+  }
+  /* The narrowest tray: a plate with less about it, for the name's sake. */
+  @container card (max-width: 8.99rem) {
+    .card-plate {
+      margin-inline: 2px 3px;
+      padding-inline: 3px;
+    }
+  }
+  @container card (min-width: 15rem) {
+    .card-body {
+      grid-template-columns: 38px minmax(0, 1fr) auto auto;
+      grid-template-rows: auto minmax(0, 1fr);
+      grid-template-areas:
+        "tab plate art stats"
+        "band band band band";
+    }
+    .card-plate {
+      margin-bottom: 4px;
+    }
+    .card-art {
+      padding: 4px 6px;
+    }
+    .card-score {
+      font-size: 18px;
+    }
+  }
+  @container card (min-width: 18rem) {
+    .card-plate {
+      --name-size: 22px;
+    }
+  }
 }
 /* A mark printed over a sprite: a 2px rim in the face's colour, one pixel
    of the mark's own grid, keeps the two apart. */
@@ -699,30 +1138,36 @@ body:has(.table-fit) [role="dialog"] {
   }
 }
 /* A tray card on a fitted table is the supply's height, and its rules are
-   cut to the lines it has room for. The card's own Info opens all of it. */
+   cut to the lines it has room for: a narrow one drops the line under the
+   name and a legendary's relic. The card's own Info opens all of it. */
 .tabletop [data-match] {
   @variant fit-wide {
+    [data-tray] .card-band {
+      font-size: 11px;
+      line-height: 15px;
+    }
     [data-tray] .card-power {
       display: -webkit-box;
       overflow: hidden;
       -webkit-box-orient: vertical;
+      -webkit-line-clamp: 3;
+    }
+    [data-tray] .paper-card:has(.card-aura) .card-power {
       -webkit-line-clamp: 2;
     }
+    [data-tray] .card-kind,
     [data-tray] .card-aura {
       display: none;
     }
-    @container (min-width: 11rem) {
-      [data-tray] .card-power {
-        -webkit-line-clamp: 4;
-      }
-      [data-tray] .cat-card:has(.card-aura) .card-power {
-        -webkit-line-clamp: 2;
+    @container card (min-width: 15rem) {
+      [data-tray] .card-kind {
+        display: block;
       }
       [data-tray] .card-aura {
         display: -webkit-box;
         overflow: hidden;
         -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 1;
       }
     }
   }
@@ -959,12 +1404,16 @@ html:has([data-match]) {
   outline: 3px solid var(--color-cobalt);
   outline-offset: 3px;
 }
-/* A card that cannot be played now. A wash, since a see-through card would
-   show the one under it. */
+/* A card that cannot be played now: its colour is taken out and a little
+   paper laid over it. A wash, since a see-through card would show the one
+   under it; a thin one, since it is over the power's band too and ink has
+   to stay ink there, so it is the grey that says it. */
 .tabletop .hand-fan .hand-wash {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--color-cream) 34%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-paper) 20%, transparent);
+  backdrop-filter: grayscale(1);
   pointer-events: none;
 }
 .tabletop .hand-fan > li.is-raised,

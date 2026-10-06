@@ -25,7 +25,7 @@ export interface BookPageProps {
   side: "left" | "right";
   /** One page open at a time: it carries the whole head, title and count. */
   solo: boolean;
-  /** The pockets are large enough to print a cat's whole card in. */
+  /** The pockets are large enough for a card as a hand holds it, upright. */
   roomy: boolean;
   /** What it is doing, when it is on show. Absent, it is put away. */
   leaf?: Leaf["role"];
@@ -223,9 +223,14 @@ function Pocket({
   out: boolean;
   onPull: (catId: string) => void;
 }) {
-  const variant = roomy ? "full" : "compact";
+  // A roomy pocket is nearly square and a card is not: the card keeps its
+  // own shape at the pocket's height, in the middle of it. The whole card,
+  // with its foot, is a press away.
+  const variant = roomy ? "hand" : "compact";
   return (
-    <li className="anim-land relative flex">
+    <li
+      className={`anim-land relative flex ${roomy ? "aspect-[5/7] justify-self-center" : ""}`}
+    >
       {entry.unlocked ? (
         <button
           type="button"

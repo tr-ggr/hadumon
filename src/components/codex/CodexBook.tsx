@@ -467,7 +467,7 @@ export function CodexBook({
         }
       >
         {out ? (
-          <div data-pop-anchor>
+          <div data-pop-anchor className="mx-auto max-w-[20rem]">
             <CatCard catId={out} variant="full" />
           </div>
         ) : null}

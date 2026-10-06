@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
-import { Habitats } from "~/components/cats/Habitats";
+import { habitatsLabel } from "~/components/cats/Habitats";
 import { Modal, TableButton } from "~/components/ui";
 import { getCat } from "~/server/game/cats";
 
@@ -23,7 +23,7 @@ export interface CatPickProps {
   dimmed?: boolean;
   /** What selecting does, for assistive tech: "Play", "Keep", "Draw". */
   verb?: string;
-  /** Replaces the row list in the card's footer. */
+  /** Said in the card's footer, beside its Info. */
   note?: ReactNode;
   /** A key that selects this card, shown where there is a keyboard. */
   hint?: string;
@@ -35,7 +35,9 @@ export interface CatPickProps {
 /**
  * A cat card in a hand, tray or offer. The card is the select control; the
  * small Info control opens the full card and never selects. The two are
- * siblings so neither nests inside the other.
+ * siblings so neither nests inside the other. The card's lanes are marks in
+ * its tab, and a card inside a named control is not read out, so they are
+ * said here as a sentence.
  */
 export function CatPick({
   catId,
@@ -80,14 +82,13 @@ export function CatPick({
         card
       )}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5 pl-2">
+        <span className="sr-only">{habitatsLabel(cat.rows)}.</span>
         {selected || (note !== undefined && note !== null) ? (
           <span className="text-ink-soft min-w-0 truncate text-[11px] font-bold">
             {selected ? <span className="text-cobalt">Chosen</span> : note}
           </span>
-        ) : (
-          <Habitats rows={cat.rows} />
-        )}
-        <span className="flex shrink-0 items-center gap-1.5">
+        ) : null}
+        <span className="ml-auto flex shrink-0 items-center gap-1.5">
           {hint ? <KeyHint>{hint}</KeyHint> : null}
           <InfoButton name={cat.name} onClick={onDetail} />
         </span>
@@ -157,7 +158,13 @@ export function CatDetail({
         </TableButton>
       }
     >
-      {catId ? <CatCard catId={catId} variant="full" /> : null}
+      {catId ? (
+        <CatCard
+          catId={catId}
+          variant="full"
+          className="mx-auto max-w-[20rem]"
+        />
+      ) : null}
       {tucked && tucked.count > 0 ? (
         <section className="mt-4">
           <h3 className="text-ink text-sm font-bold">

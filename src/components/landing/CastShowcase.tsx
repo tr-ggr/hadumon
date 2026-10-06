@@ -81,7 +81,11 @@ export function CastShowcase({ children }: { children: ReactNode }) {
                 className="top-0 left-0"
               />
             </div>
-            <CatCard catId={cat.id} variant="full" className="mb-2" />
+            <CatCard
+              catId={cat.id}
+              variant="full"
+              className="mx-auto mb-2 w-full max-w-[20rem]"
+            />
           </div>
 
           <div

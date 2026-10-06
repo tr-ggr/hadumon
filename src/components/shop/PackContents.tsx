@@ -279,7 +279,7 @@ function CatPackContents({
         <div className="mt-4 space-y-3">
           {/* Every card is in the one cell, so the sheet is as tall as the
               tallest of them whichever is on show. */}
-          <div className="mx-auto grid max-w-md pb-2">
+          <div className="mx-auto grid max-w-[17rem] pb-2">
             {cats.map((id, index) => (
               <div
                 key={id}

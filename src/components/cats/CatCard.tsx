@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from "react";
+import type { CSSProperties } from "react";
 
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
@@ -8,13 +8,14 @@ import {
   RARITY_PALETTES,
 } from "~/components/sprites/palettes";
 import {
-  describeAura,
-  describePower,
+  ARCHETYPE_LABELS,
+  auraParts,
   getCat,
   playCost,
+  powerParts,
   RARITY_LABELS,
-  ROW_LABELS,
   type CostPip,
+  type RulesParts,
 } from "~/server/game/cats";
 import {
   ELEMENT_LABELS,
@@ -23,7 +24,10 @@ import {
   type Element,
 } from "~/server/game/elements";
 
-import { HabitatIcon } from "./Habitats";
+import { HabitatIcon, habitatsLabel } from "./Habitats";
+
+/** The lime of a card's points mark, as on the lanes' own marks. */
+const LIME = "#d8ff4f";
 
 const FOOD_ICONS: Record<CostPip | "wild", IconName> = {
   flame: "beef",
@@ -107,14 +111,20 @@ export function ElementMark({
  * How much yarn a cat can hold, as a mark: the ball and the number. The ball
  * is unfilled, because this is room for yarn and not yarn held.
  */
-export function YarnCap({ cap }: { cap: number }) {
+export function YarnCap({
+  cap,
+  className = "",
+}: {
+  cap: number;
+  className?: string;
+}) {
   const label = `Holds ${cap} yarn`;
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
-      className="text-pixel inline-flex shrink-0 items-center gap-0.5 text-sm leading-none tabular-nums"
+      className={`text-pixel inline-flex shrink-0 items-center gap-0.5 text-sm leading-none tabular-nums ${className}`}
     >
       <PixelIcon name="yarn" size={16} />
       {cap}
@@ -125,9 +135,11 @@ export function YarnCap({ cap }: { cap: number }) {
 export interface CatCardProps {
   catId: string;
   /**
-   * `full` shows rows, capacity and flavor; `compact` is for a tray or an
-   * offer; `hand` is the portrait face held in a fan, with everything that
-   * names the cat in the left strip that an overlapping card leaves showing.
+   * `hand` is the upright card held in a fan, with the lanes, the cost, the
+   * element and the points in the left strip that an overlapping card leaves
+   * showing. `full` is the same card read on its own, larger, with a foot for
+   * the lanes in words and what is said of the cat. `compact` is the tile of
+   * a tray or an offer, made of the same parts.
    */
   variant?: "full" | "compact" | "hand";
   /** Dims the card and shows this instead of the rules, e.g. an unlock hint. */
@@ -138,8 +150,32 @@ export interface CatCardProps {
 }
 
 /**
- * A cat as a card: sprite, cost, points and rules text. Purely presentational
- * so it can sit inside a button, a list item or a dialog.
+ * Where a card's flecks start, from its id: two cards side by side are not
+ * the one sheet of paper twice.
+ */
+function fleckAt(catId: string): { x: number; y: number } {
+  let hash = 0;
+  for (const letter of catId) hash = (hash * 31 + letter.charCodeAt(0)) % 2304;
+  return { x: hash % 48, y: Math.floor(hash / 48) };
+}
+
+/**
+ * One line of rules in a card's band: what sets it off in the plate's
+ * capitals, then what it does. Read out, it is the sentence it always was.
+ */
+function Rules({ parts, className }: { parts: RulesParts; className: string }) {
+  return (
+    <p className={className}>
+      <span className="card-trigger">{parts.trigger}:</span> {parts.text}
+    </p>
+  );
+}
+
+/**
+ * A cat as a printed card: a tab with its lanes, cost and element, its name
+ * on a plate, the cat with its points and the yarn it holds, and its power
+ * on a band coloured by what sets it off. Purely presentational so it can
+ * sit inside a button, a list item or a dialog; the styles are `.paper-card`.
  */
 export function CatCard({
   catId,
@@ -150,154 +186,104 @@ export function CatCard({
 }: CatCardProps) {
   const cat = getCat(catId);
   const locked = lockedHint !== undefined && lockedHint !== null;
-  const full = variant === "full";
   const cost = playCost(catId, discount);
-  const bands = {
+  const fleck = fleckAt(catId);
+  const paper = {
     "--rarity": RARITY_PALETTES[cat.rarity].outline,
-    "--element": ELEMENT_PALETTES[cat.element]["1"],
+    "--fleck-x": `${fleck.x}px`,
+    "--fleck-y": `${fleck.y}px`,
+    // The plate sets a name as large as its letters leave room for.
+    "--name-len": cat.name.length,
   } as CSSProperties;
-  // The element leads the name, so it is read before it wherever the card is.
-  const name = (
-    <p className="text-pixel flex items-center gap-1 text-sm leading-tight">
-      <ElementMark element={cat.element} label />
-      <span className="truncate">{cat.name}</span>
-    </p>
-  );
-  const points = (
-    <p
-      className="text-pixel border-ink bg-lime shrink-0 border-2 px-1.5 text-sm leading-6"
-      aria-label={`${cat.points} points`}
-    >
-      {cat.points}
-    </p>
-  );
-  const pips =
-    cost.length > 0 ? (
-      cost.map((pip, i) => <EssencePip key={i} kind={pip} />)
-    ) : (
-      <span className="text-ink-soft text-xs leading-4">Free</span>
-    );
+  const mark = variant === "full" ? 24 : 16;
 
-  if (variant === "hand") {
-    // The face answers to its own width, not the screen's: a narrow card
-    // takes the smaller sprite and clamps its rules to what fits. A cost that
-    // wraps to a second row of pips leaves the narrow card one line less.
-    const tall = cost.length > 2;
-    const powerClamp = cat.aura
-      ? tall
-        ? "line-clamp-1"
-        : "line-clamp-2"
-      : tall
-        ? "line-clamp-3"
-        : "line-clamp-4";
-    return (
-      <div
-        className={`piece piece-card cat-card border-ink bg-cream text-ink @container relative flex flex-col border-2 p-2 pb-8 text-left ${className}`}
-        style={bands}
-      >
-        {cat.rarity === "legendary" ? (
-          <span aria-hidden className="card-shimmer" />
-        ) : null}
-        <div className="flex items-start gap-1.5">
-          {/* The three numbers a player compares stand in the first 32px,
-              which the thinnest strip of the fan still shows. */}
-          <div className="flex w-8 shrink-0 flex-col gap-1">
-            <p
-              className="text-pixel border-ink bg-lime border-2 text-center text-sm leading-6"
-              aria-label={`${cat.points} points`}
-            >
-              {cat.points}
-            </p>
-            <div className="grid grid-cols-2 justify-items-center gap-y-0.5">
-              {pips}
-            </div>
-            <span className="flex justify-center">
-              <YarnCap cap={cat.yarnCap} />
+  return (
+    <div
+      data-variant={variant}
+      data-timing={cat.power?.timing ?? "none"}
+      data-locked={locked ? "" : undefined}
+      data-aura={cat.aura && !locked ? "" : undefined}
+      className={`piece piece-card paper-card border-ink text-ink border-2 text-left ${locked ? "opacity-60" : ""} ${className}`}
+      style={paper}
+    >
+      <div className="card-body">
+        <div className="card-tab">
+          <span role="img" aria-label={habitatsLabel(cat.rows)}>
+            {cat.rows.map((row) => (
+              <HabitatIcon key={row} row={row} size={mark} />
+            ))}
+          </span>
+          <span role="group" aria-label="Cost">
+            {cost.length > 0 ? (
+              cost.map((pip, i) => (
+                <EssencePip key={i} kind={pip} size={mark} />
+              ))
+            ) : (
+              <span className="card-free">Free</span>
+            )}
+          </span>
+          <ElementMark element={cat.element} size={mark} label />
+        </div>
+
+        <header className="card-plate">
+          <p className="card-name text-plate">{cat.name}</p>
+          <p className="card-kind">
+            <span className="card-rarity">{RARITY_LABELS[cat.rarity]} </span>
+            <span className="card-archetype">
+              {ARCHETYPE_LABELS[cat.archetype].toLowerCase()}
             </span>
-          </div>
+          </p>
+        </header>
+
+        <div className="card-stats">
+          <p
+            className="card-score text-pixel tabular-nums"
+            aria-label={`${cat.points} points`}
+          >
+            {cat.points}
+            <PixelIcon name="medal" size={mark} fill={LIME} />
+          </p>
+          <YarnCap cap={cat.yarnCap} className="card-yarn mark-rim" />
+        </div>
+
+        <div className="card-art">
           <PixelSprite
             catId={catId}
             size={64}
             decorative
-            className="h-12 w-12 shrink-0 @[9.5rem]:h-16 @[9.5rem]:w-16"
+            className="card-sprite"
           />
         </div>
-        <div className="mt-1">{name}</div>
-        <div className="border-ink/20 mt-1.5 space-y-1 border-t pt-1.5 text-[11px] leading-[1.35] @[9.5rem]:text-xs @[9.5rem]:leading-snug">
-          <p className={`@[9.5rem]:line-clamp-none ${powerClamp}`}>
-            {cat.power ? describePower(cat.power) : "No power."}
-          </p>
-          {cat.aura ? (
-            <p className="line-clamp-2 @[9.5rem]:line-clamp-none">
-              {describeAura(cat.aura)}
-            </p>
+
+        <div
+          className="card-band"
+          data-timing={locked ? "none" : (cat.power?.timing ?? "none")}
+        >
+          {locked ? (
+            <p className="card-power">{lockedHint}</p>
+          ) : cat.power ? (
+            <Rules parts={powerParts(cat.power)} className="card-power" />
+          ) : (
+            <p className="card-power">No power.</p>
+          )}
+          {cat.aura && !locked ? (
+            <Rules parts={auraParts(cat.aura)} className="card-aura" />
           ) : null}
         </div>
+
+        {variant === "full" ? (
+          <footer className="card-foot">
+            <p>
+              {habitatsLabel(cat.rows)} · holds {cat.yarnCap} yarn
+            </p>
+            {locked ? null : (
+              <p className="text-ink-soft italic">{cat.flavor}</p>
+            )}
+          </footer>
+        ) : null}
       </div>
-    );
-  }
-
-  return (
-    <div
-      className={`piece piece-card cat-card border-ink bg-cream text-ink @container flex flex-col gap-2 border-2 p-2 text-left ${locked ? "opacity-60" : ""} ${className}`}
-      style={bands}
-    >
-      {/* On a narrow card the name takes a line of its own under the sprite
-          and the points, so it is never cut down to a letter or two. */}
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <PixelSprite
-          catId={catId}
-          size={full ? 72 : 44}
-          decorative
-          className={`shrink-0 ${locked ? "grayscale" : ""}`}
-        />
-        <div className="order-last min-w-0 basis-full @[11rem]:order-none @[11rem]:flex-1 @[11rem]:basis-0">
-          {name}
-          <div className="mt-1 flex items-center gap-1">{pips}</div>
-        </div>
-        {/* The tag and the mark together are 2px taller than the compact
-            sprite; the 1px each way keeps the card the height it was. */}
-        <div className="-my-px ml-auto flex flex-col items-end gap-0.5">
-          {points}
-          <YarnCap cap={cat.yarnCap} />
-        </div>
-      </div>
-
-      {full ? (
-        <p className="text-ink-soft text-xs">
-          {RARITY_LABELS[cat.rarity]} · {ELEMENT_LABELS[cat.element]} · lives in{" "}
-          {cat.rows.map((row, index) => (
-            <Fragment key={row}>
-              {index > 0 ? " or " : null}
-              <span className="whitespace-nowrap">
-                <HabitatIcon
-                  row={row}
-                  className="mr-1 inline-block align-[-3px]"
-                />
-                {ROW_LABELS[row]}
-              </span>
-            </Fragment>
-          ))}{" "}
-          · holds {cat.yarnCap} yarn
-        </p>
-      ) : null}
-
-      <p className="card-power border-ink/20 border-t pt-1.5 text-xs leading-snug">
-        {locked
-          ? lockedHint
-          : cat.power
-            ? describePower(cat.power)
-            : "No power."}
-      </p>
-
-      {cat.aura && !locked ? (
-        <p className="card-aura text-xs leading-snug">
-          {describeAura(cat.aura)}
-        </p>
-      ) : null}
-
-      {full && !locked ? (
-        <p className="text-ink-soft text-xs italic">{cat.flavor}</p>
+      {cat.rarity === "legendary" && !locked ? (
+        <span aria-hidden className="card-shimmer" />
       ) : null}
     </div>
   );

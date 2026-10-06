@@ -12,7 +12,7 @@ import { profileOf } from "~/server/api/routers/profile";
 import { getCurrentUser } from "~/server/auth/session";
 import { db } from "~/server/db";
 import { DEFAULT_LOOK } from "~/server/game/cosmetics";
-import { pixelFont } from "~/styles/fonts";
+import { pixelFont, plateFont } from "~/styles/fonts";
 import { TRPCReactProvider } from "~/trpc/react";
 
 const TITLE = "HaduMon — a roguelike engine-builder about cats";
@@ -65,7 +65,10 @@ export default async function RootLayout({
       {/* The whole app is one tabletop: every page is laid on the cloth, and a
           dialog drawn on the body is cardboard like the rest. The skin's
           colours are set here, on the body, so they reach both. */}
-      <body className={`tabletop ${pixelFont.variable}`} style={skinVars(look)}>
+      <body
+        className={`tabletop ${pixelFont.variable} ${plateFont.variable}`}
+        style={skinVars(look)}
+      >
         <SoundRig />
         <TRPCReactProvider>
           <ToastProvider>

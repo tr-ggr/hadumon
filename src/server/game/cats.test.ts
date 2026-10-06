@@ -4,12 +4,14 @@ import { standIn } from "./bot";
 import { playMatch } from "./bot/arena";
 import {
   ARCHETYPES,
+  auraParts,
   CAT_LIST,
   catsByElement,
   catsByRarity,
   describeAura,
   describePower,
   getCat,
+  powerParts,
   RARITIES,
   ROWS,
   type Cat,
@@ -274,6 +276,26 @@ describe("cat catalogue", () => {
     expect(describePower(getCat("brumefang").power!)).toBe(
       "Between turns: when the rival hunts, gain 1 Fish.",
     );
+  });
+
+  it("splits its rules text into a trigger and what it does, losing nothing", () => {
+    for (const cat of CAT_LIST) {
+      if (cat.power) {
+        const { trigger, text } = powerParts(cat.power);
+        expect(`${trigger}: ${text}`, cat.id).toBe(describePower(cat.power));
+        expect(trigger, cat.id).toMatch(/^[A-Z][a-z ]+$/);
+        expect(text, cat.id).toMatch(/^[a-z].*\.$/);
+      }
+      if (cat.aura) {
+        const { trigger, text } = auraParts(cat.aura);
+        expect(`${trigger}: ${text}`, cat.id).toBe(describeAura(cat.aura));
+        expect(trigger, cat.id).toBe("Relic");
+      }
+    }
+    expect(powerParts(getCat("brumefang").power!)).toEqual({
+      trigger: "Between turns",
+      text: "when the rival hunts, gain 1 Fish.",
+    });
   });
 
   it("has its watchers answer the rival's Hunt, Den, Prowl and every turn", () => {

@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { CatCard } from "~/components/cats/CatCard";
-import { Habitats } from "~/components/cats/Habitats";
+import { habitatsLabel } from "~/components/cats/Habitats";
 import { PixelIcon } from "~/components/PixelIcon";
 import { InfoButton } from "~/components/run/CatPick";
 import { placed, prefersCalm } from "~/components/run/fx/dom";
@@ -273,9 +273,9 @@ function CardBackButton({
       onClick={onTurn}
       disabled={disabled}
       aria-label={label}
-      className="piece piece-card liftable border-ink bg-cobalt grid min-h-[216px] place-items-center border-2 p-2"
+      className="piece piece-card liftable border-ink bg-cobalt grid min-h-[216px] place-items-center rounded-lg border-2 p-2"
     >
-      <span className="border-cobalt-dark grid h-full w-full place-items-center border-2">
+      <span className="border-cobalt-dark grid h-full w-full place-items-center rounded-sm border-2">
         <PixelIcon name="paw" size={32} ink="#ffffff" />
       </span>
     </button>
@@ -293,10 +293,18 @@ function CatFace({
   const cat = getCat(catId);
   return (
     <>
-      <CatCard catId={catId} variant="hand" className="h-full min-h-[216px]" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 px-1.5 pb-1.5 pl-2">
-        <Habitats rows={cat.rows} />
-        <InfoButton name={cat.name} onClick={() => onDetail(catId)} />
+      <CatCard
+        catId={catId}
+        variant="hand"
+        className="h-full min-h-[216px] pb-6"
+      />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-end gap-2 px-1.5 pb-1">
+        <span className="sr-only">{habitatsLabel(cat.rows)}.</span>
+        <InfoButton
+          name={cat.name}
+          onClick={() => onDetail(catId)}
+          className="leading-4"
+        />
       </div>
     </>
   );

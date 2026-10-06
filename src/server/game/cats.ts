@@ -1932,21 +1932,46 @@ export function describeEffect(effect: Effect): string {
   }
 }
 
-/** Rules text shown on the card, generated so wording stays consistent. */
-export function describePower(power: Power): string {
-  const effect = describeEffect(power.effect);
-  if (power.timing === "between") {
-    return `${TIMING_PREFIX.between}: ${WATCHED_TEXT[power.on]}, ${effect}.`;
-  }
-  return `${TIMING_PREFIX[power.timing]}: ${effect}.`;
+/**
+ * Rules text in the two parts a card prints apart: what sets it off, and what
+ * it does. The second is a sentence less its first word's capital.
+ */
+export interface RulesParts {
+  trigger: string;
+  text: string;
 }
 
-/** A legendary's relic as printed on its card. */
-export function describeAura(aura: Aura): string {
+export function powerParts(power: Power): RulesParts {
+  const effect = describeEffect(power.effect);
+  return {
+    trigger: TIMING_PREFIX[power.timing],
+    text:
+      power.timing === "between"
+        ? `${WATCHED_TEXT[power.on]}, ${effect}.`
+        : `${effect}.`,
+  };
+}
+
+/** A legendary's relic, in the same two parts. */
+export function auraParts(aura: Aura): RulesParts {
   const text = {
     treat: `gain ${plural(aura.n, TREAT_LABEL)} after each of your turns`,
     discount: `your cats cost ${aura.n} less food to play`,
     reward: `every lane gives ${aura.n} more`,
   }[aura.kind];
-  return `Relic: from now on, ${text}.`;
+  return { trigger: "Relic", text: `from now on, ${text}.` };
+}
+
+function sentence({ trigger, text }: RulesParts): string {
+  return `${trigger}: ${text}`;
+}
+
+/** Rules text shown on the card, generated so wording stays consistent. */
+export function describePower(power: Power): string {
+  return sentence(powerParts(power));
+}
+
+/** A legendary's relic as printed on its card. */
+export function describeAura(aura: Aura): string {
+  return sentence(auraParts(aura));
 }

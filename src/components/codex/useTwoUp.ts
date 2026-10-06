@@ -12,9 +12,9 @@ function subscribeSpread(onChange: () => void): () => void {
 }
 
 /**
- * A window with room to print a cat's whole card in its pocket: the spread's
- * pockets are wide and tall enough for the flavor line. The stylesheet has
- * nothing to match; a page only grows if a card runs long.
+ * A window with room for an upright card in each pocket, as a hand holds it:
+ * the spread's pockets are tall enough for its picture and four lines of
+ * power. The stylesheet has nothing to match.
  */
 const ROOMY = "(min-width: 80rem) and (min-height: 53rem)";
 
@@ -24,7 +24,7 @@ function subscribeRoomy(onChange: () => void): () => void {
   return () => query.removeEventListener("change", onChange);
 }
 
-/** True where a pocket holds the full card. False on the server. */
+/** True where a pocket holds an upright card. False on the server. */
 export function useRoomy(): boolean {
   return useSyncExternalStore(
     subscribeRoomy,
