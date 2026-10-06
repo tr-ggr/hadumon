@@ -18,6 +18,7 @@ import { DeckSpread } from "./DeckSpread";
 import { plural } from "./describe";
 import { TableButton } from "./pieces";
 import { playSound } from "./sfx/engine";
+import { TableNav } from "./TableNav";
 import { StepHeading } from "./TableSurface";
 import { useClimbFx, type Opening } from "./useClimb";
 
@@ -86,11 +87,19 @@ export function ChestScene({
         {said}
       </p>
 
+      {/* Come to rest, the scene is a choice like any other, and has the
+          table's corner: its sound, its music and the ways off it. */}
+      {playing ? null : (
+        <TableNav className="absolute top-2 right-2 z-40 sm:right-3" />
+      )}
       {playing ? (
         <SkipButton buttonRef={skipButton} onSkip={skip} />
       ) : (
-        <section className="absolute inset-x-2 bottom-2 z-30 flex justify-center sm:inset-x-4 sm:bottom-3">
-          <div className="piece piece-card border-ink text-ink bg-cream max-h-[64dvh] w-full max-w-2xl space-y-3 overflow-y-auto border-2 px-3 pt-1 pb-3 sm:px-4">
+        <section
+          data-toast-clear
+          className="absolute inset-x-2 bottom-2 z-30 flex justify-center sm:inset-x-4 sm:bottom-3"
+        >
+          <div className="piece piece-card border-ink text-ink bg-cream max-h-[64dvh] w-full max-w-2xl space-y-3 overflow-y-auto border-2 px-3 pt-1 sm:px-4">
             {runStrip}
             <StepHeading title="A chest by the door" headingRef={heading}>
               Hadu stumbled onto it at the foot of the tower. Three relics are
@@ -149,7 +158,9 @@ export function ChestScene({
               })}
             </ul>
 
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            {/* The choice ends in a rail that stays at the panel's foot,
+                however much of the chest is scrolled above it. */}
+            <div className="rail sticky bottom-0 z-10 -mx-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-2 px-3 py-2.5 sm:-mx-4 sm:px-4">
               <p className="text-ink text-sm font-semibold" aria-live="polite">
                 {relic
                   ? `Taking the ${getRelic(relic).name}.`

@@ -28,10 +28,18 @@ import {
   type LogEntry,
   type RivalNews,
 } from "./describe";
-import { fly, launchFrom, type Launch } from "./flight";
+import {
+  fly,
+  launchFrom,
+  rivalTakes,
+  seeDice,
+  type DieSeen,
+  type Launch,
+} from "./flight";
 import { matchFit } from "./layout";
 import { markEnded } from "./fx/ended";
 import { useFrameFx } from "./fx/useFrameFx";
+import { LaneReadout } from "./LaneReadout";
 import { EventLog, GoalNotice } from "./MatchPanels";
 import { RelicTiles, TableButton } from "./pieces";
 import { Hand } from "./Hand";
@@ -40,6 +48,7 @@ import { RivalSide } from "./RivalSide";
 import { RoundBoard } from "./RoundBoard";
 import { Scorepad } from "./Scorepad";
 import { playCat, playSound } from "./sfx/engine";
+import { SlotPeek, type Peeked } from "./SlotPeek";
 import { Supply } from "./Supply";
 import { TableSheet } from "./TableSheet";
 import { TurnPanel, type TurnControls } from "./TurnPanel";
@@ -52,6 +61,7 @@ import {
   fillYarn,
   huntTake,
   IDLE,
+  laneReady,
   playBlock,
   prowlWant,
   swapOwed,
@@ -95,6 +105,12 @@ function reveal(
     top: fromTop ? rect.top - top : rect.bottom - bottom,
   });
 }
+
+/**
+ * How long a mouse rests on a lane's tile or a cat before the table answers
+ * it, so one crossing the mat on its way elsewhere sets nothing off.
+ */
+const HOVER_INTENT_MS = 140;
 
 /** The lane each key activates, or plays the chosen card into. */
 const LANE_KEYS: Record<string, Row> = { h: "hunt", d: "den", p: "prowl" };
@@ -227,6 +243,17 @@ export function MatchBoard({
     setDetail({ catId });
   };
   const [rivalMat, setRivalMat] = useState(false);
+  /** The lane whose tile is being looked at, and the cat that is. */
+  const [preview, setPreview] = useState<Row | null>(null);
+  const [peek, setPeek] = useState<Peeked | null>(null);
+  const intent = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(intent.current), []);
+  /** Answers a look at once from the keyboard, and from a mouse that rests. */
+  const look = (answer: () => void, waits: boolean) => {
+    clearTimeout(intent.current);
+    if (waits) intent.current = setTimeout(answer, HOVER_INTENT_MS);
+    else answer();
+  };
   /** The scores, the rounds and the log, where the table has no room for them. */
   const [sheet, setSheet] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
@@ -255,6 +282,24 @@ export function MatchBoard({
     launches.current = [];
   }, [turnId]);
   useFrameFx(tableRef, turnId, index, frame, calm);
+
+  // The feeder is shared, so what the rival hunts leaves from in front of
+  // the player. The dice are noted as each step leaves them, and those gone
+  // on the rival's Hunt are flown from where they stood to its side.
+  const diceSeen = useRef<DieSeen[]>([]);
+  const rivalHunt =
+    frame?.cue.kind === "rival" && frame.cue.rivalMove === "hunt"
+      ? frame.view.feeder
+      : null;
+  useLayoutEffect(() => {
+    if (turnId === null) {
+      diceSeen.current = [];
+      return;
+    }
+    if (rivalHunt)
+      fly(tableRef.current, rivalTakes(diceSeen.current, rivalHunt));
+    diceSeen.current = seeDice(tableRef.current);
+  }, [turnId, index, rivalHunt]);
 
   // The result sheet that follows a match's last turn counts its score up.
   const endedMatch = turn?.after.phase === "over" ? turn.after : null;
@@ -289,6 +334,9 @@ export function MatchBoard({
   const activate = (row: Row) => {
     if (match.phase !== "turn" || busy) return;
     if (mode.kind === row) {
+      // The lane being chosen, pressed again, sends it once it has all it
+      // needs. Before that the press backs out of it.
+      if (laneReady(match, mode)) return controls.confirm();
       playSound("click");
       return setMode(IDLE);
     }
@@ -646,6 +694,24 @@ export function MatchBoard({
     return () => window.removeEventListener("keydown", listener);
   }, []);
 
+  // The lane being read: the one being chosen, else the one whose tile is
+  // looked at. Its cats carry the order they fire in, and what each does is
+  // listed where the log is, so the chain is weighed without opening a card.
+  const laneMode: Row | null =
+    mode.kind === "hunt" || mode.kind === "den" || mode.kind === "prowl"
+      ? mode.kind
+      : null;
+  const readRow: Row | null =
+    playing || match.phase !== "turn" ? null : (laneMode ?? preview);
+  // A cat's card is not held over the mat while its cats are what is being
+  // picked from, or while anything is laid over the table.
+  const picking =
+    mode.kind === "den" ||
+    (mode.kind === "play" && mode.row !== null) ||
+    (mode.kind === "prowl" && match.trades.prowl);
+  const peeked =
+    busy || picking || detail !== null || sheet || rivalMat ? null : peek;
+
   // The lane being resolved keeps its tile down until the chain has run.
   const resolving: Row | null = !playing
     ? null
@@ -711,6 +777,7 @@ export function MatchBoard({
     turn: controls,
     playing: playing ? (frame?.text ?? "") : null,
     rivalStep: playing && frame?.tone === "rival",
+    fires: playing ? null : laneMode,
     heat,
     onSkip: skip,
   };
@@ -737,8 +804,8 @@ export function MatchBoard({
             side in the sheet. */}
         <div className="fit-wide:min-h-0 fit-wide:flex-1 fit-wide:overflow-y-auto fit-compact:hidden flex flex-col gap-2.5 px-3 pt-2.5 lg:pb-3">
           {/* The corner buttons stand beside the track on a narrow table:
-              three of them on a phone, four from 640px. */}
-          <div className="max-lg:pr-36 sm:max-lg:pr-48 lg:hidden">
+              three of them on a phone, all five from 640px. */}
+          <div className="max-lg:pr-36 sm:max-lg:pr-58 lg:hidden">
             {runStrip}
           </div>
           <div className="hidden lg:block">{sideStrip}</div>
@@ -772,9 +839,13 @@ export function MatchBoard({
             >
               Scores and log
             </TableButton>
-            <p className="text-ink min-w-0 truncate text-sm font-semibold">
-              {newest}
-            </p>
+            {readRow ? (
+              <LaneReadout match={match} row={readRow} variant="line" />
+            ) : (
+              <p className="text-ink min-w-0 truncate text-sm font-semibold">
+                {newest}
+              </p>
+            )}
           </div>
           <div className="mat-column fit-wide:min-h-0 fit-wide:flex-1 fit-compact:contents flex min-w-0 flex-col gap-3 xl:flex-1">
             <section
@@ -798,7 +869,25 @@ export function MatchBoard({
                   activateLabel={labels[row]}
                   firing={frame?.firing ?? null}
                   resolving={resolving === row}
+                  reading={readRow === row}
                   onActivate={() => activate(row)}
+                  onPreview={(on, waits) =>
+                    look(() => setPreview(on ? row : null), on && waits)
+                  }
+                  onPeek={(slot, tile, waits = false) => {
+                    const placed = slot
+                      ? match.board[slot.row][slot.col]
+                      : undefined;
+                    const next =
+                      slot && placed && tile
+                        ? {
+                            catId: placed.catId,
+                            slot: `${slot.row}-${slot.col}`,
+                            box: tile.getBoundingClientRect(),
+                          }
+                        : null;
+                    look(() => setPeek(next), next !== null && waits);
+                  }}
                   onPlayHere={() => controls.playInto(row)}
                   onSlot={onSlot}
                 />
@@ -836,10 +925,20 @@ export function MatchBoard({
               <section aria-label="Your relics">
                 <RelicTiles relicIds={run.relics} />
               </section>
+              {/* While a lane is read, what it fires stands where the log
+                  does; the log is back as soon as the choice is made. */}
+              {readRow ? (
+                <LaneReadout
+                  match={match}
+                  row={readRow}
+                  variant="panel"
+                  className="hidden! xl:flex! xl:min-h-40 xl:flex-1"
+                />
+              ) : null}
               <EventLog
                 log={log}
                 landed={playing ? frame?.lines : undefined}
-                className="max-h-80 xl:max-h-none xl:min-h-40 xl:flex-1"
+                className={`max-h-80 xl:max-h-none xl:min-h-40 xl:flex-1 ${readRow ? "xl:hidden" : ""}`}
               />
             </aside>
           </div>
@@ -849,7 +948,8 @@ export function MatchBoard({
             rail, only the hand, and the cloth shows and clicks through it. */}
         <div
           data-edge
-          className="hand-zone max-lg:rail fit-wide:relative fit-wide:shrink-0 fit-compact:contents sticky bottom-0 z-20 flex flex-col sm:max-lg:grid sm:max-lg:grid-cols-[17rem_minmax(0,1fr)] lg:pointer-events-none"
+          data-toast-clear
+          className="hand-zone max-lg:rail fit-wide:relative fit-wide:shrink-0 fit-compact:contents sticky bottom-0 z-20 flex flex-col sm:max-lg:grid sm:max-lg:grid-cols-[18rem_minmax(0,1fr)] lg:pointer-events-none"
         >
           <TurnPanel
             {...turnPanel}
@@ -867,6 +967,7 @@ export function MatchBoard({
               and the way in to everything the table has no room for. */}
           <TableButton
             variant="secondary"
+            data-toast-clear
             onClick={() => setSheet(true)}
             className="match-more"
           >
@@ -875,6 +976,7 @@ export function MatchBoard({
         </div>
       </div>
 
+      <SlotPeek peek={peeked} />
       <CatDetail
         catId={detail?.catId ?? null}
         tucked={detail?.tucked}

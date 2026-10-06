@@ -14,7 +14,9 @@ import { TowerStage } from "~/components/tower/TowerStage";
 import { getRival } from "~/server/game/rival";
 
 import { CLIMB_PACE, type ClimbFrame } from "./climb";
+import { MusicButton } from "./music/MusicButton";
 import { tableButtonClass } from "./pieces";
+import { SoundButton } from "./sfx/SoundButton";
 
 /**
  * The card that names what the climb has come to: the rival of the floor, in
@@ -151,7 +153,11 @@ export function ClimbStage({
   );
 }
 
-/** The way out of a scene that is playing, in the corner. */
+/**
+ * The corner of a scene that is playing: its sound, its music and the way
+ * out of it. A press on any of them is that press and nothing more, where a
+ * press anywhere else on the scene leaves it (`data-keep-playing`).
+ */
 export function SkipButton({
   buttonRef,
   onSkip,
@@ -160,17 +166,20 @@ export function SkipButton({
   onSkip: () => void;
 }) {
   return (
-    <button
-      ref={buttonRef}
-      type="button"
-      onClick={onSkip}
-      className={tableButtonClass(
-        "secondary",
-        "md",
-        "absolute top-2 right-2 z-40 sm:right-3",
-      )}
+    <div
+      data-keep-playing
+      className="absolute top-2 right-2 z-40 flex gap-1.5 sm:right-3"
     >
-      Skip
-    </button>
+      <SoundButton />
+      <MusicButton />
+      <button
+        ref={buttonRef}
+        type="button"
+        onClick={onSkip}
+        className={tableButtonClass("secondary", "md")}
+      >
+        Skip
+      </button>
+    </div>
   );
 }

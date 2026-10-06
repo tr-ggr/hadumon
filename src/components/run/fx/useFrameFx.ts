@@ -16,9 +16,11 @@ import { finishAll } from "./registry";
  * A frame is played once: the same turn and index a second time (React's
  * strict mode runs an effect twice) does nothing. Frames are expected one
  * after another, so an index that moves any other way is a skip: every
- * animation is finished and every voice cut, and the table settles with one
- * sound. Under reduced motion the turn arrives on its last frame, which is
- * the same thing.
+ * animation is finished and every voice cut. A skip that ends the turn
+ * settles the table with one sound; one that stops on a frame of its own
+ * (the rival's move) plays that frame as if it had come in turn. Under
+ * reduced motion the turn arrives on its last frame, which is a skip to the
+ * end.
  */
 export function useFrameFx(
   root: RefObject<HTMLElement | null>,
@@ -45,13 +47,15 @@ export function useFrameFx(
     if (turnId === null || !now) return;
 
     const expected = prev.turnId === turnId ? prev.index + 1 : 0;
-    if (index !== expected) {
+    const skipped = index !== expected;
+    if (skipped) {
       finishAll();
       stopSound();
-      playSound("settle");
+    }
+    if (now.cue.kind === "settle") {
+      if (skipped) playSound("settle");
       return;
     }
-    if (now.cue.kind === "settle") return;
     playSounds(soundsFor(now.cue));
     if (!calm) {
       runFx(root.current, planFx(now.cue, { compact: isCompact() }));

@@ -391,6 +391,8 @@ export function Nameplate({
   rivalId,
   flavor = false,
   difficulty,
+  folds = false,
+  plate = false,
   className = "",
 }: {
   rivalId: string;
@@ -398,6 +400,10 @@ export function Nameplate({
   flavor?: boolean;
   /** The run's tier, where the plate is across the table in a run. */
   difficulty?: DifficultyId;
+  /** Under 1024px the plate is its name and marks alone, on one line. */
+  folds?: boolean;
+  /** Marks the plate as the rival's place on the table, for what flies to it. */
+  plate?: boolean;
   className?: string;
 }) {
   const rival = getRival(rivalId);
@@ -409,6 +415,7 @@ export function Nameplate({
       : rivalLevel(GAUNTLET.indexOf(rivalId), difficulty) + 1;
   return (
     <div
+      data-rival-plate={plate ? "" : undefined}
       className={`piece border-ink bg-coral text-ink flex flex-col justify-center border-2 px-2.5 py-1 ${className}`}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -427,7 +434,11 @@ export function Nameplate({
       {flavor ? (
         <p className="mt-1 text-sm leading-snug italic">{rival.flavor}</p>
       ) : null}
-      <p className="mt-0.5 text-xs leading-snug font-bold">{rival.trait}</p>
+      <p
+        className={`mt-0.5 text-xs leading-snug font-bold ${folds ? "max-lg:hidden" : ""}`}
+      >
+        {rival.trait}
+      </p>
     </div>
   );
 }

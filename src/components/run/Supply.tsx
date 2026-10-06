@@ -92,6 +92,7 @@ export function Supply({
                 <li
                   key={index}
                   data-die={index}
+                  data-face={face}
                   className={rolling ? "anim-roll" : ""}
                 >
                   <Die

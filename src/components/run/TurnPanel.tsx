@@ -14,6 +14,7 @@ import {
   yarnCostLabel,
 } from "./describe";
 import { RollingNumber } from "./fx/RollingNumber";
+import { LaneReadout } from "./LaneReadout";
 import { MusicButton } from "./music/MusicButton";
 import { EssenceToken, KeyHint, TableButton } from "./pieces";
 import { SoundButton } from "./sfx/SoundButton";
@@ -23,6 +24,7 @@ import {
   denLimit,
   essenceSpent,
   handSwap,
+  playBlock,
   prowlWant,
   shortWords,
   swapOwed,
@@ -62,6 +64,11 @@ export interface TurnPanelProps {
   /** True on a step the rival makes a move. */
   rivalStep: boolean;
   /**
+   * The lane being chosen. What it fires is listed under the prompt on a
+   * table with nowhere else to list it.
+   */
+  fires: Row | null;
+  /**
    * How hot the player's score runs, 0 to 1: nothing at rest, deeper with
    * every power of a chain.
    */
@@ -79,7 +86,7 @@ export interface TurnPanelProps {
 
 /**
  * The player's turn: what is being decided and its confirm, the food held,
- * and the score. In the rail the score leads, then the food, and the prompt
+ * and both scores side by side. In the rail the score leads, then the food, and the prompt
  * and its confirm close it, level with the hand. In the dock under a narrow
  * table the prompt leads, since the hand is right below. As the last column
  * of a phone's table it is the rail's order in less room: the prompt takes
@@ -90,6 +97,7 @@ export function TurnPanel({
   turn,
   playing,
   rivalStep,
+  fires,
   heat,
   onSkip,
   rail = false,
@@ -104,6 +112,11 @@ export function TurnPanel({
     swapOwed(match, mode.hand) > 0
       ? mode
       : null;
+  // The cat chosen to be played costs food the player does not hold.
+  const short =
+    mode.kind === "play" &&
+    playing === null &&
+    (swapOwed(match, mode.hand) > 0 || playBlock(match, mode.hand) === "food");
   // The Den's trade is paid for from the same row of food.
   const denTrade =
     mode.kind === "den" && playing === null && match.trades.den ? mode : null;
@@ -119,7 +132,7 @@ export function TurnPanel({
       <div className={rail ? "contents" : "flex items-start gap-2"}>
         <div className={rail ? "contents" : "min-w-0 flex-1"}>
           {playing === null ? (
-            <Prompt match={match} turn={turn} rail={rail} />
+            <Prompt match={match} turn={turn} rail={rail} fires={fires} />
           ) : (
             <Row2
               text={playing || "Settling the table."}
@@ -177,7 +190,12 @@ export function TurnPanel({
               );
             })}
           </ul>
-          <p className="turn-note text-ink-soft px-0.5 text-[11px] leading-none font-semibold">
+          {/* The swap is a rule for the moment a chosen cat is short. In
+              the rail the line keeps its room, so nothing under it moves. */}
+          <p
+            aria-hidden={short ? undefined : true}
+            className={`turn-note text-ink-soft px-0.5 text-[11px] leading-none font-semibold ${short ? "" : rail ? "invisible" : "hidden"}`}
+          >
             Any 2 food pay for 1 you lack.
           </p>
         </div>
@@ -193,17 +211,16 @@ export function TurnPanel({
             rail={rail}
             className="bg-lime"
           />
-          {/* Under a narrow table the rival's score is on the rival's side. */}
-          {rail ? (
-            <ScoreToken
-              side="rival"
-              label="Rival"
-              said={`Rival score ${match.rival.score.total}`}
-              value={match.rival.score.total}
-              rail
-              className="bg-coral"
-            />
-          ) : null}
+          {/* The two numbers that are compared stand together, in the dock
+              as in the rail. */}
+          <ScoreToken
+            side="rival"
+            label="Rival"
+            said={`Rival score ${match.rival.score.total}`}
+            value={match.rival.score.total}
+            rail={rail}
+            className="bg-coral"
+          />
         </div>
       </div>
     </section>
@@ -266,12 +283,15 @@ function Row2({
   text,
   rival = false,
   rail,
+  under,
   children,
 }: {
   text: ReactNode;
   /** The line is the rival's doing, and is marked as theirs. */
   rival?: boolean;
   rail: boolean;
+  /** Set between the sentence and its actions. */
+  under?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -290,6 +310,7 @@ function Row2({
           {text}
         </span>
       </p>
+      {under}
       <div
         className={`turn-actions flex flex-wrap items-center gap-2 pb-1.5 ${rail ? "min-h-12 content-start [@media(min-height:53rem)]:min-h-[5.875rem]" : ""}`}
       >
@@ -321,12 +342,24 @@ function Prompt({
   match,
   turn,
   rail,
+  fires,
 }: {
   match: MatchView;
   turn: TurnControls;
   rail: boolean;
+  fires: Row | null;
 }) {
   const { mode, busy } = turn;
+  // A table that fits its window lists what the lane fires beside the mat
+  // or over it; any other has only this prompt to list it in.
+  const chain = fires ? (
+    <LaneReadout
+      match={match}
+      row={fires}
+      variant="list"
+      className="turn-fires fit-wide:hidden"
+    />
+  ) : null;
   const cancel = (
     <TableButton variant="secondary" disabled={busy} onClick={turn.cancel}>
       Back
@@ -479,6 +512,7 @@ function Prompt({
       return (
         <Row2
           rail={rail}
+          under={chain}
           text={`Hunt: choose ${plural(turn.take, "die", "dice")} from the feeder. ${mode.dice.length} of ${turn.take} chosen.${tradeNote(
             match,
             "hunt",
@@ -486,13 +520,16 @@ function Prompt({
             "tap a cat in your hand to discard it for 1 more die",
           )}`}
         >
-          <TableButton
-            disabled={busy || mode.dice.length !== turn.take}
-            onClick={turn.confirm}
-          >
-            Take {plural(turn.take, "die", "dice")}
-            <Enter />
-          </TableButton>
+          {/* Beside the table the Hunt's own tile is the confirm. */}
+          {rail ? null : (
+            <TableButton
+              disabled={busy || mode.dice.length !== turn.take}
+              onClick={turn.confirm}
+            >
+              Take {plural(turn.take, "die", "dice")}
+              <Enter />
+            </TableButton>
+          )}
           {cancel}
         </Row2>
       );
@@ -511,19 +548,32 @@ function Prompt({
       return (
         <Row2
           rail={rail}
+          under={chain}
           text={
             limit === 0
               ? "Den: no cat on the board can hold yarn. Activating still fires the Den's powers and uses the turn."
               : `Den: tap cats on the board to lay yarn. ${placed} of ${limit} placed.${note}`
           }
         >
-          <TableButton
-            disabled={busy || (mode.trade !== null && placed !== limit)}
-            onClick={turn.confirm}
-          >
-            {placed > 0 ? `Lay ${placed} yarn` : "Lay none"}
-            <Enter />
-          </TableButton>
+          {/* Beside the table the Den's own tile sends the yarn laid; what
+              stays here is the turn spent laying none. */}
+          {rail ? (
+            <TableButton
+              disabled={busy || placed > 0 || mode.trade !== null}
+              onClick={turn.confirm}
+            >
+              Lay none
+              {placed === 0 && mode.trade === null ? <Enter /> : null}
+            </TableButton>
+          ) : (
+            <TableButton
+              disabled={busy || (mode.trade !== null && placed !== limit)}
+              onClick={turn.confirm}
+            >
+              {placed > 0 ? `Lay ${placed} yarn` : "Lay none"}
+              <Enter />
+            </TableButton>
+          )}
           {limit > 0 ? (
             <>
               <TableButton
@@ -554,6 +604,7 @@ function Prompt({
       return (
         <Row2
           rail={rail}
+          under={chain}
           text={`Prowl: draw ${plural(want, "cat")} from the tray or the deck. ${mode.picks.length} of ${want} chosen.${tradeNote(
             match,
             "prowl",
@@ -563,13 +614,16 @@ function Prompt({
             "tap a cat on your mat to spend 1 of its yarn for 1 more cat",
           )}`}
         >
-          <TableButton
-            disabled={busy || mode.picks.length !== want}
-            onClick={turn.confirm}
-          >
-            Draw {plural(want, "cat")}
-            <Enter />
-          </TableButton>
+          {/* Beside the table the Prowl's own tile is the confirm. */}
+          {rail ? null : (
+            <TableButton
+              disabled={busy || mode.picks.length !== want}
+              onClick={turn.confirm}
+            >
+              Draw {plural(want, "cat")}
+              <Enter />
+            </TableButton>
+          )}
           {cancel}
         </Row2>
       );

@@ -140,15 +140,29 @@ export function ScoreSheets({
 
 /**
  * The scorepad beside the table: both scores as they stand, and the three
- * goals with what each pays.
+ * goals with what each pays. How a tie is paid is printed under the scores
+ * while the round being played is level or has a side on nothing.
  */
 export function Scorepad({
   match,
+  rules = false,
   className = "",
 }: {
   match: MatchView;
+  /**
+   * Prints how a tied goal is paid whatever the standing, as the table's
+   * sheet does. Beside the table it is printed while it applies.
+   */
+  rules?: boolean;
   className?: string;
 }) {
+  // The rule for a tie is for a round that is level, or has a side on 0.
+  const standing = match.phase === "over" ? null : match.standing;
+  const level =
+    standing !== null &&
+    (standing.player === standing.rival ||
+      standing.player === 0 ||
+      standing.rival === 0);
   return (
     <section
       aria-label="Scorepad"
@@ -158,9 +172,11 @@ export function Scorepad({
       <ScoreSheets
         match={match}
         note={
-          <p className="text-ink-soft text-[11px] leading-snug">
-            A tied goal splits the points. A count of 0 takes nothing.
-          </p>
+          rules || level ? (
+            <p className="text-ink-soft text-[11px] leading-snug">
+              A tied goal splits the points. A count of 0 takes nothing.
+            </p>
+          ) : null
         }
       />
       <ol className="space-y-1 sm:hidden">

@@ -19,7 +19,9 @@ export type Anchor =
   /** The rival's total. */
   | { on: "rival" }
   /** The total at the foot of a finished match's score sheet. */
-  | { on: "tally" };
+  | { on: "tally" }
+  /** What the match paid, under that sheet's headline. */
+  | { on: "coins" };
 
 /** Lime for what the player gains, coral for what the rival does. */
 export type Tone = "lime" | "coral";

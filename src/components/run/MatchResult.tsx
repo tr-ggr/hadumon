@@ -33,6 +33,11 @@ const TALLY_STEP_MS = 190;
 const TALLY_START_MS = 320;
 /** The total lands once its number has rolled up. */
 const TALLY_LAND_MS = 160;
+/** The coins are counted out once the total has landed and been seen. */
+const COINS_START_MS = 520;
+/** The most ticks the coins are counted out with, and how far apart. */
+const COIN_TICKS = 6;
+const COIN_TICK_MS = 80;
 
 /** The sheet with only its first `counted` lines filled in, and their sum. */
 export function tallied(
@@ -99,6 +104,43 @@ function useTally(
 }
 
 /**
+ * Counts out what the match paid once the score has been: a few ticks,
+ * higher than the score's, as the number rolls up, and a knock on the chip
+ * as it gets there. Returns the coins counted so far, which is all of them
+ * when nothing is being counted.
+ */
+function useCoinTally(
+  on: boolean,
+  /** The score has been counted, so the coins are next. */
+  due: boolean,
+  coins: number,
+  root: RefObject<HTMLElement | null>,
+): number {
+  const [paid, setPaid] = useState(!on);
+  useEffect(() => {
+    if (!on || !due || paid) return;
+    const timer = setTimeout(() => {
+      const ticks = Math.min(COIN_TICKS, coins);
+      for (let i = 0; i < ticks; i++) {
+        playSound(
+          "tick",
+          TALLY_LINES.length * 2 + i,
+          (i * COIN_TICK_MS) / 1000,
+        );
+      }
+      if (coins > 0) {
+        runFx(root.current, [
+          { kind: "punch", at: { on: "coins" }, delay: ticks * COIN_TICK_MS },
+        ]);
+      }
+      setPaid(true);
+    }, COINS_START_MS);
+    return () => clearTimeout(timer);
+  }, [on, due, paid, coins, root]);
+  return paid || !on ? coins : 0;
+}
+
+/**
  * A finished match as a sheet off the scorepad: both scores, line by line,
  * how each goal went, and the coins it paid. Straight after the match the
  * player's sheet is counted up; come back to it, or reload, and it is simply
@@ -123,9 +165,13 @@ export function MatchResult({
   // Read once, as the sheet first shows; leaving it forgets the match.
   const [fresh] = useState(() => justEnded(match));
   useEffect(() => clearEnded, []);
-  const counted = useTally(
-    fresh && !calm && result !== null,
-    result?.won ?? false,
+  const tallying = fresh && !calm && result !== null;
+  const counted = useTally(tallying, result?.won ?? false, sheet);
+  // The coins wait for the score, and are counted out after it.
+  const coins = useCoinTally(
+    tallying && paid !== undefined,
+    counted >= TALLY_LINES.length,
+    paid?.record.coins ?? 0,
     sheet,
   );
   if (!result) return null;
@@ -168,7 +214,11 @@ export function MatchResult({
         </p>
         {paid ? (
           <div className="mt-2.5">
-            <MatchCoins record={paid.record} floor={paid.floor} />
+            <MatchCoins
+              record={paid.record}
+              floor={paid.floor}
+              counted={tallying ? coins : undefined}
+            />
           </div>
         ) : null}
       </div>

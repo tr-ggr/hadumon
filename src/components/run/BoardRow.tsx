@@ -13,7 +13,12 @@ import { laneScene } from "~/components/mat/scene";
 import { PixelIcon } from "~/components/PixelIcon";
 import { PixelSprite } from "~/components/PixelSprite";
 import { ELEMENT_PALETTES } from "~/components/sprites/palettes";
-import { getCat, ROW_LABELS, type Row } from "~/server/game/cats";
+import {
+  describePower,
+  getCat,
+  ROW_LABELS,
+  type Row,
+} from "~/server/game/cats";
 import { ELEMENT_LABELS } from "~/server/game/elements";
 import {
   columnYarnCost,
@@ -25,8 +30,18 @@ import {
 import type { MatchView } from "~/server/game/view";
 
 import { plural, yarnCostLabel } from "./describe";
+import { FireMark } from "./LaneReadout";
 import { KeyHint, LIME, YarnTrack } from "./pieces";
-import { denLimit, queuedYarn, swapOwed, yarnRoom, type Mode } from "./turn";
+import {
+  denLimit,
+  firingOrder,
+  laneProgress,
+  laneReady,
+  queuedYarn,
+  swapOwed,
+  yarnRoom,
+  type Mode,
+} from "./turn";
 
 export interface BoardRowProps {
   row: Row;
@@ -39,7 +54,16 @@ export interface BoardRowProps {
   firing: SlotRef | null;
   /** True while this lane's activation is being played back. */
   resolving: boolean;
+  /**
+   * The lane is being read: chosen, or its tile looked at. Its cats carry
+   * the order they fire in, and its banner is printed.
+   */
+  reading: boolean;
   onActivate: () => void;
+  /** The lane's tile is under a mouse or has the keyboard, or has lost it. */
+  onPreview: (on: boolean, intent: boolean) => void;
+  /** A placed cat is under a mouse or has the keyboard, or has lost it. */
+  onPeek: (slot: SlotRef | null, tile?: HTMLElement, intent?: boolean) => void;
   /** Plays the selected hand card here. */
   onPlayHere: () => void;
   /** A placed cat was tapped: lay yarn during a Den, otherwise open its card. */
@@ -62,7 +86,10 @@ export function BoardRow({
   activateLabel,
   firing,
   resolving,
+  reading,
   onActivate,
+  onPreview,
+  onPeek,
   onPlayHere,
   onSlot,
 }: BoardRowProps) {
@@ -75,6 +102,19 @@ export function BoardRow({
     (match.playable[mode.hand] ?? []).includes(row) &&
     mode.swap.length === swapOwed(match, mode.hand);
   const activating = mode.kind === row || resolving;
+  // The lane being chosen says how far along it is on its own tile, and once
+  // it has all it needs the tile is its confirm, as "Play here" is a play's.
+  const progress =
+    mode.kind === row && !resolving ? laneProgress(match, mode) : null;
+  const ready = progress !== null && !busy && laneReady(match, mode);
+  const counted = progress
+    ? `${progress.done} of ${progress.of} ${row === "den" ? "placed" : "chosen"}`
+    : null;
+  // A Den may lay less than it could; its confirm says what it will lay.
+  const gives =
+    ready && progress && row === "den"
+      ? `Lay ${progress.done} yarn`
+      : activateLabel;
   const denTargets = mode.kind === "den" ? mode.targets : null;
   const denFull =
     denTargets !== null && denTargets.length >= denLimit(match, mode);
@@ -83,11 +123,16 @@ export function BoardRow({
   const paying = mode.kind === "prowl" && match.trades.prowl ? mode : null;
   const seating = mode.kind === "play" && mode.row !== null ? mode : null;
   const ladder = rewardLadder(match, row);
+  /** The column of each cat that fires, in the order it does. */
+  const fires = reading
+    ? firingOrder(match.board, row).map(({ col }) => col)
+    : [];
 
   return (
     <section
       aria-label={`${ROW_LABELS[row]} lane`}
       data-lane={row}
+      data-reading={reading || activating ? "" : undefined}
       className="lane lane-scene"
       style={laneScene(row)}
     >
@@ -96,18 +141,38 @@ export function BoardRow({
         <LaneTile
           row={row}
           on={activating}
-          gives={activateLabel}
+          ready={ready}
+          gives={gives}
           sub={lane.sub}
           note={
-            match.trades[row] && !activating
-              ? `or ${match.rewards[row] + 1} by trade`
-              : null
+            ready
+              ? "Confirm"
+              : (counted ??
+                (match.trades[row] && !activating
+                  ? `or ${match.rewards[row] + 1} by trade`
+                  : null))
           }
-          hint={lane.key}
+          hint={ready ? "Enter" : lane.key}
           aria-pressed={activating}
-          aria-label={`${ROW_LABELS[row]}: ${activateLabel}`}
+          aria-label={
+            ready
+              ? `${ROW_LABELS[row]}: confirm, ${gives.toLowerCase()}`
+              : counted
+                ? `${ROW_LABELS[row]}: ${gives}, ${counted}. Press to go back.`
+                : `${ROW_LABELS[row]}: ${gives}`
+          }
           disabled={busy || match.phase !== "turn"}
           onClick={onActivate}
+          onPointerEnter={(event) => {
+            if (event.pointerType === "mouse") onPreview(true, true);
+          }}
+          onPointerLeave={() => onPreview(false, true)}
+          onFocus={(event) => {
+            if (event.currentTarget.matches(":focus-visible")) {
+              onPreview(true, false);
+            }
+          }}
+          onBlur={() => onPreview(false, false)}
           className={resolving ? "" : "disabled:opacity-55"}
         />
         <LaneBanner />
@@ -119,10 +184,26 @@ export function BoardRow({
           if (placed) {
             const slot = { row, col };
             return (
-              <li key={col} className="mat-space @container">
+              <li
+                key={col}
+                className="mat-space @container"
+                onPointerEnter={(event) => {
+                  if (event.pointerType === "mouse") {
+                    onPeek(slot, event.currentTarget, true);
+                  }
+                }}
+                onPointerLeave={() => onPeek(null)}
+                onFocus={(event) => {
+                  if (event.target.matches(":focus-visible")) {
+                    onPeek(slot, event.currentTarget, false);
+                  }
+                }}
+                onBlur={() => onPeek(null)}
+              >
                 <PlacedSlot
                   slot={slot}
                   placed={placed}
+                  order={fires.includes(col) ? fires.indexOf(col) + 1 : null}
                   queued={
                     denTargets
                       ? queuedYarn(denTargets, slot)
@@ -208,6 +289,7 @@ export function BoardRow({
 function PlacedSlot({
   slot,
   placed,
+  order,
   queued,
   laying,
   paying,
@@ -218,6 +300,8 @@ function PlacedSlot({
 }: {
   slot: SlotRef;
   placed: PlacedCat;
+  /** Where this cat fires in its lane's chain, while the lane is read. */
+  order: number | null;
   /**
    * Yarn chosen for this cat in a Den that has not been sent, or minus the
    * yarn it gives up to a Prowl's trade or a play.
@@ -246,7 +330,7 @@ function PlacedSlot({
             ? `Spend 1 yarn from ${cat.name} for 1 more cat, holding ${placed.yarn}`
             : paying === "play"
               ? `Pay with yarn from ${cat.name}, holding ${placed.yarn}, ${-queued} chosen`
-              : `${cat.name}, ${ELEMENT_LABELS[cat.element]}, details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
+              : `${cat.name}, ${ELEMENT_LABELS[cat.element]}. ${cat.power ? describePower(cat.power) : "No power."}${order === null ? "" : ` Fires ${order === 1 ? "first" : `number ${order}`}.`} Details${placed.tucked > 0 ? `, ${plural(placed.tucked, "cat")} tucked under it` : ""}`
       }
       // Cats tucked underneath show as a thicker edge. The left edge is the
       // cat's element, as on its card.
@@ -290,6 +374,11 @@ function PlacedSlot({
       <span className="mark-rim absolute top-0.5 left-1 flex sm:top-1.5 sm:left-1.5">
         <ElementMark element={cat.element} />
       </span>
+      {/* While its lane is read, the cat carries the number it fires at:
+          the same number its power has in the list beside the table. */}
+      {order === null ? null : (
+        <FireMark n={order} className="absolute top-0.5 right-0.5" />
+      )}
       <span className="cat-words flex w-full min-w-0 flex-col items-center gap-1 @[10.5rem]:items-start">
         <span
           lang="en"

@@ -33,6 +33,8 @@ export function anchorSelector(anchor: Anchor): string {
       return '[data-score="rival"]';
     case "tally":
       return '[data-tally="total"]';
+    case "coins":
+      return '[data-tally="coins"]';
   }
 }
 

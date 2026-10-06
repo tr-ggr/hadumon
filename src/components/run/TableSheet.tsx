@@ -77,7 +77,7 @@ export function TableSheet({
           <RoundBoard match={match} className="sm:grid-cols-1" />
         </div>
         <div className="grid items-start gap-3.5 sm:grid-cols-2">
-          <Scorepad match={match} />
+          <Scorepad match={match} rules />
           <div className="flex min-w-0 flex-col gap-3.5">
             <section aria-label="Your relics">
               <RelicTiles relicIds={run.relics} />

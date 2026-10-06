@@ -23,6 +23,11 @@ export interface LaneTileProps extends Omit<
   row: Row;
   /** Lime and pressed in: the lane being activated, or the one picked. */
   on: boolean;
+  /**
+   * The lane's choice is made and a press sends it: the tile stands back up,
+   * still lime, as the confirm.
+   */
+  ready?: boolean;
   /** What activating gives now: "Take 2 dice". */
   gives: string;
   /** A line under that, for a mat with room: where the reward comes from. */
@@ -37,12 +42,14 @@ export interface LaneTileProps extends Omit<
 
 /**
  * A lane's own tile, at the head of its row: the lane's mark and name in
- * print, and what activating it gives. Cobalt at rest, lime while it is the
- * lane in play.
+ * print, and what activating it gives. Cobalt at rest, lime and pressed in
+ * while it is the lane in play; once that lane's choice is made it stands
+ * back up, and a press sends it.
  */
 export function LaneTile({
   row,
   on,
+  ready = false,
   gives,
   sub,
   note,
@@ -78,13 +85,13 @@ export function LaneTile({
       ) : null}
     </>
   );
-  const dress = `lane-tile piece border-ink relative flex items-center gap-2.5 border-2 px-2.5 py-1.5 text-left ${on ? "bg-lime text-ink is-pressed" : "bg-cobalt text-white"} ${className}`;
+  const dress = `lane-tile piece border-ink relative flex items-center gap-2.5 border-2 px-2.5 py-1.5 text-left ${on ? `bg-lime text-ink ${ready ? "is-ready" : "is-pressed"}` : "bg-cobalt text-white"} ${className}`;
   if (still) return <div className={dress}>{face}</div>;
   return (
     <button
       type="button"
       {...props}
-      className={`${dress} disabled:cursor-not-allowed ${on ? "" : "hover:bg-cobalt-dark"}`}
+      className={`${dress} disabled:cursor-not-allowed ${on ? (ready ? "hover:brightness-95" : "") : "hover:bg-cobalt-dark"}`}
     >
       {face}
     </button>

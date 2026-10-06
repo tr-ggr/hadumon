@@ -24,6 +24,8 @@ export function roundTurns(match: MatchView, round: number): number {
  * The rounds as tiles: the turns as cubes, the goal and what it pays,
  * and how the goal stands or how it went. In the match's rail they stack,
  * and the rounds that are not being played are cut down to a line or two.
+ * Over a narrow table only the round being played is there, so the mat
+ * starts near the top; the others are in the table's sheet.
  */
 export function RoundBoard({
   match,
@@ -45,7 +47,7 @@ export function RoundBoard({
   return (
     <ol
       aria-label="Rounds"
-      className={`grid gap-2.5 sm:grid-cols-2 ${rail ? "lg:grid-cols-1 lg:gap-2" : ""} ${className}`}
+      className={`grid gap-2.5 ${rail ? "lg:gap-2" : "sm:grid-cols-2"} ${className}`}
     >
       {match.goals.map((goalId, round) => (
         <RoundTile
@@ -98,7 +100,7 @@ function RoundTile({
   return (
     <li
       aria-current={current ? "step" : undefined}
-      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? "bg-cream hidden sm:flex" : counted ? "bg-lime is-chosen flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
+      className={`piece border-ink text-ink flex-col gap-1 border-2 px-2 py-1.5 ${compact ? "lg:gap-0.5 lg:py-1" : ""} ${line ? "lg:short:flex-row lg:short:flex-wrap lg:short:items-center lg:short:gap-x-2" : ""} ${current ? "flex bg-white" : playing ? `bg-cream hidden ${rail ? "lg:flex" : "sm:flex"}` : counted ? "bg-lime is-chosen flex" : "bg-cream flex"} ${scored ? "opacity-80" : ""}`}
     >
       <div className="flex items-center justify-between gap-2">
         <h3

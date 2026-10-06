@@ -76,6 +76,73 @@ export function prowlWant(view: MatchView, mode: Mode): number {
   return view.prowlPicks + (mode.kind === "prowl" && mode.trade ? 1 : 0);
 }
 
+/**
+ * How far along the lane being chosen is: how many of its dice, yarn or cats
+ * are picked, of how many. `null` when no lane is being chosen.
+ */
+export function laneProgress(
+  view: MatchView,
+  mode: Mode,
+): { done: number; of: number } | null {
+  switch (mode.kind) {
+    case "hunt":
+      return {
+        done: mode.dice.length,
+        of: huntTake(view, mode.trade !== null),
+      };
+    case "den":
+      return {
+        done: mode.targets.length,
+        of: Math.min(denLimit(view, mode), boardYarnRoom(view.board)),
+      };
+    case "prowl":
+      return { done: mode.picks.length, of: prowlWant(view, mode) };
+    default:
+      return null;
+  }
+}
+
+/**
+ * True when the lane being chosen has something picked and all it needs to
+ * be sent: its own tile then carries the confirm. A lane with nothing picked
+ * is never ready, so a second press of its tile cannot spend the turn on a
+ * Den that lays no yarn; that is left to the prompt.
+ */
+export function laneReady(view: MatchView, mode: Mode): boolean {
+  switch (mode.kind) {
+    case "hunt":
+      return (
+        mode.dice.length > 0 &&
+        mode.dice.length === huntTake(view, mode.trade !== null)
+      );
+    case "den":
+      return (
+        mode.targets.length > 0 &&
+        (mode.trade === null || mode.targets.length === denLimit(view, mode))
+      );
+    case "prowl":
+      return (
+        mode.picks.length > 0 && mode.picks.length === prowlWant(view, mode)
+      );
+    default:
+      return false;
+  }
+}
+
+/**
+ * The cats of a lane whose powers an activation fires, in the order they
+ * fire: from the right end of the lane to the left.
+ */
+export function firingOrder(
+  board: Board,
+  row: Row,
+): { col: number; catId: string }[] {
+  return board[row]
+    .map((placed, col) => ({ col, catId: placed.catId }))
+    .filter(({ catId }) => getCat(catId).power?.timing === "activated")
+    .reverse();
+}
+
 /** Yarn queued for one slot in a Den that has not been sent yet. */
 export function queuedYarn(targets: readonly SlotRef[], slot: SlotRef): number {
   return targets.filter((t) => t.row === slot.row && t.col === slot.col).length;

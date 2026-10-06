@@ -3,7 +3,9 @@
  * space, a die from the feeder to the essence tokens) is copied where it
  * stood before the action, and the copy travels to where the piece lands.
  * It leaves quickly, rides a slight arc, slows in, and the piece it lands as
- * gives under it. Web Animations only; nothing here touches React's tree.
+ * gives under it. What the rival takes off the shared feeder flies too, in
+ * its coral, to its side of the table. Web Animations only; nothing here
+ * touches React's tree.
  */
 
 import { fxLayer, prefersCalm, shown } from "./fx/dom";
@@ -20,6 +22,71 @@ export interface Launch {
   target: string;
   /** Keeps the landing place empty until the copy arrives. */
   hideTarget: boolean;
+  /** The piece is the rival's now: it flies in coral and shrinks away. */
+  rival?: boolean;
+}
+
+/** How small a piece the rival takes has become by the time it gets there. */
+const RIVAL_SCALE = 0.6;
+
+/**
+ * Where the rival is on the table: its nameplate, or its score on a table
+ * that keeps the plate in the sheet.
+ */
+export const RIVAL_PLACE = '[data-rival-plate], [data-score="rival"]';
+
+/** A die as it stood in the feeder, kept in case the rival takes it. */
+export interface DieSeen {
+  face: string;
+  node: HTMLElement;
+  from: DOMRect;
+}
+
+/** Copies every die in the feeder where it stands. */
+export function seeDice(root: HTMLElement | null): DieSeen[] {
+  const seen: DieSeen[] = [];
+  for (const el of root?.querySelectorAll<HTMLElement>("[data-die]") ?? []) {
+    const from = el.getBoundingClientRect();
+    if (from.width <= 0 || from.height <= 0) continue;
+    seen.push({
+      face: el.dataset.face ?? "",
+      node: el.cloneNode(true) as HTMLElement,
+      from,
+    });
+  }
+  return seen;
+}
+
+/**
+ * Which of the dice last seen in the feeder are gone from it. The engine
+ * takes the first die of a face, so of two alike it is the later that stays.
+ */
+export function diceTaken<T extends { face: string }>(
+  seen: readonly T[],
+  feeder: readonly string[],
+): T[] {
+  const left = [...feeder];
+  const taken: T[] = [];
+  for (const die of [...seen].reverse()) {
+    const at = left.indexOf(die.face);
+    if (at >= 0) left.splice(at, 1);
+    else taken.unshift(die);
+  }
+  return taken;
+}
+
+/** The dice the rival has just taken, each sent to its side of the table. */
+export function rivalTakes(
+  seen: readonly DieSeen[],
+  feeder: readonly string[],
+): Launch[] {
+  return diceTaken(seen, feeder).map(({ node, from }) => ({
+    node,
+    from,
+    target: RIVAL_PLACE,
+    hideTarget: false,
+    rival: true,
+  }));
 }
 
 export function launchFrom(
@@ -77,14 +144,16 @@ export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
   if (!root) return;
   if (prefersCalm()) return;
   const layer = fxLayer(root) ?? root;
-  for (const { node, from, target, hideTarget } of launches) {
+  for (const { node, from, target, hideTarget, rival } of launches) {
     const landing = shown(root, target);
     if (!landing) continue;
     const to = landing.getBoundingClientRect();
-    const scale = Math.max(
-      0.35,
-      Math.min(1.1, to.width / from.width, to.height / from.height),
-    );
+    const scale = rival
+      ? RIVAL_SCALE
+      : Math.max(
+          0.35,
+          Math.min(1.1, to.width / from.width, to.height / from.height),
+        );
     const dx = to.left + to.width / 2 - (from.left + from.width / 2);
     const dy = to.top + to.height / 2 - (from.top + from.height / 2);
 
@@ -93,6 +162,7 @@ export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
     node.removeAttribute("data-die");
     node.removeAttribute("data-tray");
     node.removeAttribute("data-pile");
+    if (rival) node.classList.add("is-rivals");
     Object.assign(node.style, {
       position: "fixed",
       left: `${from.left}px`,
@@ -114,6 +184,8 @@ export function fly(root: HTMLElement | null, launches: readonly Launch[]) {
       // The piece gives as the copy comes down on it.
       squash(landing, FLIGHT_MS);
     }
+    // The rival's plate gives as what it took arrives.
+    if (rival) squash(landing, FLIGHT_MS);
     track(
       node.animate(flightPath(dx, dy, scale), {
         duration: FLIGHT_MS,

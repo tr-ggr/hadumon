@@ -1156,6 +1156,36 @@ html:has([data-match]) {
     }
   }
 }
+/*
+ * In a match the banner is a rule for the moment a lane is weighed: it is
+ * printed while the lane is being read (its tile under a mouse or holding
+ * the keyboard, or the lane being chosen or played out), and is not there at
+ * rest. In the label column it keeps its room either way, so a tile never
+ * changes size under a pointer; across a phone's lane the tile takes the
+ * room until then.
+ */
+.tabletop [data-match] .lane:not([data-reading]) .lane-banner {
+  visibility: hidden;
+}
+@media (max-width: 39.99rem) {
+  .tabletop [data-match] .lane:not([data-reading]) .lane-banner {
+    display: none;
+  }
+}
+/* The card of a cat on the mat, held by its tile while it is looked at
+   (`SlotPeek`, which places it). It is over the hand and takes no press. */
+.tabletop .slot-peek {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 30;
+  width: 15rem;
+  pointer-events: none;
+}
+/* A die the rival has taken, on its way to the rival's side. */
+.tabletop .is-rivals .die {
+  background: var(--color-coral);
+}
 /* The chosen card stood apart from the hand, and the way in to the sheet
    along the table's foot: only on a phone's table. */
 .tabletop .hand-held,
@@ -2460,14 +2490,21 @@ html:has(.turn-phone) {
     opacity: 0.45;
   }
 }
-/* Notices land at the bottom of the screen, clear of a phone's nav dock. */
+/* Notices land at the bottom of the screen, clear of a phone's nav dock and
+   of whatever a screen has docked to its own foot: `--toast-clear` is that
+   dock's height, measured as a notice lands (`Toast.tsx`). On a screen of a
+   run that is magnified, so are they, and the height is the window's own. */
 .tabletop .toast-stack {
-  bottom: 1.25rem;
+  bottom: calc(var(--toast-clear, 0px) / var(--toast-fit, 1) + 1.25rem);
 }
 @media (max-width: 767px) {
   .tabletop:has(.shell-dock) .toast-stack {
     bottom: calc(var(--dock-h) + 1.25rem);
   }
+}
+body:has(.table-fit) .toast-stack {
+  --toast-fit: var(--fit, 1);
+  zoom: var(--fit, 1);
 }
 /*
  * The shell around every page that is not a run: the lid across the top and,

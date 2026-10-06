@@ -68,7 +68,7 @@ export function TableArea({
  */
 export function TableRail({ children }: { children: ReactNode }) {
   return (
-    <div className="rail sticky bottom-0 z-20">
+    <div data-toast-clear className="rail sticky bottom-0 z-20">
       <div className="mx-auto flex w-full max-w-[1120px] flex-col gap-2 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
         {children}
       </div>
