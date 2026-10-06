@@ -36,6 +36,8 @@ import {
   stacks,
   type Filters,
 } from "./build";
+import { DeckBox } from "./DeckBox";
+import { useUnbox } from "./useUnbox";
 
 const ELEMENT_OPTIONS: FilterOption<Element>[] = ELEMENTS.map((element) => ({
   value: element,
@@ -60,12 +62,27 @@ function DeckHeader() {
 }
 
 /**
+ * The Deck page. It opens with the deck's box alone in the room, lid off and
+ * a card up out of it, and then the boards land where it stood. The boards
+ * are there from the start, put away, so the deck loads meanwhile.
+ */
+export function DeckBuilder() {
+  const phase = useUnbox();
+  return (
+    <div className="deck-room" data-unbox={phase}>
+      {phase === "done" ? null : <DeckBox phase={phase} />}
+      <DeckBench />
+    </div>
+  );
+}
+
+/**
  * The deck an account brings to its next run: the deck being built, as
  * stacks, beside the collection it is built from. A press on a card of the
  * collection puts a copy in; a press on a stack takes one out. Nothing is
  * kept until it is saved, and the rail says what stands in the way.
  */
-export function DeckBuilder() {
+function DeckBench() {
   const notify = useToast();
   const utils = api.useUtils();
   const collection = api.collection.get.useQuery();
@@ -343,7 +360,7 @@ export function DeckBuilder() {
 
       {/* The rail: what stands in the way, and the one save. It rides above
           the dock on a phone. */}
-      <div className="piece piece-card border-ink text-ink sticky bottom-[5.75rem] z-20 flex flex-col gap-2 border-2 bg-white px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between md:bottom-4">
+      <div className="deck-rail piece piece-card border-ink text-ink sticky bottom-[5.75rem] z-20 flex flex-col gap-2 border-2 bg-white px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between md:bottom-4">
         <p className="min-w-0 text-sm font-semibold" aria-live="polite">
           {refused ?? status.sentence}
         </p>

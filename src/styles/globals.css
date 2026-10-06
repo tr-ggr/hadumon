@@ -2952,6 +2952,109 @@ html:has(.turn-phone) {
     animation: none !important;
   }
 }
+/*
+ * The deck box the Deck page opens with (`DeckBox`, phases in `unbox.ts`).
+ * Once the camera has stopped it lands alone in the middle of the room; its
+ * lid comes off up and to the right as a pack's top does; the cobalt back of
+ * a card rises out of its mouth; then it sinks and goes clear as the page's
+ * boards land where it stood. The page is put away until then. Reduced
+ * motion has no box.
+ */
+.tabletop
+  .deck-room:is(
+    [data-unbox="shut"],
+    [data-unbox="lifted"],
+    [data-unbox="drawn"]
+  )
+  > .in-room {
+  visibility: hidden;
+}
+.tabletop
+  .deck-room[data-unbox="out"]
+  > .in-room
+  :is(.board, header > .piece, .deck-rail) {
+  animation: piece-land 240ms var(--ease-out) both;
+}
+.tabletop .deck-box-stage {
+  position: fixed;
+  inset: var(--lid-h) 0 var(--dock-h) 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.tabletop .deck-box {
+  position: relative;
+  width: 128px;
+  height: 184px;
+}
+@media (min-width: 640px) {
+  .tabletop .deck-box {
+    width: 176px;
+    height: 256px;
+  }
+}
+.tabletop .deck-box > * {
+  position: absolute;
+}
+.tabletop .deck-box-body {
+  inset: 0;
+}
+/* Wholly behind the front until it rises, so it is never hidden and shown. */
+.tabletop .deck-box-card {
+  inset: 6% 12% 24%;
+}
+/* The lid is a little wider than the box it closes. */
+.tabletop .deck-box-lid {
+  inset: -4px -4px auto;
+  height: 28%;
+}
+.tabletop .deck-box-stage[data-entered="true"] .deck-box {
+  animation: piece-land 240ms var(--ease-out) both;
+}
+.tabletop .deck-box-stage:not([data-phase="shut"]) .deck-box-lid {
+  animation: deck-lid-off 300ms var(--ease-out) both;
+}
+.tabletop
+  .deck-box-stage:is([data-phase="drawn"], [data-phase="out"])
+  .deck-box-card {
+  animation: deck-card-up 300ms var(--ease-give) both;
+}
+/* Going, the box is under the page, so the boards land over it. */
+.tabletop .deck-box-stage[data-phase="out"] {
+  z-index: -1;
+}
+.tabletop .deck-box-stage[data-entered="true"][data-phase="out"] .deck-box {
+  animation: deck-box-out 220ms var(--ease-out) both;
+}
+@keyframes deck-lid-off {
+  to {
+    opacity: 0;
+    transform: translate(40%, -150%) rotate(16deg);
+  }
+}
+@keyframes deck-card-up {
+  to {
+    transform: translateY(-48%);
+  }
+}
+@keyframes deck-box-out {
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tabletop
+    .deck-room[data-unbox="out"]
+    > .in-room
+    :is(.board, header > .piece, .deck-rail),
+  .tabletop .deck-box-stage .deck-box,
+  .tabletop .deck-box-stage .deck-box-lid,
+  .tabletop .deck-box-stage .deck-box-card {
+    animation: none !important;
+  }
+}
 /* Signing in on a wide, short window: the board starts at the top and the
    picture beside it is left out. */
 @media (min-width: 700px) and (max-height: 560px) {
