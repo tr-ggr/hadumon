@@ -12,11 +12,11 @@ import {
 } from "./relics";
 import { GAUNTLET, getRival, RIVAL_LIST } from "./rival";
 
-const placed = (catId: string, yarn = 0) => ({
+const placed = (catId: string, yarn = 0, cached = 0, tucked = 0) => ({
   catId,
   yarn,
-  cached: 0,
-  tucked: 0,
+  cached,
+  tucked,
 });
 
 describe("relics", () => {
@@ -40,6 +40,15 @@ describe("relics", () => {
     expect(combineMods(["warm-saucer"], { startWild: 1 }).startWild).toBe(2);
   });
 
+  it("carries the match-shaping relics' changes", () => {
+    expect(combineMods(["paper-bag", "night-bowl", "night-owl"])).toEqual({
+      ...NO_MODS,
+      startDraw: 1,
+      roundTreat: 1,
+      finalTurns: 1,
+    });
+  });
+
   it("gives every relic exactly one job", () => {
     for (const relic of RELIC_LIST) {
       expect(Boolean(relic.mods) !== Boolean(relic.score)).toBe(true);
@@ -60,6 +69,34 @@ describe("relics", () => {
     expect(relicScore("quiet-corner", board)).toBe(2);
     expect(relicScore("hoarders-basket", board)).toBe(2);
     expect(relicScore("warm-saucer", board)).toBe(0);
+    expect(relicScore("hunters-tally", board)).toBe(2);
+    expect(relicScore("moonlit-path", board)).toBe(0);
+  });
+
+  it("scores what the cats hold", () => {
+    const board = {
+      hunt: [placed("flameclaw", 0, 3, 1)],
+      den: [placed("thornkit", 0, 2, 2)],
+      prowl: [],
+    };
+    // Five cached and three tucked, over two cats.
+    expect(relicScore("mouse-jar", board)).toBe(5);
+    expect(relicScore("old-blanket", board)).toBe(3);
+  });
+
+  it("scores full rows, elements and Common cats", () => {
+    const full = ["flameclaw", "thornkit", "sparkmew", "pyrelynx"].map((id) =>
+      placed(id),
+    );
+    const board = { hunt: full, den: [placed("flameclaw")], prowl: [] };
+    expect(relicScore("crowded-sill", board)).toBe(3);
+    // Flame, Thorn and Volt.
+    expect(relicScore("patchwork-quilt", board)).toBe(3);
+    // Every cat but the Pyrelynx is Common.
+    expect(relicScore("alley-crown", board)).toBe(4);
+    const empty = { hunt: [], den: [], prowl: [] };
+    expect(relicScore("crowded-sill", empty)).toBe(0);
+    expect(relicScore("patchwork-quilt", empty)).toBe(0);
   });
 });
 

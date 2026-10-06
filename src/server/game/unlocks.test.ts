@@ -55,9 +55,9 @@ describe("unlocks", () => {
     }
   });
 
-  it("start an account with ten relics; its cats are its collection", () => {
+  it("start an account with fifteen relics; its cats are its collection", () => {
     expect(STARTING_UNLOCKS.every((u) => u.kind === "relic")).toBe(true);
-    expect(STARTING_UNLOCKS).toHaveLength(10);
+    expect(STARTING_UNLOCKS).toHaveLength(15);
     const pool = startingPool();
     expect(pool.relics).toEqual(relicsFromUnlocks(STARTING_UNLOCKS));
     expect(pool.cats).toEqual(Object.keys(STARTER_COLLECTION).sort());
@@ -165,6 +165,7 @@ describe("unlocks", () => {
       expect(kitten).toContain("cat:umbralynx");
       expect(kitten).not.toContain("relic:quiet-corner");
       expect(kitten).not.toContain("relic:loud-bell");
+      expect(kitten).not.toContain("relic:alley-crown");
       expect(kitten).not.toContain("cat:hadu");
     });
 
@@ -173,6 +174,7 @@ describe("unlocks", () => {
       expect(stray).toContain("cat:stormsabre");
       expect(stray).toContain("relic:quiet-corner");
       expect(stray).toContain("relic:loud-bell");
+      expect(stray).toContain("relic:alley-crown");
       expect(stray).not.toContain("cat:hadu");
     });
 
@@ -206,7 +208,7 @@ describe("unlocks", () => {
     it("pays every rule that does not name a tier on all three", () => {
       const untiered = (difficulty: RunSummary["difficulty"]) =>
         earned({ matchesWon: 5, bestMatchScore: TOP_SCORE, difficulty }).filter(
-          (id) => id !== "relic:loud-bell",
+          (id) => id !== "relic:loud-bell" && id !== "relic:alley-crown",
         );
       expect(untiered("stray")).toEqual(untiered("kitten"));
       expect(untiered("apex")).toEqual(untiered("kitten"));

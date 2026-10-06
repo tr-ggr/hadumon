@@ -816,6 +816,11 @@ function keep(ctx: Ctx, action: Extract<Action, { type: "keep" }>): void {
   side.setup = [];
   for (const element of action.essence) side.essence[element] += 1;
   side.essence.wild += side.mods.startWild;
+  for (let i = 0; i < side.mods.startDraw; i++) {
+    const card = drawCard(ctx);
+    if (card === null) break;
+    side.hand.push(card);
+  }
   ctx.emit({
     type: "kept",
     cats: action.cats.length,
@@ -1463,11 +1468,20 @@ function verdict(
   return { won: true, tiebreak: "seat" };
 }
 
+/** Turns a seat takes in `round`; relics can lengthen the first and the last. */
+export function roundTurns(mods: Mods, round: number): number {
+  return (
+    (ROUND_TURNS[round] ?? 0) +
+    (round === 0 ? mods.extraTurns : 0) +
+    (round === ROUND_TURNS.length - 1 ? mods.finalTurns : 0)
+  );
+}
+
 function startRound(s: MatchState): void {
   for (const who of SIDES) {
     const side = s.sides[who];
-    side.turnsLeft =
-      (ROUND_TURNS[s.round] ?? 0) + (s.round === 0 ? side.mods.extraTurns : 0);
+    side.turnsLeft = roundTurns(side.mods, s.round);
+    if (s.round > 0) side.essence.wild += side.mods.roundTreat;
   }
   s.phase = "turn";
   s.active = s.sides[s.lead].turnsLeft > 0 ? s.lead : otherSide(s.lead);

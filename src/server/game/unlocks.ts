@@ -45,7 +45,7 @@ const atLeast =
     isAtLeast(run.difficulty, tier) && test(run);
 
 /**
- * Open on a new account: ten relics. Its cats are its starter collection
+ * Open on a new account: fifteen relics. Its cats are its starter collection
  * (`collection.ts`), which is not an unlock.
  */
 export const STARTING_UNLOCKS: Unlock[] = [
@@ -60,6 +60,11 @@ export const STARTING_UNLOCKS: Unlock[] = [
     "bent-whisker",
     "night-map",
     "soft-landing",
+    "hunters-tally",
+    "moonlit-path",
+    "old-blanket",
+    "paper-bag",
+    "patchwork-quilt",
   ].map((key): Unlock => ({ kind: "relic", key })),
 ];
 
@@ -145,6 +150,31 @@ export const UNLOCK_RULES: UnlockRule[] = [
     key: "quiet-corner",
     hint: "Win a run on Stray or harder.",
     test: atLeast("stray", won),
+  },
+  {
+    kind: "relic",
+    key: "night-bowl",
+    hint: "Win 2 matches in one run.",
+    test: wins(2),
+  },
+  {
+    kind: "relic",
+    key: "night-owl",
+    hint: "Win 4 matches in one run.",
+    test: wins(4),
+  },
+  {
+    kind: "relic",
+    key: "crowded-sill",
+    hint: "Reach Old Nine Lives.",
+    test: wins(5),
+  },
+  { kind: "relic", key: "mouse-jar", hint: "Win a run.", test: won },
+  {
+    kind: "relic",
+    key: "alley-crown",
+    hint: "Reach Old Nine Lives on Stray or harder.",
+    test: atLeast("stray", wins(5)),
   },
 ];
 

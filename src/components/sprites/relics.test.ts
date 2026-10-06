@@ -55,15 +55,25 @@ describe("relic art", () => {
     expect(lime).toEqual([
       "ball-of-twine",
       "bent-whisker",
+      "hunters-tally",
+      "moonlit-path",
       "night-map",
       "quiet-corner",
     ]);
     const white = IDS.filter((id) => relicFill(id) === WHITE_COLOR).sort();
     expect(white).toEqual([
+      "alley-crown",
+      "crowded-sill",
       "early-riser",
       "hoarders-basket",
       "loud-bell",
       "lucky-collar",
+      "mouse-jar",
+      "night-bowl",
+      "night-owl",
+      "old-blanket",
+      "paper-bag",
+      "patchwork-quilt",
       "soft-landing",
       "warm-saucer",
     ]);

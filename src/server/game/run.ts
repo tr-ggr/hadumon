@@ -38,7 +38,7 @@ import { createRng } from "./rng";
  * The shape of a stored run. A run saved under an older one cannot be read
  * by this game; it is closed as abandoned (`retireRun`).
  */
-export const RUN_VERSION = 4;
+export const RUN_VERSION = 5;
 
 /**
  * A deck can be trimmed down to this many cards and no further: the size a

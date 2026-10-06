@@ -7,7 +7,7 @@ import { getGoal } from "~/server/game/goals";
 import {
   GOAL_LOSE_POINTS,
   GOAL_WIN_POINTS,
-  ROUND_TURNS,
+  roundTurns as seatRoundTurns,
 } from "~/server/game/match";
 import { getRival } from "~/server/game/rival";
 import type { MatchView } from "~/server/game/view";
@@ -16,9 +16,9 @@ import { listWords, plural } from "./describe";
 import type { KeptCount } from "./goalHints";
 import { TurnCube } from "./pieces";
 
-/** Turns in a round of this match; a relic can lengthen the first. */
+/** Turns in a round of this match; a relic can lengthen the first and the last. */
 export function roundTurns(match: MatchView, round: number): number {
-  return (ROUND_TURNS[round] ?? 0) + (round === 0 ? match.mods.extraTurns : 0);
+  return seatRoundTurns(match.mods, round);
 }
 
 /**

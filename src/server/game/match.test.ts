@@ -20,10 +20,11 @@ import {
   rowReward,
   SETUP_CATS,
   swapOffer,
+  type Action,
   type Essence,
   type PlacedCat,
 } from "./match";
-import { RELIC_LIST } from "./relics";
+import { combineMods, RELIC_LIST } from "./relics";
 import { createRng } from "./rng";
 import { starterDeck } from "./clans";
 import {
@@ -137,6 +138,14 @@ describe("setup", () => {
     });
     expect(next.essence.wild).toBe(1);
     expect(next.turnsLeft).toBe(ROUND_TURNS[0] + 1);
+  });
+
+  it("draws the Paper Bag's cat once the hand is kept", () => {
+    const keep: Action = { type: "keep", cats: [0, 1, 2, 3, 4], essence: [] };
+    const plain = applyAction(fresh("t"), keep).state;
+    const bagged = applyAction(fresh("t", ["paper-bag"]), keep).state;
+    expect(bagged.hand).toHaveLength(plain.hand.length + 1);
+    expect(bagged.deck).toHaveLength(plain.deck.length - 1);
   });
 });
 
@@ -946,6 +955,29 @@ describe("rounds and goals", () => {
     expect(next.turnsLeft).toBe(ROUND_TURNS[1]);
     expect(next.goalResults).toHaveLength(1);
     expect(events.at(-1)?.type).toBe("goal");
+  });
+
+  it("gives the Night Bowl's treat as each later round starts", () => {
+    const state = turnState({
+      turnsLeft: 1,
+      mods: combineMods(["night-bowl"]),
+      essence: pool({}),
+    });
+    const { state: next } = applyAction(state, { type: "hunt", dice: [0] });
+    expect(next.round).toBe(1);
+    expect(next.essence.wild).toBe(1);
+  });
+
+  it("lengthens only the last round for the Night Owl", () => {
+    const mods = combineMods(["night-owl"]);
+    const hunt: Action = { type: "hunt", dice: [0] };
+    const second = applyAction(turnState({ turnsLeft: 1, mods }), hunt).state;
+    expect(second.turnsLeft).toBe(ROUND_TURNS[1]);
+    const last = applyAction(
+      turnState({ round: ROUND_TURNS.length - 2, turnsLeft: 1, mods }),
+      hunt,
+    ).state;
+    expect(last.turnsLeft).toBe(ROUND_TURNS.at(-1)! + 1);
   });
 
   it("finishes after the last round and refuses further actions", () => {

@@ -3,9 +3,9 @@
  * adds points at the end of every match through `score`.
  */
 
-import { getCat, ROWS, type Row } from "./cats";
+import { getCat, ROWS, type Rarity, type Row } from "./cats";
 import { ELEMENT_LABELS, type Element } from "./elements";
-import type { Board } from "./match";
+import { SLOTS, type Board, type PlacedCat } from "./match";
 
 /** Numeric rule changes, summed across every relic the run holds. */
 export interface Mods {
@@ -22,6 +22,12 @@ export interface Mods {
   extraTurns: number;
   /** Treats gained whenever the feeder is rolled again, whoever emptied it. */
   refillTreat: number;
+  /** Cats drawn from the deck once the opening hand is kept. */
+  startDraw: number;
+  /** Treats gained at the start of every round after the first. */
+  roundTreat: number;
+  /** Extra turns in the last round. */
+  finalTurns: number;
 }
 
 export const NO_MODS: Mods = {
@@ -33,12 +39,22 @@ export const NO_MODS: Mods = {
   goalBonus: 0,
   extraTurns: 0,
   refillTreat: 0,
+  startDraw: 0,
+  roundTreat: 0,
+  finalTurns: 0,
 };
 
 export type ScoreRule =
   | { per: "element"; element: Element; points: number }
   | { per: "row"; row: Row; points: number }
-  | { per: "yarn"; every: number; points: number };
+  | { per: "yarn"; every: number; points: number }
+  | { per: "cached"; every: number; points: number }
+  | { per: "tucked"; every: number; points: number }
+  /** Paid for each row holding as many cats as it can. */
+  | { per: "fullRow"; points: number }
+  /** Paid for each element among the cats on the board. */
+  | { per: "variety"; points: number }
+  | { per: "rarity"; rarity: Rarity; points: number };
 
 export interface Relic {
   id: string;
@@ -132,6 +148,66 @@ export const RELICS: Record<string, Relic> = Object.fromEntries(
         text: "2 points for each cat in your Den at the end of a match.",
         score: { per: "row", row: "den", points: 2 },
       },
+      {
+        id: "hunters-tally",
+        name: "Hunter's Tally",
+        text: "1 point for each cat in your Hunt at the end of a match.",
+        score: { per: "row", row: "hunt", points: 1 },
+      },
+      {
+        id: "moonlit-path",
+        name: "Moonlit Path",
+        text: "2 points for each cat in your Prowl at the end of a match.",
+        score: { per: "row", row: "prowl", points: 2 },
+      },
+      {
+        id: "mouse-jar",
+        name: "Mouse Jar",
+        text: "1 point for each food cached on your cats at the end of a match.",
+        score: { per: "cached", every: 1, points: 1 },
+      },
+      {
+        id: "old-blanket",
+        name: "Old Blanket",
+        text: "1 point for each cat tucked under yours at the end of a match.",
+        score: { per: "tucked", every: 1, points: 1 },
+      },
+      {
+        id: "paper-bag",
+        name: "Paper Bag",
+        text: "Draw 1 extra cat when you keep your opening hand.",
+        mods: { startDraw: 1 },
+      },
+      {
+        id: "night-bowl",
+        name: "Night Bowl",
+        text: "Gain 1 Treat at the start of every round after the first.",
+        mods: { roundTreat: 1 },
+      },
+      {
+        id: "night-owl",
+        name: "Night Owl",
+        text: "Take 1 extra turn in the last round.",
+        mods: { finalTurns: 1 },
+      },
+      {
+        id: "crowded-sill",
+        name: "Crowded Sill",
+        text: "3 points for each full row on your board at the end of a match.",
+        score: { per: "fullRow", points: 3 },
+      },
+      {
+        id: "patchwork-quilt",
+        name: "Patchwork Quilt",
+        text: "1 point for each element among the cats on your board at the end of a match.",
+        score: { per: "variety", points: 1 },
+      },
+      {
+        id: "alley-crown",
+        name: "Alley Crown",
+        text: "1 point for each Common cat on your board at the end of a match.",
+        score: { per: "rarity", rarity: "common", points: 1 },
+      },
     ] satisfies Relic[]
   ).map((relic) => [relic.id, relic] as const),
 );
@@ -159,25 +235,46 @@ export function combineMods(
   return mods;
 }
 
+/** `every`-sized bundles of one thing summed over the board's cats. */
+function bundles(
+  placed: readonly PlacedCat[],
+  count: (cat: PlacedCat) => number,
+  every: number,
+): number {
+  return Math.floor(placed.reduce((sum, p) => sum + count(p), 0) / every);
+}
+
 /** End-of-match points one relic adds for this board. */
 export function relicScore(relicId: string, board: Board): number {
   const rule = getRelic(relicId).score;
   if (!rule) return 0;
+  const placed = ROWS.flatMap((row) => board[row]);
   switch (rule.per) {
-    case "element": {
-      const count = ROWS.flatMap((row) => board[row]).filter(
-        (placed) => getCat(placed.catId).element === rule.element,
-      ).length;
-      return count * rule.points;
-    }
+    case "element":
+      return (
+        placed.filter((p) => getCat(p.catId).element === rule.element).length *
+        rule.points
+      );
     case "row":
       return board[rule.row].length * rule.points;
-    case "yarn": {
-      const yarn = ROWS.flatMap((row) => board[row]).reduce(
-        (sum, placed) => sum + placed.yarn,
-        0,
+    case "yarn":
+      return bundles(placed, (p) => p.yarn, rule.every) * rule.points;
+    case "cached":
+      return bundles(placed, (p) => p.cached, rule.every) * rule.points;
+    case "tucked":
+      return bundles(placed, (p) => p.tucked, rule.every) * rule.points;
+    case "fullRow":
+      return (
+        ROWS.filter((row) => board[row].length >= SLOTS).length * rule.points
       );
-      return Math.floor(yarn / rule.every) * rule.points;
-    }
+    case "variety":
+      return (
+        new Set(placed.map((p) => getCat(p.catId).element)).size * rule.points
+      );
+    case "rarity":
+      return (
+        placed.filter((p) => getCat(p.catId).rarity === rule.rarity).length *
+        rule.points
+      );
   }
 }
