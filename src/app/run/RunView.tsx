@@ -13,7 +13,7 @@ import { RunStrip } from "~/components/run/RunStrip";
 import { RunSummary } from "~/components/run/RunSummary";
 import { SetupKeep } from "~/components/run/SetupKeep";
 import { TableArea, TableSurface } from "~/components/run/TableSurface";
-import { useClimb } from "~/components/run/useClimb";
+import { useClimb, useOpening } from "~/components/run/useClimb";
 import { useRunController } from "~/components/run/useRunController";
 import { TableButton } from "~/components/run/pieces";
 import { Modal, Skeleton } from "~/components/ui";
@@ -42,6 +42,13 @@ export function RunView() {
     climb,
     view?.gauntlet ?? NO_FLOORS,
     run.finishClimb,
+  );
+  // So is the way up to it, which a run opens on.
+  const opening = useOpening(
+    view?.phase === "chest" ? run.opening : null,
+    view?.gauntlet ?? NO_FLOORS,
+    view?.stolen.length ?? 0,
+    run.finishOpening,
   );
 
   // A new screen starts at its top, not wherever the last one was scrolled to.
@@ -168,6 +175,36 @@ export function RunView() {
     onAbandon: () => setAbandoning(true),
   };
   const strip = <RunStrip {...stripProps} />;
+  const abandonModal = (
+    <AbandonModal
+      open={abandoning}
+      busy={run.busy}
+      onClose={() => setAbandoning(false)}
+      onAbandon={() => {
+        setAbandoning(false);
+        run.abandon();
+      }}
+    />
+  );
+
+  // The opening has the whole screen, as the climb it gives way to does.
+  if (view.phase === "chest" && view.chest && opening.frame) {
+    return (
+      <TableSurface nav={false}>
+        <ChestScene
+          key={(run.snapshot ?? run.final)?.id}
+          run={view}
+          chest={view.chest}
+          busy={run.busy}
+          onOpen={run.openChest}
+          opening={{ ...opening, frame: opening.frame }}
+          runStrip={<RunStrip {...stripProps} compact />}
+        />
+        {abandonModal}
+      </TableSurface>
+    );
+  }
+
   // The match lays itself out to the window; every other screen is a column.
   const onBoard =
     landing ||
@@ -193,15 +230,6 @@ export function RunView() {
             sideStrip={<RunStrip {...stripProps} compact />}
           />
         ) : null
-      ) : view.phase === "chest" && view.chest ? (
-        <ChestScene
-          key={(run.snapshot ?? run.final)?.id}
-          run={view}
-          chest={view.chest}
-          busy={run.busy}
-          onOpen={run.openChest}
-          runStrip={strip}
-        />
       ) : view.phase === "reward" && view.reward ? (
         <RewardPick
           key={matchKey}
@@ -232,40 +260,7 @@ export function RunView() {
         </TableArea>
       )}
 
-      <Modal
-        open={abandoning}
-        onClose={() => setAbandoning(false)}
-        title="Abandon this run?"
-        footer={
-          <>
-            <TableButton
-              size="md"
-              variant="secondary"
-              data-autofocus
-              disabled={run.busy}
-              onClick={() => setAbandoning(false)}
-            >
-              Keep playing
-            </TableButton>
-            <TableButton
-              size="md"
-              variant="danger"
-              disabled={run.busy}
-              onClick={() => {
-                setAbandoning(false);
-                run.abandon();
-              }}
-            >
-              Abandon run
-            </TableButton>
-          </>
-        }
-      >
-        <p>
-          The run ends here and cannot be resumed. Anything it has already
-          earned still unlocks.
-        </p>
-      </Modal>
+      {abandonModal}
     </TableSurface>
   );
 }
@@ -277,5 +272,52 @@ function Sheet({ title, children }: { title: string; children: ReactNode }) {
       <h1 className="text-print text-3xl">{title}</h1>
       {children}
     </section>
+  );
+}
+
+/** The question before a run is given up. */
+function AbandonModal({
+  open,
+  busy,
+  onClose,
+  onAbandon,
+}: {
+  open: boolean;
+  busy: boolean;
+  onClose: () => void;
+  onAbandon: () => void;
+}) {
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Abandon this run?"
+      footer={
+        <>
+          <TableButton
+            size="md"
+            variant="secondary"
+            data-autofocus
+            disabled={busy}
+            onClick={onClose}
+          >
+            Keep playing
+          </TableButton>
+          <TableButton
+            size="md"
+            variant="danger"
+            disabled={busy}
+            onClick={onAbandon}
+          >
+            Abandon run
+          </TableButton>
+        </>
+      }
+    >
+      <p>
+        The run ends here and cannot be resumed. Anything it has already earned
+        still unlocks.
+      </p>
+    </Modal>
   );
 }

@@ -6,9 +6,12 @@ import type { MatchView, RunView } from "~/server/game/view";
 import {
   CLIMB_REST,
   buildClimb,
+  buildOpening,
   climbAfter,
   climbAnnouncement,
   climbFits,
+  openingAnnouncement,
+  openingRest,
   restingFrame,
   towerStanding,
   type ClimbFrame,
@@ -26,9 +29,11 @@ const CLIMBS: readonly (readonly [ClimbKind, number])[] = [
   ["summit", ROOF],
 ];
 
-/** A spot as a height, so two can be compared. */
+/** A spot as a height, so two can be compared: along the ground, then up. */
 function height(spot: Spot): number {
-  if (spot === "away") return -2;
+  if (spot === "away") return -4;
+  if (spot === "path") return -3;
+  if (spot === "chest") return -2;
   if (spot === "ground") return -1;
   return spot === "roof" ? ROOF : spot;
 }
@@ -123,6 +128,8 @@ describe("buildClimb", () => {
 
   it("opens every climb on the whole tower, with no bars across it", () => {
     for (const [kind, to] of CLIMBS) {
+      // The way in carries on from the opening instead.
+      if (kind === "enter") continue;
       const frames = buildClimb(kind, to, GAUNTLET);
       expect(frames[0]?.shot, `${kind} ${to}`).toEqual({
         on: "tower",
@@ -178,7 +185,7 @@ describe("buildClimb", () => {
     }
   });
 
-  it("follows Hadu up the wall, and tilts up the tower before he walks in", () => {
+  it("follows Hadu up the wall", () => {
     for (const [kind, to] of CLIMBS) {
       for (const frame of buildClimb(kind, to, GAUNTLET)) {
         if (!frame.hop) continue;
@@ -186,10 +193,25 @@ describe("buildClimb", () => {
         expect(["hadu", "roof"], `${kind} ${to}`).toContain(frame.shot.on);
       }
     }
-    const tilt = buildClimb("enter", 0, GAUNTLET)
-      .filter((frame) => frame.hadu === "away" && frame.shot.on === "floor")
-      .map((frame) => frame.shot.floor);
-    expect(tilt).toEqual(GAUNTLET.map((_, floor) => floor));
+  });
+
+  it("goes in from where the opening rests, so nothing in the picture jumps", () => {
+    const rest = openingRest(GAUNTLET);
+    const first = buildClimb("enter", 0, GAUNTLET)[0];
+    for (const field of ["hadu", "chest", "shot", "bars", "windows"] as const) {
+      expect(first?.[field], field).toEqual(rest?.[field]);
+    }
+  });
+
+  it("leaves the chest open at the foot as Hadu goes in, and only then", () => {
+    for (const [kind, to] of CLIMBS) {
+      for (const frame of buildClimb(kind, to, GAUNTLET)) {
+        expect(frame.chest, `${kind} ${to}`).toBe(
+          kind === "enter" ? "open" : "none",
+        );
+        expect(frame.theft, `${kind} ${to}`).toBe(false);
+      }
+    }
   });
 
   it("holds a beat longer on a boss's dark window, and lands harder", () => {
@@ -265,17 +287,6 @@ describe("buildClimb", () => {
     );
   });
 
-  it("opens the tower dark and lights it from the bottom up", () => {
-    const frames = buildClimb("enter", 0, GAUNTLET);
-    expect(frames[0]?.hadu).toBe("away");
-    expect(frames[0]?.windows).toEqual(GAUNTLET.map(() => "dark"));
-    const lit = frames.map(
-      (frame) => frame.windows.filter((state) => state !== "dark").length,
-    );
-    expect(lit).toEqual([...lit].sort((a, b) => a - b));
-    expect(lit.at(-1)).toBe(GAUNTLET.length);
-  });
-
   it("raises the roof pennant only at the summit", () => {
     for (const [kind, to] of CLIMBS) {
       const frames = buildClimb(kind, to, GAUNTLET);
@@ -289,7 +300,7 @@ describe("buildClimb", () => {
   it("is over in its time, the rest included", () => {
     const budget: Record<ClimbKind, number> = {
       ascend: 5500,
-      enter: 7200,
+      enter: 5000,
       summit: 6200,
     };
     for (const [kind, to] of CLIMBS) {
@@ -320,6 +331,115 @@ describe("buildClimb", () => {
     expect(buildClimb("summit", ROOF - 1, GAUNTLET)).toEqual([]);
     expect(buildClimb("enter", 0, [])).toEqual([]);
     expect(restingFrame("ascend", 1.5, GAUNTLET)).toBeNull();
+  });
+});
+
+describe("buildOpening", () => {
+  const STOLEN = 8;
+  const frames = buildOpening(GAUNTLET, STOLEN);
+
+  it("starts close on the roof and tilts down every floor, top first", () => {
+    expect(frames[0]?.shot).toEqual({ on: "roof", close: true });
+    const tilt = frames
+      .filter((frame) => frame.shot.on === "floor")
+      .map((frame) => frame.shot.floor);
+    expect(tilt).toEqual(GAUNTLET.map((_, floor) => floor).reverse());
+  });
+
+  it("opens the tower dark and lights it from the top down", () => {
+    expect(frames[0]?.windows).toEqual(GAUNTLET.map(() => "dark"));
+    for (const frame of frames) {
+      const lit = frame.windows.map((state) => state !== "dark");
+      // Once a window is lit, every window above it is too.
+      lit.forEach((on, floor) => {
+        if (on) expect(lit.slice(floor).every(Boolean)).toBe(true);
+      });
+    }
+    expect(frames.at(-1)?.windows.every((state) => state === "peek")).toBe(
+      true,
+    );
+  });
+
+  it("pans out to Hadu walking up once the tower has been seen", () => {
+    const walksIn = frames.findIndex((frame) => frame.hadu !== "away");
+    expect(frames[walksIn]?.hadu).toBe("path");
+    expect(frames[walksIn]?.shot.on).toBe("path");
+    expect(frames[walksIn - 1]?.shot.on).toBe("hadu");
+  });
+
+  it("walks Hadu along the ground one spot at a time, and never back", () => {
+    let before: ClimbFrame | null = null;
+    for (const frame of frames) {
+      if (before) {
+        const step = height(frame.hadu) - height(before.hadu);
+        expect(step).toBeGreaterThanOrEqual(0);
+        expect(step).toBeLessThanOrEqual(1);
+        expect(frame.hop).toBe(step === 1);
+      }
+      before = frame;
+    }
+    expect(frames.at(-1)?.hadu).toBe("chest");
+  });
+
+  it("has every rival lean out and take the cards, far enough back to see it", () => {
+    const theft = frames.filter((frame) => frame.theft);
+    expect(theft).toHaveLength(1);
+    expect(theft[0]?.windows.every((state) => state === "out")).toBe(true);
+    expect(theft[0]?.hadu).toBe("path");
+    expect(theft[0]?.shot).toEqual({ on: "approach", close: false });
+    expect(theft[0]?.text).toContain("They took 8 cards.");
+    expect(theft[0]?.sounds.map((sound) => sound.name)).toContain("raid");
+  });
+
+  it("takes nothing when nothing was stolen", () => {
+    const quiet = buildOpening(GAUNTLET, 0);
+    expect(quiet.some((frame) => frame.theft)).toBe(false);
+    expect(quiet.at(-1)).toEqual(openingRest(GAUNTLET));
+  });
+
+  it("finds the chest shut, opens it, and comes to rest by it", () => {
+    const order = ["none", "shut", "open"];
+    const states = frames.map((frame) => order.indexOf(frame.chest));
+    expect(states).toEqual([...states].sort((a, b) => a - b));
+    const shut = frames.find((frame) => frame.chest === "shut");
+    expect(shut?.hadu).toBe("chest");
+    expect(frames.at(-1)).toEqual(openingRest(GAUNTLET));
+  });
+
+  it("brings the bars in for a close shot, and takes them out for a wide one", () => {
+    for (const frame of frames) expect(frame.bars).toBe(frame.shot.close);
+  });
+
+  it("is silent on its first frame and its rest, and every sound is in time", () => {
+    expect(frames[0]?.sounds).toEqual([]);
+    expect(frames.at(-1)?.sounds).toEqual([]);
+    expect(frames.at(-1)?.shake).toBe("none");
+    for (const frame of frames.slice(0, -1)) {
+      for (const sound of frame.sounds) {
+        expect(sound.delay * 1000).toBeLessThan(frame.ms);
+      }
+    }
+  });
+
+  it("gets to the chest quickly", () => {
+    const total = frames.reduce((sum, frame) => sum + frame.ms, 0);
+    expect(total).toBeLessThanOrEqual(8000);
+  });
+
+  it("has no frames for a tower with no floors", () => {
+    expect(buildOpening([], STOLEN)).toEqual([]);
+    expect(openingRest([])).toBeNull();
+  });
+});
+
+describe("openingAnnouncement", () => {
+  it("tells the whole opening in one sentence", () => {
+    expect(openingAnnouncement(GAUNTLET, 8)).toBe(
+      "You walk up to a tower of 6 floors. The rivals take 8 cards from you. A chest by the door holds three relics.",
+    );
+    expect(openingAnnouncement(GAUNTLET, 0)).toBe(
+      "You walk up to a tower of 6 floors. A chest by the door holds three relics.",
+    );
   });
 });
 

@@ -834,19 +834,29 @@
         "purpose": "Turning a dealt card face up: a press, Enter or Space, or the rail's Turn a card. The tag under it lands as a token does (240ms, after 190ms)."
       },
       {
-        "name": "chest-walk",
-        "value": "translateX(-9rem) to 0, 900ms steps(9, end)",
-        "purpose": "The player's hadu walking up to the chest, once, the first time the step is come to."
+        "name": "climb-stroll",
+        "value": "translateX(-48 tower px) to 0, 700ms x pace, steps(10, end), with a one-pixel bob each 140ms x pace",
+        "purpose": "Hadu walking in over the landing as a run opens."
       },
       {
-        "name": "chest-open",
-        "value": "visibility swap of the shut and open chest at 900ms, steps(1, end)",
-        "purpose": "The lid going back, in one cut, with the soft thud."
+        "name": "climb-stumble",
+        "value": "a walk that lurches one pixel forward and three up at 80%, 700ms x pace, steps(1, end)",
+        "purpose": "Hadu stumbling onto the chest by the tower's foot."
+      },
+      {
+        "name": "theft-fly",
+        "value": "from Hadu's pack to a window's middle in steps(8, end), 480ms x pace, from 180ms and 70ms apart x pace, hidden at the end",
+        "purpose": "The stolen cards going up one after another into the rivals' windows."
+      },
+      {
+        "name": "chest-lid",
+        "value": "translateY two pixels, one, then rest, 240ms x pace, steps(1, end)",
+        "purpose": "The jolt of the chest's lid going back, with the cache sound."
       },
       {
         "name": "chest-rise",
-        "value": "translateY(1rem) to rest, hidden until it starts, 320ms cubic-bezier(0.2, 0.9, 0.3, 1.25), from 1000ms, 120ms apart",
-        "purpose": "The three relics rising out of the chest: hidden until their turn, then there and rising, never faded in."
+        "value": "translateY(1rem) to rest, hidden until it starts, 320ms cubic-bezier(0.2, 0.9, 0.3, 1.25), 120ms apart",
+        "purpose": "The three relics rising into the offer once the opening rests on the chest: hidden until their turn, then there and rising, never faded in."
       }
     ],
     "breakpoints": [

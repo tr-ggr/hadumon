@@ -29,17 +29,49 @@ export const ROOF_PENNANT = LANE + 36;
 /** Where a close shot looks, across the tower: toward the ledge, or the window. */
 const LEDGE_SIDE = LANE + 18;
 const WINDOW_SIDE = LANE + 26;
+/**
+ * Where things stand on the landing, left of the tower's foot, from their
+ * left edges: Hadu walking up, Hadu stopped short of the chest, and the
+ * chest itself, which is clear of the lane he climbs.
+ */
+export const PATH_X = -52;
+export const CHEST_STAND = -33;
+export const CHEST_AT = -18;
+/** How wide the chest is drawn: its icon, a tower pixel to each of its own. */
+export const CHEST_SIZE = 16;
+/**
+ * How far down the stage the chest's shot puts Hadu: higher than the climb's
+ * other shots, so the relics offered under him leave him in view.
+ */
+export const CHEST_FOCUS = 0.26;
 
 /** The picture's height: the tower, and room above the roof for a cat on it. */
 export function sceneHeight(tower: Tower): number {
   return tower.height + SPRITE_SIZE;
 }
 
+/** How far down the stage a shot puts the point it looks at. */
+export function shotFocus(shot: Shot): number {
+  return shot.on === "chest" ? CHEST_FOCUS : FOCUS;
+}
+
 /** The point of the tower a shot looks at, and how close. */
 export function cameraFor(shot: Shot, hadu: Spot, tower: Tower): Camera {
   const height = sceneHeight(tower);
+  if (shot.on === "approach") {
+    // Back far enough to see Hadu out on the landing and every window.
+    return { x: (PATH_X + tower.width) / 2, y: height * FOCUS, zoom: 1 };
+  }
   if (!shot.close || shot.on === "tower") {
     return { x: tower.width / 2, y: height * FOCUS, zoom: 1 };
+  }
+  if (shot.on === "path") {
+    // Hadu walking up, and the foot he is walking to.
+    return { x: PATH_X + 20, y: height - 26, zoom: CLOSE };
+  }
+  if (shot.on === "chest") {
+    // Hadu and the chest, side by side on the ground.
+    return { x: CHEST_STAND + 16, y: height - 8, zoom: CLOSE };
   }
   const spot = shot.on === "floor" ? (shot.floor ?? 0) : hadu;
   if (shot.on === "roof" || spot === "roof") {

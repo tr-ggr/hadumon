@@ -11,6 +11,7 @@ import { api, type RouterOutputs } from "~/trpc/react";
 
 import { climbAfter, climbFits, type ClimbRecord } from "./climb";
 import { chainEnd } from "./playback";
+import type { OpeningRecord } from "./useClimb";
 import { playSound } from "./sfx/engine";
 import {
   describeAction,
@@ -85,8 +86,11 @@ export function useRunController() {
   const [played, setPlayed] = useState(0);
   /** The climb up the tower still to be shown. A reload simply skips it. */
   const [climb, setClimb] = useState<ClimbRecord | null>(null);
+  /** The way up to the tower a new run opens on. A reload simply skips it. */
+  const [opening, setOpening] = useState<OpeningRecord | null>(null);
   const nextLogId = useRef(1);
   const nextClimbId = useRef(1);
+  const nextOpeningId = useRef(1);
 
   const climbFor = useCallback(
     (trigger: Parameters<typeof climbAfter>[0], update: RunSnapshot) => {
@@ -128,6 +132,7 @@ export function useRunController() {
     (error: { message: string; data?: { code?: string } | null }) => {
       if (error.data?.code === "CONFLICT" || error.data?.code === "NOT_FOUND") {
         setClimb(null);
+        setOpening(null);
         notify("The run was updated somewhere else. Caught up now.", "error");
         void utils.run.current.invalidate();
         return;
@@ -144,15 +149,17 @@ export function useRunController() {
       setFinal(null);
       setRecap(NO_RECAP);
       setClimb(null);
+      setOpening({ id: nextOpeningId.current++, runId: snapshot.id });
       store(snapshot);
     },
     onError,
   });
 
-  // The way into the tower is shown once the chest is opened.
+  // The way into the tower carries on from the chest once it is opened.
   const chest = api.run.openChest.useMutation({
     onSuccess: (update) => {
       setRecap(NO_RECAP);
+      setOpening(null);
       climbFor("start", update);
       store(update);
     },
@@ -225,6 +232,7 @@ export function useRunController() {
   const abandon = api.run.abandon.useMutation({
     onSuccess: (update) => {
       setClimb(null);
+      setOpening(null);
       store(update);
     },
     onError,
@@ -238,6 +246,10 @@ export function useRunController() {
   const finishTurn = useCallback((id: number) => setPlayed(id), []);
   const finishClimb = useCallback(
     (id: number) => setClimb((prev) => (prev?.id === id ? null : prev)),
+    [],
+  );
+  const finishOpening = useCallback(
+    (id: number) => setOpening((prev) => (prev?.id === id ? null : prev)),
     [],
   );
 
@@ -271,6 +283,17 @@ export function useRunController() {
     climb:
       climb && shown && climbFits(climb, shown.id, shown.view) ? climb : null,
     finishClimb,
+    /**
+     * The opening to play while the run is at its chest, else `null`. It is
+     * dropped the moment the run is anywhere else.
+     */
+    opening:
+      opening &&
+      snapshot?.id === opening.runId &&
+      snapshot.view.phase === "chest"
+        ? opening
+        : null,
+    finishOpening,
     dismissGoal: () => setRecap((prev) => ({ ...prev, goal: null })),
     start: (difficulty: DifficultyId) => start.mutate({ difficulty }),
     openChest: (relic: string) => {

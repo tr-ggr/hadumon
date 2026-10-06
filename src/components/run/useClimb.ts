@@ -5,6 +5,7 @@ import { useLayoutEffect, useMemo, useRef, type RefObject } from "react";
 import {
   CLIMB_REST_CALM,
   buildClimb,
+  buildOpening,
   type ClimbFrame,
   type ClimbRecord,
 } from "./climb";
@@ -50,6 +51,48 @@ export function useClimb(
   );
 
   return { frame: climb ? (frames[index] ?? null) : null, beat: index, skip };
+}
+
+/** A run's opening, still to be shown. */
+export interface OpeningRecord {
+  id: number;
+  /** The run it opens; shown for any other, it is stale. */
+  runId: string;
+}
+
+export interface Opening {
+  /** The frame to show: the rest by the chest once nothing is playing. */
+  frame: ClimbFrame | null;
+  /** Which frame of the opening it is, counted from 0. */
+  beat: number;
+  /** True until the opening has come to rest by the chest. */
+  playing: boolean;
+  skip: () => void;
+}
+
+/**
+ * Plays a run's opening one frame at a time and stays on the last, Hadu by
+ * the open chest, telling `onDone` it has got there. With no opening to
+ * play, or with reduced motion, it is on the last frame from the start. Any
+ * click or key goes straight there.
+ */
+export function useOpening(
+  opening: OpeningRecord | null,
+  gauntlet: readonly string[],
+  stolen: number,
+  onDone: (id: number) => void,
+): Opening {
+  const frames = useMemo(
+    () => buildOpening(gauntlet, stolen),
+    [gauntlet, stolen],
+  );
+  const holds = useMemo(() => frames.map((frame) => frame.ms), [frames]);
+  const { index, playing, skip } = useStepper(
+    opening && frames.length > 0 ? opening.id : null,
+    holds,
+    onDone,
+  );
+  return { frame: frames[index] ?? null, beat: index, playing, skip };
 }
 
 /**

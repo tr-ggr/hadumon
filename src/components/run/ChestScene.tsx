@@ -1,31 +1,25 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 
-import { HaduAvatar } from "~/components/HaduAvatar";
-import { PixelIcon } from "~/components/PixelIcon";
 import { RelicIcon } from "~/components/RelicIcon";
-import { useLook } from "~/components/skins/SkinProvider";
 import { getRelic } from "~/server/game/relics";
-import { getRival } from "~/server/game/rival";
 import type { RunView } from "~/server/game/view";
 
+import { ClimbStage, SkipButton, useTower } from "./ClimbStage";
+import { openingAnnouncement } from "./climb";
 import { DeckSpread } from "./DeckSpread";
 import { plural } from "./describe";
-import { RelicTile } from "./pieces";
+import { TableButton } from "./pieces";
 import { playSound } from "./sfx/engine";
-import { RecapRow, StepHeading, StepRail, TableArea } from "./TableSurface";
-import { useSteps } from "./useSteps";
-
-/** The chest's own wood, as a value: a pixel icon takes colours, not classes. */
-const CHEST_COLOR = "#b98d55";
-/** When the lid goes back, and when the whole scene has played, in ms. */
-const CHEST_OPENS_MS = 900;
-const CHEST_SCENE_MS = 1800;
-
-/** The screens a run opens on, in the order they are shown. */
-export type ChestStep = "theft" | "chest" | "recap";
-export const CHEST_STEPS: readonly ChestStep[] = ["theft", "chest", "recap"];
+import { StepHeading } from "./TableSurface";
+import { useClimbFx, type Opening } from "./useClimb";
 
 export interface ChestSceneProps {
   run: RunView;
@@ -33,111 +27,94 @@ export interface ChestSceneProps {
   chest: readonly string[];
   busy: boolean;
   onOpen: (relicId: string) => void;
+  /** The opening, playing or come to rest by the chest. */
+  opening: Opening & { frame: NonNullable<Opening["frame"]> };
   /** The run's own strip: the gauntlet track and the way out. */
   runStrip: ReactNode;
 }
 
 /**
- * How a run opens, one screen at a time: what the rivals took, the chest at
- * the foot of their tower and the one relic to take from it, then a recap
- * that holds the one confirm. The player's hadu walks up to the chest and
- * the relics rise out of it; with reduced motion the chest is simply open.
+ * How a run opens, shot like the climb and on the same picture: the camera
+ * tilts down the tower and pans out to Hadu walking up, the rivals lean out
+ * and take cards from him, and he stumbles onto a chest by the foot. There
+ * it rests, and the chest's three relics are offered over the scene with
+ * the cards that were taken. Going in carries on from that very shot.
  */
 export function ChestScene({
   run,
   chest,
   busy,
   onOpen,
+  opening,
   runStrip,
 }: ChestSceneProps) {
-  const look = useLook();
+  const { frame, beat, playing, skip } = opening;
+  const tower = useTower(run.gauntlet);
+  /** What was already up when the scene began does not arrive again. */
+  const [first] = useState(frame);
   const [relic, setRelic] = useState<string | null>(null);
-  const { step, index, count, isFirst, next, back, goTo, heading } =
-    useSteps(CHEST_STEPS);
-  // The walk up to the chest is shown once; coming back to the step, or
-  // choosing, finds it already open.
-  const [arrived, setArrived] = useState(false);
-  const onChest = step === "chest";
-  useEffect(() => {
-    if (!onChest || arrived) return;
-    const lid = setTimeout(() => playSound("settle"), CHEST_OPENS_MS);
-    const done = setTimeout(() => setArrived(true), CHEST_SCENE_MS);
-    return () => {
-      clearTimeout(lid);
-      clearTimeout(done);
-    };
-  }, [onChest, arrived]);
-  const firstRival = getRival(run.gauntlet[0] ?? "alley-tom");
 
-  const sentence: Record<ChestStep, string> = {
-    theft: "A chest at the foot of the tower is next.",
-    chest: relic
-      ? `Taking the ${getRelic(relic).name}.`
-      : "Take one. The other two stay in the chest.",
-    recap: `${plural(run.deck.length, "card")} and one relic.`,
-  };
+  const [said, setSaid] = useState("");
+  useEffect(() => {
+    setSaid(openingAnnouncement(run.gauntlet, run.stolen.length));
+  }, [run.gauntlet, run.stolen.length]);
+
+  const stage = useRef<HTMLDivElement>(null);
+  useClimbFx(stage, beat, frame);
+
+  // While it plays the way out of it has the focus; once it rests, the
+  // offer it comes to.
+  const skipButton = useRef<HTMLButtonElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (playing) skipButton.current?.focus({ preventScroll: true });
+    else heading.current?.focus({ preventScroll: true });
+  }, [playing]);
 
   return (
-    <>
-      <TableArea className="space-y-5">
-        {runStrip}
-        <h1 className="sr-only">The start of the run</h1>
+    <ClimbStage
+      stageRef={stage}
+      tower={tower}
+      frame={frame}
+      first={first}
+      gauntlet={run.gauntlet}
+      stolen={run.stolen.length}
+      caption={playing}
+    >
+      <h1 className="sr-only">The start of the run</h1>
+      <p role="status" className="sr-only">
+        {said}
+      </p>
 
-        {step === "theft" ? (
-          <section className="fitted:my-auto space-y-4">
-            <StepHeading title="They took eight" headingRef={heading}>
-              The rivals hold {plural(run.stolen.length, "card")} of your deck.
-              Beat one and you take a card back from the three it shows you. You
-              climb with the {run.deck.length} they left.
-            </StepHeading>
-            <div className="space-y-2">
-              <h3 className="text-ink-soft text-xs font-bold">Stolen</h3>
-              <DeckSpread
-                cards={run.stolen}
-                label="Stolen cards"
-                tone="coral"
-              />
-            </div>
-            <div className="space-y-2">
-              <h3 className="text-ink-soft text-xs font-bold">Left to you</h3>
-              <DeckSpread cards={run.deck} label="The cards you start with" />
-            </div>
-          </section>
-        ) : null}
-
-        {step === "chest" ? (
-          <section className="fitted:my-auto space-y-3">
+      {playing ? (
+        <SkipButton buttonRef={skipButton} onSkip={skip} />
+      ) : (
+        <section className="absolute inset-x-2 bottom-2 z-30 flex justify-center sm:inset-x-4 sm:bottom-3">
+          <div className="piece piece-card border-ink text-ink bg-cream max-h-[64dvh] w-full max-w-2xl space-y-3 overflow-y-auto border-2 px-3 pt-1 pb-3 sm:px-4">
+            {runStrip}
             <StepHeading title="A chest by the door" headingRef={heading}>
-              Somebody left it at the foot of the tower. Three relics are
+              Hadu stumbled onto it at the foot of the tower. Three relics are
               inside, and you can carry one. A relic lasts the whole run.
             </StepHeading>
-            {/* The scene plays once, the first time the chest is come to:
-                the hadu walks up, the lid goes back, the relics rise. */}
-            <div
-              aria-hidden
-              className={`mat chest-stage relative flex h-28 items-end justify-center gap-3 overflow-clip px-4 pb-3 ${arrived ? "" : "is-arriving"}`}
-            >
-              <span className="chest-walk relative block">
-                <HaduAvatar look={look} size={64} />
-              </span>
-              <span className="relative block h-16 w-16">
-                <PixelIcon
-                  name="chest"
-                  size={64}
-                  fill={CHEST_COLOR}
-                  className="chest-shut absolute inset-0"
+
+            {run.stolen.length > 0 ? (
+              <div className="space-y-1.5">
+                <h3 className="text-ink-soft text-xs font-bold">
+                  Stolen: {plural(run.stolen.length, "card")}
+                </h3>
+                <p className="text-ink text-xs">
+                  Beat a rival and you take a card back from the three it shows
+                  you. You climb with the {run.deck.length} they left.
+                </p>
+                <DeckSpread
+                  cards={run.stolen}
+                  label="Stolen cards"
+                  tone="coral"
                 />
-                <PixelIcon
-                  name="chestOpen"
-                  size={64}
-                  fill={CHEST_COLOR}
-                  className="chest-open absolute inset-0"
-                />
-              </span>
-            </div>
-            <ul
-              className={`grid gap-x-3 gap-y-4 sm:grid-cols-3 ${arrived ? "" : "is-arriving"}`}
-            >
+              </div>
+            ) : null}
+
+            <ul className="grid gap-x-3 gap-y-3 sm:grid-cols-3">
               {chest.map((id, place) => {
                 const item = getRelic(id);
                 const chosen = relic === id;
@@ -171,54 +148,26 @@ export function ChestScene({
                 );
               })}
             </ul>
-          </section>
-        ) : null}
 
-        {step === "recap" ? (
-          <section className="fitted:my-auto space-y-4">
-            <StepHeading
-              title={`Ready for ${firstRival.name}`}
-              headingRef={heading}
-            >
-              This is what you take up the tower. Nothing is settled until you
-              go in.
-            </StepHeading>
-            <ul className="space-y-4">
-              <RecapRow
-                label="Relic"
-                empty="No relic chosen."
-                busy={busy}
-                onChange={() => goTo("chest")}
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+              <p className="text-ink text-sm font-semibold" aria-live="polite">
+                {relic
+                  ? `Taking the ${getRelic(relic).name}.`
+                  : "Take one. The other two stay in the chest."}
+              </p>
+              <TableButton
+                size="md"
+                disabled={busy || relic === null}
+                onClick={() => {
+                  if (relic) onOpen(relic);
+                }}
               >
-                {relic ? <RelicTile relicId={relic} /> : null}
-              </RecapRow>
-            </ul>
-            <p className="text-ink text-sm font-semibold">
-              Your deck is {plural(run.deck.length, "card")}.{" "}
-              {plural(run.stolen.length, "card")} of it{" "}
-              {run.stolen.length === 1 ? "is" : "are"} still stolen.
-            </p>
-          </section>
-        ) : null}
-      </TableArea>
-
-      <StepRail
-        index={index}
-        count={count}
-        onBack={isFirst ? undefined : back}
-        nextLabel={
-          step === "recap" ? (busy ? "Going in…" : "Enter the tower") : "Next"
-        }
-        onNext={
-          step === "recap"
-            ? () => (relic ? onOpen(relic) : goTo("chest"))
-            : next
-        }
-        nextDisabled={step !== "theft" && relic === null}
-        disabled={busy}
-      >
-        {sentence[step]}
-      </StepRail>
-    </>
+                {busy ? "Going in…" : "Enter the tower"}
+              </TableButton>
+            </div>
+          </div>
+        </section>
+      )}
+    </ClimbStage>
   );
 }

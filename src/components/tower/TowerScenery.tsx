@@ -10,6 +10,7 @@ import {
   SHORE_REACH,
   SKY,
   SKY_WIDTH,
+  landing,
   rock,
   shore,
   type Span,
@@ -149,6 +150,9 @@ export function TowerScenery({
   const stoneLeft = Math.min(...stone.map((span) => span.left));
   const stoneRight = Math.max(...stone.map((span) => span.right));
   const land = shore();
+  const shelf = landing();
+  const shelfLeft = Math.min(...shelf.map((span) => span.left));
+  const shelfRight = Math.max(...shelf.map((span) => span.right));
 
   return (
     <>
@@ -199,6 +203,13 @@ export function TowerScenery({
         top={ground}
         width={stoneRight - stoneLeft}
         height={ROCK_DEPTH}
+      />
+      <Shape
+        spans={shelf}
+        left={shelfLeft}
+        top={ground}
+        width={shelfRight - shelfLeft}
+        height={shelf.length}
       />
       <Shape
         spans={land}

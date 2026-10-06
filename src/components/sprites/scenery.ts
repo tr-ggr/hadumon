@@ -240,6 +240,28 @@ export function rock(towerWidth: number): Span[] {
   });
 }
 
+/** How far to the left of the tower the landing reaches, under the shore. */
+export const LANDING = 66;
+/** How deep the landing's shelf of rock goes before the water. */
+const LANDING_DEPTH = 6;
+
+/**
+ * The landing: a shelf of rock at the tower's ground, reaching left over the
+ * water until it runs in under the near shore, so there is a way to walk up
+ * to the foot. Its top is lit, like the rock's, and its underside is ragged.
+ */
+export function landing(): Span[] {
+  return Array.from({ length: LANDING_DEPTH }, (_, y) => {
+    const ragged = y >= LANDING_DEPTH - 2 && speck(5, y) < 0.5 ? 2 : 0;
+    return {
+      y,
+      left: -LANDING + ragged + Math.max(0, y - 3) * 3,
+      right: -2,
+      pixel: y < 2 ? "t" : "r",
+    } as const;
+  });
+}
+
 /** How far to the left the near shore is drawn. */
 export const SHORE_REACH = 1400;
 /** The shore's height above the tower's ground at its far end. */

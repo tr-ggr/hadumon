@@ -3,7 +3,18 @@ import { describe, expect, it } from "vitest";
 import { SPRITE_SIZE } from "~/components/sprites/cats";
 import { LANE, buildTower } from "~/components/sprites/tower";
 
-import { CLOSE, FOCUS, cameraFor, sceneHeight, windowCentre } from "./camera";
+import {
+  CHEST_AT,
+  CHEST_SIZE,
+  CHEST_STAND,
+  CLOSE,
+  FOCUS,
+  PATH_X,
+  cameraFor,
+  sceneHeight,
+  shotFocus,
+  windowCentre,
+} from "./camera";
 
 const tower = buildTower([false, false, true, false, false, true]);
 
@@ -63,6 +74,40 @@ describe("cameraFor", () => {
     const top = cameraFor({ on: "hadu", close: true }, 5, tower);
     expect(roof.y).toBeLessThan(top.y);
     expect(cameraFor({ on: "hadu", close: true }, "roof", tower)).toEqual(roof);
+  });
+});
+
+describe("the landing", () => {
+  it("looks left of the tower for Hadu walking up and for the chest", () => {
+    const path = cameraFor({ on: "path", close: true }, "path", tower);
+    const chest = cameraFor({ on: "chest", close: true }, "chest", tower);
+    expect(path.x).toBeLessThan(0);
+    expect(chest.x).toBeLessThan(0);
+    expect(path.zoom).toBe(CLOSE);
+    expect(chest.zoom).toBe(CLOSE);
+    // Both look along the ground at the foot.
+    expect(path.y).toBeGreaterThan(sceneHeight(tower) - SPRITE_SIZE * 2);
+    expect(chest.y).toBeGreaterThan(sceneHeight(tower) - SPRITE_SIZE * 2);
+  });
+
+  it("stands the chest off the lane Hadu climbs, and him short of it", () => {
+    expect(CHEST_AT + CHEST_SIZE).toBeLessThanOrEqual(0);
+    expect(CHEST_STAND + SPRITE_SIZE).toBeLessThanOrEqual(CHEST_AT + 1);
+    expect(PATH_X).toBeLessThan(CHEST_STAND);
+  });
+
+  it("sees Hadu on the landing and the tower's far side from far back, on a phone", () => {
+    const shot = cameraFor({ on: "approach", close: false }, "path", tower);
+    expect(shot.zoom).toBe(1);
+    // A 360px stage at the climb's smallest pixel shows 180 tower pixels.
+    const half = 360 / 2 / 2;
+    expect(shot.x - half).toBeLessThanOrEqual(PATH_X);
+    expect(shot.x + half).toBeGreaterThanOrEqual(tower.width);
+  });
+
+  it("puts Hadu higher on the stage by the chest than anywhere else", () => {
+    expect(shotFocus({ on: "chest", close: true })).toBeLessThan(FOCUS);
+    expect(shotFocus({ on: "hadu", close: true })).toBe(FOCUS);
   });
 });
 

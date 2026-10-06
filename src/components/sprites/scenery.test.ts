@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   CLOUDS_FAR,
   CLOUDS_NEAR,
+  LANDING,
   ROCK_DEPTH,
   SCENERY_COLORS,
   SCENERY_LEGEND,
@@ -11,6 +12,7 @@ import {
   SHORE_REACH,
   SKY,
   SKY_WIDTH,
+  landing,
   rock,
   shore,
 } from "./scenery";
@@ -136,5 +138,19 @@ describe("the rock and the shore", () => {
     // The top of the slope is far to the left; at the water it is nearly at the rock.
     expect(top?.right).toBeLessThan((ground?.right ?? 0) - 150);
     expect(rows.at(-1)?.right).toBeGreaterThan(-45);
+  });
+
+  it("joins the shore to the rock with a landing to walk on", () => {
+    const shelf = landing();
+    const top = shelf[0];
+    const shoreAtGround = shore().find((row) => row.y === 0);
+    const rockTop = rock(TOWER_WIDTH)[0];
+    expect(top?.y).toBe(0);
+    expect(top?.pixel).toBe("t");
+    expect(top?.left).toBe(-LANDING);
+    // It runs in under the shore at one end and meets the rock at the other.
+    expect(top?.left).toBeLessThan(shoreAtGround?.right ?? 0);
+    expect(top?.right).toBeGreaterThanOrEqual(rockTop?.left ?? 0);
+    for (const row of shelf) expect(row.right).toBeLessThanOrEqual(0);
   });
 });

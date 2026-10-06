@@ -95,6 +95,8 @@ export const WHITE_COLOR = "#ffffff";
 export const LIME_COLOR = "#d8ff4f";
 /** The gold a coin is struck in. */
 export const COIN_COLOR = "#f5c84c";
+/** The wood of the chest at the foot of the tower. */
+export const CHEST_COLOR = "#b98d55";
 
 /**
  * The fur a cat wears: its own colours if it was drawn from life, else the

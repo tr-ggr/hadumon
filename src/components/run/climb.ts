@@ -5,8 +5,9 @@ import type { Sound } from "./sfx/recipes";
 
 /**
  * The climb between matches, as data. A run is a tower with a rival on every
- * floor: Hadu walks in at the foot, goes up a floor after each win, and ends
- * on the roof. It is shot like a scene: a camera that pushes in and follows
+ * floor: Hadu walks up to it over the landing, loses eight cards to the
+ * rivals on the way, finds a chest by the foot, goes up a floor after each
+ * win, and ends on the roof. It is shot like a scene: a camera that pushes in and follows
  * him, bars across the top and bottom, and a title card for whoever is met.
  * Nothing here touches the run; it only says what to draw and what to play.
  */
@@ -23,8 +24,11 @@ export interface ClimbRecord {
   to: number;
 }
 
-/** Where Hadu is: not here yet, at the foot, on a floor's ledge, on the roof. */
-export type Spot = "away" | "ground" | "roof" | number;
+/**
+ * Where Hadu is: not here yet, out on the landing, by the chest, at the foot,
+ * on a floor's ledge, on the roof.
+ */
+export type Spot = "away" | "path" | "chest" | "ground" | "roof" | number;
 
 /**
  * A floor's window: nobody showing, a rival looking over the sill, a rival
@@ -44,9 +48,10 @@ export interface TowerStanding {
 export interface Shot {
   /**
    * The whole tower, Hadu wherever he is (the foot, before he walks in), one
-   * floor's window, or the roof.
+   * floor's window, the roof, the landing he walks in over, the chest and
+   * him beside it, or far enough back to see the landing and every window.
    */
-  on: "tower" | "hadu" | "floor" | "roof";
+  on: "tower" | "hadu" | "floor" | "roof" | "path" | "chest" | "approach";
   /** The floor framed, for a shot on a floor. */
   floor?: number;
   /** Pushed in, or far enough back to see every floor. */
@@ -55,6 +60,9 @@ export interface Shot {
 
 /** A jolt of the picture: none, a landing, or a boss. */
 export type Shake = "none" | "soft" | "hard";
+
+/** The chest by the tower's foot: not there, shut, or open. */
+export type ChestState = "none" | "shut" | "open";
 
 export interface ClimbFrame {
   hadu: Spot;
@@ -65,6 +73,9 @@ export interface ClimbFrame {
   plate: number | null;
   /** The pennant on the roof, once the last floor is taken. */
   roofFlag: boolean;
+  chest: ChestState;
+  /** The stolen cards are in the air, on their way up to the windows. */
+  theft: boolean;
   shot: Shot;
   /**
    * The bars across the top and the bottom of the picture are in. They come
@@ -119,6 +130,12 @@ const PLANT = paced(480);
 const PULL = paced(900);
 /** The title card coming down. */
 const SLAM = paced(400);
+/** Hadu walking a short way along the ground. */
+const WALK = paced(600);
+/** Hadu walking in over the landing from out of the picture. */
+const STROLL = paced(800);
+/** The cards going up out of Hadu's pack and in at the windows. */
+const SNATCH = paced(1200);
 /** The rest on the last frame, as long as a rival's title card is held up. */
 export const CLIMB_REST = 1400;
 /** The rest when nothing moves, so the one still frame can be read. */
@@ -167,6 +184,9 @@ export function climbFits(
 const WIDE: Shot = { on: "tower", close: false };
 const ON_HADU: Shot = { on: "hadu", close: true };
 const ON_ROOF: Shot = { on: "roof", close: true };
+const ON_PATH: Shot = { on: "path", close: true };
+const ON_CHEST: Shot = { on: "chest", close: true };
+const APPROACH: Shot = { on: "approach", close: false };
 
 function onFloor(floor: number): Shot {
   return { on: "floor", floor, close: true };
@@ -280,6 +300,8 @@ export function restingFrame(
       windows: windowsAt(count, count, "flag"),
       plate: null,
       roofFlag: true,
+      chest: "none",
+      theft: false,
       shot: WIDE,
       // The whole tower fills the picture; bars would cut the roof off it.
       bars: false,
@@ -296,6 +318,9 @@ export function restingFrame(
     windows: windowsAt(to, count, "out"),
     plate: to,
     roofFlag: false,
+    // The chest a run opens on is still at the foot as Hadu goes up.
+    chest: kind === "enter" ? "open" : "none",
+    theft: false,
     shot: onFloor(to),
     bars: true,
     title: true,
@@ -364,35 +389,16 @@ export function buildClimb(
   };
 
   if (kind === "enter") {
-    const empty = `A grey tower, ${count} floors tall. Somebody is home on every one.`;
-    const dark = (): WindowState[] =>
-      Array.from({ length: count }, () => "dark");
-    push({
-      hadu: "away",
-      windows: dark(),
-      roofFlag: false,
-      shot: WIDE,
-      text: empty,
-      ms: POSE,
-    });
-    push({ bars: true, shot: ON_HADU, ms: PUSH });
-    for (let floor = 0; floor < count; floor++) {
-      push({
-        shot: onFloor(floor),
-        windows: dark().map((state, index) =>
-          index <= floor ? "peek" : state,
-        ),
-        sounds: [sound("tick", 0, floor * 2)],
-        ms: TILT,
-      });
-    }
-    push({ shot: ON_HADU, ms: PUSH });
+    // It carries on from where the opening rests: Hadu by the open chest.
+    const door = openingRest(gauntlet);
+    if (door) push({ ...door, text: "One relic, carried.", ms: POSE });
     push({
       hadu: "ground",
       hop: true,
-      sounds: [sound("settle")],
+      shot: ON_HADU,
+      sounds: [sound("settle", (WALK - 120) / 1000)],
       text: "In you go.",
-      ms: PUSH,
+      ms: WALK,
     });
     arrive(0);
   } else {
@@ -451,6 +457,144 @@ export function buildClimb(
 
   frames.push(rest);
   return frames;
+}
+
+/**
+ * Where a run's opening comes to rest, and where the way in starts: close on
+ * Hadu beside the open chest, every rival looking over its sill, the bars in.
+ * It is held while a relic is chosen, so it is silent and has no time of its
+ * own.
+ */
+export function openingRest(gauntlet: readonly string[]): ClimbFrame | null {
+  if (gauntlet.length === 0) return null;
+  return {
+    hadu: "chest",
+    hop: false,
+    windows: windowsAt(-1, gauntlet.length, "peek"),
+    plate: null,
+    roofFlag: false,
+    chest: "open",
+    theft: false,
+    shot: ON_CHEST,
+    bars: true,
+    title: false,
+    shake: "none",
+    sounds: [],
+    text: "Three relics inside. You can carry one.",
+    ms: 0,
+  };
+}
+
+/**
+ * The frames of a run's opening, in order. The camera starts on the roof and
+ * tilts down the tower, each rival coming to its window as it passes, then
+ * pans out over the landing to Hadu walking up. The rivals lean out and take
+ * `stolen` cards from him on the way; he walks on, stumbles onto a chest by
+ * the foot, and the lid goes back. Its last frame is `openingRest`.
+ */
+export function buildOpening(
+  gauntlet: readonly string[],
+  stolen: number,
+): ClimbFrame[] {
+  const rest = openingRest(gauntlet);
+  if (!rest) return [];
+  const count = gauntlet.length;
+  const frames: ClimbFrame[] = [];
+  let now: ClimbFrame = rest;
+  const push = (change: Partial<ClimbFrame>) => {
+    now = { ...now, hop: false, shake: "none", sounds: [], ...change };
+    frames.push(now);
+  };
+  const lit = (from: number): WindowState[] =>
+    Array.from({ length: count }, (_, floor) =>
+      floor >= from ? "peek" : "dark",
+    );
+
+  push({
+    hadu: "away",
+    windows: lit(count),
+    chest: "none",
+    shot: ON_ROOF,
+    text: `A grey tower, ${count} floors tall.`,
+    ms: POSE,
+  });
+  for (let floor = count - 1; floor >= 0; floor--) {
+    push({
+      shot: onFloor(floor),
+      windows: lit(floor),
+      sounds: [sound("tick", 0, floor * 2)],
+      text: "Somebody is home on every one.",
+      ms: TILT,
+    });
+  }
+  push({ shot: ON_HADU, ms: PUSH });
+  push({
+    hadu: "path",
+    hop: true,
+    shot: ON_PATH,
+    sounds: [0, 1, 2, 3].map((n) => sound("tick", n * 0.18 * CLIMB_PACE)),
+    text: "Hadu walks up to the tower.",
+    ms: STROLL,
+  });
+  if (stolen > 0) {
+    const took = `They took ${stolen === 1 ? "a card" : `${stolen} cards`}.`;
+    push({
+      windows: Array.from({ length: count }, () => "out"),
+      theft: true,
+      shot: APPROACH,
+      bars: false,
+      shake: "soft",
+      sounds: [
+        sound("raid"),
+        ...[0, 1, 2, 3].map((n) =>
+          sound("draw", (0.25 + n * 0.2) * CLIMB_PACE, n),
+        ),
+      ],
+      text: `The rivals lean out of their windows. ${took}`,
+      ms: SNATCH,
+    });
+    push({
+      windows: lit(0),
+      theft: false,
+      sounds: [sound("settle")],
+      text: took,
+      ms: SETTLE,
+    });
+  }
+  push({
+    hadu: "chest",
+    hop: true,
+    chest: "shut",
+    shot: ON_CHEST,
+    bars: true,
+    // The stylesheet's stumble is a walk that lurches four fifths of the way.
+    sounds: [sound("settle", (0.8 * WALK) / 1000)],
+    text: "Something in the way. A chest.",
+    ms: WALK,
+  });
+  push({
+    chest: "open",
+    shake: "soft",
+    sounds: [sound("cache")],
+    text: rest.text,
+    ms: SETTLE,
+  });
+
+  frames.push(rest);
+  return frames;
+}
+
+/** The whole opening in one sentence, for a reader who cannot watch it. */
+export function openingAnnouncement(
+  gauntlet: readonly string[],
+  stolen: number,
+): string {
+  if (gauntlet.length === 0) return "";
+  const took =
+    stolen > 0
+      ? ` The rivals take ${stolen === 1 ? "a card" : `${stolen} cards`} from you.`
+      : "";
+  return `You walk up to a tower of ${gauntlet.length} floors.${took} A chest by the door holds three relics.`;
 }
 
 /** The whole climb in one sentence, for a reader who cannot watch it. */
